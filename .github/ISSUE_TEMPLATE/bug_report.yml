@@ -1,0 +1,34 @@
+name: "🐞 Bug report"
+description: "Report an unexpected result or a build issue"
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Thanks for helping improve Pentagonal XOR. Please avoid private personal data."
+  - type: input
+    id: platform
+    attributes:
+      label: "Platform and compiler"
+      placeholder: "Windows 11 / MSVC 2022, Ubuntu / GCC 14, etc."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: "Steps and inputs to reproduce"
+      description: "Provide five numeric inputs and your build command."
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: "Actual behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected behavior"
+    validations:
+      required: true
