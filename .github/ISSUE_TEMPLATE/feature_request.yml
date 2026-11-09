@@ -1,0 +1,22 @@
+name: "✨ Feature request"
+description: "Propose a new mathematical feature or platform build"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem or research goal"
+      description: "What should the new feature enable?"
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Suggested solution"
+    validations:
+      required: true
+  - type: textarea
+    id: validations
+    attributes:
+      label: "Proposed tests and expected mathematical properties"
