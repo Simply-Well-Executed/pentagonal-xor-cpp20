@@ -1,0 +1,65 @@
+name: "🛡️ SWE Shared Guard · C++20 Cross-Platform"
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'shared/**'
+      - '.github/workflows/shared-guard.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'shared/**'
+      - '.github/workflows/shared-guard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: "${{ matrix.label }}"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: 'Linux x64', os: ubuntu-24.04, arch: native}
+          - {label: 'Linux ARM64', os: ubuntu-24.04-arm, arch: native}
+          - {label: 'Windows x64', os: windows-2022, arch: x64}
+          - {label: 'Windows x86', os: windows-2022, arch: Win32}
+          - {label: 'macOS Intel', os: macos-15-intel, arch: native}
+          - {label: 'macOS Apple Silicon', os: macos-15, arch: native}
+    steps:
+      - name: 'Checkout pinned, without persistent credentials'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: 'CMake configure'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ('${{ matrix.arch }}' -eq 'native') {
+            cmake -S shared -B build-shared -DCMAKE_BUILD_TYPE=Release
+          } else {
+            cmake -S shared -B build-shared -A '${{ matrix.arch }}'
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: 'Compile with C++20 warnings enabled'
+        shell: pwsh
+        run: |
+          cmake --build build-shared --config Release --parallel
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: 'CTest: 32-state parity and negative security fixtures'
+        shell: pwsh
+        run: |
+          ctest --test-dir build-shared -C Release --output-on-failure --output-junit build-shared/ctest-results.xml
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: 'Keep per-OS XML test evidence'
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "swe-guard-${{ matrix.label }}"
+          path: build-shared/ctest-results.xml
+          if-no-files-found: warn
+          retention-days: 30
