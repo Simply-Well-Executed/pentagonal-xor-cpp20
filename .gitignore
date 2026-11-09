@@ -1,0 +1,15 @@
+# CMake / binaries
+build/
+out/
+dist/
+stage/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+Testing/
+*.exe
+*.obj
+*.o
+*.pdb
+*.dSYM/
+.DS_Store
