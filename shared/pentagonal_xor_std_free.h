@@ -24,6 +24,49 @@
 #  define SWE_PXOR_WINDOWS_LEGACY_TARGET 0
 #endif
 
+/*
+ * Compile-target OS classification. These are compiler-defined macros,
+ * not runtime probes. Android also defines __linux__ on common toolchains,
+ * so check Android first. Keep non-Linux Unix targets distinct.
+ * Valve's GoldSrc SDK is a reference for platform-specific build layout;
+ * no Valve source code is incorporated here.
+ */
+#if defined(__ANDROID__)
+#  define SWE_PXOR_TARGET_ANDROID 1
+#else
+#  define SWE_PXOR_TARGET_ANDROID 0
+#endif
+
+#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+#  define SWE_PXOR_TARGET_LINUX_KERNEL 1
+#else
+#  define SWE_PXOR_TARGET_LINUX_KERNEL 0
+#endif
+
+#if SWE_PXOR_TARGET_LINUX_KERNEL && !SWE_PXOR_TARGET_ANDROID
+#  define SWE_PXOR_TARGET_LINUX 1
+#else
+#  define SWE_PXOR_TARGET_LINUX 0
+#endif
+
+#if defined(__unix__) || defined(__unix)
+#  define SWE_PXOR_TARGET_UNIX 1
+#else
+#  define SWE_PXOR_TARGET_UNIX 0
+#endif
+
+#if defined(__APPLE__) && defined(__MACH__)
+#  define SWE_PXOR_TARGET_APPLE 1
+#else
+#  define SWE_PXOR_TARGET_APPLE 0
+#endif
+
+#if defined(_WIN32)
+#  define SWE_PXOR_TARGET_WINDOWS 1
+#else
+#  define SWE_PXOR_TARGET_WINDOWS 0
+#endif
+
 /* Application-level selector: legacy Windows targets choose this backend. */
 #if SWE_PXOR_WINDOWS_LEGACY_TARGET
 #  define SWE_PXOR_USE_STDFREE_BACKEND 1
