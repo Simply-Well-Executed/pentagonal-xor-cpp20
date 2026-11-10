@@ -24,6 +24,13 @@
 #  define SWE_PXOR_WINDOWS_LEGACY_TARGET 0
 #endif
 
+/* Application-level selector: legacy Windows targets choose this backend. */
+#if SWE_PXOR_WINDOWS_LEGACY_TARGET
+#  define SWE_PXOR_USE_STDFREE_BACKEND 1
+#else
+#  define SWE_PXOR_USE_STDFREE_BACKEND 0
+#endif
+
 typedef struct {
     double h0, h1, h2, h3, h4;
 } Features5;
