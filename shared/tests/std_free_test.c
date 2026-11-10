@@ -16,7 +16,7 @@ static int near_relative(double a, double b, double tolerance)
     double delta = a - b;
     double scale = b < 0.0 ? -b : b;
     if (delta < 0.0) delta = -delta;
-    if (scale < 1.0) scale = 1.0;
+    if (scale == 0.0) scale = 1.0;
     return delta <= tolerance * scale;
 }
 
