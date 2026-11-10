@@ -4,6 +4,32 @@
 
 #include "../pentagonal_xor_std_free.h"
 
+/* Check preprocessor target identification without runtime OS APIs. */
+#if defined(__ANDROID__)
+#  if !SWE_PXOR_TARGET_ANDROID || SWE_PXOR_TARGET_LINUX
+#    error Android must not be classified as desktop Linux
+#  endif
+#endif
+#if defined(__linux__) || defined(__linux) || defined(linux) || defined(__gnu_linux__)
+#  if !SWE_PXOR_TARGET_LINUX_KERNEL
+#    error Linux compiler macro not recognized
+#  endif
+#  if !defined(__ANDROID__) && !SWE_PXOR_TARGET_LINUX
+#    error Linux host not recognized
+#  endif
+#endif
+#if defined(_WIN32)
+#  if !SWE_PXOR_TARGET_WINDOWS
+#    error Windows target not recognized
+#  endif
+#endif
+#if SWE_PXOR_TARGET_LINUX && SWE_PXOR_TARGET_ANDROID
+#  error Mutually exclusive desktop Linux and Android
+#endif
+#if SWE_PXOR_TARGET_WINDOWS && SWE_PXOR_TARGET_LINUX
+#  error Mutually exclusive Windows and Linux
+#endif
+
 static int near(double a, double b, double tolerance)
 {
     double delta = a - b;
