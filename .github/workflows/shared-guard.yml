@@ -50,7 +50,7 @@ jobs:
         run: |
           cmake --build build-shared --config Release --parallel
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: 'CTest: 32-state parity and negative security fixtures'
+      - name: 'CTest: C11 std-free API, 32-state parity, and negative security fixtures'
         shell: pwsh
         run: |
           ctest --test-dir build-shared -C Release --output-on-failure --output-junit build-shared/ctest-results.xml
