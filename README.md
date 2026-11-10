@@ -35,6 +35,22 @@ OUTPUT  Recursive XOR : 51.72800000%
         Absolute error: 0.00000000
 ```
 
+## 🧩 Include-free compatibility API
+
+The [std-free C header](shared/pentagonal_xor_std_free.h) exposes the five-feature AND, OR, odd-parity XOR probability, partial, and fifth-root scores without standard headers, C++ standard-library dependencies, allocation, or platform APIs. It is compiled as strict C11 in the cross-platform shared-guard workflow.
+
+On Windows, `SWE_PXOR_WINDOWS_LEGACY_TARGET` and `SWE_PXOR_USE_STDFREE_BACKEND` are selected from `_WIN32` and `_WIN32_WINNT`. This detects the **configured compiler target**, not the actual Windows version at runtime. The std-free header is portable and can be used on any supported platform.
+
+PowerShell 7 build of the compatibility component:
+
+```powershell
+cmake -S .\\shared -B .\\shared\\build
+cmake --build .\\shared\\build --config Release
+ctest --test-dir .\\shared\\build -C Release --output-on-failure
+```
+
+---
+
 ## 🧰 Download matrix
 
 Every successful build is packaged with the binary, documentation and 0BSD license. Release assets are named by OS and processor architecture.
