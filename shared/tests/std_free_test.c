@@ -11,6 +11,15 @@ static int near(double a, double b, double tolerance)
     return delta <= tolerance;
 }
 
+static int near_relative(double a, double b, double tolerance)
+{
+    double delta = a - b;
+    double scale = b < 0.0 ? -b : b;
+    if (delta < 0.0) delta = -delta;
+    if (scale < 1.0) scale = 1.0;
+    return delta <= tolerance * scale;
+}
+
 int main(void)
 {
     Features5 f = {0.5, 0.5, 0.5, 0.5, 0.5};
@@ -28,6 +37,8 @@ int main(void)
     if (!near(swe_pxor_fifth_root(32.0), 2.0, 1e-12)) return 9;
     if (!near(swe_pxor_fifth_root(0.00000000000000000001), 0.0001, 1e-12)) return 10;
     if (!near(swe_pxor_fifth_root(-32.0), -2.0, 1e-12)) return 11;
+    if (!near_relative(swe_pxor_fifth_root(1.0e-300), 1.0e-60, 1e-12)) return 14;
+    if (!near_relative(swe_pxor_fifth_root(1.0e300), 1.0e60, 1e-12)) return 15;
 
     f.h0 = 1.0; f.h1 = 1.0; f.h2 = 1.0; f.h3 = 1.0; f.h4 = 1.0;
     s = swe_pxor_scores5(f);
