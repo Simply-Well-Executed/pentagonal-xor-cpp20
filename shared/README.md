@@ -51,6 +51,37 @@ Example:
 #endif
 ```
 
+### Linux, Android, and Unix preprocessor targets
+
+The same include-free header also exposes normalized integer flags:
+
+| Macro | Meaning |
+|---|---|
+| `SWE_PXOR_TARGET_LINUX_KERNEL` | Compiler advertises a Linux kernel target, including Android toolchains that define `__linux__` |
+| `SWE_PXOR_TARGET_LINUX` | Linux kernel target excluding Android |
+| `SWE_PXOR_TARGET_ANDROID` | Android target using `__ANDROID__` |
+| `SWE_PXOR_TARGET_UNIX` | Compiler advertises `__unix__` or `__unix` |
+| `SWE_PXOR_TARGET_APPLE` | Apple Mach target |
+| `SWE_PXOR_TARGET_WINDOWS` | Windows target using `_WIN32` |
+
+All flags evaluate to `0` or `1`. They describe the **compile target** and can overlap where appropriate (e.g., Linux and Unix). No runtime OS probing, external includes, or Valve SDK code is needed.
+
+For example:
+
+```c
+#include "pentagonal_xor_std_free.h"
+
+#if SWE_PXOR_TARGET_LINUX
+/* Linux-specific integration belongs here; the math stays portable. */
+#elif SWE_PXOR_TARGET_ANDROID
+/* Android-specific integration. */
+#elif SWE_PXOR_TARGET_WINDOWS
+/* Windows-specific integration. */
+#endif
+```
+
+**Reference and licensing:** Valve's [Half-Life / GoldSrc SDK](https://github.com/ValveSoftware/halflife) demonstrates distinct Linux Makefiles and platform-specific preprocessor branches. It is a design reference only. Its SDK license has restrictions that differ from this project's 0BSD license; no Valve code was copied.
+
 ## SWE Trust Boundary Guard (C++20)
 
 The guard is a separate five-channel metadata-validation proof of concept. It checks HTTPS scheme, exact trusted authority, relative path syntax, SHA-256 hex syntax, and artifact-name syntax. Its release decision is AND. OR and XOR are diagnostics only.
