@@ -85,6 +85,25 @@ if(BUILD_TESTING)
     endif()
 endif()
 
+# Ship the usable, header-only audit APIs rather than keeping them only
+# as test dependencies. No run-time mode switches or alternate XOR paths.
+add_library(swe_audit_headers INTERFACE)
+target_compile_features(swe_audit_headers INTERFACE cxx_std_20)
+target_include_directories(swe_audit_headers INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+    $<INSTALL_INTERFACE:include/swe>)
+install(TARGETS swe_audit_headers EXPORT swe_audit_headers_targets)
+install(EXPORT swe_audit_headers_targets
+    FILE SWEAuditHeadersTargets.cmake
+    NAMESPACE swe::
+    DESTINATION lib/cmake/SWEAuditHeaders)
+install(FILES
+    shared/deca_sigma.hpp
+    shared/tri_pi.hpp
+    shared/coreao.hpp
+    shared/pentagonal_xor_std_free.h
+    DESTINATION include/swe)
+
 install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
 if(MSVC)
     install(FILES "$<TARGET_PDB_FILE:pentagonal_xor>" DESTINATION symbols OPTIONAL)
