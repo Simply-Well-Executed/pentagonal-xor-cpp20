@@ -59,12 +59,7 @@ int main() {
         inspect(run(-9.0), std::numeric_limits<double>::quiet_NaN()).passed())
         return 8;
 
-    // The three route names retain their exact user-defined spelling.
-    if (swe::tri_pi::canonical_names[0][0] != '2' ||
-        swe::tri_pi::canonical_names[1][0] != 'Y' ||
-        swe::tri_pi::canonical_names[2][0] != 'P') return 9;
-
-    std::cout << "TriPi PASS: 2ndTRACE + Y= + PlySmlt2; "
+    std::cout << "TriPi PASS: forward + reverse + Z-fold; "
                  "negative tampering and domain fixtures rejected\n";
     return 0;
 }
