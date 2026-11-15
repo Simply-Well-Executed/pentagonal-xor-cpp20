@@ -20,7 +20,8 @@ inline constexpr unsigned reverse_order[11] =
 inline constexpr unsigned zfold_order[11] =
     {0u, 1u, 3u, 2u, 4u, 5u, 7u, 6u, 8u, 9u, 10u};
 
-inline constexpr char operations[] = "RSRTRSRTRR";
+// Borrow the exact ten-step route from its source algorithm.
+inline constexpr const char* operations = deca_sigma::operations;
 
 struct Report {
     bool forward = false;
