@@ -51,6 +51,61 @@ ctest --test-dir .\\shared\\build -C Release --output-on-failure
 
 ---
 
+## ⚡ Optional fast parity path
+
+The default CLI **retains the original recursive output and independent 32-state
+minterm verification**. A separate `--fast` mode computes the equivalent
+closed-form five-input parity probability:
+
+```text
+P5 = (1 - (1-2*h1)(1-2*h2)(1-2*h3)(1-2*h4)(1-2*h5)) / 2
+```
+
+The identity follows from `1-2*X_next = (1-2*X_prev)(1-2*h)` and `X0=0`.
+Both the existing recurrence and the new closed form are O(5); the fast mode
+**avoids the 32-state runtime verifier**, trading that diagnostic for fewer
+operations. A speedup has **not** been benchmarked.
+
+```powershell
+.\\build\\Release\\pentagonal_xor.exe --fast 0.80 0.70 0.90 0.60 0.95
+```
+
+On non-Windows single-configuration builds, the executable is commonly
+`./build/pentagonal_xor`. The normal five-argument invocation and its
+existing output remain unchanged. Feature validation is still enforced.
+
+The source also performs compile-time checks across **all 32 Boolean input
+combinations**, and CTest includes fast-path positive and negative fixtures.
+
+## ♻️ DecaSigma: a separate reversible audit example
+
+The new [DecaSigma reference](docs/DECASIGMA.md) and
+[include-free C++20 header](shared/deca_sigma.hpp) demonstrate an exact
+algebraic identity with a ten-step named trace:
+
+```text
+R(x)=1/x       S(x)=1-x        T(x)=R(S(R(x)))=x/(x-1)
+R → S → R → T → R → S → R → T → R → R
+```
+
+For `x != 0,1`, the **exact mathematical** stages 4, 8 and 10 return to the
+original x. The numeric implementation records every stage and checks those
+return witnesses within tolerance. Inputs zero and one are blocked; floating
+rounding and extreme values may additionally prevent reliable reconstruction.
+
+This has practical educational utility for **reversible transformation
+audits**, retaining an untouched original CORE and a reviewable sequence of
+derived values. It does not compress, invert, authenticate, or secure
+Pentagonal XOR output; no cryptographic property is claimed.
+
+```powershell
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
+
+---
+
 ## 🧰 Download matrix
 
 Every successful build is packaged with the binary, documentation and 0BSD license. Release assets are named by OS and processor architecture.
