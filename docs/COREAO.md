@@ -8,7 +8,7 @@ each step's provenance inspectable:
 
     COREAO = Z-fold[Reverse[Forward[CORE]]]
 
-For this implementation, **CORE** is the supplied, frozen eleven-stage
+For this implementation, **CORE** is the supplied, unchanged eleven-stage
 DecaSigma trace `s[0..10]`, with source operand `s[0]`.
 The calculations never modify the original trace.
 
