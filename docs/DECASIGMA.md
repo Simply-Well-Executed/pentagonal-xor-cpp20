@@ -91,6 +91,14 @@ There is no dependency from DecaSigma into the Pentagonal XOR engine.
 These are MAT.RECYCLE experimental route names, not portable names for
 built-in operations on physical calculators.
 
+## Triℼ implementation
+
+The canonical TriDi names now also identify three implemented inspection
+routes in [Triℼ](TRI_PI.md): **2ndTRACE** (forward), **Y=**
+(reverse), and **PlySmlt2** (Z-fold). `shared/tri_pi.hpp` takes a
+frozen DecaSigma trace and reports each result separately. These are
+three checks on one record, not independent evidence that it was authentic.
+
 ## Validation
 
 On PowerShell 7:
