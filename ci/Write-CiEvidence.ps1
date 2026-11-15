@@ -54,6 +54,7 @@ foreach ($name in @('cmake', 'ctest', 'git', 'pwsh', 'c++', 'g++', 'clang++',
 if ($IsWindows) {
     $vswhere = Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) (
         'Microsoft Visual Studio/Installer/vswhere.exe')
+    $archForCompiler = if ($TargetArch -eq 'Win32') { 'x86' } else { $TargetArch }
     if (Test-Path -LiteralPath $vswhere -PathType Leaf) {
         Add-ToolFingerprint -Name 'vswhere.exe' -Path $vswhere
         $vsRoot = & $vswhere -latest -products '*' -property installationPath
@@ -61,7 +62,7 @@ if ($IsWindows) {
             $msvcRoot = Join-Path ([string]($vsRoot | Select-Object -First 1)) 'VC/Tools/MSVC'
             if (Test-Path -LiteralPath $msvcRoot) {
                 $clCandidates = @(Get-ChildItem -LiteralPath $msvcRoot -Filter cl.exe -File -Recurse -ErrorAction SilentlyContinue |
-                    Where-Object { $_.DirectoryName -match ('[\\/]' + [regex]::Escape($TargetArch) + '$') } |
+                    Where-Object { $_.DirectoryName -match ('[\\/]' + [regex]::Escape($archForCompiler) + '$') } |
                     Sort-Object FullName)
                 foreach ($candidate in $clCandidates) {
                     Add-ToolFingerprint -Name 'MSVC cl.exe candidate' -Path $candidate.FullName
