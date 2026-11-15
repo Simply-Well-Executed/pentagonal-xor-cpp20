@@ -15,15 +15,15 @@ int main() {
     // Defined inputs round-trip. CORE and all intermediate records are read-only.
     constexpr double examples[] = {-9.0, 2.0, -2.0, 0.5, 3.5};
     for (double x : examples) {
-        const Trace frozen = run(x);
-        const Trace prior = frozen;
-        const auto audit = inspect(frozen);
+        const Trace source = run(x);
+        const Trace prior = source;
+        const auto audit = inspect(source);
         if (!audit.admissible || !audit.passed() || !std::isfinite(audit.scalar)
             || audit.scalar < 0.0) return 1;
         for (unsigned i = 0; i < 11u; ++i) {
-            if (frozen.stages[i] != prior.stages[i]) return 2;
+            if (source.stages[i] != prior.stages[i]) return 2;
         }
-        if (frozen.admissible != prior.admissible) return 3;
+        if (source.admissible != prior.admissible) return 3;
     }
 
     // Exact dyadic binary64 fixture returns zero scalar.
