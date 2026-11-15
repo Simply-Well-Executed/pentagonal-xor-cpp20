@@ -6,22 +6,22 @@ experimental engineering record, not a statement of legal clearance.
 ## What every platform job archives
 
 On **success or failure after checkout**, GitHub Actions attempts to upload
-an \`evidence-<platform>-<arch>\` archive from the main build matrix and a
-\`swe-guard-<platform>\` archive from the shared guard matrix. The contents
+an `evidence-<platform>-<arch>` archive from the main build matrix and a
+`swe-guard-<platform>` archive from the shared guard matrix. The contents
 include, when the respective stages were reached:
 
-- \`configure.log\`, \`build.log\`, \`test.log\` and \`ctest-results.xml\`;
-- \`manifest.json\`: Git commit checked out, run ID, OS, architecture,
+- `configure.log`, `build.log`, `test.log` and `ctest-results.xml`;
+- `manifest.json`: Git commit checked out, run ID, OS, architecture,
   outcomes, detected versions, installed compiler executable paths and
   SHA-256 hashes of compiler/tool executables actually located;
-- \`metadata/CMakeCXXCompiler.cmake\` and \`metadata/CMakeCache.txt\`;
-- \`build-files/\`: native build outputs including Windows \`.pdb\`,
-  \`.obj\`, \`.exe\`, \`.ilk\` and Unix \`.o\`, executables and debug files
+- `metadata/CMakeCXXCompiler.cmake` and `metadata/CMakeCache.txt`;
+- `build-files/`: native build outputs including Windows `.pdb`,
+  `.obj`, `.exe`, `.ilk` and Unix `.o`, executables and debug files
   **if produced** (failed compilation might have no linked PDB);
-- \`source-snapshot.zip\`: tracked project sources, workflows, tests,
+- `source-snapshot.zip`: tracked project sources, workflows, tests,
   documentation and 0BSD LICENSE for the exact checked-out Git commit;
-- \`SHA256SUMS\`: SHA-256 for every archived file **before**
-  \`upload-artifact\` wraps the files into a GitHub artifact.
+- `SHA256SUMS`: SHA-256 for every archived file **before**
+  `upload-artifact` wraps the files into a GitHub artifact.
 
 The archived compiler *metadata* includes versions and file SHA-256
 fingerprints where the original binary can be located on the runner.
@@ -31,12 +31,12 @@ If a compiler cannot be located, its SHA-256 is unavailable and must not
 be invented. A hash establishes file integrity against a known value but
 does not by itself authenticate the publisher or create distribution rights.
 
-Windows optimized builds use MSVC \`/Zi\` and linker \`/DEBUG:FULL\`. The
-root \`pentagonal_xor\` executable PDB is also installed into the Windows
-release package under \`symbols/\` when generated. Other local test PDBs
+Windows optimized builds use MSVC `/Zi` and linker `/DEBUG:FULL`. The
+root `pentagonal_xor` executable PDB is also installed into the Windows
+release package under `symbols/` when generated. Other local test PDBs
 and partial objects live in the per-job evidence artifact. Unix builds
-use \`-g\`; debuginfo can remain in the executable/object rather than a
-separate \`.pdb\`/symbol bundle. Files that were not produced are reported
+use `-g`; debuginfo can remain in the executable/object rather than a
+separate `.pdb`/symbol bundle. Files that were not produced are reported
 by their absence, not fabricated.
 
 **Retention:** uploads request 90 days of GitHub Actions artifact
@@ -48,7 +48,7 @@ their hashes if longer retention is required.
 
 Inside the extracted evidence directory:
 
-\`\`\`powershell
+```powershell
 Get-Content .\SHA256SUMS | ForEach-Object {
     if ($_ -match '^([0-9a-fA-F]{64})  (.+)$') {
         $expected = $Matches[1].ToLowerInvariant()
@@ -59,7 +59,7 @@ Get-Content .\SHA256SUMS | ForEach-Object {
         throw "Malformed SHA256SUMS entry: $_"
     }
 }
-\`\`\`
+```
 
 The GNU-compatible hash manifest covers individual evidence members,
 not the zip wrapper that GitHub constructs *after* the manifest was made.
@@ -70,14 +70,14 @@ platform archives. Checksums do not substitute for signed provenance.
 
 On November 15, 2026, the first COREAO Windows x64 and x86 jobs failed
 at C++20 compilation on commit
-\`eb9e86774ab275bc9ba21f7bf7d41962ed5c3cc8\`, while compiling
-\`tests/coreao_test.cpp\`:
+`eb9e86774ab275bc9ba21f7bf7d41962ed5c3cc8`, while compiling
+`tests/coreao_test.cpp`:
 
-\`\`\`text
+```text
 shared/coreao.hpp(118,51): error C2131: expression did not evaluate to a constant
 shared/coreao.hpp(119,52): error C2131: expression did not evaluate to a constant
 shared/coreao.hpp(109,66): a non-constant (sub-)expression was encountered
-\`\`\`
+```
 
 - Failed workflow: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/43763123775
 - Failed Windows x64 job: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/43763123775/job/132962155983
@@ -93,8 +93,8 @@ runs with this workflow capture additional verifiable data.
 
 ## Rights and license separation: researched authorities
 
-**Project-owned source and outputs:** This project's \`LICENSE\` states
-Zero-Clause BSD (\`0BSD\`). The OSI-published text permits use, copy,
+**Project-owned source and outputs:** This project's `LICENSE` states
+Zero-Clause BSD (`0BSD`). The OSI-published text permits use, copy,
 modification and distribution of that software, including commercial use,
 without attribution conditions. The grant covers the rights its licensor
 has to license; it is not a blanket license from third-party authors.
