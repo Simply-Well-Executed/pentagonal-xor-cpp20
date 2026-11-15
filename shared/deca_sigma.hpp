@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
-// DecaSigma: exploratory, reversible algebra witness; NOT an XOR or cipher.
-// Include-free C++20. Caller supplies a finite real x; x != 0 and x != 1.
+// DecaSigma: reversible algebra witness, NOT an XOR operator or cipher.
+// Include-free C++20; zero allocation; preserves all intermediate states.
 //
-// R(x) = 1/x; S(x) = 1-x; T(x) = R(S(R(x))) = x/(x-1).
+// Exact algebra (x != 0,1):
+// R(x)=1/x, S(x)=1-x, T(x)=R(S(R(x)))=x/(x-1)
 // Ten named operations: R S R T R S R T R R.
-// Floating-point round trips are approximate; see witnesses_return().
-// Neither the source x nor any existing Pentagonal XOR score is mutated.
+// Floating-point paths are guarded and not guaranteed to reconstruct exactly.
 
 #ifndef SWE_DECA_SIGMA_HPP
 #define SWE_DECA_SIGMA_HPP
@@ -15,51 +15,50 @@ namespace swe::deca_sigma {
 
 struct Trace {
     double stages[11]{};
-    bool admissible = false; // All nested divisions checked for zero.
+    bool admissible = false;
 };
 
-constexpr bool nonzero_number(double x) noexcept {
-    return x == x && x != 0.0;
-}
-
-constexpr bool span_operand(double x) noexcept {
-    return nonzero_number(x) && x != 1.0;
+// Finite IEEE-754 binary64 range. These are the intended double semantics.
+// The comparison rejects NaN and either infinity without using headers.
+constexpr bool finite(double x) noexcept {
+    return x <= 1.7976931348623157e308 &&
+           x >= -1.7976931348623157e308;
 }
 
 constexpr Trace run(double x) noexcept {
-    Trace result{};
-    result.stages[0] = x;
-    if (!span_operand(x)) return result;
+    Trace trace{};
+    trace.stages[0] = x;
+    if (!finite(x) || x == 0.0 || x == 1.0) return trace;
 
-    // First QuadSigma: R, S, R, T.
-    result.stages[1] = 1.0 / result.stages[0];
-    result.stages[2] = 1.0 - result.stages[1];
-    if (!nonzero_number(result.stages[2])) return result;
-    result.stages[3] = 1.0 / result.stages[2];
-    if (!span_operand(result.stages[3])) return result;
-    result.stages[4] = result.stages[3] / (result.stages[3] - 1.0);
-    if (!nonzero_number(result.stages[4])) return result;
+    constexpr char route[] = "RSRTRSRTRR";
+    for (unsigned i = 0; i < 10u; ++i) {
+        const double prior = trace.stages[i];
+        if (!finite(prior)) return trace;
 
-    // Second QuadSigma: R, S, R, T.
-    result.stages[5] = 1.0 / result.stages[4];
-    result.stages[6] = 1.0 - result.stages[5];
-    if (!nonzero_number(result.stages[6])) return result;
-    result.stages[7] = 1.0 / result.stages[6];
-    if (!span_operand(result.stages[7])) return result;
-    result.stages[8] = result.stages[7] / (result.stages[7] - 1.0);
-    if (!nonzero_number(result.stages[8])) return result;
-
-    // BiDi hinge: R, R.
-    result.stages[9] = 1.0 / result.stages[8];
-    if (!nonzero_number(result.stages[9])) return result;
-    result.stages[10] = 1.0 / result.stages[9];
-    result.admissible = result.stages[10] == result.stages[10];
-    return result;
+        double next = 0.0;
+        if (route[i] == 'R') {
+            if (prior == 0.0) return trace;
+            next = 1.0 / prior;
+        } else if (route[i] == 'S') {
+            next = 1.0 - prior;
+        } else {
+            // T retains its original nested domain guard, not merely x/(x-1).
+            if (prior == 0.0 || prior == 1.0) return trace;
+            next = prior / (prior - 1.0);
+        }
+        if (!finite(next)) return trace;
+        trace.stages[i + 1u] = next;
+    }
+    trace.admissible = true;
+    return trace;
 }
 
-constexpr double magnitude(double x) noexcept { return x < 0 ? -x : x; }
+constexpr double magnitude(double x) noexcept { return x < 0.0 ? -x : x; }
 
-constexpr bool near(double a, double b, double relative_tolerance = 1e-12) noexcept {
+constexpr bool near(double a, double b,
+                    double relative_tolerance = 1e-12) noexcept {
+    if (!finite(a) || !finite(b) || !finite(relative_tolerance) ||
+        relative_tolerance < 0.0) return false;
     const double scale = magnitude(b) > 1.0 ? magnitude(b) : 1.0;
     return magnitude(a - b) <= relative_tolerance * scale;
 }
@@ -74,8 +73,8 @@ constexpr bool witnesses_return(const Trace& trace,
 
 static_assert(!run(0.0).admissible);
 static_assert(!run(1.0).admissible);
-static_assert(witnesses_return(run(2.0)));
 static_assert(witnesses_return(run(-9.0)));
+static_assert(witnesses_return(run(2.0)));
 
 } // namespace swe::deca_sigma
 
