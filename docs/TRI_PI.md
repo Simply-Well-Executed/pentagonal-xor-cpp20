@@ -64,6 +64,18 @@ bit-for-bit floating-point reversal, or make Pentagonal XOR invertible.
 The 1e-12 witness tolerance is a numerical consistency threshold, not
 cryptographic strength.
 
+## Unified COREAO scalar
+
+[COREAO](COREAO.md) composes the three routes:
+Triℼ I computes the forward trace from source CORE, Triℼ II
+reconstructs the reverse path from Triℼ I's final state, and
+Triℼ III compares those paths with the frozen record in Z-fold order.
+Rather than treating three Boolean reports as independent evidence,
+COREAO returns one normalized **maximum discrepancy scalar** with a
+separate admissibility flag. This scalar is an audit diagnostic, not a
+proof of authentic provenance. The ten-step operation sequence is
+defined once in `shared/deca_sigma.hpp`.
+
 ## Compile and test (PowerShell 7)
 
 ```powershell
