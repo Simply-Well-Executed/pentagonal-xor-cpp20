@@ -20,20 +20,41 @@
 
 ## ∞ The mathematics
 
-Five continuous feature inputs `h₁...h₅ ∈ [0, 1]` fold into a recursive fuzzy-XOR parity result:
-
-**`X₀ = 0`**
-
-**`Xₖ = Xₖ₋₁ × (1 − hₖ) + (1 − Xₖ₋₁) × hₖ`**
-
-An independent implementation enumerates every one of the **32 Boolean configurations** and sums the **16 odd-parity AND minterms**. The executable checks that both routes agree.
+Five independent feature probabilities `h₁...h₅ ∈ [0,1]` produce a single
+odd-parity probability by a direct closed-form calculation:
 
 ```text
-INPUT   h1=0.80  h2=0.70  h3=0.90  h4=0.60  h5=0.95
-OUTPUT  Recursive XOR : 51.72800000%
-        32-state check: 51.72800000%
-        Absolute error: 0.00000000
+P5 = (1 - (1-2*h1)(1-2*h2)(1-2*h3)(1-2*h4)(1-2*h5)) / 2
 ```
+
+This is algebraically equivalent to the former fuzzy XOR recurrence:
+
+```text
+X0 = 0
+Xk = X(k-1)*(1-hk) + (1-X(k-1))*hk
+```
+
+**One runtime path. No mode flags, default examples, runtime enumeration,
+or hidden choices.** Supply five values to receive one score:
+
+```powershell
+.\\pentagonal_xor_cpp20.exe 0.80 0.70 0.90 0.60 0.95
+```
+
+```text
+Pentagonal XOR: 51.72800000%
+```
+
+The single authoritative formula comes from the include-free C11 header
+`shared/pentagonal_xor_std_free.h`, called directly from the C++20 CLI.
+It performs constant work and uses no allocation or loops over minterms.
+
+**Independent verification is kept in tests, not production execution.**
+CTest compares the formula against both the original recursive fold and an
+independent 32-state minterm reference: all 32 Boolean combinations and 4,096
+deterministic fractional fixtures, plus invalid input checks. This change
+removes runtime checks rather than claiming a measured speedup, and the
+equivalent mathematical result is retained for valid inputs.
 
 ## 🧩 Include-free compatibility API
 
@@ -47,6 +68,48 @@ PowerShell 7 build of the compatibility component:
 cmake -S .\\shared -B .\\shared\\build
 cmake --build .\\shared\\build --config Release
 ctest --test-dir .\\shared\\build -C Release --output-on-failure
+```
+
+---
+
+## ⚡ The fast path is the only path
+
+The prior `--fast` switch and the runtime 32-state validation mode have
+been removed. Every valid invocation now uses the closed form. The program
+requires exactly five finite inputs in `[0,1]`; extra arguments, missing
+inputs, and out-of-range or nonfinite values fail instead of being guessed.
+
+```powershell
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
+```
+
+## ♻️ DecaSigma: a separate reversible audit example
+
+The new [DecaSigma reference](docs/DECASIGMA.md) and
+[include-free C++20 header](shared/deca_sigma.hpp) demonstrate an exact
+algebraic identity with a ten-step named trace:
+
+```text
+R(x)=1/x       S(x)=1-x        T(x)=R(S(R(x)))=x/(x-1)
+R → S → R → T → R → S → R → T → R → R
+```
+
+For `x != 0,1`, the **exact mathematical** stages 4, 8 and 10 return to the
+original x. The numeric implementation records every stage and checks those
+return witnesses within tolerance. Inputs zero and one are blocked; floating
+rounding and extreme values may additionally prevent reliable reconstruction.
+
+This has practical educational utility for **reversible transformation
+audits**, retaining an untouched original CORE and a reviewable sequence of
+derived values. It does not compress, invert, authenticate, or secure
+Pentagonal XOR output; no cryptographic property is claimed.
+
+```powershell
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
 ```
 
 ---
