@@ -45,6 +45,16 @@ constexpr double xor_parity(const Features& features) noexcept {
     return state;
 }
 
+// O(5) closed form: odd parity for independent features.
+// Explicit opt-in fast mode avoids enumerating 32 minterms at runtime.
+constexpr double xor_parity_closed_form(const Features& features) noexcept {
+    double product = 1.0;
+    for (double h : features) {
+        product *= (1.0 - 2.0 * h);
+    }
+    return 0.5 * (1.0 - product);
+}
+
 // Independent validation: sum of the 16 odd-parity minterms out of 2^5 = 32.
 double xor_by_minterms(const Features& features) {
     double total = 0.0;
@@ -59,6 +69,23 @@ double xor_by_minterms(const Features& features) {
     return total;
 }
 
+// Compile-time exhaustive check: every Boolean input state agrees with parity.
+consteval bool all_boolean_states_agree() {
+    for (unsigned mask = 0; mask < (1u << feature_count); ++mask) {
+        Features bits{};
+        for (std::size_t i = 0; i < feature_count; ++i) {
+            bits[i] = ((mask >> i) & 1u) ? 1.0 : 0.0;
+        }
+        const double expected = (std::popcount(mask) & 1) ? 1.0 : 0.0;
+        if (xor_parity(bits) != expected ||
+            xor_parity_closed_form(bits) != expected) {
+            return false;
+        }
+    }
+    return true;
+}
+static_assert(all_boolean_states_agree());
+
 static_assert(xor_parity(Features{0, 0, 0, 0, 0}) == 0.0);
 static_assert(xor_parity(Features{1, 0, 0, 0, 0}) == 1.0);
 static_assert(xor_parity(Features{1, 1, 0, 0, 0}) == 0.0);
@@ -71,14 +98,17 @@ int main(int argc, char** argv) {
     try {
         // Illustrative defaults only; replace them with your frozen h_1..h_5.
         Features h{0.80, 0.70, 0.90, 0.60, 0.95};
-        if (argc != 1 && argc != 6) {
+        const bool fast = argc >= 2 && std::string(argv[1]) == "--fast";
+        const int first_feature_arg = fast ? 2 : 1;
+        const bool custom_features = argc == first_feature_arg + 5;
+        if (argc != first_feature_arg && !custom_features) {
             std::cerr << "Usage: " << argv[0]
-                      << " [h1 h2 h3 h4 h5]  (each within [0,1])\n";
+                      << " [--fast] [h1 h2 h3 h4 h5]  (each within [0,1])\n";
             return 2;
         }
-        if (argc == 6) {
+        if (custom_features) {
             for (std::size_t i = 0; i < feature_count; ++i) {
-                const std::string input = argv[i + 1];
+                const std::string input = argv[i + first_feature_arg];
                 std::size_t parsed = 0;
                 h[i] = std::stod(input, &parsed);
                 if (parsed != input.size()) {
@@ -88,6 +118,11 @@ int main(int argc, char** argv) {
         }
         validate(h);
         std::cout << std::fixed << std::setprecision(8);
+        if (fast) {
+            const double result = xor_parity_closed_form(h);
+            std::cout << "Fast XOR : " << result * 100.0 << "%\n";
+            return 0;
+        }
         double state = 0.0;
         for (std::size_t i = 0; i < h.size(); ++i) {
             state = xor_step(state, h[i]);
