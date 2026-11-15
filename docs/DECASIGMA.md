@@ -86,7 +86,7 @@ There is no dependency from DecaSigma into the Pentagonal XOR engine.
 
 Three read-only inspection routes are implemented in [Triℼ](TRI_PI.md):
 **forward** transition checks, **reverse** reconstruction, and **Z-fold**
-cross-stage comparisons. `shared/tri_pi.hpp` inspects a frozen DecaSigma
+cross-stage comparisons. `shared/tri_pi.hpp` inspects a unchanged DecaSigma
 trace and reports each result separately. No special names are assigned to
 these operations. These are checks on one record, not independent evidence
 that it was authentic.
@@ -95,7 +95,7 @@ that it was authentic.
 
 [COREAO](COREAO.md) uses the original DecaSigma source operand to
 regenerate a forward trace, fill a reverse reconstruction, then
-compare both with the frozen trace by Z-fold traversal. The unified
+compare both with the unchanged trace by Z-fold traversal. The unified
 scalar is the maximum normalized discrepancy, with a separate
 definedness guard. The ten-operation sequence is defined once in
 `shared/deca_sigma.hpp`, rather than copied between route inspectors.
