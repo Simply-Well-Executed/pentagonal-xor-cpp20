@@ -69,4 +69,4 @@ if(BUILD_TESTING)
 endif()
 
 install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
-install(FILES README.md LICENSE docs/DECASIGMA.md DESTINATION share/doc/pentagonal-xor)
+install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md DESTINATION share/doc/pentagonal-xor)
