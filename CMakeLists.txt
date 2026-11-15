@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 project(PentagonalXOR VERSION 0.1.0 LANGUAGES CXX)
 
+# Produce usable debug symbols even in optimized Release builds.
+# MSVC PDBs are distributable outputs of this project, not the compiler itself.
+if(MSVC)
+    add_compile_options(/Zi)
+    add_link_options(/DEBUG:FULL)
+else()
+    add_compile_options(-g)
+endif()
+
 add_executable(pentagonal_xor pentagonal_xor_cpp20.cpp)
 target_compile_features(pentagonal_xor PRIVATE cxx_std_20)
 set_target_properties(pentagonal_xor PROPERTIES
@@ -77,4 +86,7 @@ if(BUILD_TESTING)
 endif()
 
 install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
+if(MSVC)
+    install(FILES "$<TARGET_PDB_FILE:pentagonal_xor>" DESTINATION symbols OPTIONAL)
+endif()
 install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md DESTINATION share/doc/pentagonal-xor)
