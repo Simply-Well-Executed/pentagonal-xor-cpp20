@@ -100,15 +100,15 @@ constexpr Result inspect(const deca_sigma::Trace& frozen) noexcept {
 
     // Retain cross-fold witnesses. A matching Z-pattern alone is not enough;
     // the forward and reverse algebra above also has to agree.
-    constexpr unsigned pairs[7][2] = {
-        {0u,4u}, {4u,8u}, {8u,10u},
-        {1u,5u}, {5u,9u}, {2u,6u}, {3u,7u}
-    };
-    for (const auto& pair : pairs) {
-        error = largest(error,
-                        normalized_residual(frozen.stages[pair[0]],
-                                            frozen.stages[pair[1]]));
-    }
+    // Explicit fixed pairs keep C++20 constant evaluation portable on MSVC.
+    // No loops or pointer indexing into local constexpr pair arrays.
+    error = largest(error, normalized_residual(frozen.stages[0], frozen.stages[4]));
+    error = largest(error, normalized_residual(frozen.stages[4], frozen.stages[8]));
+    error = largest(error, normalized_residual(frozen.stages[8], frozen.stages[10]));
+    error = largest(error, normalized_residual(frozen.stages[1], frozen.stages[5]));
+    error = largest(error, normalized_residual(frozen.stages[5], frozen.stages[9]));
+    error = largest(error, normalized_residual(frozen.stages[2], frozen.stages[6]));
+    error = largest(error, normalized_residual(frozen.stages[3], frozen.stages[7]));
 
     result.scalar = error;
     result.admissible = true;
