@@ -10,7 +10,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$prefix = [IO.Path]::GetFullPath($Stage).Replace('\\', '/')
+$prefix = [IO.Path]::GetFullPath($Stage).Replace('\', '/')
 $required = @(
     'include/swe/deca_sigma.hpp',
     'include/swe/tri_pi.hpp',
