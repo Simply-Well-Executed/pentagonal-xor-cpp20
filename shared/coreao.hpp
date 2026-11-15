@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
 // COREAO: CORE -> TriPi I (forward) -> TriPi II (reverse) -> TriPi III (Z-fold).
-// A single, read-only scalar audit of a source DecaSigma witness.
+// A single, read-only scalar audit of an unchanged DecaSigma witness.
 // Include-free C++20. No change to the five-input XOR production hot path.
 
 #ifndef SWE_COREAO_HPP
@@ -87,7 +87,7 @@ constexpr Result inspect(const deca_sigma::Trace& source) noexcept {
     }
 
     // YANG output: Z-fold all 11 stages, then weave the two independent
-    // *calculation paths* against the one source source record.
+    // *calculation paths* against the one unmodified source record.
     for (unsigned index : tri_pi::zfold_order) {
         if (index >= 11u) return result;
         error = largest(error,
