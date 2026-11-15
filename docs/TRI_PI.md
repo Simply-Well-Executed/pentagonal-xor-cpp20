@@ -5,13 +5,13 @@ historical mathematics, built-in calculator keys, cryptography, or identity.
 
 ## Contract
 
-The previously established canonical TriDi names are unchanged:
+The three routes are identified by their operations, without assigned special names:
 
-| Route | Canonical name | Stage visit order | Inspection |
-|---|---|---|---|
-| Triℼ I | `2ndTRACE` | 0,1,2,3,4,5,6,7,8,9,10 | Forward: recompute each named transition |
-| Triℼ II | `Y=` | 10,9,8,7,6,5,4,3,2,1,0 | Reverse: recover the preceding state using self-inverse R, S, or T |
-| Triℼ III | `PlySmlt2` | 0,1,3,2,4,5,7,6,8,9,10 | Z-fold: compare equal stages across two four-step folds and the final reciprocal hinge |
+| Route | Stage visit order | Inspection |
+|---|---|---|
+| Forward | 0,1,2,3,4,5,6,7,8,9,10 | Recompute each transition |
+| Reverse | 10,9,8,7,6,5,4,3,2,1,0 | Recover the preceding state using self-inverse R, S, or T |
+| Z-fold | 0,1,3,2,4,5,7,6,8,9,10 | Compare equal stages across folds and the final reciprocal hinge |
 
 The visit order is an **audit/readout order**. It does not reorder source
 operations, change algebraic precedence, alter the numerical trace, or make
@@ -33,12 +33,12 @@ The read-only public implementation is `shared/tri_pi.hpp`, which uses
 the existing include-free `shared/deca_sigma.hpp`. It returns a report
 with three separate Boolean findings and a conjunction `passed()`.
 
-- **2ndTRACE** checks each adjacent transition with its prescribed operator
+- **Forward** checks each adjacent transition with its prescribed operator
   and the source's domain guards.
-- **Y=** walks in reverse and checks that the inverse operation returns the
+- **Reverse** walks backward and checks that the inverse operation returns the
   previously recorded stage. R, S and T are each their own inverse on the
   specified domains.
-- **PlySmlt2** visits each stage exactly once in Z-fold order, then
+- **Z-fold** visits each stage exactly once in Z-fold order, then
   compares the repeated cross-fold witnesses including return-to-CORE.
 
 A report passes **only if all three checks pass**. The audit rejects
