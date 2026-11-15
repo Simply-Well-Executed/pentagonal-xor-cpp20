@@ -15,12 +15,12 @@ int main() {
     constexpr double examples[] = {-9.0, 2.0, -2.0, 0.5, 3.5};
     for (double x : examples) {
         const Trace original = run(x);
-        const Trace frozen = original;  // verify no write to the source record
+        const Trace source = original;  // verify no write to the source record
         const auto report = inspect(original);
         if (!report.forward || !report.reverse || !report.zfold ||
             !report.passed()) return 1;
         for (unsigned i = 0; i < 11u; ++i)
-            if (original.stages[i] != frozen.stages[i]) return 2;
+            if (original.stages[i] != source.stages[i]) return 2;
     }
 
     // A single altered intermediate state fails all three checks.
