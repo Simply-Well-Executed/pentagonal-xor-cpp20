@@ -39,6 +39,10 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: '🔎 Release pre-flight: reject paused/debug code'
+        shell: pwsh
+        run: ./ci/Test-ReleaseSafety.ps1
+
       - name: '📁 Prepare evidence folder before compilation'
         shell: pwsh
         run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
@@ -73,6 +77,23 @@ jobs:
 
       - name: '📦 Stage install'
         run: cmake --install build --config Release --prefix stage
+
+      - name: '🔎 Verify installed public audit APIs'
+        shell: pwsh
+        run: |
+          $required = @(
+            'stage/include/swe/deca_sigma.hpp',
+            'stage/include/swe/tri_pi.hpp',
+            'stage/include/swe/coreao.hpp',
+            'stage/include/swe/pentagonal_xor_std_free.h',
+            'stage/lib/cmake/SWEAuditHeaders/SWEAuditHeadersTargets.cmake'
+          )
+          foreach ($file in $required) {
+            if (!(Test-Path -LiteralPath $file -PathType Leaf)) {
+              throw "Missing installed API: $file"
+            }
+          }
+          Write-Host 'Installed audit headers and exported interface target verified.'
 
       - name: '📦 Package tar.gz'
         if: runner.os != 'Windows'
