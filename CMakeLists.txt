@@ -32,7 +32,27 @@ if(BUILD_TESTING)
 
     add_test(NAME invalid_feature COMMAND pentagonal_xor 0.8 0.7 1.2 0.6 0.95)
     set_tests_properties(invalid_feature PROPERTIES WILL_FAIL TRUE)
+
+    add_test(NAME parity_fast_example
+        COMMAND pentagonal_xor --fast 0.80 0.70 0.90 0.60 0.95)
+    set_tests_properties(parity_fast_example PROPERTIES
+        PASS_REGULAR_EXPRESSION "Fast XOR : 51\\.72800000%")
+
+    add_test(NAME parity_fast_invalid
+        COMMAND pentagonal_xor --fast 0.8 0.7 1.2 0.6 0.95)
+    set_tests_properties(parity_fast_invalid PROPERTIES WILL_FAIL TRUE)
+
+    add_executable(deca_sigma_test tests/deca_sigma_test.cpp)
+    target_compile_features(deca_sigma_test PRIVATE cxx_std_20)
+    set_target_properties(deca_sigma_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    if(MSVC)
+        target_compile_options(deca_sigma_test PRIVATE /W4 /permissive-)
+    else()
+        target_compile_options(deca_sigma_test PRIVATE -Wall -Wextra -Wpedantic)
+    endif()
+    add_test(NAME deca_sigma_roundtrip COMMAND deca_sigma_test)
 endif()
 
 install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
-install(FILES README.md LICENSE DESTINATION share/doc/pentagonal-xor)
+install(FILES README.md LICENSE docs/DECASIGMA.md DESTINATION share/doc/pentagonal-xor)
