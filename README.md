@@ -117,9 +117,9 @@ ctest --test-dir build -C Release --output-on-failure
 ## 🔎 Triℼ · Three inspection routes
 
 [Triℼ inspection](docs/TRI_PI.md) adds three **read-only** C++20 checks
-to the DecaSigma trace, preserving the canonical labels **2ndTRACE**,
-**Y=**, and **PlySmlt2**. They respectively verify forward transitions,
-reverse reconstruction, and Z-fold cross-stage witnesses. All three must
+to the DecaSigma trace, checking **forward transitions**,
+**reverse reconstruction**, and **Z-fold cross-stage witnesses**.
+No special route names are assigned. All three must
 agree for the derived trace audit to pass.
 
 The header [`shared/tri_pi.hpp`](shared/tri_pi.hpp) is include-free and
