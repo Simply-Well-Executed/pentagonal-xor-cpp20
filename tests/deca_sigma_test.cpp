@@ -5,12 +5,16 @@
 #include "../shared/deca_sigma.hpp"
 #include <cmath>
 #include <iostream>
+#include <limits>
 
 int main() {
     using swe::deca_sigma::run;
     using swe::deca_sigma::witnesses_return;
 
     if (run(0.0).admissible || run(1.0).admissible) return 1;
+    if (run(std::numeric_limits<double>::infinity()).admissible ||
+        run(-std::numeric_limits<double>::infinity()).admissible ||
+        run(std::numeric_limits<double>::quiet_NaN()).admissible) return 4;
     constexpr double examples[] = {-9.0, 2.0, -2.0, 0.5, 3.5};
     for (double x : examples) {
         const auto trace = run(x);
