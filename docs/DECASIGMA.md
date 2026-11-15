@@ -82,22 +82,14 @@ independent source of truth.
 
 There is no dependency from DecaSigma into the Pentagonal XOR engine.
 
-## TriDi inspection routes (project-specific terminology)
+## Triℼ inspection routes
 
-- **2ndTRACE**: inspect stages in forward order.
-- **Y=**: review the inverse path / reconstruction from the return witness.
-- **PlySmlt2**: cross-check the stored stages with alternating Z-fold traversal.
-
-These are MAT.RECYCLE experimental route names, not portable names for
-built-in operations on physical calculators.
-
-## Triℼ implementation
-
-The canonical TriDi names now also identify three implemented inspection
-routes in [Triℼ](TRI_PI.md): **2ndTRACE** (forward), **Y=**
-(reverse), and **PlySmlt2** (Z-fold). `shared/tri_pi.hpp` takes a
-frozen DecaSigma trace and reports each result separately. These are
-three checks on one record, not independent evidence that it was authentic.
+Three read-only inspection routes are implemented in [Triℼ](TRI_PI.md):
+**forward** transition checks, **reverse** reconstruction, and **Z-fold**
+cross-stage comparisons. `shared/tri_pi.hpp` inspects a frozen DecaSigma
+trace and reports each result separately. No special names are assigned to
+these operations. These are checks on one record, not independent evidence
+that it was authentic.
 
 ## Validation
 
