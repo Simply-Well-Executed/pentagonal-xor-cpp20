@@ -149,6 +149,28 @@ production XOR calculation still has a single fast path with no extra
 flags or runtime inspection cost.
 
 ---
+## 🔐 Reproducible build and failure evidence
+
+The [build-evidence policy and legal source references](docs/BUILD_EVIDENCE.md)
+describe per-platform **SHA-256 manifests, CMake and compiler provenance,
+optimized Release symbols (including Windows PDBs), partial build outputs,
+CTest results, source snapshots, and logs**. GitHub Actions uploads these
+evidence artifacts even when compilation or testing fails.
+
+Windows release packages contain the generated executable PDB when available.
+Unix builds retain compiler debug information in available build outputs.
+Each `SHA256SUMS` hashes the files inside the CI evidence bundle; the
+GitHub-generated artifact wrapper is created afterward and is not covered
+by that internal manifest. The release pipeline separately hashes its
+published archive files.
+
+The original November 15, 2026 Windows MSVC C2131 failure is preserved
+as a separate run in PR #3. **Earlier jobs cannot retroactively gain
+PDBs or compiler hashes they never collected.** New manifests record
+toolchain paths and hashes when found, but do not redistribute third-party
+compiler executables under this project's 0BSD license.
+
+---
 ## 🧰 Download matrix
 
 Every successful build is packaged with the binary, documentation and 0BSD license. Release assets are named by OS and processor architecture.
