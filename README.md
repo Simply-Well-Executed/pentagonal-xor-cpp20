@@ -171,6 +171,24 @@ toolchain paths and hashes when found, but do not redistribute third-party
 compiler executables under this project's 0BSD license.
 
 ---
+## 🏁 Release pre-flight · no paused code
+
+The [release audit and consumer contract](docs/RELEASE_PREFLIGHT.md)
+documents the full source/workflow inspection. Both CI workflows now
+run a PowerShell 7 pre-flight check for debugger traps, interactive
+pauses, debug-only branches, disabled source blocks, and obsolete
+terminology. Compile-time invariants and PDB symbols are preserved
+because they do **not** stop execution.
+
+**DecaSigma, Triℼ, and COREAO are now shipped as public header-only APIs**
+in `include/swe/`, alongside the C11 parity header. The exported
+`swe::swe_audit_headers` CMake target lets downstream C++20 consumers
+compile the APIs. Each release platform must compile and execute a
+fresh [installed-package consumer](tests/consumer/main.cpp) before
+packaging. The regular XOR CLI still has one fast runtime path and no
+additional mode flags.
+
+---
 ## 🧰 Download matrix
 
 Every successful build is packaged with the binary, documentation and 0BSD license. Release assets are named by OS and processor architecture.
