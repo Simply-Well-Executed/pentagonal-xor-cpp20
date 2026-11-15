@@ -20,20 +20,41 @@
 
 ## ∞ The mathematics
 
-Five continuous feature inputs `h₁...h₅ ∈ [0, 1]` fold into a recursive fuzzy-XOR parity result:
-
-**`X₀ = 0`**
-
-**`Xₖ = Xₖ₋₁ × (1 − hₖ) + (1 − Xₖ₋₁) × hₖ`**
-
-An independent implementation enumerates every one of the **32 Boolean configurations** and sums the **16 odd-parity AND minterms**. The executable checks that both routes agree.
+Five independent feature probabilities `h₁...h₅ ∈ [0,1]` produce a single
+odd-parity probability by a direct closed-form calculation:
 
 ```text
-INPUT   h1=0.80  h2=0.70  h3=0.90  h4=0.60  h5=0.95
-OUTPUT  Recursive XOR : 51.72800000%
-        32-state check: 51.72800000%
-        Absolute error: 0.00000000
+P5 = (1 - (1-2*h1)(1-2*h2)(1-2*h3)(1-2*h4)(1-2*h5)) / 2
 ```
+
+This is algebraically equivalent to the former fuzzy XOR recurrence:
+
+```text
+X0 = 0
+Xk = X(k-1)*(1-hk) + (1-X(k-1))*hk
+```
+
+**One runtime path. No mode flags, default examples, runtime enumeration,
+or hidden choices.** Supply five values to receive one score:
+
+```powershell
+.\\pentagonal_xor_cpp20.exe 0.80 0.70 0.90 0.60 0.95
+```
+
+```text
+Pentagonal XOR: 51.72800000%
+```
+
+The single authoritative formula comes from the include-free C11 header
+`shared/pentagonal_xor_std_free.h`, called directly from the C++20 CLI.
+It performs constant work and uses no allocation or loops over minterms.
+
+**Independent verification is kept in tests, not production execution.**
+CTest compares the formula against both the original recursive fold and an
+independent 32-state minterm reference: all 32 Boolean combinations and 4,096
+deterministic fractional fixtures, plus invalid input checks. This change
+removes runtime checks rather than claiming a measured speedup, and the
+equivalent mathematical result is retained for valid inputs.
 
 ## 🧩 Include-free compatibility API
 
@@ -51,31 +72,18 @@ ctest --test-dir .\\shared\\build -C Release --output-on-failure
 
 ---
 
-## ⚡ Optional fast parity path
+## ⚡ The fast path is the only path
 
-The default CLI **retains the original recursive output and independent 32-state
-minterm verification**. A separate `--fast` mode computes the equivalent
-closed-form five-input parity probability:
-
-```text
-P5 = (1 - (1-2*h1)(1-2*h2)(1-2*h3)(1-2*h4)(1-2*h5)) / 2
-```
-
-The identity follows from `1-2*X_next = (1-2*X_prev)(1-2*h)` and `X0=0`.
-Both the existing recurrence and the new closed form are O(5); the fast mode
-**avoids the 32-state runtime verifier**, trading that diagnostic for fewer
-operations. A speedup has **not** been benchmarked.
+The prior `--fast` switch and the runtime 32-state validation mode have
+been removed. Every valid invocation now uses the closed form. The program
+requires exactly five finite inputs in `[0,1]`; extra arguments, missing
+inputs, and out-of-range or nonfinite values fail instead of being guessed.
 
 ```powershell
-.\\build\\Release\\pentagonal_xor.exe --fast 0.80 0.70 0.90 0.60 0.95
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build --config Release
+ctest --test-dir build -C Release --output-on-failure
 ```
-
-On non-Windows single-configuration builds, the executable is commonly
-`./build/pentagonal_xor`. The normal five-argument invocation and its
-existing output remain unchanged. Feature validation is still enforced.
-
-The source also performs compile-time checks across **all 32 Boolean input
-combinations**, and CTest includes fast-path positive and negative fixtures.
 
 ## ♻️ DecaSigma: a separate reversible audit example
 
