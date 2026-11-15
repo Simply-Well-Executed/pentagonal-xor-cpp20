@@ -11,10 +11,6 @@
 
 namespace swe::tri_pi {
 
-inline constexpr const char* canonical_names[3] = {
-    "2ndTRACE", "Y=", "PlySmlt2"
-};
-
 // 11 states, 10 named operations. Traversal is separate from evaluation.
 // Clockwise / forward, anticlockwise / reverse, Z-unfold / cross-compare.
 inline constexpr unsigned forward_order[11] =
@@ -46,7 +42,7 @@ constexpr bool valid_input(const deca_sigma::Trace& trace,
     return trace.stages[0] != 0.0 && trace.stages[0] != 1.0;
 }
 
-// First route: 2ndTRACE. Verify each directed operation from CORE to stage 10.
+// First route: forward. Verify each directed operation from CORE to stage 10.
 constexpr bool inspect_forward(const deca_sigma::Trace& trace,
                                double tolerance = 1e-12) noexcept {
     if (!valid_input(trace, tolerance)) return false;
@@ -69,7 +65,7 @@ constexpr bool inspect_forward(const deca_sigma::Trace& trace,
     return true;
 }
 
-// Second route: Y=. Recover each earlier state with inverse operations,
+// Second route: reverse. Recover each earlier state with inverse operations,
 // inspecting in the opposite direction. R, S and T are self-inverse.
 constexpr bool inspect_reverse(const deca_sigma::Trace& trace,
                                double tolerance = 1e-12) noexcept {
@@ -96,7 +92,7 @@ constexpr bool inspect_reverse(const deca_sigma::Trace& trace,
     return true;
 }
 
-// Third route: PlySmlt2. Inspect corresponding stages of both four-corner
+// Third route: Z-fold. Inspect corresponding stages of both four-corner
 // folds in a Z-order; verify repeated states and the final BiDi hinge.
 // Cross-checks are necessary witness comparisons, not an independent proof.
 constexpr bool inspect_zfold(const deca_sigma::Trace& trace,
