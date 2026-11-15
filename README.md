@@ -114,6 +114,22 @@ ctest --test-dir build -C Release --output-on-failure
 
 ---
 
+## 🔎 Triℼ · Three inspection routes
+
+[Triℼ inspection](docs/TRI_PI.md) adds three **read-only** C++20 checks
+to the DecaSigma trace, preserving the canonical labels **2ndTRACE**,
+**Y=**, and **PlySmlt2**. They respectively verify forward transitions,
+reverse reconstruction, and Z-fold cross-stage witnesses. All three must
+agree for the derived trace audit to pass.
+
+The header [`shared/tri_pi.hpp`](shared/tri_pi.hpp) is include-free and
+has no dependency on the Pentagonal XOR hot path. Tests include altered
+stages and correlated tampering. The audit checks algebraic consistency,
+**not independent provenance or cryptographic security**. No CLI modes
+or optional production branches have been added.
+
+---
+
 ## 🧰 Download matrix
 
 Every successful build is packaged with the binary, documentation and 0BSD license. Release assets are named by OS and processor architecture.
