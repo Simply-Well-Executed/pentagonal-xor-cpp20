@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 project(SWETrustBoundaryGuard LANGUAGES C CXX)
 
+# Produce usable debug symbols even in optimized Release builds.
+# MSVC PDBs are distributable outputs of this project, not the compiler itself.
+if(MSVC)
+    add_compile_options(/Zi)
+    add_link_options(/DEBUG:FULL)
+else()
+    add_compile_options(-g)
+endif()
+
 add_executable(swe_guard swe_guard.cpp)
 target_compile_features(swe_guard PRIVATE cxx_std_20)
 set_target_properties(swe_guard PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
