@@ -130,6 +130,25 @@ or optional production branches have been added.
 
 ---
 
+## 🌀 COREAO · one unified scalar
+
+[COREAO](docs/COREAO.md) composes the three Triℼ inspection routes as
+**forward → reverse → Z-fold**, without assigning special names to the
+routes. The read-only [include-free implementation](shared/coreao.hpp)
+derives the forward trace from CORE, fills the reverse path using the
+forward result, and compares both against the frozen record in Z-fold
+order. The final scalar is the **maximum normalized disagreement**;
+smaller means better consistency. Source-domain validity is retained as
+a separate guard.
+
+The DecaSigma operation sequence is defined **once** in
+`shared/deca_sigma.hpp` and reused by both Triℼ and COREAO.
+This is a bounded, constant-space audit, not encryption, authentication,
+or a way to recover five Pentagonal XOR inputs from one score. The
+production XOR calculation still has a single fast path with no extra
+flags or runtime inspection cost.
+
+---
 ## 🧰 Download matrix
 
 Every successful build is packaged with the binary, documentation and 0BSD license. Release assets are named by OS and processor architecture.
