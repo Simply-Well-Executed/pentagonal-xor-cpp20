@@ -39,22 +39,51 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: '🔎 Release pre-flight: reject paused/debug code'
+        shell: pwsh
+        run: ./ci/Test-ReleaseSafety.ps1
+
+      - name: '📁 Prepare evidence folder before compilation'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
+
       - name: '⚙️ Configure on Windows'
         if: runner.os == 'Windows'
-        run: cmake -S . -B build -A ${{ matrix.vs_arch }} -DBUILD_TESTING=ON
+        shell: pwsh
+        run: |
+          & cmake -S . -B build -A ${{ matrix.vs_arch }} -DBUILD_TESTING=ON *>&1 | Tee-Object -FilePath evidence/configure.log
+          exit $LASTEXITCODE
 
       - name: '⚙️ Configure on Unix'
         if: runner.os != 'Windows'
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON
+        shell: pwsh
+        run: |
+          & cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON *>&1 | Tee-Object -FilePath evidence/configure.log
+          exit $LASTEXITCODE
 
       - name: '🔨 Compile C++20'
-        run: cmake --build build --config Release --parallel
+        id: compile
+        shell: pwsh
+        run: |
+          & cmake --build build --config Release --parallel *>&1 | Tee-Object -FilePath evidence/build.log
+          exit $LASTEXITCODE
 
       - name: '🧪 Run CTest parity suite'
-        run: ctest --test-dir build -C Release --output-on-failure
+        id: test
+        shell: pwsh
+        run: |
+          & ctest --test-dir build -C Release --output-on-failure --output-junit evidence/ctest-results.xml *>&1 | Tee-Object -FilePath evidence/test.log
+          exit $LASTEXITCODE
 
       - name: '📦 Stage install'
         run: cmake --install build --config Release --prefix stage
+
+      - name: '🔎 Compile and run downstream consumer against installed audit headers'
+        shell: pwsh
+        env:
+          TARGET_ARCH: ${{ matrix.vs_arch }}
+        run: |
+          ./ci/Test-InstalledAudit.ps1 -Stage stage -BuildDir build-consumer -VsArch "$env:TARGET_ARCH"
 
       - name: '📦 Package tar.gz'
         if: runner.os != 'Windows'
@@ -81,6 +110,25 @@ jobs:
           path: dist/*
           if-no-files-found: error
           retention-days: 14
+
+      - name: '🧾 Preserve compiler identity, PDBs, partial outputs, logs and SHA-256'
+        if: always()
+        shell: pwsh
+        env:
+          BUILD_OUTCOME: ${{ steps.compile.outcome }}
+          TEST_OUTCOME: ${{ steps.test.outcome }}
+          TARGET_ARCH: ${{ matrix.vs_arch }}
+        run: |
+          ./ci/Write-CiEvidence.ps1 -BuildDir build -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:TEST_OUTCOME" -TargetArch "$env:TARGET_ARCH"
+
+      - name: '⬆️ Upload SHA-256 evidence even after a failed compile'
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: evidence-${{ matrix.flavor }}-${{ matrix.arch }}
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 90
 
   release:
     name: '🏷️ Publish checksummed GitHub release'

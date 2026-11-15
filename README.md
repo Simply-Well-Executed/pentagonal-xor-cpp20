@@ -114,6 +114,81 @@ ctest --test-dir build -C Release --output-on-failure
 
 ---
 
+## 🔎 Triℼ · Three inspection routes
+
+[Triℼ inspection](docs/TRI_PI.md) adds three **read-only** C++20 checks
+to the DecaSigma trace, checking **forward transitions**,
+**reverse reconstruction**, and **Z-fold cross-stage witnesses**.
+No special route names are assigned. All three must
+agree for the derived trace audit to pass.
+
+The header [`shared/tri_pi.hpp`](shared/tri_pi.hpp) is include-free and
+has no dependency on the Pentagonal XOR hot path. Tests include altered
+stages and correlated tampering. The audit checks algebraic consistency,
+**not independent provenance or cryptographic security**. No CLI modes
+or optional production branches have been added.
+
+---
+
+## 🌀 COREAO · one unified scalar
+
+[COREAO](docs/COREAO.md) composes the three Triℼ inspection routes as
+**forward → reverse → Z-fold**, without assigning special names to the
+routes. The read-only [include-free implementation](shared/coreao.hpp)
+derives the forward trace from CORE, fills the reverse path using the
+forward result, and compares both against the unchanged record in Z-fold
+order. The final scalar is the **maximum normalized disagreement**;
+smaller means better consistency. Source-domain validity is retained as
+a separate guard.
+
+The DecaSigma operation sequence is defined **once** in
+`shared/deca_sigma.hpp` and reused by both Triℼ and COREAO.
+This is a bounded, constant-space audit, not encryption, authentication,
+or a way to recover five Pentagonal XOR inputs from one score. The
+production XOR calculation still has a single fast path with no extra
+flags or runtime inspection cost.
+
+---
+## 🔐 Reproducible build and failure evidence
+
+The [build-evidence policy and legal source references](docs/BUILD_EVIDENCE.md)
+describe per-platform **SHA-256 manifests, CMake and compiler provenance,
+optimized Release symbols (including Windows PDBs), partial build outputs,
+CTest results, source snapshots, and logs**. GitHub Actions uploads these
+evidence artifacts even when compilation or testing fails.
+
+Windows release packages contain the generated executable PDB when available.
+Unix builds retain compiler debug information in available build outputs.
+Each `SHA256SUMS` hashes the files inside the CI evidence bundle; the
+GitHub-generated artifact wrapper is created afterward and is not covered
+by that internal manifest. The release pipeline separately hashes its
+published archive files.
+
+The original November 15, 2026 Windows MSVC C2131 failure is preserved
+as a separate run in PR #3. **Earlier jobs cannot retroactively gain
+PDBs or compiler hashes they never collected.** New manifests record
+toolchain paths and hashes when found, but do not redistribute third-party
+compiler executables under this project's 0BSD license.
+
+---
+## 🏁 Release pre-flight · no paused code
+
+The [release audit and consumer contract](docs/RELEASE_PREFLIGHT.md)
+documents the full source/workflow inspection. Both CI workflows now
+run a PowerShell 7 pre-flight check for debugger traps, interactive
+pauses, debug-only branches, disabled source blocks, and obsolete
+terminology. Compile-time invariants and PDB symbols are preserved
+because they do **not** stop execution.
+
+**DecaSigma, Triℼ, and COREAO are now shipped as public header-only APIs**
+in `include/swe/`, alongside the C11 parity header. The exported
+`swe::swe_audit_headers` CMake target lets downstream C++20 consumers
+compile the APIs. Each release platform must compile and execute a
+fresh [installed-package consumer](tests/consumer/main.cpp) before
+packaging. The regular XOR CLI still has one fast runtime path and no
+additional mode flags.
+
+---
 ## 🧰 Download matrix
 
 Every successful build is packaged with the binary, documentation and 0BSD license. Release assets are named by OS and processor architecture.

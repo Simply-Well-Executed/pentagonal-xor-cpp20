@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 project(PentagonalXOR VERSION 0.1.0 LANGUAGES CXX)
 
+# Produce usable debug symbols even in optimized Release builds.
+# MSVC PDBs are distributable outputs of this project, not the compiler itself.
+if(MSVC)
+    add_compile_options(/Zi)
+    add_link_options(/DEBUG:FULL)
+else()
+    add_compile_options(-g)
+endif()
+
 add_executable(pentagonal_xor pentagonal_xor_cpp20.cpp)
 target_compile_features(pentagonal_xor PRIVATE cxx_std_20)
 set_target_properties(pentagonal_xor PROPERTIES
@@ -51,14 +60,52 @@ if(BUILD_TESTING)
         CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
     add_test(NAME deca_sigma_roundtrip COMMAND deca_sigma_test)
 
+    add_executable(tri_pi_test tests/tri_pi_test.cpp)
+    target_compile_features(tri_pi_test PRIVATE cxx_std_20)
+    set_target_properties(tri_pi_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME tri_pi_three_routes COMMAND tri_pi_test)
+
+    add_executable(coreao_test tests/coreao_test.cpp)
+    target_compile_features(coreao_test PRIVATE cxx_std_20)
+    set_target_properties(coreao_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME coreao_unified_scalar COMMAND coreao_test)
+
     if(MSVC)
         target_compile_options(parity_reference_test PRIVATE /W4 /permissive-)
         target_compile_options(deca_sigma_test PRIVATE /W4 /permissive-)
+        target_compile_options(tri_pi_test PRIVATE /W4 /permissive-)
+        target_compile_options(coreao_test PRIVATE /W4 /permissive-)
     else()
         target_compile_options(parity_reference_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(deca_sigma_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(tri_pi_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(coreao_test PRIVATE -Wall -Wextra -Wpedantic)
     endif()
 endif()
 
+# Ship the usable, header-only audit APIs rather than keeping them only
+# as test dependencies. No run-time mode switches or alternate XOR paths.
+add_library(swe_audit_headers INTERFACE)
+target_compile_features(swe_audit_headers INTERFACE cxx_std_20)
+target_include_directories(swe_audit_headers INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+    $<INSTALL_INTERFACE:include>)
+install(TARGETS swe_audit_headers EXPORT swe_audit_headers_targets)
+install(EXPORT swe_audit_headers_targets
+    FILE SWEAuditHeadersTargets.cmake
+    NAMESPACE swe::
+    DESTINATION lib/cmake/SWEAuditHeaders)
+install(FILES
+    shared/deca_sigma.hpp
+    shared/tri_pi.hpp
+    shared/coreao.hpp
+    shared/pentagonal_xor_std_free.h
+    DESTINATION include/swe)
+
 install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
-install(FILES README.md LICENSE docs/DECASIGMA.md DESTINATION share/doc/pentagonal-xor)
+if(MSVC)
+    install(FILES "$<TARGET_PDB_FILE:pentagonal_xor>" DESTINATION symbols OPTIONAL)
+endif()
+install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md DESTINATION share/doc/pentagonal-xor)

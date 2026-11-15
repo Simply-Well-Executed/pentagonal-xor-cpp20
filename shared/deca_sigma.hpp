@@ -13,6 +13,9 @@
 
 namespace swe::deca_sigma {
 
+// One source of truth for all ten DecaSigma named operations.
+inline constexpr char operations[] = "RSRTRSRTRR";
+
 struct Trace {
     double stages[11]{};
     bool admissible = false;
@@ -30,16 +33,15 @@ constexpr Trace run(double x) noexcept {
     trace.stages[0] = x;
     if (!finite(x) || x == 0.0 || x == 1.0) return trace;
 
-    constexpr char route[] = "RSRTRSRTRR";
     for (unsigned i = 0; i < 10u; ++i) {
         const double prior = trace.stages[i];
         if (!finite(prior)) return trace;
 
         double next = 0.0;
-        if (route[i] == 'R') {
+        if (operations[i] == 'R') {
             if (prior == 0.0) return trace;
             next = 1.0 / prior;
-        } else if (route[i] == 'S') {
+        } else if (operations[i] == 'S') {
             next = 1.0 - prior;
         } else {
             // T retains its original nested domain guard, not merely x/(x-1).

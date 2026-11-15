@@ -99,3 +99,16 @@ ctest --test-dir shared/build -C Release --output-on-failure
 CI builds the C++20 guard and compiles the std-free header as strict C11 across Linux x64/ARM64, Windows x64/x86, and macOS Intel/Apple Silicon.
 
 License: [0BSD](../LICENSE). Copyright (c) Paul Allen Cheek.
+
+
+## Public audit headers in the release package
+
+DecaSigma, Triℼ and COREAO are shipped as standard C++20 header-only
+APIs, with the public C11 parity header. Build a release package from the
+repository root and use the installed `swe::swe_audit_headers` CMake
+interface target with `#include <swe/coreao.hpp>`. The root CI matrix
+checks this through an independent installed-package consumer.
+
+The [release pre-flight checklist](../docs/RELEASE_PREFLIGHT.md) documents
+the no-debugger-stop policy. Compile-time checks and generated PDBs
+are not execution pauses, and the one-path XOR CLI stays unchanged.
