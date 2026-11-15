@@ -51,12 +51,20 @@ if(BUILD_TESTING)
         CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
     add_test(NAME deca_sigma_roundtrip COMMAND deca_sigma_test)
 
+    add_executable(tri_pi_test tests/tri_pi_test.cpp)
+    target_compile_features(tri_pi_test PRIVATE cxx_std_20)
+    set_target_properties(tri_pi_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME tri_pi_three_routes COMMAND tri_pi_test)
+
     if(MSVC)
         target_compile_options(parity_reference_test PRIVATE /W4 /permissive-)
         target_compile_options(deca_sigma_test PRIVATE /W4 /permissive-)
+        target_compile_options(tri_pi_test PRIVATE /W4 /permissive-)
     else()
         target_compile_options(parity_reference_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(deca_sigma_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(tri_pi_test PRIVATE -Wall -Wextra -Wpedantic)
     endif()
 endif()
 
