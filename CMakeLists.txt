@@ -91,7 +91,7 @@ add_library(swe_audit_headers INTERFACE)
 target_compile_features(swe_audit_headers INTERFACE cxx_std_20)
 target_include_directories(swe_audit_headers INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
-    $<INSTALL_INTERFACE:include/swe>)
+    $<INSTALL_INTERFACE:include>)
 install(TARGETS swe_audit_headers EXPORT swe_audit_headers_targets)
 install(EXPORT swe_audit_headers_targets
     FILE SWEAuditHeadersTargets.cmake
