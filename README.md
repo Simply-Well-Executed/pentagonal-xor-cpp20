@@ -136,7 +136,7 @@ or optional production branches have been added.
 **forward → reverse → Z-fold**, without assigning special names to the
 routes. The read-only [include-free implementation](shared/coreao.hpp)
 derives the forward trace from CORE, fills the reverse path using the
-forward result, and compares both against the frozen record in Z-fold
+forward result, and compares both against the unchanged record in Z-fold
 order. The final scalar is the **maximum normalized disagreement**;
 smaller means better consistency. Source-domain validity is retained as
 a separate guard.
