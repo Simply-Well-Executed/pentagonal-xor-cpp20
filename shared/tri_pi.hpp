@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
-// TriPi (Triℼ): three read-only inspection routes over a frozen DecaSigma trace.
+// TriPi (Triℼ): three read-only inspection routes over a source DecaSigma trace.
 // Independent routes do not imply independent experimental observations.
 // No standard headers, allocation, I/O or effects on the parity hot path.
 
