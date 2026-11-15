@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
 // COREAO: CORE -> TriPi I (forward) -> TriPi II (reverse) -> TriPi III (Z-fold).
-// A single, read-only scalar audit of a frozen DecaSigma witness.
+// A single, read-only scalar audit of a source DecaSigma witness.
 // Include-free C++20. No change to the five-input XOR production hot path.
 
 #ifndef SWE_COREAO_HPP
@@ -61,16 +61,16 @@ constexpr bool step(double before, char op, double& after) noexcept {
 // II: Populate the reverse path from route I's final state.
 // III: Traverse the original trace in Z-order, comparing both paths,
 //      then validate all cross-fold and return-to-CORE equalities.
-constexpr Result inspect(const deca_sigma::Trace& frozen) noexcept {
+constexpr Result inspect(const deca_sigma::Trace& source) noexcept {
     Result result{};
-    if (!frozen.admissible ||
-        !deca_sigma::finite(frozen.stages[0]) ||
-        frozen.stages[0] == 0.0 || frozen.stages[0] == 1.0) return result;
-    for (double value : frozen.stages)
+    if (!source.admissible ||
+        !deca_sigma::finite(source.stages[0]) ||
+        source.stages[0] == 0.0 || source.stages[0] == 1.0) return result;
+    for (double value : source.stages)
         if (!deca_sigma::finite(value)) return result;
 
     // YIN input: original CORE; regenerate the forward witness.
-    const deca_sigma::Trace forward = deca_sigma::run(frozen.stages[0]);
+    const deca_sigma::Trace forward = deca_sigma::run(source.stages[0]);
     if (!forward.admissible) return result;
 
     // YIN output: invert the forward path, NOT the possibly altered
@@ -87,14 +87,14 @@ constexpr Result inspect(const deca_sigma::Trace& frozen) noexcept {
     }
 
     // YANG output: Z-fold all 11 stages, then weave the two independent
-    // *calculation paths* against the one frozen source record.
+    // *calculation paths* against the one source source record.
     for (unsigned index : tri_pi::zfold_order) {
         if (index >= 11u) return result;
         error = largest(error,
-                        normalized_residual(frozen.stages[index],
+                        normalized_residual(source.stages[index],
                                             forward.stages[index]));
         error = largest(error,
-                        normalized_residual(frozen.stages[index],
+                        normalized_residual(source.stages[index],
                                             reverse[index]));
     }
 
@@ -102,13 +102,13 @@ constexpr Result inspect(const deca_sigma::Trace& frozen) noexcept {
     // the forward and reverse algebra above also has to agree.
     // Explicit fixed pairs keep C++20 constant evaluation portable on MSVC.
     // No loops or pointer indexing into local constexpr pair arrays.
-    error = largest(error, normalized_residual(frozen.stages[0], frozen.stages[4]));
-    error = largest(error, normalized_residual(frozen.stages[4], frozen.stages[8]));
-    error = largest(error, normalized_residual(frozen.stages[8], frozen.stages[10]));
-    error = largest(error, normalized_residual(frozen.stages[1], frozen.stages[5]));
-    error = largest(error, normalized_residual(frozen.stages[5], frozen.stages[9]));
-    error = largest(error, normalized_residual(frozen.stages[2], frozen.stages[6]));
-    error = largest(error, normalized_residual(frozen.stages[3], frozen.stages[7]));
+    error = largest(error, normalized_residual(source.stages[0], source.stages[4]));
+    error = largest(error, normalized_residual(source.stages[4], source.stages[8]));
+    error = largest(error, normalized_residual(source.stages[8], source.stages[10]));
+    error = largest(error, normalized_residual(source.stages[1], source.stages[5]));
+    error = largest(error, normalized_residual(source.stages[5], source.stages[9]));
+    error = largest(error, normalized_residual(source.stages[2], source.stages[6]));
+    error = largest(error, normalized_residual(source.stages[3], source.stages[7]));
 
     result.scalar = error;
     result.admissible = true;
