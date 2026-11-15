@@ -78,22 +78,12 @@ jobs:
       - name: '📦 Stage install'
         run: cmake --install build --config Release --prefix stage
 
-      - name: '🔎 Verify installed public audit APIs'
+      - name: '🔎 Compile and run downstream consumer against installed audit headers'
         shell: pwsh
+        env:
+          TARGET_ARCH: ${{ matrix.vs_arch }}
         run: |
-          $required = @(
-            'stage/include/swe/deca_sigma.hpp',
-            'stage/include/swe/tri_pi.hpp',
-            'stage/include/swe/coreao.hpp',
-            'stage/include/swe/pentagonal_xor_std_free.h',
-            'stage/lib/cmake/SWEAuditHeaders/SWEAuditHeadersTargets.cmake'
-          )
-          foreach ($file in $required) {
-            if (!(Test-Path -LiteralPath $file -PathType Leaf)) {
-              throw "Missing installed API: $file"
-            }
-          }
-          Write-Host 'Installed audit headers and exported interface target verified.'
+          ./ci/Test-InstalledAudit.ps1 -Stage stage -BuildDir build-consumer -VsArch "$env:TARGET_ARCH"
 
       - name: '📦 Package tar.gz'
         if: runner.os != 'Windows'
