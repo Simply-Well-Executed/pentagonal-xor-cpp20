@@ -47,8 +47,9 @@ $manifest = [ordered]@{
     platform = $Platform
     source_sha = $env:GITHUB_SHA
     no_node_build_commands = $true
-    android_variant = if ($Flavor -eq 'android') { 'Release; compile-only' } else { 'not-applicable' }
-    runtime_tests = if ($Flavor -eq 'android') { 'not-run: cross-compiled binaries need a device/emulator' } else { 'CTest on container' }
+    android_variant = if ($Flavor -eq 'android') { 'not-applicable: published SDK-free source image; native C/C++ only' } else { 'not-applicable' }
+    runtime_tests = if ($Flavor -eq 'android') { 'Native C/C++ CTest and optional Java; NDK compile and APK execution not run' } else { 'CTest on container' }
+    validation_scope = if ($Flavor -eq 'android') { 'SDK-free native CMake/CTest qualification; Java optional' } else { 'native CMake and CTest inside openSUSE' }
     third_party_license_review = 'required before redistribution; no toolchains or image layers are included in source license grant'
 }
 $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $evidence 'container-manifest.json') -Encoding utf8
@@ -72,13 +73,58 @@ $baseArgs = @(
     $reference, '-ec'
 )
 
+$stageRecords = [System.Collections.Generic.List[object]]::new()
+function Get-ExitDiagnosis {
+    param([int] $ExitCode)
+    switch ($ExitCode) {
+        0 { return 'pass' }
+        1 { return 'generic command failure: inspect individual check output' }
+        2 { return 'incorrect invocation or tool-specific failure' }
+        21 { return 'source-image requirement: CMake unavailable' }
+        22 { return 'source-image requirement: CTest unavailable' }
+        23 { return 'source-image requirement: C++ compiler unavailable' }
+        24 { return 'source-image requirement: Java compiler version mismatch' }
+        25 { return 'source-image requirement: missing Java source file' }
+        31 { return 'Java source compilation failed' }
+        32 { return 'Java acceptance tests failed' }
+        41 { return 'Native CMake configure failed in pinned source image' }
+        42 { return 'Native C/C++ compile failed in pinned source image' }
+        43 { return 'Native CTest failed in pinned source image' }
+        90 { return 'unclassified runtime exception; see android-source-runtime.json' }
+        91 { return 'could not write source-runtime evidence file' }
+        124 { return 'external timeout; inspect runner logs' }
+        125 { return 'Docker engine, invocation, or daemon failure' }
+        126 { return 'container command present but not executable' }
+        127 { return 'container command not found' }
+        130 { return 'terminated by interrupt (SIGINT on Unix)' }
+        137 { return 'terminated by SIGKILL; inspect resource limits and OOM evidence' }
+        143 { return 'terminated by SIGTERM; inspect cancellation and timeout' }
+        default { return 'unclassified tool exit: inspect stage log and preserve raw numeric code' }
+    }
+}
 function Invoke-ContainerStage {
-    param([string] $Name, [string] $Command)
+    param([Parameter(Mandatory)][string] $Name, [Parameter(Mandatory)][string] $Command)
     Write-Host "Container stage: $Name"
+    $started = (Get-Date).ToUniversalTime().ToString('o')
     & docker @baseArgs $Command *>&1 |
         Tee-Object -FilePath (Join-Path $evidence "$Name.log")
-    $code = $LASTEXITCODE
-    if ($code -ne 0) { throw "Container $Name failed with exit code $code" }
+    $code = [int]$LASTEXITCODE
+    $diagnosis = Get-ExitDiagnosis $code
+    $stageRecords.Add([ordered]@{
+        stage = $Name
+        started_utc = $started
+        finished_utc = (Get-Date).ToUniversalTime().ToString('o')
+        exit_code = $code
+        diagnosis = $diagnosis
+        log = "$Name.log"
+        passed = ($code -eq 0)
+    })
+    $stageRecords | ConvertTo-Json -Depth 5 |
+        Set-Content -LiteralPath (Join-Path $evidence 'container-stage-results.json') -Encoding utf8
+    if ($code -ne 0) {
+        Write-Host "::error title=SWE container stage '$Name'::$diagnosis (exit=$code). See $Name.log and container-stage-results.json."
+        throw "Container stage '$Name' failed (exit=$code; diagnosis=$diagnosis)"
+    }
 }
 
 if ($Flavor -eq 'linux') {
@@ -87,13 +133,51 @@ if ($Flavor -eq 'linux') {
     Invoke-ContainerStage -Name 'build' -Command "cmake --build $BuildDir --config Release --parallel 2"
     Invoke-ContainerStage -Name 'test' -Command "ctest --test-dir $BuildDir -C Release --output-on-failure --output-junit /work/$EvidenceDir/ctest-results.xml"
 } else {
-    # Android image is a compilation environment, not proof of device execution.
-    # Require a real NDK and never select a Debug build variant.
-    Invoke-ContainerStage -Name 'android-toolchain' -Command 'command -v cmake; test -n "${ANDROID_NDK_HOME:-}"; test -f "$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake"; cmake --version'
-    $androidConfigure = 'test -n "${ANDROID_NDK_HOME:-}"; cmake -S shared -B ' + $BuildDir + ' -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24 -DANDROID_STL=c++_static'
-    Invoke-ContainerStage -Name 'configure' -Command $androidConfigure
-    Invoke-ContainerStage -Name 'build' -Command "cmake --build $BuildDir --config Release --parallel 2"
-    'Cross-compiled Android executables were not run on a device or emulator.' |
-        Set-Content -LiteralPath (Join-Path $evidence 'android-runtime-test-limitation.txt') -Encoding utf8
+    # The pinned public image is intentionally SDK-free. It has Java 17
+    # and CMake, but does not contain an NDK. Validate exactly that scope.
+    # An actual unsigned Release APK is independently built in the
+    # disposable android-sdk stage by the docker-android workflow job.
+    # Run the envscript in the HOST PowerShell environment. The immutable
+    # SDK-free container needs only /bin/sh, Java and javac, not pwsh.
+    $started = (Get-Date).ToUniversalTime().ToString('o')
+    $runtimeError = $null
+    try {
+        & (Join-Path $PSScriptRoot 'Initialize-AndroidRuntime.ps1') -DockerBaseArgs $baseArgs -EvidenceDir $evidence -BuildDir $BuildDir *>&1 |
+            Tee-Object -FilePath (Join-Path $evidence 'android-source-runtime.log')
+    } catch {
+        $runtimeError = $_.Exception.Message
+    } finally {
+        $runtimeStatus = 0
+        $runtimeRecord = Join-Path $evidence 'android-source-runtime.json'
+        if (Test-Path -LiteralPath $runtimeRecord -PathType Leaf) {
+            try {
+                $runtimeStatus = [int]((Get-Content -LiteralPath $runtimeRecord -Raw | ConvertFrom-Json).failure_code)
+            } catch {
+                if ($runtimeStatus -eq 0) { $runtimeStatus = 90 }
+                if (!$runtimeError) { $runtimeError = 'Unable to read Android source runtime diagnostic JSON.' }
+            }
+        } elseif (!$runtimeError) {
+            $runtimeStatus = 91
+            $runtimeError = 'Missing source runtime diagnostic JSON.'
+        }
+        if ($runtimeError -and $runtimeStatus -eq 0) { $runtimeStatus = 90 }
+        $stageRecords.Add([ordered]@{
+            stage = 'android-source-runtime'
+            started_utc = $started
+            finished_utc = (Get-Date).ToUniversalTime().ToString('o')
+            exit_code = $runtimeStatus
+            diagnosis = if ($runtimeStatus -eq 0) { 'pass' } else { $runtimeError }
+            log = 'android-source-runtime.log'
+            passed = ($runtimeStatus -eq 0)
+        })
+        $stageRecords | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (Join-Path $evidence 'container-stage-results.json') -Encoding utf8
+    }
+    if ($runtimeStatus -ne 0) {
+        throw "Pinned Android source-image qualification failed (code=$runtimeStatus): $runtimeError"
+    }
 }
 Write-Host "Pinned $Flavor build completed: $reference ($Platform)"
+# Explicitly own the final job status; optional source-image probes can exit 127.
+$global:LASTEXITCODE = 0
+exit 0
