@@ -166,3 +166,15 @@ if(BUILD_TESTING)
   set_tests_properties(pentagonal_depth_three_benchmark PROPERTIES
     PASS_REGULAR_EXPRESSION "Interpretation")
 endif()
+
+
+# Supplier-side GAMP 4-style verification, separate from regulated PQ/QA.
+if(BUILD_TESTING)
+  add_executable(pentagonal_gamp4_validation_test
+                 tests/pentagonal_gamp4_validation_test.cpp)
+  target_compile_features(pentagonal_gamp4_validation_test PRIVATE cxx_std_20)
+  add_test(NAME gamp4_pentagonal_urs_11_to_22
+           COMMAND pentagonal_gamp4_validation_test)
+endif()
+install(FILES docs/PENTAGONAL_GAMP4_VALIDATION.md
+        DESTINATION share/doc/pentagonal-xor)
