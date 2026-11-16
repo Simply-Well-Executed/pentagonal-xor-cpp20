@@ -43,6 +43,17 @@ if ($Mode -eq 'Publish') {
     try {
         $immutableTag = "$imageRepo" + ':sha-' + $shortSha
         $latestTag = 'paulcheek/android-source-study-v1:latest'
+        $leapImmutable = "$leapRepo" + ':sha-' + $shortSha
+        $leapLatest = 'paulcheek/opensuse-leap-hardened:latest'
+        $publishOpenSUSE = $env:OS_LICENSE_REVIEW_APPROVED -ceq 'true'
+        $opensusePublished = $false
+        $opensuseSkipReason = if ($publishOpenSUSE) {
+            $null
+        } else {
+            'OS_LICENSE_REVIEW_APPROVED is not exactly true.'
+        }
+        $actualLicenseSha = $null
+
         Invoke-CheckedDocker -Arguments @('build','--pull','--file',$dockerfile,'--target',
             'source','--tag',$immutableTag,'--tag',$latestTag,$root)
 
@@ -55,62 +66,69 @@ if ($Mode -eq 'Publish') {
             $latestTag,'-Command',
             'if ((Test-Path /opt/android-sdk) -or (Test-Path /study/android/app/build)) { exit 51 }; if ([Environment]::UserName -eq "root") { exit 52 }; "PASS SDK-free public image"')
 
-        if ($env:OS_LICENSE_REVIEW_APPROVED -cne 'true') {
-            throw 'openSUSE container publication requires third-party license review clearance.'
+        if ($publishOpenSUSE) {
+            Invoke-CheckedDocker -Arguments @('build','--file',$leapDockerfile,
+                '--target','source','--tag',$leapImmutable,'--tag',$leapLatest,$root)
+            Invoke-CheckedDocker -Arguments @('run','--rm','--network','none','--read-only',
+                '--cap-drop','ALL','--security-opt','no-new-privileges',
+                $leapLatest,'cmake','--version')
+            $licenseArgs = @('run','--rm','--network','none','--read-only','--cap-drop',
+                'ALL','--security-opt','no-new-privileges','--entrypoint','rpm',$leapLatest,
+                '-qa','--qf','%{NAME}|%{VERSION}-%{RELEASE}|%{LICENSE}\n')
+            $licenseRows = @(& docker @licenseArgs)
+            if ($LASTEXITCODE -ne 0 -or $licenseRows.Count -lt 1) {
+                throw 'OS package license inventory missing: no publication.'
+            }
+            $licenseFile = Join-Path $evidence 'opensuse-os-licenses.tsv'
+            $licenseRows | Sort-Object |
+                Set-Content -LiteralPath $licenseFile -Encoding utf8
+            $actualLicenseSha = (Get-FileHash -LiteralPath $licenseFile -Algorithm SHA256).Hash.ToLowerInvariant()
+            $expectedLicenseSha = [string]$env:OS_PACKAGE_LICENSE_MANIFEST_SHA256
+            # Approval binds the exact package inventory, not just a UI flag.
+            # Project 0BSD does not override the licenses of OS components.
+            if ([string]::IsNullOrWhiteSpace($expectedLicenseSha) -or
+                $expectedLicenseSha.Length -ne 64 -or
+                $expectedLicenseSha -notmatch '^[a-fA-F0-9]{64}$' -or
+                $actualLicenseSha -cne $expectedLicenseSha.ToLowerInvariant()) {
+                throw "Unapproved or changed OS package license manifest: $actualLicenseSha"
+            }
+        } else {
+            Write-Host "SKIP: $leapLatest requires separate third-party license review."
         }
-        $leapImmutable = "$leapRepo" + ':sha-' + $shortSha
-        $leapLatest = 'paulcheek/opensuse-leap-hardened:latest'
-        Invoke-CheckedDocker -Arguments @('build','--file',$leapDockerfile,
-            '--target','source','--tag',$leapImmutable,'--tag',$leapLatest,$root)
-        Invoke-CheckedDocker -Arguments @('run','--rm','--network','none','--read-only',
-            '--cap-drop','ALL','--security-opt','no-new-privileges',
-            $leapLatest,'cmake','--version')
-        $licenseArgs = @('run','--rm','--network','none','--read-only','--cap-drop',
-            'ALL','--security-opt','no-new-privileges','--entrypoint','rpm',$leapLatest,
-            '-qa','--qf','%{NAME}|%{VERSION}-%{RELEASE}|%{LICENSE}\n')
-        $licenseRows = @(& docker @licenseArgs)
-        if ($LASTEXITCODE -ne 0 -or $licenseRows.Count -lt 1) {
-            throw 'OS package license inventory missing: no publication.'
-        }
-        $licenseFile = Join-Path $evidence 'opensuse-os-licenses.tsv'
-        $licenseRows | Sort-Object |
-            Set-Content -LiteralPath $licenseFile -Encoding utf8
-        $actualLicenseSha = (Get-FileHash -LiteralPath $licenseFile -Algorithm SHA256).Hash.ToLowerInvariant()
-        $expectedLicenseSha = [string]$env:OS_PACKAGE_LICENSE_MANIFEST_SHA256
-        if ([string]::IsNullOrWhiteSpace($expectedLicenseSha) -or
-            $expectedLicenseSha.Length -ne 64 -or
-            $expectedLicenseSha -notmatch '^[a-fA-F0-9]{64}$' -or
-            $actualLicenseSha -cne $expectedLicenseSha.ToLowerInvariant()) {
-            throw "Unapproved or changed OS package license manifest: $actualLicenseSha"
-        }
-        # Approval binds the exact package inventory, not just a UI flag.
-        # Project 0BSD does not override the licenses of OS components.
+
         $env:DOCKERHUB_TOKEN | & docker login --username $env:DOCKERHUB_USERNAME --password-stdin
         if ($LASTEXITCODE -ne 0) { throw 'Docker Hub login failed.' }
         Invoke-CheckedDocker -Arguments @('push',$immutableTag)
         # Intentional exact user-requested publication target:
         Invoke-CheckedDocker -Arguments @('push','paulcheek/android-source-study-v1:latest')
-        Invoke-CheckedDocker -Arguments @('push',$leapImmutable)
-        Invoke-CheckedDocker -Arguments @('push','paulcheek/opensuse-leap-hardened:latest')
+        if ($publishOpenSUSE) {
+            Invoke-CheckedDocker -Arguments @('push',$leapImmutable)
+            Invoke-CheckedDocker -Arguments @('push','paulcheek/opensuse-leap-hardened:latest')
+            $opensusePublished = $true
+        }
         $localDigest = (& docker image inspect --format '{{.Id}}' $latestTag |
             Select-Object -First 1)
         [ordered]@{
-            schema = 'SWE-GAMP4-style-container-publication-v1'
+            schema = 'SWE-GAMP4-style-container-publication-v2'
             image = $latestTag
             immutable_tag = $immutableTag
+            android_published = $true
             opensuse_image = $leapLatest
             opensuse_immutable_tag = $leapImmutable
-            opensuse_licenses = 'opensuse-os-licenses.tsv'
+            opensuse_published = $opensusePublished
+            opensuse_skip_reason = $opensuseSkipReason
+            opensuse_licenses = if ($opensusePublished) { 'opensuse-os-licenses.tsv' } else { $null }
             opensuse_license_manifest_sha256 = $actualLicenseSha
-            third_party_licenses_present = $true
             github_sha = $sourceSha
             local_image_id = $localDigest
             sdk_embedded = $false
-            published_after_gates = $true
+            android_published_after_gates = $true
             created_utc = (Get-Date).ToUniversalTime().ToString('o')
         } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'publish.json')
         Write-Host "PASS: docker push paulcheek/android-source-study-v1:latest"
-        Write-Host "PASS: docker push paulcheek/opensuse-leap-hardened:latest"
+        if ($opensusePublished) {
+            Write-Host "PASS: docker push paulcheek/opensuse-leap-hardened:latest"
+        }
     } finally {
         & docker logout 2>$null | Out-Null
         Remove-Item -LiteralPath $env:DOCKER_CONFIG -Recurse -Force -ErrorAction SilentlyContinue

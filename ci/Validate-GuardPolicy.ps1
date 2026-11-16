@@ -21,11 +21,12 @@ foreach($rule in $forbidden.GetEnumerator()){
  if([regex]::IsMatch($workflow,$rule.Value)){throw "Guard violates policy: $($rule.Key)"}
 }
 foreach($required in @('docker-android:','docker-leap:',
-    'OS_LICENSE_REVIEW_APPROVED','ci/Record-GuardEvidence.ps1')) {
+    'OS_LICENSE_REVIEW_APPROVED','ci/Record-GuardEvidence.ps1',
+    'ci/Test-DockerPublishPolicy.ps1')) {
  if(!$workflow.Contains($required)){throw "Missing guard invariant: $required"}
 }
 foreach($image in @('paulcheek/android-source-study-v1:latest',
    'paulcheek/opensuse-leap-hardened:latest')) {
  if(!$dockerRunner.Contains($image)){throw "Image target not configured: $image"}
 }
-Write-Output 'PASS shared guard: zero JS-based actions, unsigned Android, dual pinned validation, project 0BSD.'
+Write-Output 'PASS shared guard: zero JS-based actions, unsigned Android, review-gated OpenSUSE publication, project 0BSD.'
