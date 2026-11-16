@@ -5,6 +5,7 @@
 #include <swe/deca_sigma.hpp>
 #include <swe/tri_pi.hpp>
 #include <swe/coreao.hpp>
+#include <swe/coreao_gain.hpp>
 #include <swe/pentagonal_xor_std_free.h>
 #include <swe/stability10d.hpp>
 #include <swe/coreo_stereo.hpp>
@@ -39,5 +40,11 @@ int main() {
     for (unsigned long long i=0; i<3u; ++i)
         if (!swe::coreo_stereo::forward_at(stereo_input,3u,i,quad[i])) return 7;
     if (!swe::coreo_stereo::inspect(stereo_input,3u,quad).admissible) return 8;
+    // Separate RF-domain COREAO wrapper, no changes to audio computation.
+    const auto eirp = swe::coreao::rf_gain::apply(1.0);
+    if (!eirp.passed() || eirp.gain_dbi != 9.0 ||
+        eirp.output_eirp_watts < 7.94 ||
+        eirp.output_eirp_watts > 7.95 ||
+        eirp.input_watts != 1.0) return 9;
     return 0;
 }
