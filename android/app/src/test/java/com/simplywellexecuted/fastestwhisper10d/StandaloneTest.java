@@ -68,8 +68,19 @@ public final class StandaloneTest {
             for(int ring=0;ring<3;ring++) {
                 double expected=independentParity(values,ring);
                 near(result.probabilities[ring],expected,"minterm ring");
-                int word=(int)Math.floor(expected*65535.0+0.5);
-                require(result.words[ring]==word,"U16 mismatch");
+                // Verify exact serialization of the ACTUAL production
+                // score. Independent minterms have different arithmetic
+                // order and may round 1 U16 apart only at a half-step tie.
+                final int word=(int)Math.floor(
+                        result.probabilities[ring]*65535.0+0.5);
+                require(result.words[ring]==word,"U16 production mismatch");
+                final int referenceWord=(int)Math.floor(expected*65535.0+0.5);
+                if (word!=referenceWord) {
+                    final double threshold=Math.min(word,referenceWord)+0.5;
+                    require(Math.abs(word-referenceWord)==1 &&
+                            Math.abs(expected*65535.0-threshold)<1e-9,
+                            "quantization mismatch outside the half-step boundary");
+                }
                 require((result.hexabyteBytes[2*ring]&255)==(word&255),
                         "low byte mismatch");
                 require((result.hexabyteBytes[2*ring+1]&255)==((word>>>8)&255),
