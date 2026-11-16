@@ -75,7 +75,14 @@ if ($Mode -eq 'Publish') {
             Set-Content -LiteralPath $licenseFile -Encoding utf8
         $actualLicenseSha = (Get-FileHash -LiteralPath $licenseFile -Algorithm SHA256).Hash.ToLowerInvariant()
         $expectedLicenseSha = [string]$env:OS_PACKAGE_LICENSE_MANIFEST_SHA256
-        if ($expectedLicenseSha -notmatch '^[0-9a-fA-F]{64}
+        if ([string]::IsNullOrWhiteSpace($expectedLicenseSha) -or
+            $expectedLicenseSha.Length -ne 64 -or
+            $expectedLicenseSha -notmatch '^[a-fA-F0-9]{64}$' -or
+            $actualLicenseSha -cne $expectedLicenseSha.ToLowerInvariant()) {
+            throw "Unapproved or changed OS package license manifest: $actualLicenseSha"
+        }
+        # Approval binds the exact package inventory, not just a UI flag.
+        # Project 0BSD does not override the licenses of OS components.
         $env:DOCKERHUB_TOKEN | & docker login --username $env:DOCKERHUB_USERNAME --password-stdin
         if ($LASTEXITCODE -ne 0) { throw 'Docker Hub login failed.' }
         Invoke-CheckedDocker -Arguments @('push',$immutableTag)
