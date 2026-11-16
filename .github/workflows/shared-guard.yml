@@ -82,3 +82,81 @@ jobs:
           path: evidence/
           if-no-files-found: warn
           retention-days: 90
+
+  pinned-linux:
+    name: "openSUSE pinned \${{ matrix.label }}"
+    if: \${{ vars.SWE_LINUX_IMAGE_DIGEST != '' }}
+    runs-on: \${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: 'x64', os: ubuntu-24.04, platform: 'linux/amd64', artifact: 'x64'}
+          - {label: 'ARM64', os: ubuntu-24.04-arm, platform: 'linux/arm64', artifact: 'arm64'}
+    steps:
+      - name: 'Checkout pinned, without persistent credentials'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: 'Release pre-flight'
+        shell: pwsh
+        run: ./ci/Test-ReleaseSafety.ps1
+      - name: 'Compile and test inside immutable openSUSE image'
+        id: container
+        shell: pwsh
+        env:
+          IMAGE_DIGEST: \${{ vars.SWE_LINUX_IMAGE_DIGEST }}
+        run: |
+          ./ci/Invoke-PinnedContainerGuard.ps1 -Flavor linux -Image 'paulcheek/opensuse-leap-hardened:latest' -Digest $env:IMAGE_DIGEST -Platform '\${{ matrix.platform }}'
+      - name: 'Retain image, source, tool and test evidence'
+        if: always()
+        shell: pwsh
+        env:
+          BUILD_OUTCOME: \${{ steps.container.outcome }}
+        run: |
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:BUILD_OUTCOME" -TargetArch '\${{ matrix.platform }}'
+      - name: 'Upload validation evidence even on failure'
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: "swe-pinned-opensuse-\${{ matrix.artifact }}"
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 90
+
+  pinned-android:
+    name: "Android NDK Release compile, pinned image"
+    if: \${{ vars.SWE_ANDROID_IMAGE_DIGEST != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: 'Checkout pinned, without persistent credentials'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: 'Release pre-flight'
+        shell: pwsh
+        run: ./ci/Test-ReleaseSafety.ps1
+      - name: 'Cross-compile Android Release inside immutable study image'
+        id: container
+        shell: pwsh
+        env:
+          IMAGE_DIGEST: \${{ vars.SWE_ANDROID_IMAGE_DIGEST }}
+        run: |
+          ./ci/Invoke-PinnedContainerGuard.ps1 -Flavor android -Image 'paulcheek/android-source-study-v1:latest' -Digest $env:IMAGE_DIGEST -Platform 'linux/amd64'
+      - name: 'Retain image, source and compile evidence'
+        if: always()
+        shell: pwsh
+        env:
+          BUILD_OUTCOME: \${{ steps.container.outcome }}
+        run: |
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome 'not-run-android-cross-compile' -TargetArch 'arm64-v8a'
+      - name: 'Upload validation evidence even on failure'
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swe-pinned-android-release
+          path: evidence/
+          if-no-files-found: warn
+          retention-days: 90
