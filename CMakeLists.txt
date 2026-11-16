@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(PentagonalXOR VERSION 0.1.0 LANGUAGES CXX)
+project(PentagonalXOR VERSION 0.2.0 LANGUAGES CXX)
 
 # Produce usable debug symbols even in optimized Release builds.
 # MSVC PDBs are distributable outputs of this project, not the compiler itself.
