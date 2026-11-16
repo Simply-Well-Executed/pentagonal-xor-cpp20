@@ -152,3 +152,17 @@ if(BUILD_TESTING)
 endif()
 install(FILES shared/pentagonal_gates.hpp DESTINATION include/swe)
 install(FILES docs/PENTAGONAL_GATE_CASCADE.md DESTINATION share/doc/pentagonal-xor)
+
+
+# Separate CLI: old pentagonal_xor executable stays unchanged.
+add_executable(pentagonal_control tools/pentagonal_control.cpp)
+target_compile_features(pentagonal_control PRIVATE cxx_std_20)
+install(TARGETS pentagonal_control RUNTIME DESTINATION bin)
+if(BUILD_TESTING)
+  add_test(NAME pentagonal_control_json COMMAND pentagonal_control 0x3fffffff 0x3fffffff or)
+  set_tests_properties(pentagonal_control_json PROPERTIES
+    PASS_REGULAR_EXPRESSION "logical_evaluations")
+  add_test(NAME pentagonal_depth_three_benchmark COMMAND pentagonal_gates_benchmark)
+  set_tests_properties(pentagonal_depth_three_benchmark PROPERTIES
+    PASS_REGULAR_EXPRESSION "Interpretation")
+endif()
