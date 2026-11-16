@@ -4,6 +4,6 @@
 # Vendor OS license applies. Never push this image to Docker Hub.
 FROM mcr.microsoft.com/windows/servercore:ltsc2022
 WORKDIR C:/guard
-COPY build-root/Release/pentagonal_xor.exe C:/guard/pentagonal_xor.exe
-COPY build-shared/Release/swe_guard.exe C:/guard/swe_guard.exe
+COPY pentagonal_xor.exe C:/guard/pentagonal_xor.exe
+COPY swe_guard.exe C:/guard/swe_guard.exe
 CMD ["C:\\guard\\swe_guard.exe", "--self-test"]
