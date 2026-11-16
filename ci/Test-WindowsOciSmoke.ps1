@@ -21,6 +21,29 @@ $dockerOS=((& docker info --format '{{.OSType}}' 2>$null) | Select-Object -First
 if($LASTEXITCODE -ne 0 -or $dockerOS -cne 'windows'){
  throw 'No compatible Windows container engine was available.'
 }
+# Build self-contained CRT variants specifically for this Windows container.
+# This does not change the authoritative native release targets.
+$staticRoot=Join-Path $root 'build-windows-oci-root'
+$staticShared=Join-Path $root 'build-windows-oci-shared'
+$builds=@(
+ @('-S','.','-B',$staticRoot,'-A','x64',
+   '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded','-DCMAKE_POLICY_DEFAULT_CMP0091=NEW'),
+ @('-S','shared','-B',$staticShared,'-A','x64',
+   '-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded','-DCMAKE_POLICY_DEFAULT_CMP0091=NEW')
+)
+foreach($arguments in $builds) {
+ & cmake @arguments
+ if($LASTEXITCODE -ne 0) { throw 'Static-runtime container CMake configuration failed.' }
+}
+foreach($target in @($staticRoot,$staticShared)) {
+ & cmake --build $target --config Release --parallel
+ if($LASTEXITCODE -ne 0) { throw 'Static-runtime container C++20 build failed.' }
+ & ctest --test-dir $target -C Release --output-on-failure
+ if($LASTEXITCODE -ne 0) { throw 'Static-runtime CTest rejected container candidate.' }
+}
+$sourceBin=Join-Path $staticRoot 'Release/pentagonal_xor.exe'
+$guardBin=Join-Path $staticShared 'Release/swe_guard.exe'
+
 $short=if($env:GITHUB_SHA.Length -ge 12){$env:GITHUB_SHA.Substring(0,12)}else{'local'}
 $tag='swe-guard-windows-smoke:'+$short
 $context=Join-Path $env:RUNNER_TEMP ('swe-windows-smoke-'+$short)
@@ -34,10 +57,10 @@ $dockerfile=Join-Path $context 'Dockerfile'
 if($LASTEXITCODE -ne 0){throw 'Windows container construction failed.'}
 & docker run --rm --network none --isolation process $tag 'C:\guard\swe_guard.exe' --self-test *>&1 |
  Tee-Object -FilePath (Join-Path $evidence 'guard-run.log')
-if($LASTEXITCODE -ne 0){throw 'Windows container 32-state parity smoke failed.'}
+if($LASTEXITCODE -ne 0){throw "Windows container 32-state parity smoke failed (exit $LASTEXITCODE)."}
 & docker run --rm --network none --isolation process $tag 'C:\guard\pentagonal_xor.exe' 1 1 1 0 0 *>&1 |
  Tee-Object -FilePath (Join-Path $evidence 'parity-run.log')
-if($LASTEXITCODE -ne 0){throw 'Windows container runtime parity smoke failed.'}
+if($LASTEXITCODE -ne 0){throw "Windows container runtime parity smoke failed (exit $LASTEXITCODE)."}
 $image=((& docker image inspect --format '{{.Id}}' $tag) | Select-Object -First 1)
 [ordered]@{
  schema='SWE-Windows-OCI-Exploratory-v1'
@@ -47,6 +70,7 @@ $image=((& docker image inspect --format '{{.Id}}' $tag) | Select-Object -First 
  vendor_os_base='mcr.microsoft.com/windows/servercore:ltsc2022'
  vendor_os_redistributed=$false
  code_compiled_on_host=$true
+ static_runtime_container_variant=$true
  native_windows_container_executed=$true
  runtime_tests_passed=$true
  source_exe_sha256=(Get-FileHash $sourceBin -Algorithm SHA256).Hash.ToLowerInvariant()
