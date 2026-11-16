@@ -86,7 +86,10 @@ Its C++20/C11/installed-consumer validation stages execute offline.
 Package-manager installed toolchain **versions are not individually pinned**;
 RPM names, versions and per-package licenses are inventoried for review.
 Publishing Leap requires environment variable
-`OS_LICENSE_REVIEW_APPROVED=true` after compliance review.
+`OS_LICENSE_REVIEW_APPROVED=true` after compliance review **and**
+`OS_PACKAGE_LICENSE_MANIFEST_SHA256` matching the reviewed
+`opensuse-os-licenses.tsv` artifact hash. Any package-inventory drift
+blocks the push, requiring fresh review.
 The repository source remains 0BSD, but openSUSE packages are not thereby
 relicensed. A strict zero-copyleft requirement for the *entire OS image*
 would require omitting the openSUSE image, not declaring it magically 0BSD.
