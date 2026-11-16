@@ -23,7 +23,7 @@ The published `source` stage in
 `docker/android-source-study-v1.Dockerfile` is deliberately **SDK-free**.
 The current Dockerfile *intends* PowerShell, CMake and JDK 17 source-study
 support, but the digest-qualified published image was observed to lack the
-`pwsh` executable (exit 127). Do not infer the actual image inventory from
+`pwsh` executable and `javac` compiler (each returned exit 127). Do not infer the actual image inventory from
 a newer Dockerfile alone. The image does **not** ship an Android SDK or NDK.
 
 Previous versions of `ci/Invoke-PinnedContainerGuard.ps1` expected
@@ -36,13 +36,15 @@ wrong for the image's published scope.
 `ci/Initialize-AndroidRuntime.ps1` now executes in the **host PowerShell 7
 runner** and orchestrates the pinned container through the existing Docker
 CLI with a minimal POSIX shell. It does not assume `pwsh` is installed in
-the image. It identifies CMake, Java and javac; checks Java 17; records
-whether an NDK path exists; and compiles and executes standalone Java
-17 acceptance tests in the container. Absence of an NDK is an **informational, expected
-condition** in this public image, not a silently ignored failed build.
-Results are retained in `android-source-runtime.json`. A missing
-required source-study tool, broken Java tests, or an evidence-write
-failure remains a hard CI failure with a diagnostic numeric code.
+the image. It requires CMake, CTest and C++ and executes native C/C++
+acceptance tests in the container. It probes Java and javac separately:
+if both are available, Java 17 standalone tests run; if absent, those
+tests are explicitly marked **not run**, never as passed. It also records
+whether an NDK path exists. Absence of an NDK is an **informational,
+expected condition** in this public image, not a silently ignored failed build.
+Results are retained in `android-source-runtime.json`. A missing required native build tool, a failed native test, a failed
+available Java test, or an evidence-write failure remains a hard CI
+failure with a diagnostic numeric code.
 
 **Scope boundary:** A passing public-image source-study run does not
 claim JNI/NDK cross-compilation, an APK build, Android device execution,
@@ -64,8 +66,10 @@ nonzero code. Known cases include:
 | --- | --- |
 | 0 | Pass |
 | 1, 2 | Generic shell/command failure; inspect stage output |
-| 21-25 | Source image lacks required tools, Java 17, or test inputs |
+| 21-23 | Source image lacks required CMake, CTest or C++ compiler |
+| 24-25 | Available Java toolchain version mismatch or missing test inputs |
 | 31, 32 | Java compilation or Java acceptance-test failure |
+| 41-43 | Native CMake configure, compilation or CTest failure |
 | 90, 91 | Unexpected runtime exception / evidence recording failure |
 | 124 | Timeout (when assigned by the tool) |
 | 125 | Docker CLI/daemon/invocation failure |
