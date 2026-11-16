@@ -33,10 +33,21 @@ jobs:
           - {label: 'macOS Apple Silicon', os: macos-15, arch: native}
 
     steps:
-      - name: 'Checkout exact candidate, no stored credentials'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
 
       - name: 'Prepare failure/success evidence'
         shell: pwsh
@@ -116,10 +127,21 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - name: 'Checkout source, no persistent credentials'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
       - name: 'Create container evidence before build'
         shell: pwsh
         run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
@@ -140,10 +162,21 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 55
     steps:
-      - name: 'Checkout source, no persistent credentials'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
       - name: 'Create Android container evidence before build'
         shell: pwsh
         run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
@@ -177,10 +210,21 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: 'Checkout verified source, no persisted credentials'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
       - name: 'Prepare Docker Hub publication evidence'
         shell: pwsh
         run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
