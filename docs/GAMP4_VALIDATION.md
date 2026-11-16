@@ -132,3 +132,19 @@ Strict zero-copyleft *image* redistribution is incompatible with
 publishing an unmodified general-purpose openSUSE base containing GPL
 packages. The Linux image push therefore requires explicit, auditable
 package-license review rather than an automatic assertion of zero copyleft.
+
+## Exact package-license acceptance gate
+
+Before publishing either Docker Hub image, the protected
+`docker-hub-release` environment must supply
+`OS_LICENSE_REVIEW_APPROVED=true` **and**
+`OS_PACKAGE_LICENSE_MANIFEST_SHA256` equal to the SHA-256 of the
+actual sorted `opensuse-os-licenses.tsv` produced by the guard.
+The publisher reconstructs this manifest from its own image and
+fails closed if its contents changed. This binds the approved package
+inventory to the actual publication candidate, avoiding a blanket
+license-approval flag for unexpectedly updated RPM packages.
+Review of a GPL/LGPL package permits distribution *subject to its
+license*, but does not change the project's authored source from 0BSD.
+If the requirement is zero copyleft **inside the container**, do not
+approve or publish an openSUSE base that includes copyleft OS packages.
