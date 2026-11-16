@@ -140,3 +140,15 @@ if(MSVC)
     install(FILES "$<TARGET_PDB_FILE:pentagonal_xor>" DESTINATION symbols OPTIONAL)
 endif()
 install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md docs/STABILITY10D.md docs/ANDROID.md docs/COREAO_GAIN.md docs/COUNTERARCCOSINE_2NDWAVE.svg DESTINATION share/doc/pentagonal-xor)
+
+
+# Experimental gate controller, isolated from the original XOR executable.
+if(BUILD_TESTING)
+  add_executable(pentagonal_gates_test tests/pentagonal_gates_test.cpp)
+  target_compile_features(pentagonal_gates_test PRIVATE cxx_std_20)
+  add_test(NAME pentagonal_gates_truth_witness_and_flop COMMAND pentagonal_gates_test)
+  add_executable(pentagonal_gates_benchmark tests/pentagonal_gates_benchmark.cpp)
+  target_compile_features(pentagonal_gates_benchmark PRIVATE cxx_std_20)
+endif()
+install(FILES shared/pentagonal_gates.hpp DESTINATION include/swe)
+install(FILES docs/PENTAGONAL_GATE_CASCADE.md DESTINATION share/doc/pentagonal-xor)
