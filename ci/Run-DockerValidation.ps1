@@ -113,9 +113,10 @@ try {
         Write-Warning 'docker start/log attach returned an error; inspecting exit code.'
     }
     $exitLines = @(& docker inspect --format '{{.State.ExitCode}}' $container)
-    if ($exitLines.Count -ne 1 -or
-        [string]$exitLines[0] -notmatch '^[0-9]+
-
+    if ($exitLines.Count -ne 1) {
+        throw 'Container exit status unavailable.'
+    }
+    $exitCode = [int]$exitLines[0]
     $inside = if ($Mode -eq 'Android') { 'evidence-android' } else { 'evidence-linux' }
     & docker cp "$($container):/study/$inside/." $evidence *>$null
     if ($LASTEXITCODE -ne 0) {
