@@ -28,7 +28,7 @@ ENTRYPOINT ["pwsh", "-NoLogo", "-NoProfile"]
 CMD ["-File", "./ci/Test-ReleaseSafety.ps1"]
 
 # Never publish this stage: Android SDK components require their own license.
-FROM source AS validation
+FROM source AS android-sdk
 USER root
 ARG ACCEPT_ANDROID_SDK_TERMS=false
 RUN test "$ACCEPT_ANDROID_SDK_TERMS" = "true"
@@ -37,6 +37,10 @@ ENV ANDROID_HOME=/opt/android-sdk \
     ANDROID_SDK_ROOT=/opt/android-sdk
 RUN chown -R 10001:10001 /study
 USER 10001:10001
+
+# Manual SDK target is intentionally not distributable. The trusted guard
+# runs its tests with --network none and minimal Linux capabilities.
+FROM android-sdk AS validation
 RUN pwsh -NoLogo -NoProfile -File ./ci/Invoke-AndroidDockerValidation.ps1
 
 # Linux native C11/C++20 guards also execute inside a disposable container.
