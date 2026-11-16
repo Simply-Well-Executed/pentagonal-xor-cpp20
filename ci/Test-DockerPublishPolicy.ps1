@@ -168,21 +168,28 @@ fi
     )
     $mismatchEvidence = Join-Path $testRoot 'mismatch-evidence'
     $mismatchEvidenceRelative = [IO.Path]::GetRelativePath($root, $mismatchEvidence)
-    $mismatchRejected = $false
-    try {
-        & $publishScript -Mode Publish -EvidenceDir $mismatchEvidenceRelative | Out-Null
-    } catch {
-        if ($_.Exception.Message -notmatch 'Unapproved or changed OS package license manifest') {
-            throw
-        }
-        $mismatchRejected = $true
-    }
-    if (!$mismatchRejected) {
-        throw 'A mismatched OpenSUSE license inventory was not rejected.'
-    }
+    & $publishScript -Mode Publish -EvidenceDir $mismatchEvidenceRelative | Out-Null
     $mismatchCalls = @(Get-Content -LiteralPath $mismatchLog)
-    if (@($mismatchCalls | Where-Object { $_ -match '^(push|login) ' }).Count -ne 0) {
-        throw 'Registry login or a push occurred with a mismatched OpenSUSE license inventory.'
+    $mismatchAndroidPushes = @($mismatchCalls | Where-Object {
+        $_ -match '^push paulcheek/android-source-study-v1:'
+    })
+    $mismatchOpenSUSEPushes = @($mismatchCalls | Where-Object {
+        $_ -match '^push paulcheek/opensuse-leap-hardened:'
+    })
+    if ($mismatchAndroidPushes.Count -ne 2 -or $mismatchOpenSUSEPushes.Count -ne 0) {
+        throw 'A mismatched OpenSUSE license inventory did not permit Android-only publication.'
+    }
+    $mismatchManifestSha = (Get-FileHash -LiteralPath (
+        Join-Path $mismatchEvidence 'opensuse-os-licenses.tsv'
+    ) -Algorithm SHA256).Hash.ToLowerInvariant()
+    $mismatchPublish = Get-Content -LiteralPath (
+        Join-Path $mismatchEvidence 'publish.json'
+    ) -Raw | ConvertFrom-Json
+    if ($mismatchPublish.android_published -ne $true -or
+        $mismatchPublish.opensuse_published -ne $false -or
+        $mismatchPublish.opensuse_skip_reason -notmatch 'manifest changed' -or
+        $mismatchPublish.opensuse_license_manifest_sha256 -cne $mismatchManifestSha) {
+        throw 'Publication evidence did not record the changed OpenSUSE manifest and Android-only publish.'
     }
     if (!(Test-Path -LiteralPath (Join-Path $mismatchEvidence 'opensuse-os-licenses.tsv'))) {
         throw 'The OpenSUSE license inventory was not captured for the mismatch test.'
