@@ -107,6 +107,12 @@ jobs:
             Tee-Object -FilePath evidence/consumer.log
           if (!$?) { exit 1 }
 
+      - name: 'Experimental Windows Server Core OCI binary smoke'
+        if: ${{ runner.os == 'Windows' && matrix.arch == 'x64' }}
+        continue-on-error: true
+        shell: pwsh
+        run: ./ci/Test-WindowsOciSmoke.ps1 -EvidenceDir evidence/windows-oci
+
       - name: 'Archive compiler/PDB, checksums, provenance and failure evidence'
         if: ${{ !cancelled() }}
         shell: pwsh
