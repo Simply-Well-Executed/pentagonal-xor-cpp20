@@ -120,3 +120,15 @@ are not execution pauses, and the one-path XOR CLI stays unchanged.
 - [Protocol and provenance](../docs/STABILITY10D.md); [Android experimental application](../docs/ANDROID.md).
 
 Neither header does speech-to-text. The 0BSD original-source files and inherited historical source provenance remain separate.
+
+## COREAO RF +9 dBi extension
+
+The separate header [`coreao_gain.hpp`](coreao_gain.hpp) adds
+an include-free, fixed-gain RF calculation:
+conducted input watts → idealized +9 dBi reference gain →
+derived EIRP watts, with reverse reconstruction and guards.
+It is a *domain-specific* `swe::coreao::rf_gain` operation,
+not a change to the original DecaSigma COREAO audit,
+Pentagonal XOR parity, or audio Stability.
+
+[Full RF gain constraints and numeric tests](../docs/COREAO_GAIN.md).
