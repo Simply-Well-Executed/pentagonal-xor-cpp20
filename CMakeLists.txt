@@ -72,6 +72,12 @@ if(BUILD_TESTING)
         CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
     add_test(NAME coreao_unified_scalar COMMAND coreao_test)
 
+    add_executable(coreao_gain_test tests/coreao_gain_test.cpp)
+    target_compile_features(coreao_gain_test PRIVATE cxx_std_20)
+    set_target_properties(coreao_gain_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME coreao_rf_9dbi_eirp COMMAND coreao_gain_test)
+
     add_executable(stability10d_test tests/stability10d_test.cpp)
     target_compile_features(stability10d_test PRIVATE cxx_std_20)
     add_test(NAME stability10d_hexabyte_and_minterms COMMAND stability10d_test)
@@ -85,6 +91,7 @@ if(BUILD_TESTING)
         target_compile_options(deca_sigma_test PRIVATE /W4 /permissive-)
         target_compile_options(tri_pi_test PRIVATE /W4 /permissive-)
         target_compile_options(coreao_test PRIVATE /W4 /permissive-)
+        target_compile_options(coreao_gain_test PRIVATE /W4 /permissive-)
         target_compile_options(stability10d_test PRIVATE /W4 /permissive-)
         target_compile_options(coreo_stereo_test PRIVATE /W4 /permissive-)
     else()
@@ -92,6 +99,7 @@ if(BUILD_TESTING)
         target_compile_options(deca_sigma_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(tri_pi_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(coreao_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(coreao_gain_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(stability10d_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(coreo_stereo_test PRIVATE -Wall -Wextra -Wpedantic)
     endif()
@@ -113,6 +121,7 @@ install(FILES
     shared/deca_sigma.hpp
     shared/tri_pi.hpp
     shared/coreao.hpp
+    shared/coreao_gain.hpp
     shared/stability10d.hpp
     shared/coreo_stereo.hpp
     shared/pentagonal_xor_std_free.h
