@@ -33,4 +33,4 @@ $record=[ordered]@{
  note=$claim
  }
 $record|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'capability.json') -Encoding utf8
-Write-Host "OCI capability on $nativeOS: $engine. $claim"
+Write-Host "OCI capability on $($nativeOS): $engine. $claim"
