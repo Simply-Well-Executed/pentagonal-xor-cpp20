@@ -154,4 +154,4 @@ $lines = Get-ChildItem -LiteralPath $evidence -File -Recurse |
         '{0}  {1}' -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(),$relative
     }
 $lines | Set-Content -LiteralPath (Join-Path $evidence 'SHA256SUMS') -Encoding utf8
-Write-Host "PASS Docker $Mode: source commit $sourceSha, image $imageId"
+Write-Host "PASS Docker $($Mode): source commit $sourceSha, image $imageId"
