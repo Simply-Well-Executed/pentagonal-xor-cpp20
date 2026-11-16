@@ -1,27 +1,25 @@
-name: "🛡️ SWE Shared Guard · C++20 Cross-Platform"
+name: '🛡️ SWE Shared Guard · GAMP4-style matrix and Docker safespace'
+
 on:
   push:
     branches: [main]
-    paths:
-      - 'shared/**'
-      - 'ci/**'
-      - '.github/workflows/shared-guard.yml'
+    tags: ['v*']
   pull_request:
     branches: [main]
-    paths:
-      - 'shared/**'
-      - 'ci/**'
-      - '.github/workflows/shared-guard.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: shared-guard-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   guard:
-    name: "${{ matrix.label }}"
+    name: 'Native C++20 + C11 + installed consumer · ${{ matrix.label }}'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -30,42 +28,70 @@ jobs:
           - {label: 'Linux ARM64', os: ubuntu-24.04-arm, arch: native}
           - {label: 'Windows x64', os: windows-2022, arch: x64}
           - {label: 'Windows x86', os: windows-2022, arch: Win32}
+          - {label: 'Windows ARM64', os: windows-11-arm, arch: ARM64}
           - {label: 'macOS Intel', os: macos-15-intel, arch: native}
           - {label: 'macOS Apple Silicon', os: macos-15, arch: native}
+
     steps:
-      - name: 'Checkout pinned, without persistent credentials'
+      - name: 'Checkout exact candidate, no stored credentials'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-      - name: 'Release pre-flight: reject paused/debug code'
+
+      - name: 'Prepare failure/success evidence'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
+
+      - name: 'GAMP4-style preflight: no paused code or debugger traps'
         shell: pwsh
         run: ./ci/Test-ReleaseSafety.ps1
 
-      - name: 'Prepare evidence folder'
-        shell: pwsh
-        run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
-      - name: 'CMake configure'
+      - name: 'Configure complete C++20 test suite and strict C11 shared boundary'
         shell: pwsh
         run: |
-          if ('${{ matrix.arch }}' -eq 'native') {
-            & cmake -S shared -B build-shared -DCMAKE_BUILD_TYPE=Release *>&1 | Tee-Object -FilePath evidence/configure.log
-          } else {
-            & cmake -S shared -B build-shared -A '${{ matrix.arch }}' *>&1 | Tee-Object -FilePath evidence/configure.log
-          }
-          exit $LASTEXITCODE
-      - name: 'Compile with C++20 warnings enabled'
+          $native = ('${{ matrix.arch }}' -eq 'native')
+          $args = if ($native) { @('-DCMAKE_BUILD_TYPE=Release') } else { @('-A','${{ matrix.arch }}') }
+          & cmake -S . -B build-root -DBUILD_TESTING=ON @args *>&1 |
+            Tee-Object -FilePath evidence/configure-root.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake -S shared -B build-shared @args *>&1 |
+            Tee-Object -FilePath evidence/configure-shared.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Compile complete native and shared C++20/C11 sources'
         id: compile
         shell: pwsh
         run: |
-          & cmake --build build-shared --config Release --parallel *>&1 | Tee-Object -FilePath evidence/build.log
-          exit $LASTEXITCODE
-      - name: 'CTest: C11 std-free API, 32-state parity, and negative security fixtures'
+          & cmake --build build-root --config Release --parallel *>&1 |
+            Tee-Object -FilePath evidence/build-root.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --build build-shared --config Release --parallel *>&1 |
+            Tee-Object -FilePath evidence/build-shared.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Automated acceptance tests: root and shared, positive and negative'
         id: test
         shell: pwsh
         run: |
-          & ctest --test-dir build-shared -C Release --output-on-failure --output-junit evidence/ctest-results.xml *>&1 | Tee-Object -FilePath evidence/test.log
-          exit $LASTEXITCODE
-      - name: 'Fingerprint compiler and collect failure/success evidence'
+          & ctest --test-dir build-root -C Release --output-on-failure --output-junit evidence/ctest-root.xml *>&1 |
+            Tee-Object -FilePath evidence/test-root.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ctest --test-dir build-shared -C Release --output-on-failure --output-junit evidence/ctest-shared.xml *>&1 |
+            Tee-Object -FilePath evidence/test-shared.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Installation qualification: build against installed C++20 public headers'
+        shell: pwsh
+        run: |
+          & cmake --install build-root --config Release --prefix stage *>&1 |
+            Tee-Object -FilePath evidence/install.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $vs = if ('${{ matrix.arch }}' -eq 'native') { '' } else { '${{ matrix.arch }}' }
+          ./ci/Test-InstalledAudit.ps1 -Stage stage -BuildDir build-consumer -VsArch $vs *>&1 |
+            Tee-Object -FilePath evidence/consumer.log
+          if (!$?) { exit 1 }
+
+      - name: 'Archive compiler/PDB, checksums, provenance and failure evidence'
         if: ${{ !cancelled() }}
         shell: pwsh
         env:
@@ -73,12 +99,101 @@ jobs:
           TEST_OUTCOME: ${{ steps.test.outcome }}
           TARGET_ARCH: ${{ matrix.arch }}
         run: |
-          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:TEST_OUTCOME" -TargetArch "$env:TARGET_ARCH"
-      - name: 'Upload per-OS SHA256/PDB/log evidence even on failure'
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-root -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:TEST_OUTCOME" -TargetArch "$env:TARGET_ARCH"
+
+      - name: 'Upload native validation evidence (including failures)'
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: "swe-guard-${{ matrix.label }}"
+          name: swe-gamp4-native-${{ matrix.label }}
           path: evidence/
+          if-no-files-found: warn
+          retention-days: 90
+
+  docker-linux:
+    name: 'Docker safespace · Linux C++20/C11 and installed consumer'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: 'Checkout source, no persistent credentials'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: 'Create container evidence before build'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
+      - name: 'Build SDK-free image, test offline without Linux capabilities'
+        shell: pwsh
+        run: ./ci/Run-DockerValidation.ps1 -Mode Linux -EvidenceDir evidence-docker
+      - name: 'Upload Docker Linux test, compiler and SHA-256 evidence'
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swe-gamp4-docker-linux
+          path: evidence-docker/
+          if-no-files-found: warn
+          retention-days: 90
+
+  docker-android:
+    name: 'Docker safespace · Android JDK17/SDK35 (no Gradle)'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: 'Checkout source, no persistent credentials'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: 'Create Android container evidence before build'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
+      - name: 'Acquire checksum-pinned SDK in disposable stage; test offline'
+        shell: pwsh
+        run: ./ci/Run-DockerValidation.ps1 -Mode Android -EvidenceDir evidence-docker
+      - name: 'Upload validated debug APK'
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swe-gamp4-docker-android-debug-apk
+          path: evidence-docker/app-debug.apk
+          if-no-files-found: warn
+          retention-days: 90
+      - name: 'Upload Android Docker/SDK/build/failure SHA-256 evidence'
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swe-gamp4-docker-android-evidence
+          path: evidence-docker/
+          if-no-files-found: warn
+          retention-days: 90
+
+  publish-docker:
+    name: 'Trusted publish · paulcheek/android-source-study-v1:latest'
+    needs: [guard, docker-linux, docker-android]
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    environment: docker-hub-release
+    permissions:
+      contents: read
+    steps:
+      - name: 'Checkout verified source, no persisted credentials'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: 'Prepare Docker Hub publication evidence'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
+      - name: 'Verify public SDK-free image and securely push immutable + latest'
+        shell: pwsh
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: ./ci/Run-DockerValidation.ps1 -Mode Publish -EvidenceDir evidence-docker
+      - name: 'Archive published image ID, commit and tag'
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swe-gamp4-docker-publish-evidence
+          path: evidence-docker/
           if-no-files-found: warn
           retention-days: 90
