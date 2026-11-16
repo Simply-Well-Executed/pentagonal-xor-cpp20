@@ -175,18 +175,12 @@ jobs:
             Tee-Object -FilePath evidence-android/android-sdk.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-      - name: 'Install pinned Gradle 8.11.1'
-        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
-        with:
-          gradle-version: '8.11.1'
-
-      - name: 'Android JUnit, lint and debug APK'
+      - name: 'Gradle-free Android build: Java tests, javac, AAPT2, D8 and signed APK'
         id: compile
         shell: pwsh
         run: |
-          & gradle -p android --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug *>&1 |
-            Tee-Object -FilePath evidence-android/build-and-test.log
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          ./ci/Build-Android.ps1 *>&1 | Tee-Object -FilePath evidence-android/build-and-test.log
+          if (!$?) { exit 1 }
 
       - name: 'Rename APK explicitly as experimental debug build'
         shell: pwsh
