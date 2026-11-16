@@ -65,7 +65,7 @@ function Invoke-QualifiedCommand {
     if ($code -ne 0) {
         Stop-Qualification $FailureCode "Required $Name check failed (native exit $code); see $([IO.Path]::GetFileName($log))."
     }
-    return ,$output
+    return $output
 }
 
 try {
