@@ -101,6 +101,22 @@ generally restricts redistribution, subject to separately licensed
 open-source components. Publishing an SDK-containing image merely because
 the *project's own* source is 0BSD would incorrectly conflate rights.
 
+## Windows and macOS container feasibility
+
+Native Windows x64 CI currently has a Windows-container daemon.
+The experimental PowerShell-only
+[`ci/Test-WindowsOciSmoke.ps1`](../ci/Test-WindowsOciSmoke.ps1)
+builds a disposable Windows Server Core 2022 image containing the
+newly compiled 0BSD binaries and executes parity smoke tests in it.
+The Microsoft base layer is **not redistributed**, avoiding
+unreviewed proprietary-image distribution. The step is observational
+and does not replace the native C++20 build.
+
+GitHub-hosted macOS Intel and Apple Silicon runners did not expose a
+Docker daemon during capability validation. macOS ABI verification
+remains native to the ephemeral GitHub macOS runner VM. A Linux
+container running on a Mac is not a Darwin container.
+
 ## Validation artifacts
 
 Source SHA, Docker image ID, native CTest results, Java assertions,
