@@ -358,7 +358,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned openSUSE Leap'
 
   pinned-android:
-    name: 'Android NDK Release compile, pinned Docker x64 host'
+    name: 'Android SDK-free source-study, pinned Docker x64 host'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
@@ -380,21 +380,21 @@ jobs:
       - name: 'Release pre-flight'
         shell: pwsh
         run: ./ci/Test-ReleaseSafety.ps1
-      - name: 'Cross-compile Android Release in pinned study image'
+      - name: 'Qualify pinned SDK-free image and run Java17 source tests'
         id: container
         shell: pwsh
         env:
           IMAGE_DIGEST: sha256:8ed78faab11b97aaa8f7884dd91b39968e565a7f5359066c32a3f520f9ef35c4
         run: |
           ./ci/Invoke-PinnedContainerGuard.ps1 -Flavor android -Image 'paulcheek/android-source-study-v1:latest' -Digest $env:IMAGE_DIGEST -Platform 'linux/amd64'
-      - name: 'Capture image and source compilation evidence'
+      - name: 'Capture pinned source-study validation evidence'
         if: ${{ !cancelled() }}
         shell: pwsh
         env:
           BUILD_OUTCOME: ${{ steps.container.outcome }}
         run: |
-          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome 'not-run-android-cross-compile' -TargetArch 'arm64-v8a'
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "source-study-$env:BUILD_OUTCOME" -TargetArch 'arm64-v8a'
       - name: 'Record pinned Android validation evidence'
         if: ${{ !cancelled() }}
         shell: pwsh
-        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned Android Release compile'
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned Android SDK-free source-study'
