@@ -21,8 +21,10 @@ The digest must change by reviewed source commit if the image is rebuilt.
 
 The published `source` stage in
 `docker/android-source-study-v1.Dockerfile` is deliberately **SDK-free**.
-It contains PowerShell, CMake, JDK 17, and source-study tooling but does
-**not** ship an Android SDK or NDK.
+The current Dockerfile *intends* PowerShell, CMake and JDK 17 source-study
+support, but the digest-qualified published image was observed to lack the
+`pwsh` executable (exit 127). Do not infer the actual image inventory from
+a newer Dockerfile alone. The image does **not** ship an Android SDK or NDK.
 
 Previous versions of `ci/Invoke-PinnedContainerGuard.ps1` expected
 `ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake` in this SDK-free
@@ -31,10 +33,12 @@ the optional NDK using `test` and the shell had `-e` enabled. The
 Docker pull and digest verification succeeded; the NDK precondition was
 wrong for the image's published scope.
 
-`ci/Initialize-AndroidRuntime.ps1` now executes **inside** the pinned
-public image. It identifies CMake, Java and javac; checks Java 17; records
-whether an NDK path exists; and compiles and executes the standalone Java
-17 acceptance tests. Absence of an NDK is an **informational, expected
+`ci/Initialize-AndroidRuntime.ps1` now executes in the **host PowerShell 7
+runner** and orchestrates the pinned container through the existing Docker
+CLI with a minimal POSIX shell. It does not assume `pwsh` is installed in
+the image. It identifies CMake, Java and javac; checks Java 17; records
+whether an NDK path exists; and compiles and executes standalone Java
+17 acceptance tests in the container. Absence of an NDK is an **informational, expected
 condition** in this public image, not a silently ignored failed build.
 Results are retained in `android-source-runtime.json`. A missing
 required source-study tool, broken Java tests, or an evidence-write
