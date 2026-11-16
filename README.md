@@ -288,3 +288,18 @@ This is a mathematical parity engine, **not** a facial identity, age, genetic re
 ---
 
 <div align="center"><sub>Made for reproducible experiments by Simply Well Executed. ⬟</sub></div>
+
+
+## PENTAGONAL control family (experimental)
+
+The native C++20 extension implements PENTAGONAL-OR, -AND, -NOP,
+-COR, -VISTA and the six-stage FLOP return around the unchanged XOR.
+The application sequence is **XOR → OR → AND → NOP → COR → FLOP ↺**
+No extra XOR executes at the return point. The COR audit's separate
+OR → XOR → AND entry-gate bypass is retained for compatibility.
+
+Read [the full operator, provenance, MCU and optimization study](docs/PENTAGONAL_GATE_CASCADE.md).
+Build and run the separate `pentagonal_control` executable for a
+structured VISTA JSON report; the pre-existing command remains unchanged.
+Missing independently authenticated witnesses are identified, never
+silently presumed valid.
