@@ -23,6 +23,7 @@ RUN apt-get update && \
 
 WORKDIR /study
 COPY --chown=10001:10001 . /study/
+RUN chown -R 10001:10001 /study
 USER 10001:10001
 ENTRYPOINT ["pwsh", "-NoLogo", "-NoProfile"]
 CMD ["-File", "./ci/Test-ReleaseSafety.ps1"]
