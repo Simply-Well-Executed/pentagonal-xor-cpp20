@@ -41,12 +41,12 @@ if ($Mode -eq 'Publish') {
     try {
         $immutableTag = "$imageRepo" + ':sha-' + $shortSha
         $latestTag = 'paulcheek/android-source-study-v1:latest'
-        Invoke-CheckedDocker @('build','--pull','--file',$dockerfile,'--target',
+        Invoke-CheckedDocker -Arguments @('build','--pull','--file',$dockerfile,'--target',
             'source','--tag',$immutableTag,'--tag',$latestTag,$root)
 
         # Explicitly verify the public image contains neither Android SDK
         # nor a source-space keystore, and runs as an unprivileged user.
-        Invoke-CheckedDocker @('run','--rm','--network','none','--read-only',
+        Invoke-CheckedDocker -Arguments @('run','--rm','--network','none','--read-only',
             '--cap-drop','ALL','--security-opt','no-new-privileges',
             $latestTag,'-Command',
             'if ((Test-Path /opt/android-sdk) -or (Test-Path /study/android/app/build)) { exit 51 }; if ([Environment]::UserName -eq "root") { exit 52 }; "PASS SDK-free public image"')
@@ -54,9 +54,9 @@ if ($Mode -eq 'Publish') {
         # The Docker Hub token is never placed in command arguments or logs.
         $env:DOCKERHUB_TOKEN | & docker login --username $env:DOCKERHUB_USERNAME --password-stdin
         if ($LASTEXITCODE -ne 0) { throw 'Docker Hub login failed.' }
-        Invoke-CheckedDocker @('push',$immutableTag)
+        Invoke-CheckedDocker -Arguments @('push',$immutableTag)
         # Intentional exact user-requested publication target:
-        Invoke-CheckedDocker @('push','paulcheek/android-source-study-v1:latest')
+        Invoke-CheckedDocker -Arguments @('push','paulcheek/android-source-study-v1:latest')
         $localDigest = (& docker image inspect --format '{{.Id}}' $latestTag |
             Select-Object -First 1)
         [ordered]@{
@@ -97,11 +97,11 @@ $scriptPath = if ($Mode -eq 'Android') {
 } else {
     './ci/Invoke-LinuxDockerValidation.ps1'
 }
-$container = (& docker create '--name' $containerName '--network' 'none'
-    '--cap-drop' 'ALL' '--security-opt' 'no-new-privileges'
-    '--pids-limit' '512' '--memory' '4g' '--entrypoint' 'pwsh'
-    $localImage '-NoLogo' '-NoProfile' '-File' $scriptPath |
-    Select-Object -First 1)
+$createArgs = @('create','--name',$containerName,'--network','none',
+    '--cap-drop','ALL','--security-opt','no-new-privileges',
+    '--pids-limit','512','--memory','4g','--entrypoint','pwsh',
+    $localImage,'-NoLogo','-NoProfile','-File',$scriptPath)
+$container = (& docker @createArgs | Select-Object -First 1)
 if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($container)) {
     throw 'Unable to create unprivileged offline Docker validation container.'
 }
@@ -124,7 +124,7 @@ try {
     }
     if ($Mode -eq 'Android' -and $exitCode -eq 0) {
         $apk = Join-Path $evidence 'app-debug.apk'
-        Invoke-CheckedDocker @('cp',
+        Invoke-CheckedDocker -Arguments @('cp',
             "$($container):/study/android/app/build/outputs/apk/debug/app-debug.apk",
             $apk)
         $sha = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
