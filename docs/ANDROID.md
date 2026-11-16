@@ -20,16 +20,41 @@ historical experiment name does not create AI speech-to-text functionality.
 
 ## Building and testing
 
-Requirements: JDK 17, Android SDK platform 35, build-tools 35.0.0, Gradle
-8.11.1, and a suitable Android Gradle Plugin as declared under `android/`.
-GitHub Actions builds the debug APK and executes JUnit + Android lint with
-those toolchain versions.
+**No Gradle, no Android Gradle Plugin, no Maven, and no JUnit.**
+The Android packaging process is entirely implemented in
+[`ci/Build-Android.ps1`](../ci/Build-Android.ps1) using **PowerShell 7
+StrictMode 2.0** and pinned SDK/JDK versions:
+
+- Java 17 `javac` and `java` compile and execute the independent
+  `StandaloneTest.java` fixture, including 2,048 independent parity
+  expansions, four exact six-byte golden vectors, finite/domain checks,
+  source-preservation and malformed binary-input fixtures.
+- `javac -classpath android.jar` compiles the Android Activity and the
+  no-weight acoustic/Stability engine.
+- `aapt2 compile` + `aapt2 link` package the manifest and the
+  project's one XML string resource.
+- `jar` + `d8` produce `classes.dex` with min API 26; PowerShell's
+  built-in .NET ZIP archive API appends the DEX without external scripts.
+- `zipalign`, one-time **debug-only** `keytool` key generation,
+  `apksigner sign`, and `apksigner verify` produce a verifiable APK.
+
+The required external tools remain **JDK 17, Android SDK platform 35 and
+build-tools 35.0.0**. These are identifiable development toolchain
+dependencies, not a claim of *zero* external dependencies. No software
+dependency can be assumed compatible with government procurement policies;
+the applicable contract and supply-chain requirements require independent
+review.
 
 PowerShell 7:
 
 ```powershell
-gradle -p android --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+pwsh -NoLogo -NoProfile -File ./ci/Build-Android.ps1
 ```
+
+The script does **not** call Gradle, its wrapper, JUnit or the AGP
+plugin repository. Source and files removed during this refactor are
+retained in earlier Git commits. CI also preserves failed build logs
+and SHA-256 evidence, rather than silently turning errors green.
 
 The expected unsigned-to-developer distribution binary is
 `android/app/build/outputs/apk/debug/app-debug.apk`.
