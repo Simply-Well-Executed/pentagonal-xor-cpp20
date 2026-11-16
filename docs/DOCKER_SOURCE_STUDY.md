@@ -1,6 +1,6 @@
 # Docker source study v1 · licensing-safe publication
 
-**Docker Hub target:** `paulcheek/android-source-study-v1:latest`
+**Docker Hub destinations:** `paulcheek/android-source-study-v1:latest` and `paulcheek/opensuse-leap-hardened:latest`.
 
 **Important:** The public image is a **source-study/build-harness image
 without Google's Android SDK**. The Android validation image is a
@@ -12,6 +12,8 @@ separate, disposable Docker stage and is never pushed to Docker Hub.
 Microsoft .NET 10 SDK image (Ubuntu 24.04, with PowerShell 7), Java 17,
 a C++ toolchain and the project's 0BSD source. It contains no Android
 SDK, Gradle, JUnit, application signing key or saved credentials.
+Its third-party OS and .NET packages keep their own licenses; the 0BSD
+license governs the project's authored files, not all image layers.
 
 To build the source-only image locally:
 
@@ -33,8 +35,10 @@ API 35 and build tools 35.0.0 are installed there.
 After the download phase, tests run in a non-root container with
 `--network none`, all Linux capabilities dropped, no privilege
 escalation, memory and process limits. The Gradle-free Android build
-calls `javac`, `aapt2`, `d8`, `zipalign`, and `apksigner`,
-then archives APK bytes and verification logs. The SDK-bearing
+calls `javac`, `aapt2`, `d8` and `zipalign`,
+then validates and fingerprints an **unsigned, non-installable** APK
+candidate and records the Java test results. No developmental signing identity
+is introduced by `shared-guard.yml`. The SDK-bearing
 image does not become the public Docker Hub image.
 
 ```powershell
@@ -44,7 +48,12 @@ pwsh -NoLogo -NoProfile -File ./ci/Run-DockerValidation.ps1 -Mode Android
 `-Mode Linux` similarly verifies C++20, C11, test suites and the
 installed consumer in an offline non-root container. Native macOS and
 Windows coverage remains on native runners because Docker on Ubuntu
-cannot reproduce their native operating systems.
+cannot reproduce their native operating systems. A separate capability
+probe records whether Docker Engine exists on Windows/macOS runners.
+On macOS, Docker hosts **Linux** containers in a VM, not macOS containers;
+Windows containers require a Windows Docker daemon and appropriately
+licensed Windows base layers. No Windows or Darwin container builds are
+claimed complete merely because these probes run.
 
 Docker is a *partial* isolation barrier, not a complete trust boundary.
 A hardened self-hosted build runner or disposable VM would provide
@@ -64,11 +73,23 @@ credentials. Configure GitHub environment
 A tested source image is tagged both
 `paulcheek/android-source-study-v1:sha-<12-hex-prefix>` and
 `paulcheek/android-source-study-v1:latest`. Push uses
-`docker login --password-stdin` and then exactly:
+`docker login --password-stdin` and then, after the separate OS license review gate, these two exact commands:
 
 ```powershell
 docker push paulcheek/android-source-study-v1:latest
+docker push paulcheek/opensuse-leap-hardened:latest
 ```
+
+The openSUSE source-image Dockerfile pins vendor Leap 16.0's OCI index to
+`sha256:a4115e2f5aea9712a7c73974fd94000a034fc3051ef29b5f7722fbf04070dd9d`.
+Its C++20/C11/installed-consumer validation stages execute offline.
+Package-manager installed toolchain **versions are not individually pinned**;
+RPM names, versions and per-package licenses are inventoried for review.
+Publishing Leap requires environment variable
+`OS_LICENSE_REVIEW_APPROVED=true` after compliance review.
+The repository source remains 0BSD, but openSUSE packages are not thereby
+relicensed. A strict zero-copyleft requirement for the *entire OS image*
+would require omitting the openSUSE image, not declaring it magically 0BSD.
 
 No current PR check represents an actual registry publication. The
 GitHub Actions push log and resulting Docker Hub digest are the
@@ -82,10 +103,16 @@ the *project's own* source is 0BSD would incorrectly conflate rights.
 
 ## Validation artifacts
 
-Source SHA, Docker image ID, native CTest XML, Java assertions,
-Android APK inner-file SHA-256, C++ compiler/PDB fingerprints, source
-preflight and all failure logs are retained by the
+Source SHA, Docker image ID, native CTest results, Java assertions,
+unsigned Android candidate SHA-256, native compiler/PDB fingerprints,
+source preflight and failure logs are recorded by the
 [shared-guard workflow](../.github/workflows/shared-guard.yml).
+Because the guard expressly excludes JavaScript-based artifact actions,
+**only logs, evidence hashes and GitHub job summaries are persisted**;
+per-job binary ZIPs are not automatically uploaded by this guard.
+The separate release workflow may produce its own independent downloadable
+artifacts using a different toolchain; do not conflate those artifacts
+with source hashes from the guard.
 The [GAMP 4-style validation matrix](GAMP4_VALIDATION.md) lists every
 requirement, test, risk and remaining operational gap.
 
