@@ -4,7 +4,7 @@
 # "Publish" may only run on a trusted main/tag push with Docker Hub secrets.
 [CmdletBinding()]
 param(
-    [ValidateSet('Linux','Android','Publish')][Parameter(Mandatory)][string]$Mode,
+    [ValidateSet('Linux','Android','OpenSUSE','Publish')][Parameter(Mandatory)][string]$Mode,
     [string]$EvidenceDir = 'evidence-docker'
 )
 Set-StrictMode -Version 2.0
@@ -14,6 +14,8 @@ $evidence = [IO.Path]::GetFullPath((Join-Path $root $EvidenceDir))
 [void][IO.Directory]::CreateDirectory($evidence)
 $dockerfile = Join-Path $root 'docker/android-source-study-v1.Dockerfile'
 $imageRepo = 'paulcheek/android-source-study-v1'
+$leapRepo = 'paulcheek/opensuse-leap-hardened'
+$leapDockerfile = Join-Path $root 'docker/opensuse-leap-hardened.Dockerfile'
 $sourceSha = [string]$env:GITHUB_SHA
 $shortSha = if ($sourceSha.Length -ge 12) { $sourceSha.Substring(0,12) } else { 'local' }
 $localImage = 'swe-source-study:' + $Mode.ToLowerInvariant() + '-' + $shortSha
@@ -51,18 +53,42 @@ if ($Mode -eq 'Publish') {
             $latestTag,'-Command',
             'if ((Test-Path /opt/android-sdk) -or (Test-Path /study/android/app/build)) { exit 51 }; if ([Environment]::UserName -eq "root") { exit 52 }; "PASS SDK-free public image"')
 
-        # The Docker Hub token is never placed in command arguments or logs.
+        if ($env:OS_LICENSE_REVIEW_APPROVED -cne 'true') {
+            throw 'openSUSE container publication requires third-party license review clearance.'
+        }
+        $leapImmutable = "$leapRepo" + ':sha-' + $shortSha
+        $leapLatest = 'paulcheek/opensuse-leap-hardened:latest'
+        Invoke-CheckedDocker -Arguments @('build','--file',$leapDockerfile,
+            '--target','source','--tag',$leapImmutable,'--tag',$leapLatest,$root)
+        Invoke-CheckedDocker -Arguments @('run','--rm','--network','none','--read-only',
+            '--cap-drop','ALL','--security-opt','no-new-privileges',
+            $leapLatest,'--version')
+        $licenseRows = @(& docker run --rm --network none --read-only --cap-drop ALL
+            --security-opt no-new-privileges --entrypoint rpm $leapLatest
+            '-qa' '--qf' '%{NAME}|%{VERSION}-%{RELEASE}|%{LICENSE}\n')
+        if ($LASTEXITCODE -ne 0 -or $licenseRows.Count -lt 1) {
+            throw 'OS package license inventory missing: no publication.'
+        }
+        $licenseRows | Sort-Object |
+            Set-Content -LiteralPath (Join-Path $evidence 'opensuse-os-licenses.tsv') -Encoding utf8
+        # Never expose the Docker Hub access token in argv or output.
         $env:DOCKERHUB_TOKEN | & docker login --username $env:DOCKERHUB_USERNAME --password-stdin
         if ($LASTEXITCODE -ne 0) { throw 'Docker Hub login failed.' }
         Invoke-CheckedDocker -Arguments @('push',$immutableTag)
         # Intentional exact user-requested publication target:
         Invoke-CheckedDocker -Arguments @('push','paulcheek/android-source-study-v1:latest')
+        Invoke-CheckedDocker -Arguments @('push',$leapImmutable)
+        Invoke-CheckedDocker -Arguments @('push','paulcheek/opensuse-leap-hardened:latest')
         $localDigest = (& docker image inspect --format '{{.Id}}' $latestTag |
             Select-Object -First 1)
         [ordered]@{
             schema = 'SWE-GAMP4-style-container-publication-v1'
             image = $latestTag
             immutable_tag = $immutableTag
+            opensuse_image = $leapLatest
+            opensuse_immutable_tag = $leapImmutable
+            opensuse_licenses = 'opensuse-os-licenses.tsv'
+            third_party_licenses_present = $true
             github_sha = $sourceSha
             local_image_id = $localDigest
             sdk_embedded = $false
@@ -70,6 +96,7 @@ if ($Mode -eq 'Publish') {
             created_utc = (Get-Date).ToUniversalTime().ToString('o')
         } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'publish.json')
         Write-Host "PASS: docker push paulcheek/android-source-study-v1:latest"
+        Write-Host "PASS: docker push paulcheek/opensuse-leap-hardened:latest"
     } finally {
         & docker logout 2>$null | Out-Null
         Remove-Item -LiteralPath $env:DOCKER_CONFIG -Recurse -Force -ErrorAction SilentlyContinue
@@ -123,9 +150,9 @@ try {
         Write-Warning 'No complete in-container evidence directory was available.'
     }
     if ($Mode -eq 'Android' -and $exitCode -eq 0) {
-        $apk = Join-Path $evidence 'app-debug.apk'
+        $apk = Join-Path $evidence 'app-unsigned.apk'
         Invoke-CheckedDocker -Arguments @('cp',
-            "$($container):/study/android/app/build/outputs/apk/debug/app-debug.apk",
+            "$($container):/study/android/app/build/outputs/apk/release/app-unsigned.apk",
             $apk)
         $sha = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
         Write-Host "Validated Android APK SHA256: $sha"
