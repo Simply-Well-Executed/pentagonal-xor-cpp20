@@ -49,6 +49,10 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
           Write-Host "Source SHA verified: $sha"
 
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
+
       - name: 'Prepare failure/success evidence'
         shell: pwsh
         run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
@@ -138,6 +142,10 @@ jobs:
           $sha=(& git rev-parse HEAD).Trim()
           if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
           Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
       - name: 'Create container evidence before build'
         shell: pwsh
         run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
@@ -169,6 +177,10 @@ jobs:
           $sha=(& git rev-parse HEAD).Trim()
           if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
           Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
       - name: 'Create Android container evidence before build'
         shell: pwsh
         run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
@@ -201,6 +213,10 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
           Write-Host "Source SHA verified: $sha"
 
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
+
       - name: 'Prepare pinned OS verification evidence'
         shell: pwsh
         run: New-Item -ItemType Directory -Force -Path evidence-leap | Out-Null
@@ -211,6 +227,42 @@ jobs:
         if: ${{ !cancelled() }}
         shell: pwsh
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-leap -Label 'Pinned openSUSE Leap'
+
+  container-host-capability:
+    name: 'OCI feasibility check · ${{ matrix.label }}'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: 'Windows x64', os: windows-2022}
+          - {label: 'macOS Intel', os: macos-15-intel}
+          - {label: 'macOS Apple Silicon', os: macos-15}
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+
+      - name: 'Inspect Docker engine capability without unlicensed images'
+        shell: pwsh
+        run: ./ci/Inspect-ContainerHost.ps1 -EvidenceDir evidence-oci-host
+      - name: 'Retain host feasibility and exact SHA in summary'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-oci-host -Label 'OCI capability ${{ matrix.label }}'
 
   publish-docker:
     name: 'Trusted publish · paulcheek/android-source-study-v1:latest'
@@ -237,6 +289,10 @@ jobs:
           $sha=(& git rev-parse HEAD).Trim()
           if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
           Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
       - name: 'Prepare Docker Hub publication evidence'
         shell: pwsh
         run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
