@@ -314,3 +314,87 @@ jobs:
         if: ${{ !cancelled() }}
         shell: pwsh
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Hub publication'
+
+  pinned-linux:
+    name: 'openSUSE Leap pinned Docker x64'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+      - name: 'Release pre-flight'
+        shell: pwsh
+        run: ./ci/Test-ReleaseSafety.ps1
+      - name: 'Compile and test in pinned openSUSE image'
+        id: container
+        shell: pwsh
+        env:
+          IMAGE_DIGEST: sha256:3e127aa5462cdd8cf5d4a35878983cb7895d0ebeb5679de63e0f35ca67de562d
+        run: |
+          ./ci/Invoke-PinnedContainerGuard.ps1 -Flavor linux -Image 'paulcheek/opensuse-leap-hardened:latest' -Digest $env:IMAGE_DIGEST -Platform 'linux/amd64'
+      - name: 'Capture image and source validation evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        env:
+          BUILD_OUTCOME: ${{ steps.container.outcome }}
+        run: |
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:BUILD_OUTCOME" -TargetArch 'linux/amd64'
+      - name: 'Record pinned openSUSE validation evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned openSUSE Leap'
+
+  pinned-android:
+    name: 'Android NDK Release compile, pinned Docker x64 host'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+      - name: 'Release pre-flight'
+        shell: pwsh
+        run: ./ci/Test-ReleaseSafety.ps1
+      - name: 'Cross-compile Android Release in pinned study image'
+        id: container
+        shell: pwsh
+        env:
+          IMAGE_DIGEST: sha256:8ed78faab11b97aaa8f7884dd91b39968e565a7f5359066c32a3f520f9ef35c4
+        run: |
+          ./ci/Invoke-PinnedContainerGuard.ps1 -Flavor android -Image 'paulcheek/android-source-study-v1:latest' -Digest $env:IMAGE_DIGEST -Platform 'linux/amd64'
+      - name: 'Capture image and source compilation evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        env:
+          BUILD_OUTCOME: ${{ steps.container.outcome }}
+        run: |
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome 'not-run-android-cross-compile' -TargetArch 'arm64-v8a'
+      - name: 'Record pinned Android validation evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned Android Release compile'
