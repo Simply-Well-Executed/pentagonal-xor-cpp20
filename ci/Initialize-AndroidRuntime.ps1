@@ -84,6 +84,7 @@ try {
     $null = Invoke-QualifiedCommand 'cmake-configure' ('cmake -S shared -B ' + $containerBuild + ' -DCMAKE_BUILD_TYPE=Release') 41
     $null = Invoke-QualifiedCommand 'cmake-build' ('cmake --build ' + $containerBuild + ' --config Release --parallel 2') 42
     $null = Invoke-QualifiedCommand 'cmake-ctest' ('ctest --test-dir ' + $containerBuild + ' -C Release --output-on-failure --output-junit ' + $containerEvidence + '/ctest-results.xml') 43
+    Get-Content -LiteralPath (Join-Path $evidence 'android-cmake-ctest.log') -Tail 8 | ForEach-Object { Write-Host $_ }
     $record.test_outcome = 'passed: native C/C++ acceptance under SDK-free image; not Android NDK'
 
     $ndkProbe = 'for p in "${ANDROID_NDK_HOME:-}" "${ANDROID_NDK_ROOT:-}"; do if [ -n "$p" ] && [ -f "$p/build/cmake/android.toolchain.cmake" ]; then printf "NDK_PRESENT\n"; exit 0; fi; done; printf "NDK_ABSENT_EXPECTED\n"'
@@ -147,3 +148,6 @@ try {
 if ($failureCode -ne 0) {
     throw "Android source runtime rejected: failure code $failureCode; $failureReason"
 }
+# An optional probe may exit 127; it must not override successful required checks.
+$global:LASTEXITCODE = 0
+exit 0
