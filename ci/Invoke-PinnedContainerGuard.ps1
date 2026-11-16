@@ -90,7 +90,7 @@ if ($Flavor -eq 'linux') {
     # Android image is a compilation environment, not proof of device execution.
     # Require a real NDK and never select a Debug build variant.
     Invoke-ContainerStage -Name 'android-toolchain' -Command 'command -v cmake; test -n "${ANDROID_NDK_HOME:-}"; test -f "$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake"; cmake --version'
-    $androidConfigure = 'test -n "${ANDROID_NDK_HOME:-}"; cmake -S shared -B {0} -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24 -DANDROID_STL=c++_static' -f $BuildDir
+    $androidConfigure = 'test -n "${ANDROID_NDK_HOME:-}"; cmake -S shared -B ' + $BuildDir + ' -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-24 -DANDROID_STL=c++_static'
     Invoke-ContainerStage -Name 'configure' -Command $androidConfigure
     Invoke-ContainerStage -Name 'build' -Command "cmake --build $BuildDir --config Release --parallel 2"
     'Cross-compiled Android executables were not run on a device or emulator.' |
