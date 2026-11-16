@@ -50,7 +50,8 @@ jobs:
         shell: pwsh
         run: |
           $native = ('${{ matrix.arch }}' -eq 'native')
-          $cmakeOptions = if ($native) { @('-DCMAKE_BUILD_TYPE=Release') } else { @('-A','${{ matrix.arch }}') }
+          $cmakeOptions = [string[]]@('-DCMAKE_BUILD_TYPE=Release')
+          if (!$native) { $cmakeOptions = [string[]]@('-A','${{ matrix.arch }}') }
           & cmake -S . -B build-root -DBUILD_TESTING=ON @cmakeOptions *>&1 |
             Tee-Object -FilePath evidence/configure-root.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
