@@ -130,9 +130,95 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
 
+
+  android:
+    name: 'Android · offline Stability debug APK'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - name: 'Checkout source with no persisted credentials'
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: 'Prepare Android evidence directory'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path evidence-android | Out-Null
+
+      - name: 'Validate release pre-flight'
+        shell: pwsh
+        run: ./ci/Test-ReleaseSafety.ps1
+
+      - name: 'Install pinned JDK 17'
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # The runner provides SDK command-line tools; do not invoke the
+      # obsolete Android SDK "tools" package used by older setup actions.
+      - name: 'Use installed Android SDK manager'
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:ANDROID_HOME)) { throw 'Missing ANDROID_HOME' }
+          $path = Join-Path $env:ANDROID_HOME 'cmdline-tools/latest/bin'
+          $sdk = Join-Path $path 'sdkmanager'
+          if (!(Test-Path -LiteralPath $sdk -PathType Leaf)) { throw 'Missing SDK manager' }
+          Add-Content -LiteralPath $env:GITHUB_PATH -Value $path
+          & $sdk --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Install pinned Android platform'
+        shell: pwsh
+        run: |
+          & sdkmanager 'platforms;android-35' 'build-tools;35.0.0' *>&1 |
+            Tee-Object -FilePath evidence-android/android-sdk.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Install pinned Gradle 8.11.1'
+        uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+        with:
+          gradle-version: '8.11.1'
+
+      - name: 'Android JUnit, lint and debug APK'
+        id: compile
+        shell: pwsh
+        run: |
+          & gradle -p android --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug *>&1 |
+            Tee-Object -FilePath evidence-android/build-and-test.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Rename APK explicitly as experimental debug build'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item -LiteralPath android/app/build/outputs/apk/debug/app-debug.apk -Destination dist/pentagonal-xor-stability10d-android-debug.apk
+
+      - name: 'Upload Android asset for release collection'
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-android-debug
+          path: dist/pentagonal-xor-stability10d-android-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: 'Fingerprint APK and retain test/failure evidence'
+        if: always()
+        shell: pwsh
+        run: ./ci/Write-AndroidEvidence.ps1 -EvidenceDir evidence-android
+
+      - name: 'Upload Android evidence even after a failed build'
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: evidence-android-debug
+          path: evidence-android/
+          if-no-files-found: warn
+          retention-days: 90
+
   release:
     name: '🏷️ Publish checksummed GitHub release'
-    needs: [build]
+    needs: [build, android]
     if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-24.04
     permissions:
@@ -145,27 +231,30 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: '🔐 Produce SHA-256 manifest'
-        shell: bash
+      - name: '🔐 Produce SHA-256 manifest for every platform including APK'
+        shell: pwsh
         run: |
-          set -euo pipefail
-          cd dist
-          sha256sum ./*.tar.gz ./*.zip > SHA256SUMS
-          cat SHA256SUMS
+          $files = @(Get-ChildItem -LiteralPath dist -File | Sort-Object Name)
+          if ($files.Count -lt 8) { throw 'Incomplete multi-platform package set.' }
+          $rows = foreach ($file in $files) {
+            $hash = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            '{0}  {1}' -f $hash, $file.Name
+          }
+          $rows | Set-Content -LiteralPath dist/SHA256SUMS -Encoding utf8
+          $rows
 
-      - name: '🚀 Publish releases'
-        shell: bash
+      - name: '🚀 Publish checksummed release with clearly labeled debug APK'
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          set -euo pipefail
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            tag="${GITHUB_REF#refs/tags/}"
-            title="⬟ Pentagonal XOR $tag"
-            gh release create "$tag" dist/* --title "$title" --target "$GITHUB_SHA" --generate-notes
-          else
-            tag="preview-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:7}"
-            title="🧪 Preview $tag"
-            gh release create "$tag" dist/* --title "$title" --target "$GITHUB_SHA" --generate-notes --prerelease --latest=false
-          fi
+          $files = @(Get-ChildItem -LiteralPath dist -File | ForEach-Object FullName)
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            $tag = $env:GITHUB_REF.Substring(10)
+            & gh release create $tag @files --title "⬟ Pentagonal XOR $tag" --target $env:GITHUB_SHA --generate-notes
+          } else {
+            $tag = "preview-$env:GITHUB_RUN_NUMBER-$($env:GITHUB_SHA.Substring(0,7))"
+            & gh release create $tag @files --title "🧪 Preview $tag" --target $env:GITHUB_SHA --generate-notes --prerelease --latest=false
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
