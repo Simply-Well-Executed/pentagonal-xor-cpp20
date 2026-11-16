@@ -112,10 +112,52 @@ try {
     if ($LASTEXITCODE -ne 0) {
         Write-Warning 'docker start/log attach returned an error; inspecting exit code.'
     }
-    $exit = (& docker inspect --format '{{.State.ExitCode}}' $container |
-        Select-Object -First 1)
-    if ($LASTEXITCODE -ne 0) { throw 'Container exit status unavailable.' }
-    $exitCode = [int]$exit
+    $exitLines = @(& docker inspect --format '{{.State.ExitCode}}' $container)
+    if ($exitLines.Count -ne 1 -or
+        [string]$exitLines[0] -notmatch '^[0-9]+
+
+    $inside = if ($Mode -eq 'Android') { 'evidence-android' } else { 'evidence-linux' }
+    & docker cp "$($container):/study/$inside/." $evidence *>$null
+    if ($LASTEXITCODE -ne 0) {
+        Write-Warning 'No complete in-container evidence directory was available.'
+    }
+    if ($Mode -eq 'Android' -and $exitCode -eq 0) {
+        $apk = Join-Path $evidence 'app-debug.apk'
+        Invoke-CheckedDocker -Arguments @('cp',
+            "$($container):/study/android/app/build/outputs/apk/debug/app-debug.apk",
+            $apk)
+        $sha = (Get-FileHash -LiteralPath $apk -Algorithm SHA256).Hash.ToLowerInvariant()
+        Write-Host "Validated Android APK SHA256: $sha"
+    }
+} finally {
+    & docker rm -f $container *>$null
+}
+[ordered]@{
+    schema = 'SWE-GAMP4-style-container-validation-v1'
+    github_sha = $sourceSha
+    target = $target
+    container_validation_exit_code = $exitCode
+    offline_build = $true
+    no_new_privileges = $true
+    all_linux_capabilities_dropped = $true
+    image_id = $imageId
+    created_utc = (Get-Date).ToUniversalTime().ToString('o')
+} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'docker-validation.json')
+if ($exitCode -ne 0) {
+    throw "Docker $Mode validation failed with exit status $exitCode."
+}
+$lines = Get-ChildItem -LiteralPath $evidence -File -Recurse |
+    Where-Object { $_.Name -ne 'SHA256SUMS' } |
+    Sort-Object FullName | ForEach-Object {
+        $relative = [IO.Path]::GetRelativePath($evidence,$_.FullName).Replace('\','/')
+        '{0}  {1}' -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(),$relative
+    }
+$lines | Set-Content -LiteralPath (Join-Path $evidence 'SHA256SUMS') -Encoding utf8
+Write-Host "PASS Docker $($Mode): source commit $sourceSha, image $imageId"
+) {
+        throw 'Container exit status unavailable or malformed.'
+    }
+    $exitCode = [int]$exitLines[0]
 
     $inside = if ($Mode -eq 'Android') { 'evidence-android' } else { 'evidence-linux' }
     & docker cp "$($container):/study/$inside/." $evidence *>$null
