@@ -52,9 +52,11 @@ $androidJar = Join-Path $SdkHome "platforms/android-$PlatformApi/android.jar"
 $toolsDir = Join-Path $SdkHome "build-tools/$BuildToolsVersion"
 $exe = if ($IsWindows) { '.exe' } else { '' }
 $aapt2 = Join-Path $toolsDir "aapt2$exe"
-$d8 = Join-Path $toolsDir (if ($IsWindows) { 'd8.bat' } else { 'd8' })
+$d8Command = if ($IsWindows) { 'd8.bat' } else { 'd8' }
+$d8 = Join-Path $toolsDir $d8Command
 $zipalign = Join-Path $toolsDir "zipalign$exe"
-$apksigner = Join-Path $toolsDir (if ($IsWindows) { 'apksigner.bat' } else { 'apksigner' })
+$signerCommand = if ($IsWindows) { 'apksigner.bat' } else { 'apksigner' }
+$apksigner = Join-Path $toolsDir $signerCommand
 foreach ($file in @($androidJar,$aapt2,$d8,$zipalign,$apksigner)) {
     if (!(Test-Path -LiteralPath $file -PathType Leaf)) {
         throw "Pinned Android SDK component not found: $file"
