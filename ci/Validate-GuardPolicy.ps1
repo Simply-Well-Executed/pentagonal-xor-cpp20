@@ -8,7 +8,7 @@ $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $workflow=Get-Content -LiteralPath (Join-Path $root '.github/workflows/shared-guard.yml') -Raw
 $license=Get-Content -LiteralPath (Join-Path $root 'LICENSE') -Raw
-if ($license -notmatch '0BSD|Zero Clause BSD') {
+if ($license -notmatch '0BSD|Zero Clause BSD|BSD Zero Clause') {
     throw 'Project license does not advertise Zero Clause BSD.'
 }
 $forbidden=[ordered]@{
