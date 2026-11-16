@@ -160,3 +160,18 @@ jobs:
           path: evidence/
           if-no-files-found: warn
           retention-days: 90
+
+  discover-image-digests:
+    name: 'Read-only Docker Hub pin discovery'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: 'Show immutable digests and published architectures'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($image in @('paulcheek/opensuse-leap-hardened:latest', 'paulcheek/android-source-study-v1:latest')) {
+            Write-Host "Image: $image"
+            & docker buildx imagetools inspect $image
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
