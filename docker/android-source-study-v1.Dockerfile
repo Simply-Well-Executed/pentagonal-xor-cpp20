@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: 0BSD
 # Copyright (c) 2026 Paul Allen Cheek
 # Public 'source' stage: SDK-free, Gradle-free Android source-study.
+# Project source is 0BSD; third-party image layers retain their own licenses.
 # Private 'validation' stage: SDK is present only in disposable CI.
 FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS source
 
 LABEL org.opencontainers.image.title="Android source study v1 (SDK-free)" \
       org.opencontainers.image.description="0BSD offline acoustic source and Java17/PowerShell build harness" \
-      org.opencontainers.image.licenses="0BSD" \
       org.opencontainers.image.source="https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20"
 
 ENV POWERSHELL_TELEMETRY_OPTOUT=1 \
