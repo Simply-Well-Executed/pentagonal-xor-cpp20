@@ -112,3 +112,23 @@ checks this through an independent installed-package consumer.
 The [release pre-flight checklist](../docs/RELEASE_PREFLIGHT.md) documents
 the no-debugger-stop policy. Compile-time checks and generated PDBs
 are not execution pauses, and the one-path XOR CLI stays unchanged.
+
+## Stability-10D and Coreo stereo headers (C++20)
+
+- [`stability10d.hpp`](stability10d.hpp) wraps the *existing* five-input parity operator in three overlapping five-ligand rings (nine distinct inputs), emits exactly six LE bytes and the single ring-agreement scalar.
+- [`coreo_stereo.hpp`](coreo_stereo.hpp) models the PR #17 stereo forward/reverse/Z-fold transformation without heap, IO or model weights.
+- [Protocol and provenance](../docs/STABILITY10D.md); [Android experimental application](../docs/ANDROID.md).
+
+Neither header does speech-to-text. The 0BSD original-source files and inherited historical source provenance remain separate.
+
+## COREAO RF +9 dBi extension
+
+The separate header [`coreao_gain.hpp`](coreao_gain.hpp) adds
+an include-free, fixed-gain RF calculation:
+conducted input watts → idealized +9 dBi reference gain →
+derived EIRP watts, with reverse reconstruction and guards.
+It is a *domain-specific* `swe::coreao::rf_gain` operation,
+not a change to the original DecaSigma COREAO audit,
+Pentagonal XOR parity, or audio Stability.
+
+[Full RF gain constraints and numeric tests](../docs/COREAO_GAIN.md).

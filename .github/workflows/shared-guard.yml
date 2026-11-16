@@ -1,27 +1,25 @@
-name: "🛡️ SWE Shared Guard · C++20 Cross-Platform"
+name: '🛡️ SWE Shared Guard · GAMP4-style matrix and Docker safespace'
+
 on:
   push:
     branches: [main]
-    paths:
-      - 'shared/**'
-      - 'ci/**'
-      - '.github/workflows/shared-guard.yml'
+    tags: ['v*']
   pull_request:
     branches: [main]
-    paths:
-      - 'shared/**'
-      - 'ci/**'
-      - '.github/workflows/shared-guard.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: shared-guard-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   guard:
-    name: "${{ matrix.label }}"
+    name: 'Native C++20 + C11 + installed consumer · ${{ matrix.label }}'
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
@@ -30,68 +28,313 @@ jobs:
           - {label: 'Linux ARM64', os: ubuntu-24.04-arm, arch: native}
           - {label: 'Windows x64', os: windows-2022, arch: x64}
           - {label: 'Windows x86', os: windows-2022, arch: Win32}
+          - {label: 'Windows ARM64', os: windows-11-arm, arch: ARM64}
           - {label: 'macOS Intel', os: macos-15-intel, arch: native}
           - {label: 'macOS Apple Silicon', os: macos-15, arch: native}
+
     steps:
-      - name: 'Checkout pinned, without persistent credentials'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
-      - name: 'Release pre-flight: reject paused/debug code'
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
+
+      - name: 'Prepare failure/success evidence'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
+
+      - name: 'GAMP4-style preflight: no paused source or breakpoints'
         shell: pwsh
         run: ./ci/Test-ReleaseSafety.ps1
 
-      - name: 'Prepare evidence folder'
-        shell: pwsh
-        run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
-      - name: 'CMake configure'
+      - name: 'Configure complete C++20 test suite and strict C11 shared boundary'
         shell: pwsh
         run: |
-          if ('${{ matrix.arch }}' -eq 'native') {
-            & cmake -S shared -B build-shared -DCMAKE_BUILD_TYPE=Release *>&1 | Tee-Object -FilePath evidence/configure.log
-          } else {
-            & cmake -S shared -B build-shared -A '${{ matrix.arch }}' *>&1 | Tee-Object -FilePath evidence/configure.log
-          }
-          exit $LASTEXITCODE
-      - name: 'Compile with C++20 warnings enabled'
+          $native = ('${{ matrix.arch }}' -eq 'native')
+          $cmakeOptions = [string[]]@('-DCMAKE_BUILD_TYPE=Release')
+          if (!$native) { $cmakeOptions = [string[]]@('-A','${{ matrix.arch }}') }
+          & cmake -S . -B build-root -DBUILD_TESTING=ON @cmakeOptions *>&1 |
+            Tee-Object -FilePath evidence/configure-root.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake -S shared -B build-shared @cmakeOptions *>&1 |
+            Tee-Object -FilePath evidence/configure-shared.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Compile complete native and shared C++20/C11 sources'
         id: compile
         shell: pwsh
         run: |
-          & cmake --build build-shared --config Release --parallel *>&1 | Tee-Object -FilePath evidence/build.log
-          exit $LASTEXITCODE
-      - name: 'CTest: C11 std-free API, 32-state parity, and negative security fixtures'
+          & cmake --build build-root --config Release --parallel *>&1 |
+            Tee-Object -FilePath evidence/build-root.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & cmake --build build-shared --config Release --parallel *>&1 |
+            Tee-Object -FilePath evidence/build-shared.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Automated acceptance tests: root and shared, positive and negative'
         id: test
         shell: pwsh
         run: |
-          & ctest --test-dir build-shared -C Release --output-on-failure --output-junit evidence/ctest-results.xml *>&1 | Tee-Object -FilePath evidence/test.log
-          exit $LASTEXITCODE
-      - name: 'Fingerprint compiler and collect failure/success evidence'
-        if: always()
+          & ctest --test-dir build-root -C Release --output-on-failure --output-junit evidence/ctest-root.xml *>&1 |
+            Tee-Object -FilePath evidence/test-root.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & ctest --test-dir build-shared -C Release --output-on-failure --output-junit evidence/ctest-shared.xml *>&1 |
+            Tee-Object -FilePath evidence/test-shared.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: 'Installation qualification: build against installed C++20 public headers'
+        shell: pwsh
+        run: |
+          & cmake --install build-root --config Release --prefix stage *>&1 |
+            Tee-Object -FilePath evidence/install.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $vs = if ('${{ matrix.arch }}' -eq 'native') { '' } else { '${{ matrix.arch }}' }
+          ./ci/Test-InstalledAudit.ps1 -Stage stage -BuildDir build-consumer -VsArch $vs *>&1 |
+            Tee-Object -FilePath evidence/consumer.log
+          if (!$?) { exit 1 }
+
+      - name: 'Experimental Windows Server Core OCI binary smoke'
+        if: ${{ runner.os == 'Windows' && matrix.arch == 'x64' }}
+        continue-on-error: true
+        shell: pwsh
+        run: ./ci/Test-WindowsOciSmoke.ps1 -EvidenceDir evidence/windows-oci
+
+      - name: 'Archive compiler/PDB, checksums, provenance and failure evidence'
+        if: ${{ !cancelled() }}
         shell: pwsh
         env:
           BUILD_OUTCOME: ${{ steps.compile.outcome }}
           TEST_OUTCOME: ${{ steps.test.outcome }}
           TARGET_ARCH: ${{ matrix.arch }}
         run: |
-          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:TEST_OUTCOME" -TargetArch "$env:TARGET_ARCH"
-      - name: 'Upload per-OS SHA256/PDB/log evidence even on failure'
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: "swe-guard-${{ matrix.label }}"
-          path: evidence/
-          if-no-files-found: warn
-          retention-days: 90
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-root -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:TEST_OUTCOME" -TargetArch "$env:TARGET_ARCH"
 
-  pinned-linux:
-    name: "openSUSE Leap pinned Docker x64"
+      - name: 'Record native test, compiler, PDB SHA-256 evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Native ${{ matrix.label }}'
+
+  docker-linux:
+    name: 'Docker safespace · Linux C++20/C11 and installed consumer'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - name: 'Checkout pinned, without persistent credentials'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
+      - name: 'Create container evidence before build'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
+      - name: 'Build SDK-free image, test offline without Linux capabilities'
+        shell: pwsh
+        run: ./ci/Run-DockerValidation.ps1 -Mode Linux -EvidenceDir evidence-docker
+      - name: 'Record Linux OCI execution and evidence hashes'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Linux'
+
+  docker-android:
+    name: 'Docker safespace · Android JDK17/SDK35 (no Gradle)'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
+      - name: 'Create Android container evidence before build'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
+      - name: 'Acquire checksum-pinned SDK in disposable stage; test offline'
+        shell: pwsh
+        run: ./ci/Run-DockerValidation.ps1 -Mode Android -EvidenceDir evidence-docker
+      - name: 'Record unsigned Android candidate and proof of test'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Android unsigned'
+
+  docker-leap:
+    name: 'Docker safespace · pinned openSUSE Leap 16.0 C++20/C11'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
+
+      - name: 'Prepare pinned OS verification evidence'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path evidence-leap | Out-Null
+      - name: 'Compile pinned openSUSE and execute offline CTest'
+        shell: pwsh
+        run: ./ci/Run-DockerValidation.ps1 -Mode OpenSUSE -EvidenceDir evidence-leap
+      - name: 'Record OS SHA-256 base and package-license manifest'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-leap -Label 'Pinned openSUSE Leap'
+
+  container-host-capability:
+    name: 'OCI feasibility check · ${{ matrix.label }}'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: 'Windows x64', os: windows-2022}
+          - {label: 'macOS Intel', os: macos-15-intel}
+          - {label: 'macOS Apple Silicon', os: macos-15}
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+
+      - name: 'Inspect Docker engine capability without unlicensed images'
+        shell: pwsh
+        run: ./ci/Inspect-ContainerHost.ps1 -EvidenceDir evidence-oci-host
+      - name: 'Retain host feasibility and exact SHA in summary'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-oci-host -Label 'OCI capability ${{ matrix.label }}'
+
+  publish-docker:
+    name: 'Trusted publish · paulcheek/android-source-study-v1:latest'
+    needs: [guard, docker-linux, docker-android, docker-leap]
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    environment: docker-hub-release
+    permissions:
+      contents: read
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
+
+      - name: 'Enforce source license and restricted build tool policy'
+        shell: pwsh
+        run: ./ci/Validate-GuardPolicy.ps1
+      - name: 'Prepare Docker Hub publication evidence'
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
+      - name: 'Verify public SDK-free image and securely push immutable + latest'
+        shell: pwsh
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          OS_LICENSE_REVIEW_APPROVED: ${{ vars.OS_LICENSE_REVIEW_APPROVED }}
+          OS_PACKAGE_LICENSE_MANIFEST_SHA256: ${{ vars.OS_PACKAGE_LICENSE_MANIFEST_SHA256 }}
+        run: ./ci/Run-DockerValidation.ps1 -Mode Publish -EvidenceDir evidence-docker
+      - name: 'Record Docker Hub image and licensing evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Hub publication'
+
+  pinned-linux:
+    name: 'openSUSE Leap pinned Docker x64'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
       - name: 'Release pre-flight'
         shell: pwsh
         run: ./ci/Test-ReleaseSafety.ps1
@@ -103,30 +346,37 @@ jobs:
         run: |
           ./ci/Invoke-PinnedContainerGuard.ps1 -Flavor linux -Image 'paulcheek/opensuse-leap-hardened:latest' -Digest $env:IMAGE_DIGEST -Platform 'linux/amd64'
       - name: 'Capture image and source validation evidence'
-        if: always()
+        if: ${{ !cancelled() }}
         shell: pwsh
         env:
           BUILD_OUTCOME: ${{ steps.container.outcome }}
         run: |
           ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:BUILD_OUTCOME" -TargetArch 'linux/amd64'
-      - name: 'Upload validation evidence even on failure'
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: swe-pinned-opensuse-x64
-          path: evidence/
-          if-no-files-found: warn
-          retention-days: 90
+      - name: 'Record pinned openSUSE validation evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned openSUSE Leap'
 
   pinned-android:
-    name: "Android NDK Release compile, pinned Docker x64 host"
+    name: 'Android NDK Release compile, pinned Docker x64 host'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     steps:
-      - name: 'Checkout pinned, without persistent credentials'
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          persist-credentials: false
+      - name: 'Pure PowerShell checkout with exact SHA'
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected source repository.' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sha=(& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
+          Write-Host "Source SHA verified: $sha"
       - name: 'Release pre-flight'
         shell: pwsh
         run: ./ci/Test-ReleaseSafety.ps1
@@ -138,17 +388,13 @@ jobs:
         run: |
           ./ci/Invoke-PinnedContainerGuard.ps1 -Flavor android -Image 'paulcheek/android-source-study-v1:latest' -Digest $env:IMAGE_DIGEST -Platform 'linux/amd64'
       - name: 'Capture image and source compilation evidence'
-        if: always()
+        if: ${{ !cancelled() }}
         shell: pwsh
         env:
           BUILD_OUTCOME: ${{ steps.container.outcome }}
         run: |
           ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome 'not-run-android-cross-compile' -TargetArch 'arm64-v8a'
-      - name: 'Upload validation evidence even on failure'
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: swe-pinned-android-release
-          path: evidence/
-          if-no-files-found: warn
-          retention-days: 90
+      - name: 'Record pinned Android validation evidence'
+        if: ${{ !cancelled() }}
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned Android Release compile'

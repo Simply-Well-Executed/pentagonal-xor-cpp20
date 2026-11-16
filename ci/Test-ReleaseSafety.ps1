@@ -8,7 +8,7 @@ param()
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent $PSScriptRoot
-$extensions = @('.cpp', '.c', '.h', '.hpp', '.ps1')
+$extensions = @('.cpp', '.c', '.h', '.hpp', '.ps1', '.java')
 
 # const, constexpr, static_assert and debug-symbol flags are intentionally
 # allowed: none is a runtime debugger stop or execution pause.

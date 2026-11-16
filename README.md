@@ -18,6 +18,32 @@
 
 ---
 
+## 📡 COREAO RF: input → +9 dBi → EIRP output
+
+New in PR #4: [`shared/coreao_gain.hpp`](shared/coreao_gain.hpp)
+calculates an **idealized RF directional EIRP** from an unchanged
+conducted-power input and a fixed **+9 dBi** gain:
+
+`output_eirp_watts = input_watts × 7.943282347242816`.
+
+The result retains input, gain, output, reconstructed input, a
+normalized residual and an admissibility flag. Invalid/overflowing
+inputs fail closed. Independent C++20 tests compare against
+`pow(10,0.9)`, and installed-package tests exercise the public
+header on every platform. It neither amplifies audio samples nor
+claims additional total radiated watts, model-free word recognition or
+a physical antenna measurement. [RF COREAO protocol](docs/COREAO_GAIN.md).
+
+## 🔷 Stability-10D · PR #17 cross-repository operator port
+
+**New in 0.2.0 (release candidate):** [`shared/stability10d.hpp`](shared/stability10d.hpp) pins **Stability** as the tenth numerical feature, derived from nine original acoustic measurements by three interlocked Pentagonal XOR rings and encoded as a six-byte hex witness. The header uses this project's original five-input parity kernel, not a second implementation.
+
+The [`shared/coreo_stereo.hpp`](shared/coreo_stereo.hpp) operator extracts PR #17's reversible stereo-to-four-channel projection with read-only Z-fold verification. Both are C++20 header-only APIs installed with the existing CMake package. Independent tests check parity against 16-minterm references, exact hex golden vectors, original source preservation, domain guards, and forward/reverse/Z-fold inversion. Provenance: [source PR #17](https://github.com/pcheek1991/faster-whisper-4d-abandonedware-uniunlicensd/pull/17) at commit `432a228f`. See [the operator protocol](docs/STABILITY10D.md).
+
+**Android:** the [experimental offline Java app](docs/ANDROID.md) is built by the release workflow as a clearly named **debug APK**. It requests no Internet or microphone permissions and reads user-selected raw stereo float32-le files. Android, Windows, macOS and Linux outputs are released with SHA-256 evidence, subject to successful CI.
+
+**Critical scope:** this is **model-free audio feature analysis**, not an AI speech-to-text engine. No trained Whisper weights or tokenizer are present; the six-byte Stability signature cannot recognize spoken words. The separate original Whisper/CTranslate2 legacy code is *not* being silently presented as this library. A production-signed Android release requires an additional release-signing process.
+
 ## ∞ The mathematics
 
 Five independent feature probabilities `h₁...h₅ ∈ [0,1]` produce a single

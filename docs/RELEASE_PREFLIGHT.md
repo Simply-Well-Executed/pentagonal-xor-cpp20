@@ -95,3 +95,18 @@ On other platforms, CMake's native generator is used.
 successful installed-consumer execution, and uploaded failure/success
 evidence are required. These conditions must be evidenced by CI,
 not assumed from the source diff.
+
+## Version 0.2.0 release-candidate additions
+
+The installed CMake package additionally contains `include/swe/stability10d.hpp`
+and `include/swe/coreo_stereo.hpp`; the downstream consumer compiles both.
+Independent CTest targets cover exact six-byte golden vectors, independent
+odd-parity minterms, the PR #17 Coreo stereo fixture, tampering and invalid
+inputs. All original C++20/C11 tests remain enabled.
+
+The ship workflow adds an Android Java 17 build lane with JUnit, lint and
+an **experimental debug APK**. The release manifest fingerprints the APK
+alongside all seven C++ archives. Neither this debug build nor the numeric
+Stability score proves word recognition, production Android signing or
+a speech-to-text model. Evidence is per commit, failures must remain in
+Actions history, and no new release tag is created before verification.
