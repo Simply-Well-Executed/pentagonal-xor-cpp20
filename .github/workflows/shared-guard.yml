@@ -380,7 +380,7 @@ jobs:
       - name: 'Release pre-flight'
         shell: pwsh
         run: ./ci/Test-ReleaseSafety.ps1
-      - name: 'Qualify pinned SDK-free image and run Java17 source tests'
+      - name: 'Qualify pinned source image with native CTest; probe Java capability'
         id: container
         shell: pwsh
         env:
@@ -393,7 +393,7 @@ jobs:
         env:
           BUILD_OUTCOME: ${{ steps.container.outcome }}
         run: |
-          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "source-study-$env:BUILD_OUTCOME" -TargetArch 'arm64-v8a'
+          ./ci/Write-CiEvidence.ps1 -BuildDir build-shared-container -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "native-source-ctest-$env:BUILD_OUTCOME" -TargetArch 'linux/amd64'
       - name: 'Record pinned Android validation evidence'
         if: ${{ !cancelled() }}
         shell: pwsh
