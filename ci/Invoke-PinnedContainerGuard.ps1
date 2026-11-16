@@ -47,9 +47,9 @@ $manifest = [ordered]@{
     platform = $Platform
     source_sha = $env:GITHUB_SHA
     no_node_build_commands = $true
-    android_variant = if ($Flavor -eq 'android') { 'not-applicable: published source-stage only' } else { 'not-applicable' }
-    runtime_tests = if ($Flavor -eq 'android') { 'Java 17 standalone test; NDK compile and APK execution not run in SDK-free source image' } else { 'CTest on container' }
-    validation_scope = if ($Flavor -eq 'android') { 'SDK-free source-study qualification' } else { 'native CMake and CTest inside openSUSE' }
+    android_variant = if ($Flavor -eq 'android') { 'not-applicable: published SDK-free source image; native C/C++ only' } else { 'not-applicable' }
+    runtime_tests = if ($Flavor -eq 'android') { 'Native C/C++ CTest and optional Java; NDK compile and APK execution not run' } else { 'CTest on container' }
+    validation_scope = if ($Flavor -eq 'android') { 'SDK-free native CMake/CTest qualification; Java optional' } else { 'native CMake and CTest inside openSUSE' }
     third_party_license_review = 'required before redistribution; no toolchains or image layers are included in source license grant'
 }
 $manifest | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $evidence 'container-manifest.json') -Encoding utf8
@@ -81,12 +81,15 @@ function Get-ExitDiagnosis {
         1 { return 'generic command failure: inspect individual check output' }
         2 { return 'incorrect invocation or tool-specific failure' }
         21 { return 'source-image requirement: CMake unavailable' }
-        22 { return 'source-image requirement: Java compiler unavailable' }
-        23 { return 'source-image requirement: Java runtime unavailable' }
+        22 { return 'source-image requirement: CTest unavailable' }
+        23 { return 'source-image requirement: C++ compiler unavailable' }
         24 { return 'source-image requirement: Java compiler version mismatch' }
         25 { return 'source-image requirement: missing Java source file' }
         31 { return 'Java source compilation failed' }
         32 { return 'Java acceptance tests failed' }
+        41 { return 'Native CMake configure failed in pinned source image' }
+        42 { return 'Native C/C++ compile failed in pinned source image' }
+        43 { return 'Native CTest failed in pinned source image' }
         90 { return 'unclassified runtime exception; see android-source-runtime.json' }
         91 { return 'could not write source-runtime evidence file' }
         124 { return 'external timeout; inspect runner logs' }
