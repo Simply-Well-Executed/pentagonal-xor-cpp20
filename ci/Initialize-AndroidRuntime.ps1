@@ -82,9 +82,9 @@ try {
         (Join-Path $root "$pkg/Acoustic10D.java"),
         (Join-Path $root "$testPkg/StandaloneTest.java")
     )
-    foreach ($input in $inputs) {
-        if (!(Test-Path -LiteralPath $input -PathType Leaf)) {
-            Stop-Qualification 25 "Required standalone Java source is missing: $input"
+    foreach ($sourceFile in $inputs) {
+        if (!(Test-Path -LiteralPath $sourceFile -PathType Leaf)) {
+            Stop-Qualification 25 "Required standalone Java source is missing: $sourceFile"
         }
     }
     $classes = Join-Path $build 'java-source-study-classes'
