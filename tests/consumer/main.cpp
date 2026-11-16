@@ -34,10 +34,10 @@ int main() {
     if (bytes[12] != '\0' || stability.stability < 0.0 ||
         stability.stability > 1.0) return 6;
 
-    const float input[6] = {1,10,2,20,3,30};
+    const float stereo_input[6] = {1,10,2,20,3,30};
     swe::coreo_stereo::Quad quad[3]{};
     for (unsigned long long i=0; i<3u; ++i)
-        if (!swe::coreo_stereo::forward_at(input,3u,i,quad[i])) return 7;
-    if (!swe::coreo_stereo::inspect(input,3u,quad).admissible) return 8;
+        if (!swe::coreo_stereo::forward_at(stereo_input,3u,i,quad[i])) return 7;
+    if (!swe::coreo_stereo::inspect(stereo_input,3u,quad).admissible) return 8;
     return 0;
 }
