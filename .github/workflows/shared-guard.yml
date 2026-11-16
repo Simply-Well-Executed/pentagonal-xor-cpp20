@@ -308,6 +308,7 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
           OS_LICENSE_REVIEW_APPROVED: ${{ vars.OS_LICENSE_REVIEW_APPROVED }}
+          OS_PACKAGE_LICENSE_MANIFEST_SHA256: ${{ vars.OS_PACKAGE_LICENSE_MANIFEST_SHA256 }}
         run: ./ci/Run-DockerValidation.ps1 -Mode Publish -EvidenceDir evidence-docker
       - name: 'Record Docker Hub image and licensing evidence'
         if: ${{ !cancelled() }}
