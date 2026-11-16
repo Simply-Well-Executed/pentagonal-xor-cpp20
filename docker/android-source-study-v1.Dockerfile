@@ -17,7 +17,7 @@ ENV POWERSHELL_TELEMETRY_OPTOUT=1 \
 USER root
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      openjdk-17-jdk-headless ca-certificates curl unzip && \
+      openjdk-17-jdk-headless ca-certificates curl unzip cmake g++ git && \
     rm -rf /var/lib/apt/lists/* && \
     useradd --uid 10001 --create-home --shell /usr/sbin/nologin swebuild
 
@@ -38,3 +38,8 @@ ENV ANDROID_HOME=/opt/android-sdk \
 RUN chown -R 10001:10001 /study
 USER 10001:10001
 RUN pwsh -NoLogo -NoProfile -File ./ci/Invoke-AndroidDockerValidation.ps1
+
+# Linux native C11/C++20 guards also execute inside a disposable container.
+# No Android SDK is installed in this stage.
+FROM source AS linux-validation
+RUN pwsh -NoLogo -NoProfile -File ./ci/Invoke-LinuxDockerValidation.ps1
