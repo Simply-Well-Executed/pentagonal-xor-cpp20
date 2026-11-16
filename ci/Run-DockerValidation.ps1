@@ -50,6 +50,8 @@ if ($Mode -eq 'Publish') {
         # nor a source-space keystore, and runs as an unprivileged user.
         Invoke-CheckedDocker -Arguments @('run','--rm','--network','none','--read-only',
             '--cap-drop','ALL','--security-opt','no-new-privileges',
+            '--tmpfs','/tmp:rw,nosuid,nodev',
+            '--env','HOME=/tmp/pwsh-home','--env','XDG_CACHE_HOME=/tmp/pwsh-cache',
             $latestTag,'-Command',
             'if ((Test-Path /opt/android-sdk) -or (Test-Path /study/android/app/build)) { exit 51 }; if ([Environment]::UserName -eq "root") { exit 52 }; "PASS SDK-free public image"')
 
