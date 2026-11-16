@@ -12,6 +12,38 @@ $evidence = [IO.Path]::GetFullPath((Join-Path $root $EvidenceDir))
 
 $apkDir = Join-Path $root 'android/app/build/outputs/apk/debug'
 $apks = @(Get-ChildItem -LiteralPath $apkDir -Filter '*.apk' -File -ErrorAction SilentlyContinue)
+# Record compiler and packaging toolchain byte fingerprints, not copies.
+# No keystores or signing secrets are collected or uploaded.
+$toolCandidates = [Collections.Generic.List[object]]::new()
+foreach ($command in @('javac','java','jar','keytool')) {
+    $cmd = Get-Command $command -ErrorAction SilentlyContinue |
+        Where-Object { $_.Source -and (Test-Path -LiteralPath $_.Source -PathType Leaf) } |
+        Select-Object -First 1
+    if ($cmd) { $toolCandidates.Add([ordered]@{ name = $command; path = $cmd.Source }) }
+}
+if (![string]::IsNullOrWhiteSpace($env:ANDROID_HOME)) {
+    $bin = Join-Path $env:ANDROID_HOME 'build-tools/35.0.0'
+    foreach ($tool in @('aapt2','d8','zipalign','apksigner')) {
+        $toolPath = Join-Path $bin $tool
+        if (Test-Path -LiteralPath $toolPath -PathType Leaf) {
+            $toolCandidates.Add([ordered]@{ name = $tool; path = $toolPath })
+        }
+    }
+}
+$toolHashes = @(
+    foreach ($tool in $toolCandidates) {
+        [ordered]@{
+            name = $tool.name
+            path = $tool.path
+            sha256 = (Get-FileHash -LiteralPath $tool.path -Algorithm SHA256).Hash.ToLowerInvariant()
+            redistributed = $false
+        }
+    }
+)
+$testLog = Join-Path $evidence 'build-and-test.log'
+$standaloneTestObserved = (Test-Path -LiteralPath $testLog -PathType Leaf) -and
+    [bool](Select-String -LiteralPath $testLog -SimpleMatch 'independent Java checks (Stability + raw audio)' -Quiet)
+
 $manifest = [ordered]@{
     schema = 'Fastest-Whisper-10D-Android-evidence-v1'
     generated_utc = (Get-Date).ToUniversalTime().ToString('o')
@@ -21,6 +53,9 @@ $manifest = [ordered]@{
     runner = $env:RUNNER_OS
     protocol = 'Stability-9L3PX5-U16LE-v1'
     offline_and_weight_free = $true
+    test_runner = 'Java17-StandaloneTest-main-no-JUnit'
+    tests_observed_passing = $standaloneTestObserved
+    tools = $toolHashes
     debug_signing = $true
     release_signing = $false
     apk_built = ($apks.Count -gt 0)
@@ -37,13 +72,8 @@ $manifest = [ordered]@{
 $manifest | ConvertTo-Json -Depth 6 |
     Set-Content -LiteralPath (Join-Path $evidence 'manifest.json') -Encoding utf8
 
-$testRoot = Join-Path $root 'android/app/build/test-results/testDebugUnitTest'
-if (Test-Path -LiteralPath $testRoot -PathType Container) {
-    $destination = Join-Path $evidence 'junit'
-    [void][IO.Directory]::CreateDirectory($destination)
-    Get-ChildItem -LiteralPath $testRoot -File -Filter '*.xml' |
-        Copy-Item -Destination $destination
-}
+# The dependency-free Java test emits its exact results to build-and-test.log.
+# There is deliberately no Gradle/JUnit XML directory to read.
 $sumPath = Join-Path $evidence 'SHA256SUMS'
 $lines = [Collections.Generic.List[string]]::new()
 Get-ChildItem -LiteralPath $evidence -File -Recurse |
