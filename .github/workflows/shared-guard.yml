@@ -66,7 +66,7 @@ jobs:
           & ctest --test-dir build-shared -C Release --output-on-failure --output-junit evidence/ctest-results.xml *>&1 | Tee-Object -FilePath evidence/test.log
           exit $LASTEXITCODE
       - name: 'Fingerprint compiler and collect failure/success evidence'
-        if: always()
+        if: ${{ !cancelled() }}
         shell: pwsh
         env:
           BUILD_OUTCOME: ${{ steps.compile.outcome }}
@@ -75,7 +75,7 @@ jobs:
         run: |
           ./ci/Write-CiEvidence.ps1 -BuildDir build-shared -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:TEST_OUTCOME" -TargetArch "$env:TARGET_ARCH"
       - name: 'Upload per-OS SHA256/PDB/log evidence even on failure'
-        if: always()
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "swe-guard-${{ matrix.label }}"
