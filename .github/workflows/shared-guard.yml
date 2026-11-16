@@ -113,14 +113,10 @@ jobs:
         run: |
           ./ci/Write-CiEvidence.ps1 -BuildDir build-root -EvidenceDir evidence -BuildOutcome "$env:BUILD_OUTCOME" -TestOutcome "$env:TEST_OUTCOME" -TargetArch "$env:TARGET_ARCH"
 
-      - name: 'Upload native validation evidence (including failures)'
+      - name: 'Record native test, compiler, PDB SHA-256 evidence'
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: swe-gamp4-native-${{ matrix.label }}
-          path: evidence/
-          if-no-files-found: warn
-          retention-days: 90
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Native ${{ matrix.label }}'
 
   docker-linux:
     name: 'Docker safespace · Linux C++20/C11 and installed consumer'
@@ -148,14 +144,10 @@ jobs:
       - name: 'Build SDK-free image, test offline without Linux capabilities'
         shell: pwsh
         run: ./ci/Run-DockerValidation.ps1 -Mode Linux -EvidenceDir evidence-docker
-      - name: 'Upload Docker Linux test, compiler and SHA-256 evidence'
+      - name: 'Record Linux OCI execution and evidence hashes'
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: swe-gamp4-docker-linux
-          path: evidence-docker/
-          if-no-files-found: warn
-          retention-days: 90
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Linux'
 
   docker-android:
     name: 'Docker safespace · Android JDK17/SDK35 (no Gradle)'
@@ -183,22 +175,10 @@ jobs:
       - name: 'Acquire checksum-pinned SDK in disposable stage; test offline'
         shell: pwsh
         run: ./ci/Run-DockerValidation.ps1 -Mode Android -EvidenceDir evidence-docker
-      - name: 'Upload validated debug APK'
+      - name: 'Record unsigned Android candidate and proof of test'
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: swe-gamp4-docker-android-debug-apk
-          path: evidence-docker/app-debug.apk
-          if-no-files-found: warn
-          retention-days: 90
-      - name: 'Upload Android Docker/SDK/build/failure SHA-256 evidence'
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: swe-gamp4-docker-android-evidence
-          path: evidence-docker/
-          if-no-files-found: warn
-          retention-days: 90
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Android unsigned'
 
   publish-docker:
     name: 'Trusted publish · paulcheek/android-source-study-v1:latest'
@@ -234,11 +214,7 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: ./ci/Run-DockerValidation.ps1 -Mode Publish -EvidenceDir evidence-docker
-      - name: 'Archive published image ID, commit and tag'
+      - name: 'Record Docker Hub image and licensing evidence'
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: swe-gamp4-docker-publish-evidence
-          path: evidence-docker/
-          if-no-files-found: warn
-          retention-days: 90
+        shell: pwsh
+        run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Hub publication'
