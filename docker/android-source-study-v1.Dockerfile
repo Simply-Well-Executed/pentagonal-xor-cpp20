@@ -17,7 +17,7 @@ ENV POWERSHELL_TELEMETRY_OPTOUT=1 \
 USER root
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-      openjdk-17-jdk-headless ca-certificates curl unzip cmake g++ git && \
+      openjdk-17-jdk-headless ca-certificates curl unzip cmake g++ make ninja-build git && \
     rm -rf /var/lib/apt/lists/* && \
     useradd --uid 10001 --create-home --shell /usr/sbin/nologin swebuild
 
