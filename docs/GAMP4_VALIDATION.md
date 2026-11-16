@@ -95,6 +95,23 @@ Original failed checks, stage changes, SHA-256 values and the PR decision
 must remain linked to the corresponding commit; do not rebase history to
 hide them.
 
+## Experimental Windows OCI execution witness
+
+The Windows x64 guard additionally attempts a **non-gating** Windows
+Server Core LTSC 2022 Docker smoke using host-compiled C++20 executables.
+It verifies the 32-state parity self-test and executable startup inside
+the Windows container, using a temporary build context created entirely
+by PowerShell 7. Its proprietary Microsoft base image is never pushed
+to Docker Hub. If unavailable, the step remains visibly unsuccessful
+while the authoritative native Windows compiler/CTest results still gate
+release. This is execution inside a Windows container, **not** an MSVC
+compiler installed inside a container.
+
+The macOS feasibility probe confirmed no Docker daemon on the tested
+GitHub-hosted Mac runners. Linux containers on Docker Desktop for macOS
+would not reproduce the Darwin kernel; native macOS VM tests therefore
+remain the correct validation source.
+
 ## 2026-11 safety and release update
 
 `shared-guard.yml` now contains **no JavaScript-based Actions steps**, no
