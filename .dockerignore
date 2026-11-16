@@ -1,0 +1,16 @@
+.git
+.github
+build
+build-*
+build-shared
+stage
+dist
+evidence
+evidence-*
+android/app/build
+**/*.p12
+**/*.jks
+**/*.keystore
+**/*secret*
+**/*token*
+.DS_Store
