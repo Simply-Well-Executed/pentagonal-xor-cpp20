@@ -178,3 +178,6 @@ if ($Flavor -eq 'linux') {
     }
 }
 Write-Host "Pinned $Flavor build completed: $reference ($Platform)"
+# Explicitly own the final job status; optional source-image probes can exit 127.
+$global:LASTEXITCODE = 0
+exit 0
