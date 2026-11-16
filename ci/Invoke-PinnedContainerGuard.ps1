@@ -134,6 +134,44 @@ if ($Flavor -eq 'linux') {
     # and CMake, but does not contain an NDK. Validate exactly that scope.
     # An actual unsigned Release APK is independently built in the
     # disposable android-sdk stage by the docker-android workflow job.
-    Invoke-ContainerStage -Name 'android-source-runtime' -Command "pwsh -NoLogo -NoProfile -File /work/ci/Initialize-AndroidRuntime.ps1 -EvidenceDir /work/$EvidenceDir -BuildDir /work/$BuildDir"
+    # Run the envscript in the HOST PowerShell environment. The immutable
+    # SDK-free container needs only /bin/sh, Java and javac, not pwsh.
+    $started = (Get-Date).ToUniversalTime().ToString('o')
+    $runtimeError = $null
+    try {
+        & (Join-Path $PSScriptRoot 'Initialize-AndroidRuntime.ps1') -DockerBaseArgs $baseArgs -EvidenceDir $evidence -BuildDir $BuildDir *>&1 |
+            Tee-Object -FilePath (Join-Path $evidence 'android-source-runtime.log')
+    } catch {
+        $runtimeError = $_.Exception.Message
+    } finally {
+        $runtimeStatus = 0
+        $runtimeRecord = Join-Path $evidence 'android-source-runtime.json'
+        if (Test-Path -LiteralPath $runtimeRecord -PathType Leaf) {
+            try {
+                $runtimeStatus = [int]((Get-Content -LiteralPath $runtimeRecord -Raw | ConvertFrom-Json).failure_code)
+            } catch {
+                if ($runtimeStatus -eq 0) { $runtimeStatus = 90 }
+                if (!$runtimeError) { $runtimeError = 'Unable to read Android source runtime diagnostic JSON.' }
+            }
+        } elseif (!$runtimeError) {
+            $runtimeStatus = 91
+            $runtimeError = 'Missing source runtime diagnostic JSON.'
+        }
+        if ($runtimeError -and $runtimeStatus -eq 0) { $runtimeStatus = 90 }
+        $stageRecords.Add([ordered]@{
+            stage = 'android-source-runtime'
+            started_utc = $started
+            finished_utc = (Get-Date).ToUniversalTime().ToString('o')
+            exit_code = $runtimeStatus
+            diagnosis = if ($runtimeStatus -eq 0) { 'pass' } else { $runtimeError }
+            log = 'android-source-runtime.log'
+            passed = ($runtimeStatus -eq 0)
+        })
+        $stageRecords | ConvertTo-Json -Depth 5 |
+            Set-Content -LiteralPath (Join-Path $evidence 'container-stage-results.json') -Encoding utf8
+    }
+    if ($runtimeStatus -ne 0) {
+        throw "Pinned Android source-image qualification failed (code=$runtimeStatus): $runtimeError"
+    }
 }
 Write-Host "Pinned $Flavor build completed: $reference ($Platform)"
