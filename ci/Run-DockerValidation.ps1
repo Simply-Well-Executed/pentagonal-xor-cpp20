@@ -62,10 +62,11 @@ if ($Mode -eq 'Publish') {
             '--target','source','--tag',$leapImmutable,'--tag',$leapLatest,$root)
         Invoke-CheckedDocker -Arguments @('run','--rm','--network','none','--read-only',
             '--cap-drop','ALL','--security-opt','no-new-privileges',
-            $leapLatest,'--version')
-        $licenseRows = @(& docker run --rm --network none --read-only --cap-drop ALL
-            --security-opt no-new-privileges --entrypoint rpm $leapLatest
-            '-qa' '--qf' '%{NAME}|%{VERSION}-%{RELEASE}|%{LICENSE}\n')
+            $leapLatest,'cmake','--version')
+        $licenseArgs = @('run','--rm','--network','none','--read-only','--cap-drop',
+            'ALL','--security-opt','no-new-privileges','--entrypoint','rpm',$leapLatest,
+            '-qa','--qf','%{NAME}|%{VERSION}-%{RELEASE}|%{LICENSE}\n')
+        $licenseRows = @(& docker @licenseArgs)
         if ($LASTEXITCODE -ne 0 -or $licenseRows.Count -lt 1) {
             throw 'OS package license inventory missing: no publication.'
         }
@@ -104,6 +105,41 @@ if ($Mode -eq 'Publish') {
     return
 }
 
+# The openSUSE validation target compiles/tests at Docker build time.
+# Each CTest RUN step has BuildKit network disabled.
+if ($Mode -eq 'OpenSUSE') {
+    $buildArgs = @('build','--progress','plain','--file',$leapDockerfile,
+        '--target','validation','--tag',$localImage,$root)
+    & docker @buildArgs *>&1 | Tee-Object -FilePath (Join-Path $evidence 'opensuse-validation.log')
+    if ($LASTEXITCODE -ne 0) { throw 'Pinned openSUSE C++20/C11 acceptance suite rejected image.' }
+    $imageId = (& docker image inspect --format '{{.Id}}' $localImage | Select-Object -First 1)
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect openSUSE validation image.' }
+    $licenseArgs = @('run','--rm','--network','none','--read-only','--cap-drop',
+        'ALL','--security-opt','no-new-privileges','--entrypoint','rpm',$localImage,
+        '-qa','--qf','%{NAME}|%{VERSION}-%{RELEASE}|%{LICENSE}\n')
+    $licenseRows = @(& docker @licenseArgs)
+    if ($LASTEXITCODE -ne 0 -or $licenseRows.Count -lt 1) {
+        throw 'openSUSE package license inventory unavailable.'
+    }
+    $licenseRows | Sort-Object |
+        Set-Content -LiteralPath (Join-Path $evidence 'opensuse-os-licenses.tsv') -Encoding utf8
+    [ordered]@{
+        schema='SWE-Pinned-Leap16-GAMP4-Style-v1'
+        base_index_sha256='a4115e2f5aea9712a7c73974fd94000a034fc3051ef29b5f7722fbf04070dd9d'
+        source_sha=$sourceSha
+        validation_image_id=$imageId
+        tests_passed=$true
+        source_license='0BSD'
+        os_packages_are_separately_licensed=$true
+    } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'opensuse-validation.json')
+    $checksumRows = @(Get-ChildItem -LiteralPath $evidence -File | Sort-Object Name |
+        ForEach-Object {
+            '{0}  {1}' -f (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(),$_.Name
+        })
+    $checksumRows | Set-Content -LiteralPath (Join-Path $evidence 'SHA256SUMS') -Encoding utf8
+    Write-Host "PASS: pinned openSUSE Leap acceptance suite, image $imageId"
+    return
+}
 $target = if ($Mode -eq 'Android') { 'android-sdk' } else { 'source' }
 $args = @('build','--pull','--progress','plain','--file',$dockerfile,
     '--target',$target,'--tag',$localImage)
