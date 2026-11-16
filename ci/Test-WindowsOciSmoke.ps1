@@ -23,8 +23,13 @@ if($LASTEXITCODE -ne 0 -or $dockerOS -cne 'windows'){
 }
 $short=if($env:GITHUB_SHA.Length -ge 12){$env:GITHUB_SHA.Substring(0,12)}else{'local'}
 $tag='swe-guard-windows-smoke:'+$short
-$dockerfile=Join-Path $root 'docker/windows-cpp-smoke.Dockerfile'
-& docker build --file $dockerfile --tag $tag $root *>&1 |
+$context=Join-Path $env:RUNNER_TEMP ('swe-windows-smoke-'+$short)
+[void][IO.Directory]::CreateDirectory($context)
+Copy-Item -LiteralPath $sourceBin -Destination (Join-Path $context 'pentagonal_xor.exe')
+Copy-Item -LiteralPath $guardBin -Destination (Join-Path $context 'swe_guard.exe')
+Copy-Item -LiteralPath (Join-Path $root 'docker/windows-cpp-smoke.Dockerfile') -Destination (Join-Path $context 'Dockerfile')
+$dockerfile=Join-Path $context 'Dockerfile'
+& docker build --file $dockerfile --tag $tag $context *>&1 |
  Tee-Object -FilePath (Join-Path $evidence 'image-build.log')
 if($LASTEXITCODE -ne 0){throw 'Windows container construction failed.'}
 & docker run --rm --network none --isolation process $tag 'C:\guard\swe_guard.exe' --self-test *>&1 |
