@@ -77,7 +77,7 @@ $unsigned = Join-Path $working 'unsigned.apk'
 Invoke-Checked $aapt2 @('link','-o',$unsigned,'-I',$androidJar,
     '--manifest',$manifest,'--min-sdk-version','26','--target-sdk-version','35',
     '--version-code','2','--version-name','0.2.0-bleeding',
-    '-R',$compiled[0].FullName)
+    '--auto-add-overlay','-R',$compiled[0].FullName)
 
 Write-Host '4/8 D8 dex conversion (no Gradle plugin)'
 $jarPath = Join-Path $working 'app-classes.jar'
