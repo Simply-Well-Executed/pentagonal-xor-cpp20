@@ -18,6 +18,22 @@
 
 ---
 
+## 📡 COREAO RF: input → +9 dBi → EIRP output
+
+New in PR #4: [`shared/coreao_gain.hpp`](shared/coreao_gain.hpp)
+calculates an **idealized RF directional EIRP** from an unchanged
+conducted-power input and a fixed **+9 dBi** gain:
+
+`output_eirp_watts = input_watts × 7.943282347242816`.
+
+The result retains input, gain, output, reconstructed input, a
+normalized residual and an admissibility flag. Invalid/overflowing
+inputs fail closed. Independent C++20 tests compare against
+`pow(10,0.9)`, and installed-package tests exercise the public
+header on every platform. It neither amplifies audio samples nor
+claims additional total radiated watts, model-free word recognition or
+a physical antenna measurement. [RF COREAO protocol](docs/COREAO_GAIN.md).
+
 ## 🔷 Stability-10D · PR #17 cross-repository operator port
 
 **New in 0.2.0 (release candidate):** [`shared/stability10d.hpp`](shared/stability10d.hpp) pins **Stability** as the tenth numerical feature, derived from nine original acoustic measurements by three interlocked Pentagonal XOR rings and encoded as a six-byte hex witness. The header uses this project's original five-input parity kernel, not a second implementation.
