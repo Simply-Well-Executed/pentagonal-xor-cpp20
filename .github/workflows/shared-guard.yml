@@ -53,6 +53,11 @@ jobs:
         shell: pwsh
         run: ./ci/Validate-GuardPolicy.ps1
 
+      - name: 'Test Android publishing independently of OpenSUSE license review'
+        if: matrix.label == 'Linux x64'
+        shell: pwsh
+        run: ./ci/Test-DockerPublishPolicy.ps1
+
       - name: 'Prepare failure/success evidence'
         shell: pwsh
         run: New-Item -ItemType Directory -Force -Path evidence | Out-Null
@@ -302,7 +307,7 @@ jobs:
       - name: 'Prepare Docker Hub publication evidence'
         shell: pwsh
         run: New-Item -ItemType Directory -Force evidence-docker | Out-Null
-      - name: 'Verify public SDK-free image and securely push immutable + latest'
+      - name: 'Verify and publish Android source; OpenSUSE requires separate license review'
         shell: pwsh
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}

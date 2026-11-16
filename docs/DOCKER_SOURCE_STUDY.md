@@ -72,11 +72,26 @@ credentials. Configure GitHub environment
 
 A tested source image is tagged both
 `paulcheek/android-source-study-v1:sha-<12-hex-prefix>` and
-`paulcheek/android-source-study-v1:latest`. Push uses
-`docker login --password-stdin` and then, after the separate OS license review gate, these two exact commands:
+`paulcheek/android-source-study-v1:latest`. After the source image passes
+its SDK-free verification, the protected job can publish these tags without
+waiting on the OpenSUSE-specific RPM inventory approval/hash gate:
 
 ```powershell
 docker push paulcheek/android-source-study-v1:latest
+```
+
+The source image's third-party OS and .NET packages keep their own licenses;
+this separation does not waive applicable license or notice obligations.
+The OpenSUSE image is built and published only when
+`OS_LICENSE_REVIEW_APPROVED=true` and
+`OS_PACKAGE_LICENSE_MANIFEST_SHA256` matches the reviewed
+`opensuse-os-licenses.tsv` hash. Without approval, the workflow skips only
+the OpenSUSE image and records that status; an approval with a missing or
+changed manifest hash fails before registry login or any image push.
+
+When that separate OpenSUSE review is approved, the protected publisher also pushes:
+
+```powershell
 docker push paulcheek/opensuse-leap-hardened:latest
 ```
 

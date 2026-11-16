@@ -24,7 +24,7 @@ Every run records its actual commit SHA and runner/toolchain identity.
 | URS-03 | HIGH: nine-ligand/three-ring Stability, exact six-byte LE witnesses | `shared/stability10d.hpp`, Java `Stability.java` | Independent minterms/negative-domain CTests and 26,654 pure Java assertions | Native+Docker CTest; `build-and-test.log` |
 | URS-04 | HIGH: reject model-weight claims and unverified speech recognition | SDK-free source study; no trained model | Tests on invalid frames; no model files; offline Android container execution | Android manifest, APK SHA256, source preflight |
 | URS-05 | HIGH: test Android without developmental signing | Java 17, SDK 35, AAPT2, D8 and ZIP alignment | Isolated Docker Android builds a deliberately **unsigned, non-installable** release candidate and checks its structure and SHA256 | `app-unsigned.apk`, source/SDK evidence, negative tests, red log on failure |
-| URS-06 | HIGH: resist unauthorized Docker Hub publication | Protected dual-image publish job, dependent on native/Android/Linux/Leap validation | Only trusted main/version-tag pushes with Docker credentials and explicit OS package-license review; PRs blocked | Exact push result, registry digest and package-license manifest |
+| URS-06 | HIGH: resist unauthorized Docker Hub publication | Protected publish job, dependent on native/Android/Linux/Leap validation | Only trusted main/version-tag pushes with Docker credentials; OpenSUSE additionally requires explicit OS package-license review and exact manifest hash; PRs blocked | Exact push result, registry digest and package-license manifest |
 | URS-07 | HIGH: no unlicensed Google Android SDK redistribution | Two-stage Docker design, publish only `source` target | SDK paths absent in published image, SDK acquired only in temporary validation image | Docker image inspect and offline inspection run |
 | URS-08 | MEDIUM: retain identity and genuine failures while avoiding a JS runtime in guard | Seven native jobs + Docker Linux/Android/Leap + PowerShell evidence | SHA256, CTest, Windows PDB/compiler fingerprints and GitHub job summary | **Job logs and summary persisted; binary artifacts are not uploaded by this JS-free guard**. The separate ship workflow is a distinct artifact channel |
 | URS-09 | MEDIUM: reproducible experimental counterarccosine second-wave phase | `tests/counterarccosine_secondwave_test.cpp` and dedicated SVG | 257 deterministic phase witnesses; mathematical complementary identity | CTest results and white paper |
@@ -66,10 +66,15 @@ would falsify validation provenance; use the actual native runners above.
   `sha-<12-prefix>` tags. Publishing requires *all* native, Linux Docker
   and Android Docker gates plus trusted main/version-tag push.
 - Configure GitHub environment `docker-hub-release` with approval rules,
-  secrets `DOCKERHUB_USERNAME=paulcheek` and `DOCKERHUB_TOKEN`, and
-  environment variable `OS_LICENSE_REVIEW_APPROVED=true` **only after**
-  examining the RPM license inventory and satisfying source/notice delivery.
-  The workflow refuses both pushes if review or authorization is missing.
+  secrets `DOCKERHUB_USERNAME=paulcheek` and `DOCKERHUB_TOKEN`. The Android
+  source image can publish after its own SDK-free checks without waiting
+  for the OpenSUSE RPM review; its third-party layers retain their original
+  licenses and notices.
+- Set `OS_LICENSE_REVIEW_APPROVED=true` **only after**
+  examining the RPM license inventory and satisfying source/notice delivery,
+  and set `OS_PACKAGE_LICENSE_MANIFEST_SHA256` to the reviewed inventory hash.
+  Without approval, the workflow skips the OpenSUSE image; with approval but
+  a missing or changed hash, publication fails before registry login or push.
 - A green source build is not GMP operational qualification or physical
   Android/antenna performance qualification. Device/emulator tests,
   calibration traceability, cybersecurity review, approved SOPs and
@@ -130,12 +135,12 @@ packages, including copyleft components: those packages remain under their
 original licenses; project files are **not converted** to a copyleft license.
 Strict zero-copyleft *image* redistribution is incompatible with
 publishing an unmodified general-purpose openSUSE base containing GPL
-packages. The Linux image push therefore requires explicit, auditable
+packages. The OpenSUSE image push therefore requires explicit, auditable
 package-license review rather than an automatic assertion of zero copyleft.
 
-## Exact package-license acceptance gate
+## Exact OpenSUSE package-license acceptance gate
 
-Before publishing either Docker Hub image, the protected
+Before publishing the OpenSUSE Docker Hub image, the protected
 `docker-hub-release` environment must supply
 `OS_LICENSE_REVIEW_APPROVED=true` **and**
 `OS_PACKAGE_LICENSE_MANIFEST_SHA256` equal to the SHA-256 of the
@@ -144,6 +149,9 @@ The publisher reconstructs this manifest from its own image and
 fails closed if its contents changed. This binds the approved package
 inventory to the actual publication candidate, avoiding a blanket
 license-approval flag for unexpectedly updated RPM packages.
+This OpenSUSE-specific RPM gate does not block the separately verified
+Android source image, nor does that separation waive license or notice
+obligations for any third-party image layers.
 Review of a GPL/LGPL package permits distribution *subject to its
 license*, but does not change the project's authored source from 0BSD.
 If the requirement is zero copyleft **inside the container**, do not
