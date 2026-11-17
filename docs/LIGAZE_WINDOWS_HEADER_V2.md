@@ -101,3 +101,95 @@ Every safe v2 build and COR test passed. The full_header_v2 benchmark source com
 The existing native LTCG-only comparison recorded 6.96–7.39% lower latency in all three paired trials. This is a single-runner result and does not replace earlier positive trials; preserve both. No Windows safe-platform-v2 default was promoted, and no Win32 API stub was added to production. All v2 source files remain available for review, follow-up experiments and auditing.
 
 The tested Windows runner was x64; architectures ARM64EC, ARM64, ARM32, IA64, MIPS, ALPHA and PPC are defined in metadata but were **not** directly hardware-tested in this run. This work does not demonstrate universal CPU performance or cross-hardware predictability.
+
+## YANG five-column and YIN no-GL mirror experiment (November 2026)
+
+The numerical benchmark for expanded v2 WinAPI no-op source is compiled separately
+from the strict API contract. The contract must reject the no-op API shadow in every case.
+
+| Column | YANG compiler / linker | YIN compiler / linker |
+| --- | --- | --- |
+| A | /Od /GL- /LTCG:OFF | /Od /GL- /LTCG:OFF |
+| B | /O2 /GL- /LTCG:OFF | /O2 /GL- /LTCG:OFF |
+| C | /O2 /GL /LTCG | /O2 /GL- /LTCG |
+| D | /O2 /GL /LTCG unspecified | /O2 /GL- /LTCG unspecified |
+| E | /O2 /GL- /LTCG | /O2 /GL- /LTCG |
+
+YIN disables /GL in every column. YIN C and E are identical requested flags.
+YIN and YANG A, B, and E also have identical flags: those are repeated
+measurements, not independent optimization modes. The linker can automatically
+activate LTCG for /GL objects in YANG D even without an explicit /LTCG flag.
+
+PowerShell 7 script ci/Invoke-LigazeV2YinYang.ps1 runs 20 isolated numerical
+builds (safe baseline and full-header benchmark under each ten profiles)
+plus ten separate expected-negative WinAPI API contract builds. It preserves
+compiler/linker options, CMake configuration, compile diagnostics, binary
+SHA-256, three alternated paired trials and five repetitions per trial,
+and checks the original Java 17 numerical checksum. If a numerical benchmark
+cannot compile its speed is reported as unavailable, never invented.
+
+The measured artifact is evidence-v2-yin-yang/v2-yin-yang.json. This follow-up
+does not modify historical experiment results, authorize WinAPI no-op functions
+or change production compiler settings.
+
+## THAILONGA derivation: YIN + YANG = YAN
+
+YAN is a **derived record** in the existing paired A–E measurements. The
+original YIN and YANG values and actual compiler and linker flags remain
+authoritative. Every paired witness is retained without alteration. YAN
+records both observed expanded-header timings, their difference, the ratio
+`YANG/YIN`, the percentage change and checksum parity. The YAN status is
+`NOT_COMPARABLE` if either compiled measurement is unavailable. This is
+a report-level synthesis, not a third compiled binary and not a claim that
+two experiment treatments are mathematically identical.
+
+The original PowerShell benchmark's case-insensitive variable shadowing
+(`$trials` collection versus the `$Trials` integer argument) was fixed by
+a distinct `$trialRows` collection. This was a script defect, not a compiler
+or arithmetic result; its previous failed CI result stays in Actions history.
+
+## CORE: exploratory YIN-side C++20 + profile training (new protocol)
+
+CORE is a **new experimental branch of the YIN lineage**, *not* a change to
+the established no-`/GL` YIN A–E protocol. The new CORE build requests exactly
+these compiler optimization options (plus normal `/DNDEBUG` Release macro):
+
+```text
+/std:c++20 /O2 /Ob3 /GL /Gw /fp:fast /arch:AVX2 /Qpar /EHsc
+```
+
+The original requested linker expression is preserved literally as a
+provenance input:
+
+```text
+/LTCG:PGOptimize /OPT:REF /OPT:ICF=5
+```
+
+Microsoft deprecated `/LTCG:PGOptimize` from Visual Studio 2015 onwards.
+CORE therefore performs an **instrumented PGO training phase**
+(`/LTCG /GENPROFILE`) on the fixed COR benchmark corpus, confirms that
+actual profile data exists, and attempts the exact user-requested legacy
+optimized link. If this is rejected by the installed MSVC toolset, CORE
+records that failure and attempts its documented modern equivalent
+(`/LTCG /USEPROFILE`). It never claims PGO optimization without a
+successful trained-data build. Both modes retain `/OPT:REF`, `/OPT:ICF=5`
+and `/INCREMENTAL:NO`.
+
+Each of the safe baseline and original `full_header_v2` numerical
+benchmark is trained and optimized separately with the same flags. A
+missing AVX2 CPU feature blocks execution rather than producing an illegal
+instruction. The separately compiled original strict WinAPI API contract
+must still reject the unsafe full v2 API no-op substitution. The resulting
+checksum must match across profiles and the Java 17 reference. Raw flags,
+originally requested flags, train/optimized compiler logs, profile-data
+hashes, binary hashes and timings go to `evidence-core-yin-pgo/`.
+The CORE results are **not** eligible for production promotion because
+`/fp:fast` relaxes floating-point semantics, `/arch:AVX2` requires
+hardware validation, and WinAPI no-op API shadows remain prohibited.
+
+The CORE CI runs on a separate Windows-hosted runner from YAN, so its
+absolute latency must **not** be ranked against YAN as though these were
+paired same-host measurements.
+
+Official flags: https://learn.microsoft.com/en-us/cpp/build/reference/ltcg-link-time-code-generation
+and https://learn.microsoft.com/en-us/cpp/build/reference/useprofile
