@@ -85,7 +85,7 @@ function Build-Target([string]$dir,[string]$target,[string]$log){
   Log-Command $log 'cmake' @('--build',$dir,'--config','Release',
     '--target',$target,'--parallel','2','--verbose')
 }
-function Measure([string]$exe){
+function Read-CoreBenchmark([string]$exe){
   $result=@(& $exe ([string]$TrainingIterations) ([string]$TrainingWarmup) ([string]$TrainingRepeats))
   Guard ($LASTEXITCODE -eq 0 -and $result.Count -gt 0) 'CORE runtime rejected'
   $m=([string]$result[-1]|ConvertFrom-Json)
@@ -117,7 +117,7 @@ try {
     $binaryDir=Split-Path -Parent $exe
     Push-Location -LiteralPath $binaryDir
     try {
-      $measured=Measure $exe
+      $measured=Read-CoreBenchmark $exe
     }finally{Pop-Location}
     $v.trained_checksum=[string]$measured.checksum
     $pgc=@(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.pgc')
@@ -144,7 +144,7 @@ try {
     }
     Guard (Test-Path -LiteralPath $exe -PathType Leaf) ('Optimized binary missing: '+$variant)
     $v.optimized_binary_sha256=Digest $exe
-    $optimized=Measure $exe
+    $optimized=Read-CoreBenchmark $exe
     $v.optimized_checksum=[string]$optimized.checksum
     $v.optimized_median_ns=[double]$optimized.median_ns_per_call
     Guard ($v.optimized_checksum -ceq $v.trained_checksum) ('PGO transformed COR checksum: '+$variant)
