@@ -178,3 +178,19 @@ if(BUILD_TESTING)
 endif()
 install(FILES docs/PENTAGONAL_GAMP4_VALIDATION.md
         DESTINATION share/doc/pentagonal-xor)
+
+
+# LIGAZE: real native C++20 executable distinct from the Java JAR.
+add_executable(pentagonal_ligaze tools/pentagonal_ligaze.cpp)
+target_compile_features(pentagonal_ligaze PRIVATE cxx_std_20)
+install(TARGETS pentagonal_ligaze RUNTIME DESTINATION bin)
+install(FILES shared/pentagonal_ligaze.hpp DESTINATION include/swe)
+if(BUILD_TESTING)
+  add_executable(pentagonal_ligaze_test tests/pentagonal_ligaze_test.cpp)
+  target_compile_features(pentagonal_ligaze_test PRIVATE cxx_std_20)
+  add_test(NAME pentagonal_ligaze_exhaustive_cor_witness COMMAND pentagonal_ligaze_test)
+  add_test(NAME pentagonal_ligaze_native_cli COMMAND pentagonal_ligaze 0x15 0x15 0x1f 0x1f)
+  set_tests_properties(pentagonal_ligaze_native_cli PROPERTIES
+    PASS_REGULAR_EXPRESSION "native-cxx20")
+endif()
+install(FILES docs/PENTAGONAL_LIGAZE_NATIVE.md DESTINATION share/doc/pentagonal-xor)
