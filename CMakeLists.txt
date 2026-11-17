@@ -194,3 +194,14 @@ if(BUILD_TESTING)
     PASS_REGULAR_EXPRESSION "native-cxx20")
 endif()
 install(FILES docs/PENTAGONAL_LIGAZE_NATIVE.md DESTINATION share/doc/pentagonal-xor)
+
+
+# Platform-matrix LIGAZE COR workload: independent native C++20 benchmark.
+add_executable(pentagonal_ligaze_benchmark benchmarks/pentagonal_ligaze_benchmark.cpp)
+target_compile_features(pentagonal_ligaze_benchmark PRIVATE cxx_std_20)
+if(BUILD_TESTING)
+  add_test(NAME pentagonal_ligaze_benchmark_smoke
+    COMMAND pentagonal_ligaze_benchmark 1000 100 1)
+  set_tests_properties(pentagonal_ligaze_benchmark_smoke PROPERTIES
+    PASS_REGULAR_EXPRESSION "SWE-LIGAZE-BENCH-v1")
+endif()
