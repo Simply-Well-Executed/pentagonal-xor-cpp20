@@ -82,3 +82,22 @@ a compile-time architecture marker nor a local COR comparison is
 an independent cryptographic witness. Failed experiments remain
 reviewable as evidence, not new policy. Only safe, independently
 validated improvements may be enabled by default.
+
+
+## Observed v2 experiment acceptance (measured commit 6e994796016df7d0b1b67eea789ebd0f9aeb0e30)
+
+The full [parallel CI run](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/43994721908) completed successfully: three independent Windows/macOS/openSUSE baseline jobs, and one Windows multi-variant A/B job. All original COR and Java/native checksums matched.
+
+Every safe v2 build and COR test passed. The full_header_v2 benchmark source compiled but the **mandatory Win32 API contract target intentionally failed**, with MSVC C2338 static assertions proving that the extra no-op overloads incorrectly accept two-argument Sleep and one-argument CreateFileW calls. This was a correctly observed expected-negative result, not a successful full-header binary.
+
+### Measured latency (nanoseconds/COR, matched control → candidate)
+
+| v2 variant | Pair 1 | Pair 2 | Pair 3 | Accepted as runtime optimization? |
+|---|---:|---:|---:|---|
+| Safe platform v2 vs original baseline | 102.7252 → 102.9376 | 102.8290 → 103.8868 | 103.2196 → 102.7216 | No |
+| Safe platform v2 + LTCG vs **LTCG alone** | 95.5644 → 95.4518 | 95.3940 → 95.6176 | 95.6370 → 95.6200 | No |
+| Expanded v2 header with WinAPI no-ops | Compiler contract rejected | Not timed | Not timed | **Prohibited** |
+
+The existing native LTCG-only comparison recorded 6.96–7.39% lower latency in all three paired trials. This is a single-runner result and does not replace earlier positive trials; preserve both. No Windows safe-platform-v2 default was promoted, and no Win32 API stub was added to production. All v2 source files remain available for review, follow-up experiments and auditing.
+
+The tested Windows runner was x64; architectures ARM64EC, ARM64, ARM32, IA64, MIPS, ALPHA and PPC are defined in metadata but were **not** directly hardware-tested in this run. This work does not demonstrate universal CPU performance or cross-hardware predictability.
