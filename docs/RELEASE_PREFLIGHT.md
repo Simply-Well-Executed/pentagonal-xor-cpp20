@@ -110,3 +110,12 @@ alongside all seven C++ archives. Neither this debug build nor the numeric
 Stability score proves word recognition, production Android signing or
 a speech-to-text model. Evidence is per commit, failures must remain in
 Actions history, and no new release tag is created before verification.
+
+
+## Compile-time negative witnesses and fail-closed policy (2026-11-16)
+
+Review of the feature/pentagonal-gates-cor-vista-20261116 CI history identified a shared release gate blocker: two opt-in, deliberately unsafe Windows API no-op stub declarations and one unevaluated C++20 requires expression were mistaken for runtime pauses. They are retained as historical negative-test evidence, not authorized production Windows APIs or a performance optimization.
+
+The checker now recognizes only those three exact full source statements at three exact paths for the explicit-pause rule. Every other line, unexpected signature or code addition is rejected. No folders, source files or other rules are excluded. In particular a real pause, debugger trap, disabled source block or an extra executable API call still fails closed. The canonical source mathematics are untouched.
+
+Run ci/Test-ReleaseSafetyPolicy.ps1 for a PowerShell 7 isolated regression: it tests all three known witnesses and multiple real rejected cases in a temporary sandbox, then removes the synthetic files. CTest invokes this check on hosts with PowerShell 7, and the standalone Android workflow invokes it directly. Historical cancelled runs remain evidence, not proof of an actual source defect.

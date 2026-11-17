@@ -263,3 +263,13 @@ if(BUILD_TESTING)
   add_test(NAME pentagonal_ligaze_platform_v2_api_contract
     COMMAND pentagonal_platform_v2_contract_test)
 endif()
+
+# Native PowerShell release-gate contract; tested wherever PowerShell 7 exists.
+if(BUILD_TESTING)
+  find_program(SWE_PWSH7 NAMES pwsh)
+  if(SWE_PWSH7)
+    add_test(NAME release_safety_negative_fixture_contract
+      COMMAND "${SWE_PWSH7}" -NoLogo -NoProfile -File
+        "${CMAKE_CURRENT_SOURCE_DIR}/ci/Test-ReleaseSafetyPolicy.ps1")
+  endif()
+endif()
