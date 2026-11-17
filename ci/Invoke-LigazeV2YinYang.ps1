@@ -47,7 +47,7 @@ function Build([string]$side,[Collections.IDictionary]$column,[string]$variant) 
  $compile=Join-Path $EvidenceDir ($key+'-compile.log')
  $contract=Join-Path $EvidenceDir ($key+'-contract.log')
  $smoke=Join-Path $EvidenceDir ($key+'-smoke.log')
- $args=@('-S','.','-B',$dir,'-G','Visual Studio 17 2022','-A','x64',
+ $args=@('-S','.','-B',$dir,
   '-DBUILD_TESTING=ON',('-DSWE_LIGAZE_WINDOWS_AB_VARIANT='+$variant),
   ('-DCMAKE_CXX_FLAGS_RELEASE:STRING='+$cc),
   ('-DCMAKE_EXE_LINKER_FLAGS_RELEASE:STRING='+$ld),
@@ -169,7 +169,7 @@ foreach($column in $columns) {
 }
 $report=[ordered]@{
  schema='SWE-V2-YIN-YANG-FIVE-PROFILE-v1';source_commit=$sha;source_mutated=$false
- platform='MSVC 2022 x64 Windows';yang='five requested optimization modes'
+ platform='MSVC Windows GitHub runner; CMake selects installed Visual Studio';yang='five requested optimization modes'
  yin='five matching modes with /GL disabled'
  yin_C_same_as_yin_E=$true;yin_A_B_E_match_yang_A_B_E=$true
  implicit_linker_ltcg_possible_when_gl_objects_linked=$true
