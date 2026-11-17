@@ -30,7 +30,7 @@ try {
         Set-Fixture (Join-Path $bench $name) ('inline void '+$token+'(...) {}')
     }
     $contract=Join-Path $tests 'pentagonal_platform_v2_contract.cpp'
-    Set-Fixture $contract ('template<typename T> concept ForgedSleepCall = requires(T value) { ::'+$token+'(value,value); };')
+    Set-Fixture $contract ('template<typename T>'+[Environment]::NewLine+'concept ForgedSleepCall = requires(T value) { ::'+$token+'(value,value); };')
     Check $true 'exact negative/compile-time witnesses'
 
     $active=Join-Path $tests 'active.cpp'
@@ -45,7 +45,7 @@ try {
 
     Add-Content -LiteralPath $contract -Value ('void active() { ::'+$token+'(1); }')
     Check $false 'live call beside compile-time contract'
-    Set-Fixture $contract ('template<typename T> concept ForgedSleepCall = requires(T value) { ::'+$token+'(value,value); };')
+    Set-Fixture $contract ('template<typename T>'+[Environment]::NewLine+'concept ForgedSleepCall = requires(T value) { ::'+$token+'(value,value); };')
 
     Set-Fixture $active ('int main() { Debug'+'Break(); }')
     Check $false 'debugger trap'
