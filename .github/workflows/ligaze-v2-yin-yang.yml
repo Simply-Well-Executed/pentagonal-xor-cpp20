@@ -1,0 +1,42 @@
+name: LIGAZE v2 YANG and YIN MSVC five-profile A/B
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v2-yin-yang-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  compare:
+    name: Windows x64 YANG 5 and no-GL YIN 5
+    runs-on: windows-2025
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Run source release preflight
+        run: ./ci/Test-ReleaseSafety.ps1
+      - name: Java 17 semantic witness
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Run YANG and no-GL YIN profile comparisons
+        run: |
+          ./ci/Invoke-LigazeV2YinYang.ps1 -Iterations 500000 -Warmup 50000 -Repeats 5 -Trials 3
+          if (!$?) { exit 1 }
+      - name: Keep compilation, rejection and latency evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: v2-yin-yang-${{ github.run_id }}
+          path: evidence-v2-yin-yang/
+          retention-days: 90
+          if-no-files-found: warn

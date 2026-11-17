@@ -101,3 +101,33 @@ Every safe v2 build and COR test passed. The full_header_v2 benchmark source com
 The existing native LTCG-only comparison recorded 6.96–7.39% lower latency in all three paired trials. This is a single-runner result and does not replace earlier positive trials; preserve both. No Windows safe-platform-v2 default was promoted, and no Win32 API stub was added to production. All v2 source files remain available for review, follow-up experiments and auditing.
 
 The tested Windows runner was x64; architectures ARM64EC, ARM64, ARM32, IA64, MIPS, ALPHA and PPC are defined in metadata but were **not** directly hardware-tested in this run. This work does not demonstrate universal CPU performance or cross-hardware predictability.
+
+## YANG five-column and YIN no-GL mirror experiment (November 2026)
+
+The numerical benchmark for expanded v2 WinAPI no-op source is compiled separately
+from the strict API contract. The contract must reject the no-op API shadow in every case.
+
+| Column | YANG compiler / linker | YIN compiler / linker |
+| --- | --- | --- |
+| A | /Od /GL- /LTCG:OFF | /Od /GL- /LTCG:OFF |
+| B | /O2 /GL- /LTCG:OFF | /O2 /GL- /LTCG:OFF |
+| C | /O2 /GL /LTCG | /O2 /GL- /LTCG |
+| D | /O2 /GL /LTCG unspecified | /O2 /GL- /LTCG unspecified |
+| E | /O2 /GL- /LTCG | /O2 /GL- /LTCG |
+
+YIN disables /GL in every column. YIN C and E are identical requested flags.
+YIN and YANG A, B, and E also have identical flags: those are repeated
+measurements, not independent optimization modes. The linker can automatically
+activate LTCG for /GL objects in YANG D even without an explicit /LTCG flag.
+
+PowerShell 7 script ci/Invoke-LigazeV2YinYang.ps1 runs 20 isolated numerical
+builds (safe baseline and full-header benchmark under each ten profiles)
+plus ten separate expected-negative WinAPI API contract builds. It preserves
+compiler/linker options, CMake configuration, compile diagnostics, binary
+SHA-256, three alternated paired trials and five repetitions per trial,
+and checks the original Java 17 numerical checksum. If a numerical benchmark
+cannot compile its speed is reported as unavailable, never invented.
+
+The measured artifact is evidence-v2-yin-yang/v2-yin-yang.json. This follow-up
+does not modify historical experiment results, authorize WinAPI no-op functions
+or change production compiler settings.
