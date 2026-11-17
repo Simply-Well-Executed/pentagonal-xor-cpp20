@@ -75,6 +75,12 @@ jobs:
           & ctest --test-dir build -C Release --output-on-failure --output-junit evidence/ctest-results.xml *>&1 | Tee-Object -FilePath evidence/test.log
           exit $LASTEXITCODE
 
+      - name: '🔬 GAMP 4-style Pentagonal supplier validation and SHA-256 evidence'
+        shell: pwsh
+        run: |
+          ./ci/Invoke-PentagonalGamp4.ps1 -BuildDir build -EvidenceDir evidence -ExecutableName pentagonal_gamp4_validation_test
+          if (!$?) { exit 1 }
+
       - name: '📦 Stage install'
         run: cmake --install build --config Release --prefix stage
 
