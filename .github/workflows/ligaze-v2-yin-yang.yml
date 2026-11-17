@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - name: Release preflight: reject active hazards
+      - name: 'Release preflight: reject active hazards'
         run: ./ci/Test-ReleaseSafety.ps1
       - name: JDK 17 semantic reference
         uses: actions/setup-java@v4
