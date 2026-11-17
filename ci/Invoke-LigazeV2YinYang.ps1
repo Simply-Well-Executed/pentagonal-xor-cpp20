@@ -123,7 +123,7 @@ New-Item -ItemType Directory -Force -Path $javaOut|Out-Null
 & javac --release 17 -encoding UTF-8 -d $javaOut java/PentagonalControl.java java/LigazeJavaBenchmark.java
 Verify ($LASTEXITCODE -eq 0) 'Java 17 baseline compile failed'
 foreach($column in $columns) {
- $trials=[System.Collections.Generic.List[object]]::new()
+ $trialRows=[System.Collections.Generic.List[object]]::new()
  for($trial=0;$trial -lt $Trials;$trial++) {
   $order=if($trial%2 -eq 0){@('YIN','YANG')}else{@('YANG','YIN')}
   $pair=[ordered]@{}
@@ -155,7 +155,21 @@ foreach($column in $columns) {
   $ratio=if($pair.YIN.measured -and $pair.YANG.measured){
     $pair.YANG.expanded_ns/$pair.YIN.expanded_ns
   }else{$null}
-  $trials.Add([ordered]@{index=$trial;order=$order -join ',';yin=$pair.YIN;yang=$pair.YANG;yang_over_yin=$ratio;java_ns=[double]$java.median_ns_per_call})
+  # YAN is a derived synthesis, never a third binary or modified witness.
+  $yan=if($pair.YIN.measured -and $pair.YANG.measured){
+    [ordered]@{
+      status='DERIVED';original_yin_and_yang_preserved=$true
+      yin_expanded_ns=[double]$pair.YIN.expanded_ns
+      yang_expanded_ns=[double]$pair.YANG.expanded_ns
+      yang_minus_yin_ns=([double]$pair.YANG.expanded_ns-[double]$pair.YIN.expanded_ns)
+      yang_over_yin_ratio=[double]$ratio
+      yang_change_percent=100.0*([double]$ratio-1.0)
+      checksum_parity=([string]$pair.YIN.checksum -ceq [string]$pair.YANG.checksum)
+    }
+  }else{
+    [ordered]@{status='NOT_COMPARABLE';original_yin_and_yang_preserved=$true}
+  }
+  $trialRows.Add([ordered]@{index=$trial;order=$order -join ',';yin=$pair.YIN;yang=$pair.YANG;yan=$yan;yang_over_yin=$ratio;java_ns=[double]$java.median_ns_per_call})
   Write-Host ("V2_YIN_YANG|TRIAL|{0}|{1}|YIN={2}|YANG={3}|ratio={4}" -f
    $column.name,$trial,$pair.YIN.expanded_ns,$pair.YANG.expanded_ns,$ratio)
  }
@@ -164,16 +178,17 @@ foreach($column in $columns) {
  $observations[$column.name]=[ordered]@{
   description=$column.label;yin_compile=$a.requested_compile;yang_compile=$b.requested_compile;
   linker=$b.requested_link;requested_flags_identical=($a.requested_compile -ceq $b.requested_compile)
-  trials=$trials.ToArray()
+  trials=$trialRows.ToArray()
  }
 }
 $report=[ordered]@{
- schema='SWE-V2-YIN-YANG-FIVE-PROFILE-v1';source_commit=$sha;source_mutated=$false
+ schema='SWE-V2-YIN-YANG-YAN-FIVE-PROFILE-v2';source_commit=$sha;source_mutated=$false
  platform='MSVC Windows GitHub runner; CMake selects installed Visual Studio';yang='five requested optimization modes'
- yin='five matching modes with /GL disabled'
+ yin='five matching modes with /GL disabled';yan='derived synthesis of YIN and YANG from unchanged paired witnesses'
  yin_C_same_as_yin_E=$true;yin_A_B_E_match_yang_A_B_E=$true
  implicit_linker_ltcg_possible_when_gl_objects_linked=$true
  benchmark_results_do_not_override_winapi_contract=$true
+ yan_derived_only_and_preserves_inputs=$true
  full_header_production_allowed=$false;promotion_performed=$false
  iterations=$Iterations;warmup=$Warmup;repeats=$Repeats;trials=$Trials
  builds=$builds;measurements=$observations
