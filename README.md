@@ -303,3 +303,12 @@ Build and run the separate `pentagonal_control` executable for a
 structured VISTA JSON report; the pre-existing command remains unchanged.
 Missing independently authenticated witnesses are identified, never
 silently presumed valid.
+
+
+### GAMP 4-style Pentagonal operator verification
+
+The [12-requirement URS/IQ/OQ/PQ validation plan](docs/PENTAGONAL_GAMP4_VALIDATION.md)
+and `pentagonal_gamp4_validation_test` are now part of the native
+C++20 test matrix. `ci/Invoke-PentagonalGamp4.ps1` records individual
+PASS/FAIL assertions and source SHA-256 evidence. PQ and regulated-use
+approval remain explicitly open; a green CI check is not GxP certification.
