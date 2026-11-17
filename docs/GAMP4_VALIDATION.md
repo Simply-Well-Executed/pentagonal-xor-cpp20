@@ -156,3 +156,22 @@ Review of a GPL/LGPL package permits distribution *subject to its
 license*, but does not change the project's authored source from 0BSD.
 If the requirement is zero copyleft **inside the container**, do not
 approve or publish an openSUSE base that includes copyleft OS packages.
+
+
+## Pentagonal-COR new supplier-side requirements (URS-11 through URS-22)
+
+This whole-repository GAMP4-style matrix is extended, not replaced, by
+[the Pentagonal gate-specific validation plan](PENTAGONAL_GAMP4_VALIDATION.md).
+The added C++20 `pentagonal_gamp4_validation_test` records twelve
+named URS checks covering all 32 gate truth states, 30 single-bit
+ruptures, 64-bit register packing and bypass, non-destructive source
+handling, six-step FLOP closure, independent VISTA display, NOP, invalid
+ligands and the externally supplied witness limitation.
+
+The `ship.yml` multi-platform CTest runs this test, and its
+PowerShell-only evidence step `ci/Invoke-PentagonalGamp4.ps1` checks
+exactly one PASS witness per URS ID and retains execution logs and
+SHA-256 hashes. The existing GAMP4 guarded-workflow custody remains
+in effect for the wider original project. CI pass is supplier
+verification, not formal regulated installation/operational/
+performance qualification or a claim of GxP/Part 11 approval.
