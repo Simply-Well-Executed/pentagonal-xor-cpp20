@@ -125,7 +125,7 @@ try {
     $v.trained_pgc_count=$pgc.Count
     $v.trained_pgd_count=$pgd.Count
     $v.profile_member_hashes=@(($pgc+$pgd)|ForEach-Object {
-      [ordered]@{file=$_.Name;sha256=Digest $_.FullName}
+      [ordered]@{file=$_.Name;sha256=(Digest $_.FullName)}
     })
     Guard ($pgc.Count -gt 0 -and $pgd.Count -gt 0) ('PGO training data not generated: '+$variant)
     Save-Record
@@ -160,6 +160,16 @@ try {
   $a=$record.variants.baseline
   $b=$record.variants.full_header_v2
   Guard ($a.optimized_checksum -ceq $b.optimized_checksum) 'Expanded header altered CORE numerical semantics'
+  $javaDir=Join-Path $BuildRoot 'java'
+  New-Item -ItemType Directory -Force -Path $javaDir|Out-Null
+  & javac --release 17 -encoding UTF-8 -d $javaDir java/PentagonalControl.java java/LigazeJavaBenchmark.java
+  Guard ($LASTEXITCODE -eq 0) 'CORE Java 17 source checksum reference failed to compile'
+  $j=@(& java -cp $javaDir LigazeJavaBenchmark ([string]$TrainingIterations) ([string]$TrainingWarmup) ([string]$TrainingRepeats))
+  Guard ($LASTEXITCODE -eq 0 -and $j.Count -gt 0) 'CORE Java reference failed'
+  $java=([string]$j[-1]|ConvertFrom-Json)
+  $record.java17_reference_checksum=[string]$java.checksum
+  Guard ($a.optimized_checksum -ceq $record.java17_reference_checksum) 'CORE disagrees with original Java/native checksum'
+
   $record.header_over_baseline_ratio=([double]$b.optimized_median_ns/[double]$a.optimized_median_ns)
   $record.status='PASS_EXPERIMENTAL_STRICT_WINAPI_REJECTION_RETAINED'
 }finally{Save-Record}
