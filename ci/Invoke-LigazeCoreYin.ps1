@@ -16,8 +16,8 @@ $PSNativeCommandUseErrorActionPreference=$false
 function Guard([bool]$ok,[string]$message){
   if(!$ok){throw ('CORE_YIN: '+$message)}
 }
-function Log-Command([string]$out,[string]$cmd,[string[]]$args){
-  & $cmd @args *> $out
+function Log-Command([string]$out,[string]$cmd,[string[]]$arguments){
+  & $cmd @arguments *> $out
   if($null -eq $LASTEXITCODE){return 99}
   return [int]$LASTEXITCODE
 }
@@ -69,13 +69,13 @@ if(!$cpuAvx2){
   throw 'CORE_YIN: AVX2 not supported by host; cannot train or time this binary'
 }
 function Configure([string]$dir,[string]$variant,[string]$linker,[string]$log){
-  $args=@('-S','.','-B',$dir,
+  $configureArgs=@('-S','.','-B',$dir,
     '-DBUILD_TESTING=ON',
     ('-DSWE_LIGAZE_WINDOWS_AB_VARIANT='+$variant),
     ('-DCMAKE_CXX_FLAGS_RELEASE:STRING='+$compiler),
     ('-DCMAKE_EXE_LINKER_FLAGS_RELEASE:STRING='+$linker),
     '-DCMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE:BOOL=OFF')
-  $rc=Log-Command $log 'cmake' $args
+  $rc=Log-Command $log 'cmake' $configureArgs
   Guard ($rc -eq 0) ("CMake configure rejected "+$variant+': '+$log)
   $cache=Get-Content -LiteralPath (Join-Path $dir 'CMakeCache.txt') -Raw
   Guard ($cache.Contains('CMAKE_CXX_FLAGS_RELEASE:STRING='+$compiler) -and
