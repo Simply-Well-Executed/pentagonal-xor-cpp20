@@ -282,6 +282,7 @@ target_compile_features(pentagonal_vista9x9 PRIVATE cxx_std_20)
 install(TARGETS pentagonal_vista9x9 RUNTIME DESTINATION bin)
 install(FILES shared/pentagonal_vista_9x9.hpp DESTINATION include/swe)
 install(FILES docs/VISTA_9X9.md docs/VISTA_9X9_SHOWCASE.md
+              docs/VISTA_9X9_LADDER.svg
         DESTINATION share/doc/pentagonal-xor)
 if(BUILD_TESTING)
   add_executable(pentagonal_vista_9x9_test tests/pentagonal_vista_9x9_test.cpp)
