@@ -12,7 +12,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   pentagonal-ttvr:
+    needs: pondaz
     name: TEST to TILT(error) to VALIDATE to RUN(60s)
     runs-on: ubuntu-24.04
     timeout-minutes: 15
