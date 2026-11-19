@@ -319,9 +319,8 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-oci-host -Label 'OCI capability ${{ matrix.label }}'
 
   publish-docker:
-    needs: pondaz
     name: 'Trusted publish · paulcheek/android-source-study-v1:latest'
-    needs: [guard, docker-linux, docker-android, docker-leap]
+    needs: [pondaz, guard, docker-linux, docker-android, docker-leap]
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
