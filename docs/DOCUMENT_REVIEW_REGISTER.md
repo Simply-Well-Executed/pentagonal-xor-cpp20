@@ -4,9 +4,9 @@
 
 ## BLUF
 
-The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every original item remains **DUE** for substantive re-authoring and independent verification unless an explicit reviewer decision changes its status. The editorial procedure is now **REWRITTEN / VERIFY** with a **BiDi two-way reasoning gate** and a maintainer-directed toolchain and licensing policy. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
+The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every original item remains **DUE** for substantive re-authoring and independent verification unless an explicit reviewer decision changes its status. The editorial procedure is now **REWRITTEN / VERIFY** with a **TriDi three-direction reasoning gate** (YIN forward, YANG reverse, AIRGAP orthogonal challenge, YAN reconciliation) and the existing maintainer-directed toolchain and licensing policy. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
-Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance** and the **BiDi forward claim ↔ reverse evidence** comparison. A new version is not validated merely because it was rewritten.
+Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance** and the **TriDi YIN forward → YANG reverse → AIRGAP independent challenge → YAN accountable synthesis** review. A new version is not validated merely because it was rewritten.
 
 **Source freeze for this inventory:** branch `docs/complete-rewrite-af-writing-critical-thinking-20261119`, base `main` as of 2026-11-19. The blob identifiers below identify the versions available to this review. Check Git history before changing any file; do not treat a later SHA as equivalent.
 
@@ -73,7 +73,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 | P2 | [`docs/VISTA_9X9_LADDER.svg`](../docs/VISTA_9X9_LADDER.svg) | Diagram / accessible media | `3a769b74c2ce` | DUE · substantive rewrite and verification |
 | P2 | [`docs/VISTA_9X9_SHOWCASE.md`](../docs/VISTA_9X9_SHOWCASE.md) | LAB / experiment | `9e5e8db1c9d7` | DUE · substantive rewrite and verification |
 | P2 | [`docs/VISTA_9X9.md`](../docs/VISTA_9X9.md) | LAB / experiment | `44d90b1fb46b` | DUE · substantive rewrite and verification |
-| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | REWRITTEN / VERIFY · BiDi + policy proposed, pending maintainer adoption |
+| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | REWRITTEN / VERIFY · TriDi evolved from BiDi; policy preserved; adoption pending |
 | P0 | [`README.md`](../README.md) | Repository entry / policy | `62bf8918e946` | DUE · substantive rewrite and verification |
 | P0 | [`SECURITY.md`](../SECURITY.md) | Repository entry / policy | `d993abe4d562` | DUE · substantive rewrite and verification |
 | P1 | [`shared/README.md`](../shared/README.md) | Repository entry / policy | `793afe2aabe4` | DUE · substantive rewrite and verification |
@@ -83,7 +83,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 1. **Scope:** State a one-paragraph BLUF identifying the actual component and an explicit decision or usage goal. Do not silently promote LAB to canonical source.
 2. **Source authority:** Link to source implementation, independent tests and, if pertinent, exact CI workflow. For images, verify code points, coordinates, visual alternative text and embedded third-party media rights.
 3. **Accuracy:** Recompute any example, units, numeric counts and precision convention from available code/test or mark them `UNVERIFIED`.
-4. **Counterexample:** Include a failure case, unsupported environment, threat model or alternative explanation. Protect author-defined experimental terminology and frozen protocols.
+4. **TriDi / counterexample:** Run and record YIN (claim to evidence), YANG (evidence to permissible claim), and AIRGAP (orthogonal assumptions, alternative explanation, negative test and threat/rights boundary); reconcile through YAN without two-out-of-three voting. Protect author-defined terminology and frozen protocols.
 5. **Action:** Prescribe **PowerShell Core (latest stable version)**, with `Set-StrictMode -Version 2.0` at the beginning of every script and example. For C++, require **ISO C++20** and **only `-O2`** (`/O2` for MSVC); do not silently substitute another dialect or optimizer.
 6. **Provenance:** Carry original copyrights, upstream rights and historical baselines forward; avoid invented official citations or trademark claims.
 7. **Gate:** A green CI run cannot substitute for a document-specific content review; an inability to retrieve an official source must be marked explicitly.
@@ -111,11 +111,28 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 **No silent policy pass:** A documentation rewrite can establish these requirements, but cannot prove that every existing workflow obeys them. Do not change CI execution, historical experiments, executable releases or dependency versions merely to make the register appear green. Only a separate implementation change, reproducible evidence and explicit reviewer approval can close a conflict.
 
+## TriDi v1 review adoption and historical continuity
+
+**New proposal:** `TRI-DI-CRITICAL-THINKING-v1` is **EXPLORATORY / REWRITTEN / VERIFY**. It adds an independently recorded AIRGAP challenge to the previous BiDi forward/reverse method. The previous BiDi definition and decisions remain in the Git version history. Do not promote historical `BIDI_PASS` results automatically.
+
+| Axis | Direction | Mandatory per-asset witness | Missing witness outcome |
+| --- | --- | --- | --- |
+| X `[1,0,0]` | YIN: original claim → authoritative source → method → evidence → boundary | Claim ID, source SHA/edition, method, bounded claim | TRIDI_NEEDS_REVIEW |
+| Y `[0,1,0]` | YANG: actual artifact → method → source → justified statement → limit | Evidence ID, exact test/run context, permissible claim | TRIDI_NEEDS_REVIEW |
+| Z `[0,0,1]` | AIRGAP: independently declared assumptions → countermodel → negative test → threat/license/rights boundary → dissent | Independence scope, alternatives, actually run or NOT RUN, unresolved risks | TRIDI_NEEDS_REVIEW |
+| Origin `[0,0,0]` | CORE: unchanged algorithm/input/source statement | Original canonical reference; no mutations by the review | Stop if source changed without provenance |
+| Final synthesis | YAN: reconcile X, Y and Z | Signed scoped decision, dissent, provenance, current SHA | No automatic pass and no majority voting |
+
+**Decision taxonomy:** `TRIDI_PASS` makes a document *eligible* for VERIFIED only upon explicit authorized review; `TRIDI_NEEDS_REVIEW` preserves unresolved issues; `TRIDI_CONTRADICTED` records falsification or an overbroad claim and its source-backed correction; `REWRITTEN / VERIFY` means drafting is not yet proof. An AIRGAP check is methodological, not proof of a physically disconnected network or an independent data source.
+
+**Scope limitation:** This change does not rerun all 46 assets, update frozen experiments, or enforce new compiler/toolchain policy in code. Each original asset remains DUE until its own TriDi review is separately documented.
+
 ## Review handoff record
 
 | Date | Reviewer / actor | Change | Evidence | Decision |
 | --- | --- | --- | --- | --- |
 | 2026-11-19 | ChatGPT, editorial drafting only | Replaced incomplete 34-item index with 46-asset inventory | Git file tree and blob IDs; linked source paths | Inventory CURRENT; individual rewrites DUE |
 | 2026-11-19 | ChatGPT, editorial drafting only | Revised SOP with BiDi YIN/YANG/YAN source-evidence checks; incorporated inspected USAF source editions; recorded latest PowerShell Core StrictMode 2.0, C++20/-O2-only and supply-chain/IP restrictions | Uploaded AFH 33-337, ALQ 2023, DAFI 36-2803 and DAFI 36-2907; GitHub current workflow review; SOP commit `7e38bbff7d55` | SOP REWRITTEN / VERIFY, policies proposed and current CI conflicts NEEDS REVIEW; no retroactive validation |
+| 2026-11-19 | ChatGPT, editorial drafting only | Upgraded current editorial review from BiDi to TriDi X/Y/Z with YAN reconciliation, preserving prior method and source records | SOP commit `05c190ced5e0`; unchanged C++20/toolchain policy; source-coded route and countertest requirements | TriDi EXPLORATORY / REWRITTEN / VERIFY; all 46 original assets DUE; explicit approval pending |
 
 **Completion requirement:** For each row, independently record reviewer identity, approval, current SHA, tests/run IDs, decision, outstanding limits and provenance. Until then it remains DUE or REWRITTEN / VERIFY. **Failure never becomes policy; chosen, never assumed.**
