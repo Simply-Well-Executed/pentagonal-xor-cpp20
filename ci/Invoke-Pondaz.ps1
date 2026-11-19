@@ -2,7 +2,6 @@
 # Copyright (c) 2026 Paul Allen Cheek
 # PONDAZ: validate source and event input before the GitHub job queue.
 # PowerShell Core (latest stable version), .NET NFKC; no PHP/Node/Python/ICU.
-Set-StrictMode -Version 2.0
 [CmdletBinding()]
 param(
     [string] $RepositoryRoot = '.',
@@ -10,6 +9,7 @@ param(
     [string] $EvidenceDir = 'pondaz-evidence',
     [switch] $SelfTest
 )
+Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 $utf8 = [Text.UTF8Encoding]::new($false, $true)
