@@ -130,6 +130,49 @@ The review directions do **not** determine Unicode writing direction. For RTL/LT
 
 **References:** AFH 33-337, *The Tongue and Quill*, inspected PDF pages 53-54, discusses evaluating trust, accuracy, precision, relevance and sufficiency and distinguishing facts from inference. The ALQ guide supports precise action/outcome writing. Neither source establishes this project's TriDi, YIN, YANG, AIRGAP or YAN names. The critical-thinking reference is a conceptual lens, not a certification.
 
+## 2A. SigmaDi review extension: four alternating butterfly connections
+
+**BLUF:** SigmaDi adds **four directed cross-check connections** over TriDi's YIN forward, YANG reverse and AIRGAP orthogonal records. The original CORE and all BiDi/TriDi evidence remain unchanged. YAN reconciles the four outputs without majority voting. A positive connection asks for corroboration; a negative connection challenges an overclaim or missing premise. **The signed links are checks, not arithmetic, votes, consent, proof or a new physical dimension.**
+
+**Status:** `SIGMADI-REVIEW-BUTTERFLY4-v0`, **EXPLORATORY / REWRITTEN / VERIFY**; the proposed endpoint topology below is not yet approved as an established mathematical operator. The user's SigmaDi exploration already mentions **four butterfly connections with alternating polarity**, but exact pairwise endpoints and sign semantics are **proposed here for review**, not silently attributed to earlier work.
+
+### Keep the pre-existing SigmaDi distinct
+
+The repository's already implemented [SigmaDi COLLISION12](SIGMADI_COLLISION12.md) uses the separate ID `SIGMADI-COLLISION-12D-v1` and the bounded C++20 source `shared/sigmadi_collision12.hpp`. It inspects exactly **12 source-declaration provenance coordinates**, D0..D11, where **D11 identifies a declaration instance**. The source's classification distinguishes `DUPLICATE_BINDING`, `INCONSISTENT_DECLARATION`, `SCOPED_REUSE` and `CHANGED_REVISION` without silently coalescing instances or rewriting input.
+
+**Never alias these protocols.** The existing COLLISION12 comparator is a declaration-identity guard, *not* four-link review logic, a physical 12th dimension or a general truth machine. SigmaDi review may use a correctly formed COLLISION12 receipt as **provenance evidence only** when examining declaration bindings. It may not feed arbitrary claims into the comparator as if they were valid source-language declarations.
+
+### Proposed two-wing, four-link routing
+
+The forward YIN record is a *read-only comparison junction* for two counterposed butterfly wings: YIN ↔ YANG and YIN ↔ AIRGAP. The underlying TriDi report remains independently attributable.
+
+| Link | Polarity | Connection | Review task | Required witness |
+| --- | --- | --- | --- | --- |
+| `Σ0` | **+** | YIN → YANG | Does the forward claim fit the reverse evidence? | Same namespaced claim/source and bounded support |
+| `Σ1` | **−** | YANG → YIN | What unsupported part or conflicting observation does the reverse result expose? | Scoped counterclaim, negative evidence or tested absence |
+| `Σ2` | **+** | YIN → AIRGAP | Can the precise claim and assumptions be subjected to an independent orthogonal test? | Declared assumptions, shared-dependency scope and test plan |
+| `Σ3` | **−** | AIRGAP → YIN | Does the countertest refute the claim or expose provenance, toolchain, rights or environmental gaps? | Actual result, unresolved objection or NOT RUN |
+
+**Ordering:** `Σ0:+ → Σ1:− → Σ2:+ → Σ3:−`. Here **+** is corroboration-seeking and **−** is refutation-seeking, *not* truth/false polarity, signed numerical gain, ownership or moral rank. A negative test finding no defect remains `NO_COUNTEREXAMPLE_OBSERVED` in its tested scope; an unexecuted test is `NOT_RUN`, never PASS. The direct YANG↔AIRGAP evidence relationship is examined in the final YAN synthesis, without inventing another link.
+
+### Execution and audit contract
+
+1. **Pin CORE**: freeze original wording, algorithm, input, source SHA/edition and experiment protocol. The review does not edit CORE.
+2. **Collect TriDi**: keep X/Y/Z routes, original evidence IDs and distinct test contexts, including shared dependencies. Missing records are not manufactured.
+3. **Evaluate all four links in order**. Each has source, destination, polarity, tested scope, observed result and dissent. No synthetic independent witnesses or combining of different revisions.
+4. **Check declaration provenance** with COLLISION12 only when its twelve valid source-language axes are available. `DUPLICATE_BINDING` or `INCONSISTENT_DECLARATION` blocks an identity-based inference; source records remain intact.
+5. **Reconcile through YAN**. No four-of-four or three-of-four count can override a material contradiction, an invalid source, an unrun required negative test or absent approval.
+6. **Record a signed, scoped decision**. Only `SIGMADI_PASS_ELIGIBLE` can proceed to a separately authorized VERIFIED decision; `SIGMADI_NEEDS_REVIEW`, `SIGMADI_CONTRADICTED` and `REWRITTEN / VERIFY` preserve open issues and provenance. Silence or absence never equals consent.
+
+**Minimum ledger:** `sigma_review_id | original_claim_id | tri_di_review_id | protocol_id | frozen_source_sha | Σ0_polarity_source_target_result | Σ1_polarity_source_target_result | Σ2_polarity_source_target_result | Σ3_polarity_source_target_result | collision12_receipt_if_applicable | shared_dependencies | NOT_RUN_or_observed | dissent | yan_permissible_claim | outcome | reviewer | explicit_approval | audit_commit`.
+
+**Example, Windows OCI:** `docker info` returning `ENGINE_RESPONDING` cannot establish a Windows container build. `Σ0` compares the claim to the probe. `Σ1` exposes the missing build witness. `Σ2` specifies daemon-unavailable/invalid-response challenges. `Σ3` retains unresolved execution or licensing limits. YAN must reject "Windows container execution passed" unless an actual appropriately sourced build-and-execution record exists.
+
+**Historical continuity:** BiDi and TriDi decisions remain independently identified; `SIGMADI-REVIEW-BUTTERFLY4-v0` is an exploratory additive review layer, **not** a replacement for `SIGMADI-COLLISION-12D-v1`, nor a silent promotion of old `TRIDI_PASS` status. Source/algorithm outranks route, witness and derived ledger. Move, archive and revision do not erase historical meaning.
+
+**Tooling:** This document-only proposal introduces no executable dependencies. Any later implementation remains subject to ISO C++20, only `-O2` (MSVC `/O2`), PowerShell Core (latest stable) with `Set-StrictMode -Version 2.0`, and the maintainer's license/source-binary restrictions in section 9. Changes to frozen experimental protocols require an explicit new ID, not an editorial overwrite.
+
+
 ## 3. Writing and accountability guides: inspected editions
 
 These are editorial and evidentiary reference materials, **not** Air Force endorsement of this repository, a military order to software contributors, or a substitute for applicable standards.
@@ -251,4 +294,4 @@ The CORE YIN MSVC PGO workflow is **historical research evidence** and is not co
 
 ### Audit acceptance criteria
 
-A document or release may be labeled **POLICY-CONFORMANT** only after the TriDi gate (YIN, YANG and AIRGAP, reconciled by YAN) traces its claim to current C++20 compile flags, the PowerShell Core latest-stable/StrictMode 2.0 execution evidence, dependency/toolchain provenance, applicable license obligations and negative controls. A missing artifact, silent permission, or green job on an unreviewed toolchain cannot establish policy conformity.
+A document or release may be labeled **POLICY-CONFORMANT** only after the TriDi gate and the applicable SigmaDi four-link review overlay (both reconciled by YAN) trace its claim to current C++20 compile flags, the PowerShell Core latest-stable/StrictMode 2.0 execution evidence, dependency/toolchain provenance, applicable license obligations and negative controls. A missing artifact, silent permission, or green job on an unreviewed toolchain cannot establish policy conformity.
