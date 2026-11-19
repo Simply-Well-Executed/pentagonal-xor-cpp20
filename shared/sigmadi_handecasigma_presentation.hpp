@@ -4,6 +4,7 @@
 #ifndef SWE_SIGMADI_HANDECASIGMA_PRESENTATION_HPP
 #define SWE_SIGMADI_HANDECASIGMA_PRESENTATION_HPP
 #include "sigma_penta_ping.hpp"
+#include "sigmadi_collision12.hpp"
 #include <array>
 #include <cstdint>
 
@@ -59,6 +60,8 @@ struct View {
     std::array<Language,language_eye_count> language_views{};
     std::array<VirtualLens,virtual_vietquang_count> virtual_views{};
     ChiralityView chirality{};
+    std::array<std::string_view, swe::collision12::dimension_count> collision_axes{};
+    bool dimension12_guard_available{true};
     bool nine_loop_source_valid{}, presentation_only{true};
     bool has_independent_authentication{false};
     bool relativismos_defined{false}; // deliberately unavailable
@@ -86,6 +89,7 @@ inline View present(const swe::sigma_penta_ping::Report& source,
     View v{};
     v.nine_loop_source_valid=source.valid;
     v.audit_names=eye_names;
+    v.collision_axes=swe::collision12::axis_names;
     v.language_views=languages;
     v.chirality=inspect_chirality(chirality);
     bool twirled=false;
