@@ -13,7 +13,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   cross-platform-repeat:
+    needs: pondaz
     name: Repeat COR benchmark / ${{ matrix.platform }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -71,6 +75,7 @@ jobs:
           if-no-files-found: warn
 
   windows-ab:
+    needs: pondaz
     name: Windows paired MSVC header vs LTCG experiment
     runs-on: windows-2025
     timeout-minutes: 40
