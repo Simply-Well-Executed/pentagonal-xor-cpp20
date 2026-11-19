@@ -5,7 +5,12 @@ This is an opt-in extension, not a replacement for canonical
 `shared/pentagonal_xor_std_free.h`, `shared/pentagonal_gates.hpp`, or
 the original six-stage `Machine`.
 
-![Nine-loop nine-stage VISTA ladder](VISTA_9X9_LADDER.svg)\n\n## Why 9 × 9
+![Nine-loop nine-stage VISTA ladder](VISTA_9X9_LADDER.svg)\n\n## Uniform zero-based indices
+
+**All array, loop, ring, lane and ligand indices begin at zero.**
+Completed-loop *counts* can run from 1 through 9, but loop indices are 0 through 8. A three-ring system uses ring indices 0 through 2, with canonical five-ligand groups L0–L4, L3–L7, and L6,L7,L8,L0,L1. The nine extended-stage indices are 0 through 8. Pairs of directions rotate by 72° between image fields, and the scan phase advances 9° between loop indices. Terminal route controls alternate FLOP on even loop indices and FLIP on odd indices in the **experimental** ring adapter; this is not yet a change to the original Machine.
+
+## Why 9 × 9
 
 The user asks for *nine complete cycles* and *three VISTA passes after the
 existing six gates*. We define one **extended loop** as:
