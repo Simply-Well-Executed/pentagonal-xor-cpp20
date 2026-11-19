@@ -102,6 +102,20 @@ class toolong {
     }
 public:
     toolong() = default;
+    toolong(const toolong&) = default;
+    toolong& operator=(const toolong&) = default;
+    toolong(toolong&& other) : toolong() {
+        limbs_.swap(other.limbs_);
+        std::swap(neg_, other.neg_);
+    }
+    toolong& operator=(toolong&& other) {
+        if (this != &other) {
+            toolong tmp(std::move(other));
+            limbs_.swap(tmp.limbs_);
+            std::swap(neg_, tmp.neg_);
+        }
+        return *this;
+    }
     explicit toolong(std::int64_t value) {
         const bool negative = value < 0;
         const std::uint64_t mag = negative ?
