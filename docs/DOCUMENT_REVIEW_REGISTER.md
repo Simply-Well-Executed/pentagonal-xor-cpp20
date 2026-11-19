@@ -4,15 +4,15 @@
 
 ## BLUF
 
-The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every existing item remains **DUE** for substantive re-authoring and independent verification unless a separately recorded reviewer decision changes its status. The editorial procedure is committed as a **draft operating procedure**, not as a claim that the Air Force publications have been read or verified. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
+The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every original item remains **DUE** for substantive re-authoring and independent verification unless an explicit reviewer decision changes its status. The editorial procedure is now **REWRITTEN / VERIFY** with a **BiDi two-way reasoning gate** and a maintainer-directed toolchain and licensing policy. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
-Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance**. A new version is not validated merely because it was rewritten.
+Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance** and the **BiDi forward claim ↔ reverse evidence** comparison. A new version is not validated merely because it was rewritten.
 
 **Source freeze for this inventory:** branch `docs/complete-rewrite-af-writing-critical-thinking-20261119`, base `main` as of 2026-11-19. The blob identifiers below identify the versions available to this review. Check Git history before changing any file; do not treat a later SHA as equivalent.
 
 ## Source-reference gate
 
-- User reported locating copies of AFH 33-337, ALQ Writing Guide (7 Apr 2025), DAFI 36-2803, AF Form 716 and DAFI 36-2907. **Copies not yet provided in this chat**: edition, page citations, operative wording and applicability remain **PENDING SOURCE REVIEW**.
+- **Copies received and inspected:** AFH 33-337 (2015/2016 edition), ALQ Writing Guide (Version 1, **10 Jan 2023**), DAFI 36-2803 (2026 Change 3) and DAFI 36-2907 (14 Jan 2026). The user previously cited an ALQ guide dated **7 Apr 2025**; the uploaded copy is *not* that edition. **AF Form 716 has not been supplied or inspected.** Keep those edition/form questions in NEEDS REVIEW and do not invent missing source wording.
 - Six Sigma critical thinking reference: reasoning lens only. Distinguish hypothesis, evidence, failure, dissent, and decision.
 - The Air Force writing/administrative references are **style and accountability inspirations**, not endorsements or compulsory software-development regulations. Do not invent endorsement, official signatures, award claims, or legal coverage.
 
@@ -73,7 +73,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 | P2 | [`docs/VISTA_9X9_LADDER.svg`](../docs/VISTA_9X9_LADDER.svg) | Diagram / accessible media | `3a769b74c2ce` | DUE · substantive rewrite and verification |
 | P2 | [`docs/VISTA_9X9_SHOWCASE.md`](../docs/VISTA_9X9_SHOWCASE.md) | LAB / experiment | `9e5e8db1c9d7` | DUE · substantive rewrite and verification |
 | P2 | [`docs/VISTA_9X9.md`](../docs/VISTA_9X9.md) | LAB / experiment | `44d90b1fb46b` | DUE · substantive rewrite and verification |
-| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | PROCEDURE DRAFT · official sources pending |
+| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | REWRITTEN / VERIFY · BiDi + policy proposed, pending maintainer adoption |
 | P0 | [`README.md`](../README.md) | Repository entry / policy | `62bf8918e946` | DUE · substantive rewrite and verification |
 | P0 | [`SECURITY.md`](../SECURITY.md) | Repository entry / policy | `d993abe4d562` | DUE · substantive rewrite and verification |
 | P1 | [`shared/README.md`](../shared/README.md) | Repository entry / policy | `793afe2aabe4` | DUE · substantive rewrite and verification |
@@ -84,7 +84,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 2. **Source authority:** Link to source implementation, independent tests and, if pertinent, exact CI workflow. For images, verify code points, coordinates, visual alternative text and embedded third-party media rights.
 3. **Accuracy:** Recompute any example, units, numeric counts and precision convention from available code/test or mark them `UNVERIFIED`.
 4. **Counterexample:** Include a failure case, unsupported environment, threat model or alternative explanation. Protect author-defined experimental terminology and frozen protocols.
-5. **Action:** Give verified PowerShell 7 commands and relevant platform-specific flags; do not require Python, JavaScript toolchains or unsupported automation.
+5. **Action:** Prescribe **PowerShell Core (latest stable version)**, with `Set-StrictMode -Version 2.0` at the beginning of every script and example. For C++, require **ISO C++20** and **only `-O2`** (`/O2` for MSVC); do not silently substitute another dialect or optimizer.
 6. **Provenance:** Carry original copyrights, upstream rights and historical baselines forward; avoid invented official citations or trademark claims.
 7. **Gate:** A green CI run cannot substitute for a document-specific content review; an inability to retrieve an official source must be marked explicitly.
 
@@ -94,10 +94,28 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 - **P1, canonical algorithm and validation:** Reconcile C11 five-input parity, `toolong`, GammaGamma, DecaSigma, Triℼ, COREAO, source-evidence scripts, CI build/install gates, Windows PGO and OCI status codes.
 - **P2, research and media records:** Rewrite explanations and diagram descriptions; preserve frozen trials, renderer/input limits, exact original values and source-hash provenance. Do not retroactively claim physical or mathematical validation beyond experiment evidence.
 
+## Maintainer-directed restrictions: policy conflicts requiring actual implementation review
+
+**Current document state: POLICY PROPOSED / IMPLEMENTATION NOT VERIFIED.** The maintainer directs the highest-priority repository drafting and future engineering requirements: ISO **C++20 only**, optimization **`-O2` only** (MSVC **`/O2`**), **PowerShell Core latest stable + `Set-StrictMode -Version 2.0`**, and no Python, Lua, Go, Rust, Node.js, npm or Gradle. Java must originate **directly from Oracle** and requires explicit authorization and license review. Third-party binaries are untrusted until source/provenance review; compile from inspected source in-house wherever possible. Open-source libraries are preferred, but licensing, patent, attribution and redistribution conditions must each be confirmed. Changing an attribution notice cannot retroactively confer unowned intellectual-property rights.
+
+This is a **maintainer policy**, not an Air Force instruction or a finding that any past contributor violated the law. Label conflicting current build behavior and legacy experiments honestly; do not erase historical output or claim the new rule has already been enforced.
+
+| Finding | Recorded source | Required disposition |
+| --- | --- | --- |
+| Non-Oracle JDK/Java setup, including Temurin | `.github/workflows/ship.yml`, `android-standalone.yml`, `ligaze-v2-yin-yang.yml`, `ligaze-windows-header-optimizer-ab.yml` | POLICY CONFLICT / NEEDS REVIEW: remove, replace through explicitly approved Oracle-only provenance, or disable affected lanes; inspect transitive tools and rights |
+| Java 17 JAR and Android execution | `.github/workflows/supertaoism-gamp4-java-jar.yml`, `docs/ANDROID.md` and Android SDK workflows | POLICY CONFLICT / NEEDS REVIEW: Oracle compiler provenance alone does not establish Android runtime compliance; decide source-preserving migration before enforcement |
+| Two-phase MSVC PGO and architecture-tuned optimizer | `.github/workflows/ligaze-v2-yin-yang.yml` / CORE YIN experiment | HISTORICAL LAB / POLICY CONFLICT: retain old test records at the original SHA, but do not use PGO, LTO or additional speed flags in the new normative `-O2`/`/O2` profile |
+| Include-free strict C11 public parity API | `shared/pentagonal_xor_std_free.h`, `shared/README.md` | SCOPE DECISION NEEDED: it is C11, not C++20; maintain honest existing compatibility evidence until the maintainer approves an exception or migration |
+| Existing CI infrastructure and downloaded build tools | GitHub hosted runner environment, action dependencies, SDK/toolchain installers, Docker layers | SUPPLY-CHAIN REVIEW REQUIRED: record sources, version, signatures/hashes, licensing and exact build methods; do not assert every executable has been built in-house |
+| Any unverified imported code, asset or license claim | `docs/LICENSE_AND_MARKS.md`, third-party build inputs | INTELLECTUAL-PROPERTY REVIEW: verify each upstream license and ownership; retain mandatory notices, secure permissions or replace incompatible material |
+
+**No silent policy pass:** A documentation rewrite can establish these requirements, but cannot prove that every existing workflow obeys them. Do not change CI execution, historical experiments, executable releases or dependency versions merely to make the register appear green. Only a separate implementation change, reproducible evidence and explicit reviewer approval can close a conflict.
+
 ## Review handoff record
 
 | Date | Reviewer / actor | Change | Evidence | Decision |
 | --- | --- | --- | --- | --- |
-| 2026-11-19 | ChatGPT, editorial drafting only | Replaced incomplete prior 34-item index with full current inventory; created SOP | Git file tree and blob IDs; linked source paths | Inventory CURRENT; individual rewrites DUE, official publication content PENDING |
+| 2026-11-19 | ChatGPT, editorial drafting only | Replaced incomplete 34-item index with 46-asset inventory | Git file tree and blob IDs; linked source paths | Inventory CURRENT; individual rewrites DUE |
+| 2026-11-19 | ChatGPT, editorial drafting only | Revised SOP with BiDi YIN/YANG/YAN source-evidence checks; incorporated inspected USAF source editions; recorded latest PowerShell Core StrictMode 2.0, C++20/-O2-only and supply-chain/IP restrictions | Uploaded AFH 33-337, ALQ 2023, DAFI 36-2803 and DAFI 36-2907; GitHub current workflow review; SOP commit `7e38bbff7d55` | SOP REWRITTEN / VERIFY, policies proposed and current CI conflicts NEEDS REVIEW; no retroactive validation |
 
 **Completion requirement:** For each row, independently record reviewer identity, approval, current SHA, tests/run IDs, decision, outstanding limits and provenance. Until then it remains DUE or REWRITTEN / VERIFY. **Failure never becomes policy; chosen, never assumed.**
