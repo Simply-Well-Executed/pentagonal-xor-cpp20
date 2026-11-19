@@ -27,7 +27,8 @@ try {
     $evidenceDir='evidence-oci-regression-'+$case.name
     $driver=Join-Path $tempDir ($case.name+'.ps1')
     $source=$case.mock+[Environment]::NewLine+
-      "& '"+$inspector+"' -EvidenceDir '"+$evidenceDir+"'"
+      "& '"+$inspector+"' -EvidenceDir '"+$evidenceDir+"'"+[Environment]::NewLine+
+      'if (Test-Path variable:LASTEXITCODE) { exit $LASTEXITCODE }'
     $source|Set-Content -LiteralPath $driver -Encoding utf8
     & pwsh -NoLogo -NoProfile -File $driver
     $exitCode=$LASTEXITCODE
