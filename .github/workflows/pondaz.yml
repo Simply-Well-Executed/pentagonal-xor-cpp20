@@ -1,0 +1,67 @@
+name: 'PONDAZ · Unicode input preflight'
+
+on:
+  workflow_call:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pondaz:
+    name: 'Pondaz · origin UTF-8 and NFKC input gate'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: 'Checkout exact GitHub SHA using PowerShell Core and git'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Wrong repository' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $actual = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $actual -cne $env:GITHUB_SHA) {
+            throw 'PONDAZ source SHA mismatch'
+          }
+          Write-Host "PONDAZ|SOURCE|$actual"
+          Write-Host "PONDAZ|PSCORE|$($PSVersionTable.PSVersion)"
+
+      - name: 'Pondaz negative and positive Unicode fixtures'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          & ./ci/Invoke-Pondaz.ps1 -SelfTest
+          if (-not $?) { throw 'PONDAZ fixture suite failed' }
+
+      - name: 'Pondaz validate all tracked text inputs and GitHub event'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          & ./ci/Invoke-Pondaz.ps1 -RepositoryRoot . -EventPath $env:GITHUB_EVENT_PATH -EvidenceDir pondaz-evidence
+          if (-not $?) { throw 'PONDAZ input preflight rejected the job queue' }
+
+      - name: 'Report immutable Pondaz preflight findings'
+        if: always()
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $evidence = 'pondaz-evidence/pondaz.json'
+          if (Test-Path -LiteralPath $evidence -PathType Leaf) {
+            Get-Content -LiteralPath $evidence
+            Get-Content -LiteralPath $evidence | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+          } else {
+            Write-Host 'PONDAZ|EVIDENCE|NOT_WRITTEN; inspect checkout/fixture failure'
+          }
