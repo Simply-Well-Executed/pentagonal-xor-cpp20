@@ -157,3 +157,43 @@ Any external process or nested `pwsh` script must observe the same PowerShell Co
 ## 8. Review register
 
 See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md). An editorial status of **REWRITTEN / VERIFY** reports a changed presentation only. It does **not** assert that source and all CI claims were independently retested. An explicit sign-off is required to promote an item to **VERIFIED**.
+
+## 9. Maintainer-directed implementation and supply-chain policy
+
+**Authority and status:** These restrictions are expressly directed by the repository maintainer for PENTAGONAL XOR and are proposed as the **highest-priority project implementation and documentation requirements**, subject to applicable law, third-party licenses, and the maintainer's explicit adoption through review. They do **not** purport to be U.S. Air Force orders, official Department of Defense policy, legal judgments or rules binding unrelated projects. Record unresolved conflicts rather than inventing approvals.
+
+### Allowed implementation profile
+
+| Dimension | Prescribed configuration | Prohibited or blocked without a new, explicitly approved policy decision |
+| --- | --- | --- |
+| C++ dialect | **ISO C++20 only**: \`-std=c++20\` or MSVC \`/std:c++20\`; CMake \`CXX_STANDARD 20\`, \`CXX_STANDARD_REQUIRED ON\`, \`CXX_EXTENSIONS OFF\`. | Other C++ standards, compiler-specific C++ dialect extensions or silent fallback to an older/newer standard |
+| Optimizer | **\`-O2\` only** for GNU/Clang-family compilers; **\`/O2\` only** for MSVC, as its platform spelling of the same requested optimization level. Warning/hardening options may be separately evaluated if they do not change this optimization mandate. | Alternative optimization levels; PGO instrumentation or profile use; LTO/whole-program optimization and additional speed/size/architecture-tuning options (for example \`-O3\`, \`-Ofast\`, \`/GL\`, \`/LTCG:PGOptimize\`, \`/fp:fast\`, or \`/arch:AVX2\`) as part of the normative build |
+| Shell | **PowerShell Core, latest stable version**. Start each script and every sample with **\`Set-StrictMode -Version 2.0\`** and capture version/exit status in test evidence. | Other scripting shells or an unqualified PowerShell invocation treated as policy-compliant |
+| Languages and package tooling | Reviewed C++20 and the prescribed PowerShell Core environment. Existing C11 interfaces require a **recorded compatibility exception or separate migration decision**, not a false C++20 claim. | **Python, Lua, Go, Rust, Node.js, npm, Gradle**, and their runners/package/build automation |
+| Java provenance | **Only Java obtained directly from Oracle**, if Java is explicitly authorized at all. Record origin, precise distribution, permitted uses and license rights before integration. | **Non-Oracle Java distributions**, including previously configured Temurin builds. A Gradle-free Java build is not exempt from this requirement |
+| Artifacts and dependencies | Prefer compiling reviewed source in-house and linking to appropriately licensed, preferably open-source libraries. | Blind trust in downloaded/precompiled binaries, unchecked third-party source or unsupported redistribution |
+
+**Pinned does not mean universally portable:** Every release build must report the compiler, selected C++20 standard, exact optimization flags, dependency manifest and test platform. An experimental branch may retain historical flags as **LAB / HISTORICAL** evidence but must not pass them off as the current authorized release profile.
+
+### Source-first provenance and executable trust gate
+
+1. **Identify** each dependency/toolchain by name, maintainer, exact version, source location, build recipe, target platform, published license and upstream commit or release identity.
+2. **Prefer source acquisition and in-house compilation.** A binary or package is not trustworthy merely because it was downloadable, signed, pinned, popular or supplied by a hosted CI image.
+3. **Before any unavoidable third-party binary is executed**, independently assess its source, publisher authentication, cryptographic digest/signature, supply-chain path, isolation, legal redistribution rights and threat model; record the exception and obtain explicit maintainer approval. If source-building and provenance checks cannot satisfy the policy, **BLOCK** its use rather than silently allow it. These controls reduce risk; they never prove a binary harmless.
+4. **Inspect all transitive open-source license obligations**, including notices, copyleft terms, source-distribution requirements, linking restrictions, patent grants and any incompatible licenses. Honor the exact governing license for each imported component.
+5. **Preserve third-party intellectual property rights.** Updating attributions or the project's licensing document does **not** grant unowned rights or cure an incompatible license. Seek permission, replace the dependency or remove the affected component when obligations cannot be satisfied.
+6. **Retain an audit trail:** source and version hashes, compiler flags, dependency inventory, original license texts/required notices, permission decisions, exception approvals, tests and release artifacts. Unsupported claims or lack of due diligence are **not** acceptable substitutes for evidence.
+
+This is a risk-control and intellectual-property due-diligence policy. It does not declare an alleged conduct pattern criminal without a legal finding, and it does not treat ignorance or "plausible deniability" as evidence of compliance.
+
+### Existing implementation conflicts and no-silent-mutation rule
+
+**As inspected on 2026-11-19, several historical or currently configured CI paths conflict with the proposed profile.** Examples include non-Oracle Temurin/JDK 17 setup in \`.github/workflows/ship.yml\`, \`android-standalone.yml\`, \`ligaze-v2-yin-yang.yml\` and \`ligaze-windows-header-optimizer-ab.yml\`, plus Java build/execution in \`supertaoism-gamp4-java-jar.yml\`. Some workflows use Java without Gradle, which still requires a separate Oracle provenance and Java-usage determination. Android runtime/toolchain constraints must be reviewed independently.
+
+The CORE YIN MSVC PGO workflow is **historical research evidence** and is not compliant with the newly requested \`-O2\`/\`/O2\`-only normative build. The repository also provides a C11 include-free API, which is **not a C++20 source file**; preserve that distinction until its role is explicitly decided.
+
+**Review decision:** Mark all such workflows **POLICY CONFLICT / NEEDS REVIEW** in the documentation register. Do not silently delete tests, change frozen compiler or benchmark protocols, replace a Java distribution, relabel old CI successes, or claim the bans are technically enforced just because this policy is written. The follow-up enforcement task requires a separate, explicit code/CI plan, verification and maintainer decision. Existing provenance remains accessible.
+
+### Audit acceptance criteria
+
+A document or release may be labeled **POLICY-CONFORMANT** only after the BiDi gate traces its claim to current C++20 compile flags, the PowerShell Core latest-stable/StrictMode 2.0 execution evidence, dependency/toolchain provenance, applicable license obligations and negative controls. A missing artifact, silent permission, or green job on an unreviewed toolchain cannot establish policy conformity.
