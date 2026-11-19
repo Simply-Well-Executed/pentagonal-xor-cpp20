@@ -4,7 +4,7 @@
 
 ## Completed publication action
 
-**Track 47 Markdown and SVG documentation assets:** the 46 original inventory entries plus the new `docs/HANDI.md` publication. Keep original baseline hashes and Git history; some source pages are now partially rewritten, but all original assets remain subject to independent verification and explicit decisions. The editorial procedure is now **REWRITTEN / VERIFY** with the newly documented, exploratory **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
+**Track 48 Markdown and SVG documentation assets:** the original 46 entries plus `docs/HANDI.md` and `docs/PONDAZ.md`. Keep original baseline hashes and Git history; some source pages are now partially rewritten, but all original assets remain subject to independent verification and explicit decisions. The editorial procedure is now **REWRITTEN / VERIFY** with the newly documented, exploratory **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
 **Apply** [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md)'s single completed-action publication rule: express the performed action in active present tense and make the method, source, evidence, limitations and decision agree. **Publish** [HANDI.md](HANDI.md) as a working specification for BiDi/TriDi/SigmaDi standards, tagged BiPi/TriPi/SigmaPi adherence observations, and MINZA/NINZA/PING folding. **Retain** the TriDi and SigmaDi routes and YAN reconciliation without implying completed software validation. A new version is not validated merely because it was rewritten.
 
@@ -63,6 +63,7 @@
 | P1 | [`docs/PENTAGONAL_GATE_CASCADE.md`](PENTAGONAL_GATE_CASCADE.md) | Algorithm / operator | `c4bd4ee92e49` | DUE · substantive rewrite and verification |
 | P1 | [`docs/PENTAGONAL_LIGAZE_NATIVE.md`](PENTAGONAL_LIGAZE_NATIVE.md) | Algorithm / operator | `8285ee295e4e` | DUE · substantive rewrite and verification |
 | P2 | [`docs/PENTAGONAL_TEST_TILT_VALIDATE_RUN.md`](PENTAGONAL_TEST_TILT_VALIDATE_RUN.md) | Algorithm / operator | `b363d4195cf7` | DUE · substantive rewrite and verification |
+| P0 | [`docs/PONDAZ.md`](PONDAZ.md) | CI input security / normalization protocol | `BRANCH:837c008a4fe7` | NEW · REWRITTEN / VERIFY · native PowerShell Core gate, source-preserving Unicode audit; full CI validation pending |
 | P1 | [`docs/RELEASE_PREFLIGHT.md`](RELEASE_PREFLIGHT.md) | Build / verification | `b3e2a190064d` | DUE · substantive rewrite and verification |
 | P2 | [`docs/SIGMA_PENTA_HAN_PRESENTATION.md`](SIGMA_PENTA_HAN_PRESENTATION.md) | LAB / experiment | `1f304bb0d787` | DUE · substantive rewrite and verification |
 | P2 | [`docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg`](SIGMA_PENTA_HAN_VISTA_BOARD.svg) | Diagram / accessible media | `490554f0251f` | DUE · substantive rewrite and verification |
@@ -146,6 +147,12 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 **Completion:** Only explicitly scoped, source-backed four-link reports, underlying TriDi evidence and named reviewer approval make a claim eligible for verification. All 46 original documentation assets remain in the review queue; only the SOP and COLLISION12 cross-reference received partial edits. The maintainer's C++20, `-O2`/`/O2`-only, PowerShell Core latest stable `Set-StrictMode -Version 2.0`, and license/source provenance requirements remain unchanged.
 
+## Pondaz source-intake security gate
+
+**Implement `PONDAZ-UNICODE-PREFLIGHT-v1` at CI origin.** The C++20 job queue now depends on an early native PowerShell Core (latest stable) scan of tracked text files and parsed GitHub event input. The `.NET` NFKC comparison is a nonmutating *shadow*, not a silent edit or identity replacement. Invalid UTF-8, U+200B–U+200D, U+FEFF and disallowed control codes block. A compatibility difference in ordinary research text is an audit finding; identity-sensitive workflow YAML must match its NFKC view.
+
+**Coverage limitation:** This gate does not validate unknown downloaded binaries, arbitrary network traffic or runtime inputs created after job scheduling. It does not establish font bugs as memory corruption. The scan and its 11 fixture cases are documented in [PONDAZ.md](PONDAZ.md). Record an exact green run before a VERIFIED designation; source-policy conflicts in historical Java/PGO/CMake jobs remain separate.
+
 ## HANDI publication and source-practice separation
 
 **Implement the proposed `HANDI-OBSERVATION-v0` document:** [HANDI.md](HANDI.md) defines BiDi/TriDi/SigmaDi as theory, standards and expectations; BiPi/TriPi/SigmaPi as appropriately namespaced practical adherence observations; and MINZA/NINZA/PING as first-, second- and third-degree folding. A third-degree PING may summarize a scoped record, not certify the source or automatically pass the standard.
@@ -157,6 +164,9 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 **Complete the sole publication rule:** State actual completed work in active present tense, revise all sections until they support the statement, and disclose each outstanding test as PROPOSED, NOT RUN or NEEDS REVIEW. This action updates the operating procedure, HANDI, this register and the SigmaDi COLLISION12 description; it does not change the C++20 binary or claim enforcement of unmodified CI.
 
 ## Review handoff record
+
+> Pondaz is an additive CI security proposal, not a retroactive sanitizer of frozen experiments or a claim that previously accepted Unicode was illegal.
+
 
 | Date | Reviewer / actor | Change | Evidence | Decision |
 | --- | --- | --- | --- | --- |
