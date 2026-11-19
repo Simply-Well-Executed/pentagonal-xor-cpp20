@@ -13,7 +13,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   java-jar-yin-yan-yang:
+    needs: pondaz
     name: Java 17 JAR | YIN/YANG 60s | YAN/YING faults | ZING/DECOMPILED
     runs-on: ubuntu-24.04
     timeout-minutes: 20
