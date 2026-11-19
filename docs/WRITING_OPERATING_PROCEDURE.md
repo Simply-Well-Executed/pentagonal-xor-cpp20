@@ -2,16 +2,20 @@
 
 **Document ID:** DOC-OP-2026-11-19 | **Scope:** repository prose, diagrams, policy, software reference, validation and release instructions | **State:** REWRITTEN / VERIFY, pending maintainer adoption
 
-**BLUF:** Say what a component does, identify the evidence that supports it, explain what it does *not* establish, and tell the reader exactly how to reproduce or review the result. An editorial revision never changes the underlying algorithm or the historical record.
+**Publication action:** State the completed operation in the present tense, name its verifiable outcome, identify its source and limitations, and carry that statement through every relevant section. Keep the original algorithm and historical record unchanged.
 
 **Owner and provenance:** Simply Well Executed project documentation. Original project writing copyright (c) 2026 Paul Allen Cheek, SPDX-License-Identifier: 0BSD where applicable. Third-party references are linked, not relicensed or copied into this repository.
+
+**The one publication rule of thumb:** **Finish the work; state what it does in an active present-tense verb; carry that same action and its evidence throughout the entire publication.** Revise recursively: opening statement → method → observable result → limitations → decision → opening statement, until no section overclaims, contradicts or leaves the action unsupported. If implementation has not happened, say **PROPOSED**, **NOT RUN** or **NEEDS REVIEW**; never turn an intention into a completed claim. This single editorial principle supplements the concrete toolchain, evidence and legal obligations below; it neither replaces nor alters them.
+
+**Publication check:** Begin with a completed, verb-led declaration such as "Define the review route and identify its provenance" when the document actually defines it. Follow with the source identifiers, exact steps, observed outcomes, counterexamples and reviewer status. Give each important statement a corresponding result or an explicit unresolved state. The documentation itself is the publication; a heading alone is not a deliverable.
 
 ## 1. Purpose and commander's intent
 
 This is a project editorial standard, **not** a Department of the Air Force instruction, official correspondence, military performance statement, or regulatory authorization. Apply the practical discipline of concise military writing to C++20 technical records without claiming that external military policies govern or certify this software.
 
 **Required order for a newly written page:**
-1. **BLUF and scope:** Audience, decision, tested behavior, current project role.
+1. **Completed action and scope:** State an active, present-tense operation the publication actually delivers; name audience, decision, tested behavior and project role.
 2. **Authority and source:** Identify the canonical source file or immutable input. A README, diagram, report and checklist are **derived**, not a substitute for code or a signed evidence record.
 3. **Execution / method:** Exact input, operation order, platform, guard, failure behavior and output.
 4. **Evidence and limitations:** Specific test filenames or observed run IDs; separate observed results, theoretical identities, untested hypotheses and known limits.
@@ -23,7 +27,7 @@ Use meaningful headings, short paragraphs, active verbs, parallel constructions,
 
 ## 2. TriDi critical-thinking gate: three directions, one accountable decision
 
-**BLUF:** TriDi builds on the existing BiDi method without erasing it. Review each material claim along **three separately traceable directions**: YIN checks claims forward against evidence, YANG checks evidence backward against claims, and **AIRGAP** independently tests the assumptions, threat boundaries, negative controls, and provenance neither route can establish alone. **YAN** reconciles their findings and records a scoped decision; it is a synthesis, not a fourth vote or a superior source.
+**Publication action:** Preserve BiDi and define TriDi as an additive three-direction critical-thinking gate. Review each material claim along **three separately traceable directions**: YIN checks claims forward against evidence, YANG checks evidence backward against claims, and **AIRGAP** independently tests the assumptions, threat boundaries, negative controls, and provenance neither route can establish alone. **YAN** reconciles their findings and records a scoped decision; it is a synthesis, not a fourth vote or a superior source.
 
 **Status:** TRI-DI-CRITICAL-THINKING-v1, **EXPLORATORY / REWRITTEN / VERIFY** pending maintainer adoption. This is a *project-designed review method* and not an official Air Force, Six Sigma, quantum-mechanical, physical air-gap, cryptographic or independent-certification standard.
 
@@ -132,7 +136,7 @@ The review directions do **not** determine Unicode writing direction. For RTL/LT
 
 ## 2A. SigmaDi review extension: four alternating butterfly connections
 
-**BLUF:** SigmaDi adds **four directed cross-check connections** over TriDi's YIN forward, YANG reverse and AIRGAP orthogonal records. The original CORE and all BiDi/TriDi evidence remain unchanged. YAN reconciles the four outputs without majority voting. A positive connection asks for corroboration; a negative connection challenges an overclaim or missing premise. **The signed links are checks, not arithmetic, votes, consent, proof or a new physical dimension.**
+**Publication action:** Define **four directed cross-check connections** over TriDi's YIN forward, YANG reverse and AIRGAP orthogonal records. The original CORE and all BiDi/TriDi evidence remain unchanged. YAN reconciles the four outputs without majority voting. A positive connection asks for corroboration; a negative connection challenges an overclaim or missing premise. **The signed links are checks, not arithmetic, votes, consent, proof or a new physical dimension.**
 
 **Status:** `SIGMADI-REVIEW-BUTTERFLY4-v0`, **EXPLORATORY / REWRITTEN / VERIFY**; the proposed endpoint topology below is not yet approved as an established mathematical operator. The user's SigmaDi exploration already mentions **four butterfly connections with alternating polarity**, but exact pairwise endpoints and sign semantics are **proposed here for review**, not silently attributed to earlier work.
 
@@ -206,7 +210,7 @@ Source-code algorithms and original input records outrank derived ledgers; a ren
 
 1. Inventory every Markdown, legal notice, SVG, README, template and operator protocol. Register new items before changing status.
 2. Read the existing page and applicable source/test/workflow. If source was not read, label the page **REWRITTEN / VERIFY**, not VERIFIED.
-3. Establish one unambiguous BLUF; rewrite headings around behavior, evidence, limitation and next action.
+3. Complete the claimed action before describing it as done. Write its opening declaration with an active present-tense verb; recursively revise the method, evidence, limitations, outcome and opening until they agree. Label any unfinished work PROPOSED / NOT RUN / NEEDS REVIEW.
 4. Retain canonical formulae, exact result values, frozen experimental protocols, historical evidence and copyrights. A copyedit is not authorization to change them.
 5. Link relative repository files; link external references without copying third-party protected passages.
 6. Test claimed PowerShell Core (latest stable version; `Set-StrictMode -Version 2.0`) commands and targeted C++20 `-O2`/MSVC `/O2` behavior in CI when possible. Report exact job IDs and failures. Never claim a green build that has not run.
@@ -215,7 +219,7 @@ Source-code algorithms and original input records outrank derived ledgers; a ren
 
 **Contributor model:** An author may propose a revision; a reviewer independently confirms current behavior; the maintainer chooses whether to merge. No person, office or external title silently assumes approval.
 
-## 6. Writing rules
+## 6. Apply the single completed-action publication rule
 
 Write: **"The implementation computes the odd parity probability of five independent Bernoulli variables."**
 Do not write: **"The implementation proves identity or security."**
