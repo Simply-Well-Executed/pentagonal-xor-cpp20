@@ -130,6 +130,12 @@ install(FILES
     shared/tri_pi.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
+    shared/gammagamma.hpp
+    shared/pi_precision.hpp
+    shared/toolong.hpp
+    shared/toolong_ratio.hpp
+    shared/toolong_bits.hpp
+    shared/toolong_photon_model.hpp
     shared/stability10d.hpp
     shared/coreo_stereo.hpp
     shared/pentagonal_xor_std_free.h
@@ -139,7 +145,7 @@ install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
 if(MSVC)
     install(FILES "$<TARGET_PDB_FILE:pentagonal_xor>" DESTINATION symbols OPTIONAL)
 endif()
-install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md docs/STABILITY10D.md docs/ANDROID.md docs/COREAO_GAIN.md docs/COUNTERARCCOSINE_2NDWAVE.svg DESTINATION share/doc/pentagonal-xor)
+install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md docs/STABILITY10D.md docs/ANDROID.md docs/COREAO_GAIN.md docs/TOOLONG.md docs/GAMMAGAMMA_PI_PRECISION.md docs/COUNTERARCCOSINE_2NDWAVE.svg DESTINATION share/doc/pentagonal-xor)
 
 
 # Experimental gate controller, isolated from the original XOR executable.
