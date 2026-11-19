@@ -4,7 +4,7 @@
 
 ## Completed publication action
 
-**Track 47 Markdown and SVG documentation assets:** the 46 original inventory entries plus the new `docs/HANDI.md` publication. Keep original baseline hashes and Git history; some source pages are now partially rewritten, but all original assets remain subject to independent verification and explicit decisions. The editorial procedure is now **REWRITTEN / VERIFY** with the original **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
+**Track 47 Markdown and SVG documentation assets:** the 46 original inventory entries plus the new `docs/HANDI.md` publication. Keep original baseline hashes and Git history; some source pages are now partially rewritten, but all original assets remain subject to independent verification and explicit decisions. The editorial procedure is now **REWRITTEN / VERIFY** with the newly documented, exploratory **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
 **Apply** [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md)'s single completed-action publication rule: express the performed action in active present tense and make the method, source, evidence, limitations and decision agree. **Publish** [HANDI.md](HANDI.md) as a working specification for BiDi/TriDi/SigmaDi standards, tagged BiPi/TriPi/SigmaPi adherence observations, and MINZA/NINZA/PING folding. **Retain** the TriDi and SigmaDi routes and YAN reconciliation without implying completed software validation. A new version is not validated merely because it was rewritten.
 
@@ -31,53 +31,53 @@
 
 | Priority | Document | Classification | Source blob SHA-12 / origin | Current review state |
 | --- | --- | --- | --- | --- |
-| P0 | [`.github/pull_request_template.md`](../.github/pull_request_template.md) | Repository entry / policy | `6ebe8e300800` | DUE · substantive rewrite and verification |
-| P1 | [`ci/CONTAINER-VALIDATION.md`](../ci/CONTAINER-VALIDATION.md) | Build / verification | `a580045afe8a` | DUE · substantive rewrite and verification |
-| P0 | [`CONTRIBUTING.md`](../CONTRIBUTING.md) | Repository entry / policy | `81e9fad8b3e7` | DUE · substantive rewrite and verification |
-| P2 | [`docs/ANDROID.md`](../docs/ANDROID.md) | Build / verification | `a0bdfea78ad8` | DUE · substantive rewrite and verification |
-| P1 | [`docs/BUILD_EVIDENCE.md`](../docs/BUILD_EVIDENCE.md) | Build / verification | `72c9bda1a6b5` | DUE · substantive rewrite and verification |
-| P2 | [`docs/COR_WITNESS_THREAT_MODEL_BENCHMARK.md`](../docs/COR_WITNESS_THREAT_MODEL_BENCHMARK.md) | Algorithm / operator | `e02531b86996` | DUE · substantive rewrite and verification |
-| P2 | [`docs/COREAO_GAIN.md`](../docs/COREAO_GAIN.md) | Algorithm / operator | `9ea638d61c25` | DUE · substantive rewrite and verification |
-| P2 | [`docs/COREAO.md`](../docs/COREAO.md) | Algorithm / operator | `1a9bfdebc868` | DUE · substantive rewrite and verification |
-| P2 | [`docs/COUNTERARCCOSINE_2NDWAVE.svg`](../docs/COUNTERARCCOSINE_2NDWAVE.svg) | Diagram / accessible media | `af8f59fc723a` | DUE · substantive rewrite and verification |
-| P1 | [`docs/DECASIGMA.md`](../docs/DECASIGMA.md) | Algorithm / operator | `191a455fd200` | DUE · substantive rewrite and verification |
-| P2 | [`docs/DOCKER_SOURCE_STUDY.md`](../docs/DOCKER_SOURCE_STUDY.md) | Build / verification | `a0ff7608cc2f` | DUE · substantive rewrite and verification |
-| P0 | [`docs/DOCUMENT_REVIEW_REGISTER.md`](../docs/DOCUMENT_REVIEW_REGISTER.md) | Governance / review | `e9b43a7fa431` | DUE · substantive rewrite and verification |
-| P2 | [`docs/DOLPHIN_SUBJECT_SEARCH.md`](../docs/DOLPHIN_SUBJECT_SEARCH.md) | LAB / experiment | `68f49147ec05` | DUE · substantive rewrite and verification |
-| P1 | [`docs/GAMMAGAMMA_PI_PRECISION.md`](../docs/GAMMAGAMMA_PI_PRECISION.md) | Algorithm / operator | `bd9cde131bc6` | DUE · substantive rewrite and verification |
-| P1 | [`docs/GAMP4_VALIDATION.md`](../docs/GAMP4_VALIDATION.md) | Build / verification | `83300c9f0118` | DUE · substantive rewrite and verification |
-| P0 | [`docs/HANDI.md`](../docs/HANDI.md) | Governance / observation protocol | `BRANCH:843db858ce6b` | NEW · REWRITTEN / VERIFY · HANDI naming and folding specification; implementation unverified |
-| P2 | [`docs/LICENSE_AND_MARKS.md`](../docs/LICENSE_AND_MARKS.md) | Algorithm / operator | `cee7858b9c59` | DUE · substantive rewrite and verification |
-| P1 | [`docs/LIGAZE_WINDOWS_HEADER_V2.md`](../docs/LIGAZE_WINDOWS_HEADER_V2.md) | Build / verification | `78b34f47dc31` | DUE · substantive rewrite and verification |
-| P1 | [`docs/LIGAZE_WINDOWS_OPTIMIZER_AB.md`](../docs/LIGAZE_WINDOWS_OPTIMIZER_AB.md) | Build / verification | `31837e768b56` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_CENTRIX_NATIVE_DOM_V12.md`](../docs/MINZA_CENTRIX_NATIVE_DOM_V12.md) | LAB / experiment | `a5deadac3151` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_COLOR_EYES_RGBA64.md`](../docs/MINZA_COLOR_EYES_RGBA64.md) | LAB / experiment | `92ab3df33438` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md`](../docs/MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md) | LAB / experiment | `22c113ea47b5` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_FEMTOSECOND_GEOMETRY.md`](../docs/MINZA_FEMTOSECOND_GEOMETRY.md) | LAB / experiment | `054b20984990` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_PINWHEEL_ATLAS.md`](../docs/MINZA_PINWHEEL_ATLAS.md) | LAB / experiment | `075b8e33c4fa` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_REVERSE_XFE_ROT16_O2_2026-11-19.md`](../docs/MINZA_REVERSE_XFE_ROT16_O2_2026-11-19.md) | LAB / experiment | `9f31f06be453` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_ROT_EBG_1_256.md`](../docs/MINZA_ROT_EBG_1_256.md) | LAB / experiment | `c9850c556837` | DUE · substantive rewrite and verification |
-| P2 | [`docs/MINZA_TEMPORAL_PENTAGONAL.md`](../docs/MINZA_TEMPORAL_PENTAGONAL.md) | LAB / experiment | `97a485a0fb98` | DUE · substantive rewrite and verification |
-| P2 | [`docs/NINZA_PING_UNFORGE_UNTWIRL.md`](../docs/NINZA_PING_UNFORGE_UNTWIRL.md) | LAB / experiment | `bb90d204ea3d` | DUE · substantive rewrite and verification |
-| P1 | [`docs/PENTAGONAL_GAMP4_VALIDATION.md`](../docs/PENTAGONAL_GAMP4_VALIDATION.md) | Build / verification | `14ce835b090a` | DUE · substantive rewrite and verification |
-| P1 | [`docs/PENTAGONAL_GATE_CASCADE.md`](../docs/PENTAGONAL_GATE_CASCADE.md) | Algorithm / operator | `c4bd4ee92e49` | DUE · substantive rewrite and verification |
-| P1 | [`docs/PENTAGONAL_LIGAZE_NATIVE.md`](../docs/PENTAGONAL_LIGAZE_NATIVE.md) | Algorithm / operator | `8285ee295e4e` | DUE · substantive rewrite and verification |
-| P2 | [`docs/PENTAGONAL_TEST_TILT_VALIDATE_RUN.md`](../docs/PENTAGONAL_TEST_TILT_VALIDATE_RUN.md) | Algorithm / operator | `b363d4195cf7` | DUE · substantive rewrite and verification |
-| P1 | [`docs/RELEASE_PREFLIGHT.md`](../docs/RELEASE_PREFLIGHT.md) | Build / verification | `b3e2a190064d` | DUE · substantive rewrite and verification |
-| P2 | [`docs/SIGMA_PENTA_HAN_PRESENTATION.md`](../docs/SIGMA_PENTA_HAN_PRESENTATION.md) | LAB / experiment | `1f304bb0d787` | DUE · substantive rewrite and verification |
-| P2 | [`docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg`](../docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg) | Diagram / accessible media | `490554f0251f` | DUE · substantive rewrite and verification |
-| P2 | [`docs/SIGMADI_COLLISION12.md`](../docs/SIGMADI_COLLISION12.md) | LAB / experiment | `4e2305d14810` | PARTIAL REWRITE / VERIFY · namespace separation; full source audit still DUE |
-| P2 | [`docs/STABILITY10D.md`](../docs/STABILITY10D.md) | Algorithm / operator | `c519fc4fcfa1` | DUE · substantive rewrite and verification |
-| P1 | [`docs/SUPERTAOISM_GAMP4_JAVA_JAR.md`](../docs/SUPERTAOISM_GAMP4_JAVA_JAR.md) | Build / verification | `a8bb36df0302` | DUE · substantive rewrite and verification |
-| P1 | [`docs/TOOLONG.md`](../docs/TOOLONG.md) | Algorithm / operator | `f9648568e823` | DUE · substantive rewrite and verification |
-| P1 | [`docs/TRI_PI.md`](../docs/TRI_PI.md) | Algorithm / operator | `01ac2b0ff692` | DUE · substantive rewrite and verification |
-| P2 | [`docs/VISTA_9X9_LADDER.svg`](../docs/VISTA_9X9_LADDER.svg) | Diagram / accessible media | `3a769b74c2ce` | DUE · substantive rewrite and verification |
-| P2 | [`docs/VISTA_9X9_SHOWCASE.md`](../docs/VISTA_9X9_SHOWCASE.md) | LAB / experiment | `9e5e8db1c9d7` | DUE · substantive rewrite and verification |
-| P2 | [`docs/VISTA_9X9.md`](../docs/VISTA_9X9.md) | LAB / experiment | `44d90b1fb46b` | DUE · substantive rewrite and verification |
-| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | REWRITTEN / VERIFY · TriDi and SigmaDi review overlay, source and policy preserved; approval pending |
-| P0 | [`README.md`](../README.md) | Repository entry / policy | `62bf8918e946` | DUE · substantive rewrite and verification |
-| P0 | [`SECURITY.md`](../SECURITY.md) | Repository entry / policy | `d993abe4d562` | DUE · substantive rewrite and verification |
-| P1 | [`shared/README.md`](../shared/README.md) | Repository entry / policy | `793afe2aabe4` | DUE · substantive rewrite and verification |
+| P0 | [`.github/pull_request_template.md`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/.github/pull_request_template.md) | Repository entry / policy | `6ebe8e300800` | DUE · substantive rewrite and verification |
+| P1 | [`ci/CONTAINER-VALIDATION.md`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/ci/CONTAINER-VALIDATION.md) | Build / verification | `a580045afe8a` | DUE · substantive rewrite and verification |
+| P0 | [`CONTRIBUTING.md`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/CONTRIBUTING.md) | Repository entry / policy | `81e9fad8b3e7` | DUE · substantive rewrite and verification |
+| P2 | [`docs/ANDROID.md`](ANDROID.md) | Build / verification | `a0bdfea78ad8` | DUE · substantive rewrite and verification |
+| P1 | [`docs/BUILD_EVIDENCE.md`](BUILD_EVIDENCE.md) | Build / verification | `72c9bda1a6b5` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COR_WITNESS_THREAT_MODEL_BENCHMARK.md`](COR_WITNESS_THREAT_MODEL_BENCHMARK.md) | Algorithm / operator | `e02531b86996` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COREAO_GAIN.md`](COREAO_GAIN.md) | Algorithm / operator | `9ea638d61c25` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COREAO.md`](COREAO.md) | Algorithm / operator | `1a9bfdebc868` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COUNTERARCCOSINE_2NDWAVE.svg`](COUNTERARCCOSINE_2NDWAVE.svg) | Diagram / accessible media | `af8f59fc723a` | DUE · substantive rewrite and verification |
+| P1 | [`docs/DECASIGMA.md`](DECASIGMA.md) | Algorithm / operator | `191a455fd200` | DUE · substantive rewrite and verification |
+| P2 | [`docs/DOCKER_SOURCE_STUDY.md`](DOCKER_SOURCE_STUDY.md) | Build / verification | `a0ff7608cc2f` | DUE · substantive rewrite and verification |
+| P0 | [`docs/DOCUMENT_REVIEW_REGISTER.md`](DOCUMENT_REVIEW_REGISTER.md) | Governance / review | `e9b43a7fa431` | DUE · substantive rewrite and verification |
+| P2 | [`docs/DOLPHIN_SUBJECT_SEARCH.md`](DOLPHIN_SUBJECT_SEARCH.md) | LAB / experiment | `68f49147ec05` | DUE · substantive rewrite and verification |
+| P1 | [`docs/GAMMAGAMMA_PI_PRECISION.md`](GAMMAGAMMA_PI_PRECISION.md) | Algorithm / operator | `bd9cde131bc6` | DUE · substantive rewrite and verification |
+| P1 | [`docs/GAMP4_VALIDATION.md`](GAMP4_VALIDATION.md) | Build / verification | `83300c9f0118` | DUE · substantive rewrite and verification |
+| P0 | [`docs/HANDI.md`](HANDI.md) | Governance / observation protocol | `BRANCH:843db858ce6b` | NEW · REWRITTEN / VERIFY · HANDI naming and folding specification; implementation unverified |
+| P2 | [`docs/LICENSE_AND_MARKS.md`](LICENSE_AND_MARKS.md) | Algorithm / operator | `cee7858b9c59` | DUE · substantive rewrite and verification |
+| P1 | [`docs/LIGAZE_WINDOWS_HEADER_V2.md`](LIGAZE_WINDOWS_HEADER_V2.md) | Build / verification | `78b34f47dc31` | DUE · substantive rewrite and verification |
+| P1 | [`docs/LIGAZE_WINDOWS_OPTIMIZER_AB.md`](LIGAZE_WINDOWS_OPTIMIZER_AB.md) | Build / verification | `31837e768b56` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_CENTRIX_NATIVE_DOM_V12.md`](MINZA_CENTRIX_NATIVE_DOM_V12.md) | LAB / experiment | `a5deadac3151` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_COLOR_EYES_RGBA64.md`](MINZA_COLOR_EYES_RGBA64.md) | LAB / experiment | `92ab3df33438` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md`](MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md) | LAB / experiment | `22c113ea47b5` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_FEMTOSECOND_GEOMETRY.md`](MINZA_FEMTOSECOND_GEOMETRY.md) | LAB / experiment | `054b20984990` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_PINWHEEL_ATLAS.md`](MINZA_PINWHEEL_ATLAS.md) | LAB / experiment | `075b8e33c4fa` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_REVERSE_XFE_ROT16_O2_2026-11-19.md`](MINZA_REVERSE_XFE_ROT16_O2_2026-11-19.md) | LAB / experiment | `9f31f06be453` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_ROT_EBG_1_256.md`](MINZA_ROT_EBG_1_256.md) | LAB / experiment | `c9850c556837` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_TEMPORAL_PENTAGONAL.md`](MINZA_TEMPORAL_PENTAGONAL.md) | LAB / experiment | `97a485a0fb98` | DUE · substantive rewrite and verification |
+| P2 | [`docs/NINZA_PING_UNFORGE_UNTWIRL.md`](NINZA_PING_UNFORGE_UNTWIRL.md) | LAB / experiment | `bb90d204ea3d` | DUE · substantive rewrite and verification |
+| P1 | [`docs/PENTAGONAL_GAMP4_VALIDATION.md`](PENTAGONAL_GAMP4_VALIDATION.md) | Build / verification | `14ce835b090a` | DUE · substantive rewrite and verification |
+| P1 | [`docs/PENTAGONAL_GATE_CASCADE.md`](PENTAGONAL_GATE_CASCADE.md) | Algorithm / operator | `c4bd4ee92e49` | DUE · substantive rewrite and verification |
+| P1 | [`docs/PENTAGONAL_LIGAZE_NATIVE.md`](PENTAGONAL_LIGAZE_NATIVE.md) | Algorithm / operator | `8285ee295e4e` | DUE · substantive rewrite and verification |
+| P2 | [`docs/PENTAGONAL_TEST_TILT_VALIDATE_RUN.md`](PENTAGONAL_TEST_TILT_VALIDATE_RUN.md) | Algorithm / operator | `b363d4195cf7` | DUE · substantive rewrite and verification |
+| P1 | [`docs/RELEASE_PREFLIGHT.md`](RELEASE_PREFLIGHT.md) | Build / verification | `b3e2a190064d` | DUE · substantive rewrite and verification |
+| P2 | [`docs/SIGMA_PENTA_HAN_PRESENTATION.md`](SIGMA_PENTA_HAN_PRESENTATION.md) | LAB / experiment | `1f304bb0d787` | DUE · substantive rewrite and verification |
+| P2 | [`docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg`](SIGMA_PENTA_HAN_VISTA_BOARD.svg) | Diagram / accessible media | `490554f0251f` | DUE · substantive rewrite and verification |
+| P2 | [`docs/SIGMADI_COLLISION12.md`](SIGMADI_COLLISION12.md) | LAB / experiment | `4e2305d14810` | PARTIAL REWRITE / VERIFY · namespace separation; full source audit still DUE |
+| P2 | [`docs/STABILITY10D.md`](STABILITY10D.md) | Algorithm / operator | `c519fc4fcfa1` | DUE · substantive rewrite and verification |
+| P1 | [`docs/SUPERTAOISM_GAMP4_JAVA_JAR.md`](SUPERTAOISM_GAMP4_JAVA_JAR.md) | Build / verification | `a8bb36df0302` | DUE · substantive rewrite and verification |
+| P1 | [`docs/TOOLONG.md`](TOOLONG.md) | Algorithm / operator | `f9648568e823` | DUE · substantive rewrite and verification |
+| P1 | [`docs/TRI_PI.md`](TRI_PI.md) | Algorithm / operator | `01ac2b0ff692` | DUE · substantive rewrite and verification |
+| P2 | [`docs/VISTA_9X9_LADDER.svg`](VISTA_9X9_LADDER.svg) | Diagram / accessible media | `3a769b74c2ce` | DUE · substantive rewrite and verification |
+| P2 | [`docs/VISTA_9X9_SHOWCASE.md`](VISTA_9X9_SHOWCASE.md) | LAB / experiment | `9e5e8db1c9d7` | DUE · substantive rewrite and verification |
+| P2 | [`docs/VISTA_9X9.md`](VISTA_9X9.md) | LAB / experiment | `44d90b1fb46b` | DUE · substantive rewrite and verification |
+| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | REWRITTEN / VERIFY · TriDi and SigmaDi review overlay, source and policy preserved; approval pending |
+| P0 | [`README.md`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/README.md) | Repository entry / policy | `62bf8918e946` | DUE · substantive rewrite and verification |
+| P0 | [`SECURITY.md`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/SECURITY.md) | Repository entry / policy | `d993abe4d562` | DUE · substantive rewrite and verification |
+| P1 | [`shared/README.md`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/shared/README.md) | Repository entry / policy | `793afe2aabe4` | DUE · substantive rewrite and verification |
 
 ## Acceptance criteria for each rewritten asset
 
@@ -107,6 +107,7 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 | Java 17 JAR and Android execution | `.github/workflows/supertaoism-gamp4-java-jar.yml`, `docs/ANDROID.md` and Android SDK workflows | POLICY CONFLICT / NEEDS REVIEW: Oracle compiler provenance alone does not establish Android runtime compliance; decide source-preserving migration before enforcement |
 | Two-phase MSVC PGO and architecture-tuned optimizer | `.github/workflows/ligaze-v2-yin-yang.yml` / CORE YIN experiment | HISTORICAL LAB / POLICY CONFLICT: retain old test records at the original SHA, but do not use PGO, LTO or additional speed flags in the new normative `-O2`/`/O2` profile |
 | Include-free strict C11 public parity API | `shared/pentagonal_xor_std_free.h`, `shared/README.md` | SCOPE DECISION NEEDED: it is C11, not C++20; maintain honest existing compatibility evidence until the maintainer approves an exception or migration |
+| Current CMake native shipping optimization and dialect settings | `CMakeLists.txt`: Unix Release `-O3` default; MSVC `INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE` and selected benchmark IPO; missing per-target `CXX_EXTENSIONS OFF` | POLICY CONFLICT / NEEDS REVIEW: review exact compiled command lines and migrate the normative release profile separately; historical AB/PGO results remain at original SHA |
 | Existing CI infrastructure and downloaded build tools | GitHub hosted runner environment, action dependencies, SDK/toolchain installers, Docker layers | SUPPLY-CHAIN REVIEW REQUIRED: record sources, version, signatures/hashes, licensing and exact build methods; do not assert every executable has been built in-house |
 | Any unverified imported code, asset or license claim | `docs/LICENSE_AND_MARKS.md`, third-party build inputs | INTELLECTUAL-PROPERTY REVIEW: verify each upstream license and ownership; retain mandatory notices, secure permissions or replace incompatible material |
 
