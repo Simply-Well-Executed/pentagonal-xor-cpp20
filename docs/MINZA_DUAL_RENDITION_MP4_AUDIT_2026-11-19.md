@@ -138,3 +138,67 @@ The [ITU's July 28, 2026 Beyond-VVC Call for Proposals](https://www.itu.int/hub/
 - **Further method:** if an alleged H.267 sample is supplied, preserve its source hash and exact research-model revision, parse it against that model's published syntax, cross-check with a compatible independently built decoder, and keep it out of the H.264/H.265/H.266/AV1 claims unless proven. No guesswork from file names or optimization flags.
 
 Doom9 full-page retrieval was restricted in this audit; the forum-related findings are grounded in indexed thread text and corroborated with ITU/MPEG primary sources. No uninspected thread details are asserted.
+
+## MINZA BiDi / TriDi-FLV / PiDi-AVI fall-down rescan
+
+**New, separate experiment** `MINZA-CODEC-STACK-BIDI-TRIDI-PIDI-20261119-O2-v1`; **status:** native structural checks **verified** against both exact locally supplied files. This is an append-only amendment, not a revision to the earlier temporal report or the original video bytes.
+
+### Hypotheses / meaning of the user-defined routes
+
+- **Fall-down:** try H.269 → H.268 → H.267 → H.266 → H.265 → H.264, with a distinguishable state for **no declared track**, **unsupported/test not specified**, and **validated track**. H.269 (LTO-only SVT-AV1) and H.268 (PGO-only SVT-AV1) remain MINZA *build-profile aliases*, not standardized bitstream formats; for both, check the declared AV1 `av01` sample entry, but an AV1 stream alone cannot reveal its compiler flags.
+- **BiDi:** enumerate structurally declared MP4 tracks in the `moov → trak → mdia → stbl → stsd` direction, then resolve every `stsc/stco|co64/stsz` sample back into a declared `mdat` range and verify all length-prefixed AVC NAL units. Bidirectional **consistency checking** is not a second video witness.
+- **TriDi-FLV:** scan *all original file bytes*, including `mdat`, for the `FLV` header and validate version/flags, header length, first previous-tag-size, and at least two properly sized/type-constrained consecutive FLV tags. A bare `FLV` string is not a validated FLV movie.
+- **PiDi-AVI:** scan *all original file bytes* for `RIFF` + `AVI `; validate little-endian RIFF chunk sizes and both `LIST hdrl` and `LIST movi`. A bare `RIFF` string is not a validated AVI.
+- **Nested MP4 reconnaissance:** count plausible sized `ftyp` headers without treating a header candidate as proof of a second complete MP4 presentation.
+
+The separate native inspector was compiled in C++20 with `g++ -std=c++20 -O2 -Wall -Wextra -Wpedantic -fstack-protector-strong -D_FORTIFY_SOURCE=2`. No Python, transcoding, visual interpolation, video pixel decoder, or writes to the original media were used. **Inspector source SHA-256:** `edb95f0c5dc6887ddc5ca0ca37be4666c0e7fb7e6f04c4f7d331eff1be66a250`. Keep this checksum paired with the locally supplied inspector `minza_codec_ladder.cpp`. The binary output is not a substitute for the source record.
+
+### Direct measurements
+
+| Metric | Source A `ef9lUKuZwT81L9CN(2).mp4` | Source B `2026-11-18 21-15-19(2).mp4` |
+| --- | ---: | ---: |
+| Original bytes | 78,434,426 | 54,255,103 |
+| SHA-256 | `2ebc7763648c9c025ebc1c7d882c4300e2b9dba4fcae6260cf15291c2584ffb9` | `9b351e2f339e11b7bc2e10d9a377e4c72a9ed2ac1c3701951c935ab10a6dc0e3` |
+| Declared video entries | 1 `avc1` | 1 `avc1` |
+| Declared audio entries | 1 `mp4a` | 1 `mp4a` |
+| AVCDecoderConfigurationRecord `avcC`, SPS/PPS checked | Valid | Valid |
+| NAL length prefix | 4 bytes | 4 bytes |
+| Video samples entirely within `mdat` | 5,215/5,215 | 11,154/11,154 |
+| Video samples with exact NAL boundaries | 5,215/5,215 | 11,154/11,154 |
+| Invalid MP4 box boundaries | 0 | 0 |
+| Invalid AVC sample NAL boundaries | 0 | 0 |
+| Raw `FLV` patterns anywhere | 5 | 2 |
+| **Valid embedded FLV** | **0** | **0** |
+| Raw `RIFF` patterns anywhere | 0 | 0 |
+| **Valid embedded AVI** | **0** | **0** |
+| Plausible `ftyp` box signatures | 1 (outer MP4) | 1 (outer MP4) |
+
+| Fall-down candidate | Source A | Source B | Meaning |
+| --- | --- | --- | --- |
+| H.269 | No declared AV1 stream | No declared AV1 stream | User-defined LTO build alias; build provenance unavailable |
+| H.268 | No declared AV1 stream | No declared AV1 stream | User-defined PGO build alias; build provenance unavailable |
+| H.267 | Not testable against finalized syntax | Not testable against finalized syntax | Next-generation standardization effort; do not invent an ID/signature |
+| H.266 | No declared VVC stream | No declared VVC stream | No `vvc1/vvi1` video entry |
+| H.265 | No declared HEVC stream | No declared HEVC stream | No `hvc1/hev1` video entry |
+| **H.264** | **Confirmed structural AVC** | **Confirmed structural AVC** | `avc1` + valid `avcC` + all bounded AVC NAL samples |
+
+**H.264 NAL inventory, Source A:** type 1 = 5,157; type 5 = 58; type 6 = 21; type 7 = 58; type 8 = 58.
+
+**H.264 NAL inventory, Source B:** type 1 = 11,109; type 5 = 45; type 6 = 11,199; type 7 = 1; type 8 = 1.
+
+### Interpretation and remaining falsifiers
+
+The results **do not support a conventionally multiplexed second video track, complete embedded FLV container, or complete embedded RIFF/AVI container in either original MP4** under the documented syntax checks. Seven total raw `FLV` byte patterns (5 + 2) did not form validated FLV streams. Container structure and H.264 AVC configuration agree; a purported alternate codec should produce a reproducible, independently decodable payload rather than only isolated magic bytes.
+
+These checks **cannot** exclude encryption or steganography hidden in picture information, arbitrary raw data, fragmented/truncated internal containers, invalid deliberately obfuscated wrappers, unknown H.267 experimental syntax, or another rendition fetched by X. They do not provide an independent decoder for HEVC/VVC/AV1, detect all possible covert payloads, compare raster frames, or prove anything about an AI origin. The correct next experiment for the visual divergence is a frozen, independently decodable frame-pair comparison between the actual online inline and fullscreen stream URLs.
+
+**Reproduction in PowerShell 7**, from the folder containing the original media and the C++ source:
+
+```powershell
+g++ -std=c++20 -O2 -Wall -Wextra -Wpedantic -fstack-protector-strong -D_FORTIFY_SOURCE=2 .\minza_codec_ladder.cpp -o .\minza_codec_ladder.exe
+Get-FileHash -Algorithm SHA256 'ef9lUKuZwT81L9CN(2).mp4','2026-11-18 21-15-19(2).mp4'
+& .\minza_codec_ladder.exe 'ef9lUKuZwT81L9CN(2).mp4'
+& .\minza_codec_ladder.exe '2026-11-18 21-15-19(2).mp4'
+```
+
+**Protocol custody:** Original source files remain unchanged. Any change to the search signatures, FLV/AVI validation thresholds, codec list, parser behavior, renderer, or media file produces a new experiment ID and retains this record as history. The labels BiDi, TriDi, and PiDi identify user-defined validation routes, not an industry-standard codec classification.
