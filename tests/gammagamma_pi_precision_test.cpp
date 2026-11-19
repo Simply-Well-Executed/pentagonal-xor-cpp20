@@ -9,6 +9,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 int main() {
     using namespace swe;
@@ -38,6 +39,68 @@ int main() {
     if(gammagamma::sigma_pi("3.14").status !=
        gammagamma::Status::invalid_pi_representation)return 7;
     if(gammagamma::evaluate("3..14").status!=gammagamma::Status::invalid_decimal)return 8;
+
+    // Copilot review: exact 2048!, symbolic 2049!, both sides and
+    // decimal token provenance must not be silently normalized away.
+    using gammagamma::Status;
+    using gammagamma::Direction;
+    const auto max_left = gammagamma::evaluate("2048.1");
+    const auto max_right = gammagamma::evaluate("1.2048");
+    const auto max_leading_left = gammagamma::evaluate("0002048.0001");
+    const auto max_leading_right = gammagamma::evaluate("0001.0002048");
+    if(max_left.status!=Status::exact || max_right.status!=Status::exact ||
+       max_leading_left.status!=Status::exact ||
+       max_leading_right.status!=Status::exact ||
+       max_left.direction!=Direction::positive ||
+       max_right.direction!=Direction::negative ||
+       max_leading_left.direction!=Direction::positive ||
+       max_leading_right.direction!=Direction::negative ||
+       max_left.left_integer!="2048" ||
+       max_leading_left.left_integer!="0002048" ||
+       max_leading_left.right_integer!="0001" ||
+       max_leading_right.right_integer!="0002048" ||
+       max_left.right_factorial!="1" ||
+       max_right.left_factorial!="1" ||
+       max_left.left_factorial!=max_right.right_factorial ||
+       max_left.magnitude!=max_right.magnitude ||
+       max_left.magnitude!=max_leading_left.magnitude ||
+       max_left.magnitude!=max_leading_right.magnitude ||
+       max_left.magnitude.empty() || max_left.magnitude.front()=='-') return 14;
+
+    const auto zero_boundary = gammagamma::evaluate("2048.2048");
+    if(zero_boundary.status!=Status::exact ||
+       zero_boundary.direction!=Direction::neutral ||
+       zero_boundary.magnitude!="0")return 15;
+
+    const auto check_symbolic = [](std::string_view token, Direction expected) {
+        const auto result=gammagamma::evaluate(token);
+        return result.status==Status::symbolic_only &&
+               result.direction==expected &&
+               result.source==token && result.magnitude.empty() &&
+               !result.left_integer.empty() && !result.right_integer.empty();
+    };
+    if(!check_symbolic("2049.1",Direction::positive) ||
+       !check_symbolic("1.2049",Direction::negative) ||
+       !check_symbolic("0002049.0001",Direction::positive) ||
+       !check_symbolic("0001.0002049",Direction::negative) ||
+       !check_symbolic("2048.2049",Direction::negative) ||
+       !check_symbolic("2049.2048",Direction::positive) ||
+       !check_symbolic("2049.2049",Direction::neutral))return 16;
+
+    // Signed fragments and missing sides are rejected. This must not be
+    // confused with a symbolic result for a syntactically valid huge input.
+    for(const std::string_view token : {
+           std::string_view{".5"},std::string_view{"5."},
+           std::string_view{"+5.1"},std::string_view{"-5.1"},
+           std::string_view{"5.+1"},std::string_view{"5.-1"},
+           std::string_view{"5..1"},std::string_view{"5.1.2"},
+           std::string_view{" 5.1"},std::string_view{"5.1 "},
+           std::string_view{"5,1"},std::string_view{""}}) {
+        const auto result=gammagamma::evaluate(token);
+        if(result.status!=Status::invalid_decimal ||
+           result.direction!=Direction::neutral ||
+           result.source!=token || !result.magnitude.empty())return 17;
+    }
 
     std::ostringstream out;
     out<<std::setprecision(pi_precision::display_digits);
