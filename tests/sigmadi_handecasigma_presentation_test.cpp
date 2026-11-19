@@ -14,7 +14,10 @@ int main() {
     const View v=present(source);
     if(!v.nine_loop_source_valid || !v.presentation_only ||
        v.has_independent_authentication || v.relativismos_defined ||
-       v.empathy_multiplier_measured || v.chirality.h11_available ||
+       v.empathy_multiplier_measured || !v.dimension12_guard_available ||
+       v.collision_axes[11]!="declaration_instance" ||
+       v.collision_axes[0]!="repository" ||
+       v.chirality.h11_available ||
        v.chirality.s11_available) return 2;
     for(unsigned n=0;n<loops;++n) {
         if(v.sigma[n].loop_index!=n ||
