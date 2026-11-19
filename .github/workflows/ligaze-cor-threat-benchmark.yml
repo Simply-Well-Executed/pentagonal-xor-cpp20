@@ -13,7 +13,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   platform-benchmark:
+    needs: pondaz
     name: LIGAZE COR / ${{ matrix.platform }}
     strategy:
       fail-fast: false
