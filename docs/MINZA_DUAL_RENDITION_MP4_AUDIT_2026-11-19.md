@@ -202,3 +202,25 @@ Get-FileHash -Algorithm SHA256 'ef9lUKuZwT81L9CN(2).mp4','2026-11-18 21-15-19(2)
 ```
 
 **Protocol custody:** Original source files remain unchanged. Any change to the search signatures, FLV/AVI validation thresholds, codec list, parser behavior, renderer, or media file produces a new experiment ID and retains this record as history. The labels BiDi, TriDi, and PiDi identify user-defined validation routes, not an industry-standard codec classification.
+
+
+## Full byte mirror → XFE/EFX → ROT16: negative-control experiment
+
+**Protocol:** `MINZA-REV-XFE-EFX-ROT16-20261119-v1`, separate from the original O2 codec and NAL inspection. **Status:** experiment completed; no additional playable video stream identified. This is a **byte-stream reversal**, distinct from an actual decoded-film time reversal or pixel-level horizontal mirror.
+
+The requested sequence was carried out on local **copies of both videos**. Both source SHA-256 hashes remain the same as the original table. The whole MP4 payload's bytes were reversed, then wrapped with literal prefix `58 46 45` (`XFE`) and suffix `45 46 58` (`EFX`). Every generated candidate is precisely original input length plus six bytes. A reverse-the-reversal check recovered the original payload byte-for-byte for both sources.
+
+| Candidate transformation, each source | Source A | Source B |
+| --- | --- | --- |
+| `XFE + reverse_bytes(MP4) + EFX` | invalid MOV, no `moov` | invalid MOV, no `moov` |
+| `XFE + ROT16_alpha(reverse_bytes(MP4)) + EFX` | invalid MOV, no `moov` | invalid MOV, no `moov` |
+| `ROT16_alpha(XFE + reverse_bytes(MP4) + EFX)` | invalid MOV, no `moov` | invalid MOV, no `moov` |
+| `XFE + reverse_bits_per_byte(reverse_bytes(MP4)) + EFX` | invalid MOV, no `moov` | invalid MOV, no `moov` |
+| `XFE + ROT16_alpha(reverse_bits_per_byte(reverse_bytes(MP4))) + EFX` | invalid MOV, no `moov` | invalid MOV, no `moov` |
+
+**ROT16 convention:** uppercase and lowercase letters shifted **+16 modulo 26** independently, with nonalphabetic bytes unchanged. Both whole-wrapper and payload-only variants were tested because the scope was not specified. A second interpretation of **total mirroring** reversed the **eight bits of each byte** following full byte-order reversal. There were **10 generated candidates across 2 originals**, and all ten were rejected by locally installed `ffprobe 7.1.5` with `moov atom not found` and `Invalid data found when processing input`. The binary's original build optimization was not independently audited; **all new C++20 code was compiled at `-O2`**. Baseline controls were recognized as one H.264 video stream and one AAC audio stream in *each* original file.
+
+**Structural boundary:** `XFE` and `EFX` are not sufficient standalone QuickTime header and footer structures. ISO BMFF/QuickTime atoms require a bounded size and four-character type (commonly `ftyp`, `moov`, `mdat`), so arbitrary 3-byte envelopes cannot restore reversed atom lengths, sample offsets, NAL lengths, or track tables. Reversing all bytes transforms the original `ftyp` signature into `pytf` at the opposite end. This experiment does not prove the absence of steganography in pixels; it specifically falsifies these attempted playable-track extraction operations.
+
+**Custody:** The generated `.mov` failures and user-supplied video bytes are **not committed to the repository**. A reproducible standalone C++20 utility was compiled at `-O2` with stack protection, and source hashes were verified again before testing. Any subsequent change to the ROT16 definition, reversal granularity, wrapping rule or decoder requires a **new experiment ID** and should retain this negative result.
+
