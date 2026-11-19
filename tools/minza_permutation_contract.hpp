@@ -60,11 +60,29 @@ inline constexpr std::size_t container_cases=4u*7u*2u*2u;
 }
 inline constexpr auto renderer_matrix=all_renderer_cases();
 inline constexpr auto container_matrix=all_container_cases();
-[[nodiscard]] constexpr std::uint8_t rot16_letter(std::uint8_t c, bool forward){
- unsigned shift=forward?16u:10u;
+// The source lilcaesearz/main.ps1 calls this EBG, not EBC.
+// ROT(+n) / EBG(-n) use signed ASCII alphabetic Caesar rotations.
+// The original C# public API is for sanitized text; this byte-level
+// operation is suitable for source-preserving binary inspections.
+inline constexpr std::size_t rot_ebg_256_cases=2u*256u*4u*2u*2u;
+[[nodiscard]] constexpr std::uint8_t rot_ebg_letter(std::uint8_t c,unsigned n,bool ebg){
+ const unsigned shift=ebg?(26u-(n%26u))%26u:n%26u;
  if(c>='A'&&c<='Z')return std::uint8_t('A'+(c-'A'+shift)%26u);
  if(c>='a'&&c<='z')return std::uint8_t('a'+(c-'a'+shift)%26u);
  return c;
+}
+[[nodiscard]] consteval bool rot_ebg_256_roundtrips(){
+ for(unsigned n=1;n<=256;n++)for(unsigned c=0;c<256;c++){
+  auto b=std::uint8_t(c);
+  if(rot_ebg_letter(rot_ebg_letter(b,n,false),n,true)!=b)return false;
+  if(rot_ebg_letter(b,n,false)!=rot_ebg_letter(b,n%26u,false))return false;
+ }
+ return true;
+}
+static_assert(rot_ebg_256_cases==8192);
+static_assert(rot_ebg_256_roundtrips());
+[[nodiscard]] constexpr std::uint8_t rot16_letter(std::uint8_t c, bool forward){
+ return rot_ebg_letter(c,16u,!forward);
 }
 [[nodiscard]] constexpr std::uint16_t trial_word_shift(std::uint16_t word,bool forward){
  return std::uint16_t(forward?unsigned(word)+16u:unsigned(word)-16u);
