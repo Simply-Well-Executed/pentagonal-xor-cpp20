@@ -224,3 +224,35 @@ The requested sequence was carried out on local **copies of both videos**. Both 
 
 **Custody:** The generated `.mov` failures and user-supplied video bytes are **not committed to the repository**. A reproducible standalone C++20 utility was compiled at `-O2` with stack protection, and source hashes were verified again before testing. Any subsequent change to the ROT16 definition, reversal granularity, wrapping rule or decoder requires a **new experiment ID** and should retain this negative result.
 
+
+
+## MINZA reverse/XFE/EFX/ROT16 complete-file trial (separate hypothesis, O2)
+
+**Experiment ID:** `MINZA-REVERSE-XFE-ROT16-20261119-O2-v1`. A new, reversible test of the owner's proposed complete-video mirroring procedure; **not an edit to earlier experiment definitions or original source media**.
+
+**Procedure:** reverse the *byte order* of each entire original MP4 → prepend three literal bytes `58 46 45` (`XFE`) → append `45 46 58` (`EFX`) → parse size-prefixed top-level MOV/MP4 atoms and inspect FLV/AVI signatures. Because both literal wrappers failed structural MOV validation, continue with ROT16 in four explicitly separated forms: (a) ASCII alphabet Caesar +16, (b) ASCII alphabet Caesar −16, (c) uint8 byte +16 modulo 256, (d) uint8 byte −16 modulo 256. The ROT16 transforms apply to the reversed payload while keeping the three-byte framing markers intact. Also test alphabetic +16 over the entire literal wrapper and, separately, byte-order reversal plus bit-order reversal in every byte. Inverse-transform and reverse again to validate exact original-byte recovery. These are *byte operations*, not actual reverse-time video frame playback.
+
+**Implementation:** standalone C++20 inspector `minza_reverse_xfe_rot16_O2.cpp`, built with `g++ -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2`. Source SHA-256 `56ddc2aedf71f51d134d21d3ccf649fe7c8c1d091e9dd163e0f8f699eaeed78a`. The standalone source, complete console logs, and output checksums are retained in the conversation evidence archive `MINZA_Reverse_XFE_EFX_ROT16_O2_Evidence.zip`; **the source is not yet in this GitHub repository**, and the personal videos/wrappers have deliberately not been committed.
+
+| Check | Source A (78,434,426 bytes) | Source B (54,255,103 bytes) |
+| --- | --- | --- |
+| Original input SHA-256 | `2ebc7763648c9c025ebc1c7d882c4300e2b9dba4fcae6260cf15291c2584ffb9` | `9b351e2f339e11b7bc2e10d9a377e4c72a9ed2ac1c3701951c935ab10a6dc0e3` |
+| Literal `XFE + reverse(all bytes) + EFX` | Written, 78,434,432 bytes | Written, 54,255,109 bytes |
+| Literal wrapper validates as MOV/MP4 | **No** | **No** |
+| ROT16 +16 alphabetic variant: valid FLV/AVI | 0 / 0 | 0 / 0 |
+| ROT16 −16 alphabetic variant: valid FLV/AVI | 0 / 0 | 0 / 0 |
+| Byte ±16 variants: valid FLV/AVI | 0 / 0 | 0 / 0 |
+| Entire-wrapper ROT16+ and byte+bit reversal: valid FLV/AVI | 0 / 0 | 0 / 0 |
+| Reverse and inverse-rotate restores original bytes | **Yes (exact comparison)** | **Yes (exact comparison)** |
+| MOV outer shell with literal reversed bytes stored in `free` | Atom structure valid | Atom structure valid |
+| Declared video or audio tracks in the constructed MOV | **0** | **0** |
+
+**Full-size output checksums** (kept outside the public repository):
+
+| Derived output | Source A SHA-256 | Source B SHA-256 |
+| --- | --- | --- |
+| Literal byte-reversed XFE/EFX file | `1364fad8be7e4d7991b1e2e3de606afc75ddd19f1d70e94be16521c554e8a9fd` | `58b57fc1f4a89308681f4b3946910a6b61b965e46ade9715ef07815cd6dbca38` |
+| Alphabetic ROT16+ of reversed payload, XFE/EFX intact | `c136c186b1cb312db2f446fdb355ef5724344f2a672a06fef1ac5de1643c34d0` | `5cdec289f83bf146e331dc4b2b6c7477069d72c0e22705dce4e01351ed96b40e` |
+| Structurally valid MOV wrapper with payload inside `free` | `65683ac104c3bd28c3a6839a1710fb66b18fab3ca3ab38f377e773837590583d` | `9f504eb71987ab013c25376c1035caa9df199e25f3f096e619aee40a1e1305e1` |
+
+**Interpretation:** `XFE` and `EFX` are not standard QuickTime atom framing. A real MOV can contain arbitrary bytes in `free` without declaring playable tracks. Reversal is reversible but does not itself demultiplex, decrypt or change H.264 into a different codec. Validated FLV and AVI structures were not found after the tested operations; raw three-byte patterns can still occur randomly. This negative result is bounded to these specified variants and is not proof that no nonstandard steganography or another online rendition exists. Changing any stage requires a new experiment ID, leaving this evidence unmodified.
