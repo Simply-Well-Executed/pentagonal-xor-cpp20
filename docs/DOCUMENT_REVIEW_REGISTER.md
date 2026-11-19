@@ -4,9 +4,9 @@
 
 ## BLUF
 
-The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every original item remains **DUE** for substantive re-authoring and independent verification unless an explicit reviewer decision changes its status. The editorial procedure is now **REWRITTEN / VERIFY** with a **TriDi three-direction reasoning gate** (YIN forward, YANG reverse, AIRGAP orthogonal challenge, YAN reconciliation) and the existing maintainer-directed toolchain and licensing policy. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
+The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every original item remains **DUE** for substantive re-authoring and independent verification unless an explicit reviewer decision changes its status. The editorial procedure is now **REWRITTEN / VERIFY** with the original **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
-Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance** and the **TriDi YIN forward → YANG reverse → AIRGAP independent challenge → YAN accountable synthesis** review. A new version is not validated merely because it was rewritten.
+Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance** and the **TriDi YIN/YANG/AIRGAP → proposed SigmaDi signed four-link challenge → YAN accountable synthesis** review. A new version is not validated merely because it was rewritten.
 
 **Source freeze for this inventory:** branch `docs/complete-rewrite-af-writing-critical-thinking-20261119`, base `main` as of 2026-11-19. The blob identifiers below identify the versions available to this review. Check Git history before changing any file; do not treat a later SHA as equivalent.
 
@@ -65,7 +65,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 | P1 | [`docs/RELEASE_PREFLIGHT.md`](../docs/RELEASE_PREFLIGHT.md) | Build / verification | `b3e2a190064d` | DUE · substantive rewrite and verification |
 | P2 | [`docs/SIGMA_PENTA_HAN_PRESENTATION.md`](../docs/SIGMA_PENTA_HAN_PRESENTATION.md) | LAB / experiment | `1f304bb0d787` | DUE · substantive rewrite and verification |
 | P2 | [`docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg`](../docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg) | Diagram / accessible media | `490554f0251f` | DUE · substantive rewrite and verification |
-| P2 | [`docs/SIGMADI_COLLISION12.md`](../docs/SIGMADI_COLLISION12.md) | LAB / experiment | `4e2305d14810` | DUE · substantive rewrite and verification |
+| P2 | [`docs/SIGMADI_COLLISION12.md`](../docs/SIGMADI_COLLISION12.md) | LAB / experiment | `4e2305d14810` | PARTIAL REWRITE / VERIFY · namespace separation; full source audit still DUE |
 | P2 | [`docs/STABILITY10D.md`](../docs/STABILITY10D.md) | Algorithm / operator | `c519fc4fcfa1` | DUE · substantive rewrite and verification |
 | P1 | [`docs/SUPERTAOISM_GAMP4_JAVA_JAR.md`](../docs/SUPERTAOISM_GAMP4_JAVA_JAR.md) | Build / verification | `a8bb36df0302` | DUE · substantive rewrite and verification |
 | P1 | [`docs/TOOLONG.md`](../docs/TOOLONG.md) | Algorithm / operator | `f9648568e823` | DUE · substantive rewrite and verification |
@@ -73,7 +73,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 | P2 | [`docs/VISTA_9X9_LADDER.svg`](../docs/VISTA_9X9_LADDER.svg) | Diagram / accessible media | `3a769b74c2ce` | DUE · substantive rewrite and verification |
 | P2 | [`docs/VISTA_9X9_SHOWCASE.md`](../docs/VISTA_9X9_SHOWCASE.md) | LAB / experiment | `9e5e8db1c9d7` | DUE · substantive rewrite and verification |
 | P2 | [`docs/VISTA_9X9.md`](../docs/VISTA_9X9.md) | LAB / experiment | `44d90b1fb46b` | DUE · substantive rewrite and verification |
-| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | REWRITTEN / VERIFY · TriDi evolved from BiDi; policy preserved; adoption pending |
+| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | REWRITTEN / VERIFY · TriDi and SigmaDi review overlay, source and policy preserved; approval pending |
 | P0 | [`README.md`](../README.md) | Repository entry / policy | `62bf8918e946` | DUE · substantive rewrite and verification |
 | P0 | [`SECURITY.md`](../SECURITY.md) | Repository entry / policy | `d993abe4d562` | DUE · substantive rewrite and verification |
 | P1 | [`shared/README.md`](../shared/README.md) | Repository entry / policy | `793afe2aabe4` | DUE · substantive rewrite and verification |
@@ -127,6 +127,23 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 **Scope limitation:** This change does not rerun all 46 assets, update frozen experiments, or enforce new compiler/toolchain policy in code. Each original asset remains DUE until its own TriDi review is separately documented.
 
+## SigmaDi review extension and COLLISION12 separation
+
+**SIGMADI-REVIEW-BUTTERFLY4-v0:** EXPLORATORY / REWRITTEN / VERIFY. This four-link proposal is layered after TriDi; it cannot overwrite BiDi or TriDi decisions. The exact butterfly endpoint mapping and polarity meanings are newly proposed for review, rather than asserted as an earlier frozen mathematical canon.
+
+| Link | Polarity | Proposed cross-connection | Audit role |
+| --- | --- | --- | --- |
+| `Σ0` | **+** | YIN → YANG | Forward corroboration against reverse evidence |
+| `Σ1` | **−** | YANG → YIN | Reverse counterclaim or unsupported-scope challenge |
+| `Σ2` | **+** | YIN → AIRGAP | Scoped claim and assumptions submitted to independent challenge |
+| `Σ3` | **−** | AIRGAP → YIN | Countertest, threat/rights and missing-witness challenge |
+
+**YAN** synthesizes these findings with the underlying TriDi witnesses. No two-, three- or four-of-four vote can override material contradictory evidence. A required negative test that was not executed is `NOT RUN`, not PASS.
+
+**SIGMADI-COLLISION-12D-v1 is independent:** `shared/sigmadi_collision12.hpp` and `tests/sigmadi_collision12_test.cpp` remain unchanged. The established source-declaration guard has 12 exact provenance axes, D0..D11; D11 identifies a declaration instance. It does not implement the four-link butterfly review. Duplicate-binding or inconsistent-declaration witnesses are blocking identity findings, not permission to merge or mutate source.
+
+**Completion:** Only explicitly scoped, source-backed four-link reports, underlying TriDi evidence and named reviewer approval make a claim eligible for verification. All 46 original documentation assets remain in the review queue; only the SOP and COLLISION12 cross-reference received partial edits. The maintainer's C++20, `-O2`/`/O2`-only, PowerShell Core latest stable `Set-StrictMode -Version 2.0`, and license/source provenance requirements remain unchanged.
+
 ## Review handoff record
 
 | Date | Reviewer / actor | Change | Evidence | Decision |
@@ -134,5 +151,6 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 | 2026-11-19 | ChatGPT, editorial drafting only | Replaced incomplete 34-item index with 46-asset inventory | Git file tree and blob IDs; linked source paths | Inventory CURRENT; individual rewrites DUE |
 | 2026-11-19 | ChatGPT, editorial drafting only | Revised SOP with BiDi YIN/YANG/YAN source-evidence checks; incorporated inspected USAF source editions; recorded latest PowerShell Core StrictMode 2.0, C++20/-O2-only and supply-chain/IP restrictions | Uploaded AFH 33-337, ALQ 2023, DAFI 36-2803 and DAFI 36-2907; GitHub current workflow review; SOP commit `7e38bbff7d55` | SOP REWRITTEN / VERIFY, policies proposed and current CI conflicts NEEDS REVIEW; no retroactive validation |
 | 2026-11-19 | ChatGPT, editorial drafting only | Upgraded current editorial review from BiDi to TriDi X/Y/Z with YAN reconciliation, preserving prior method and source records | SOP commit `05c190ced5e0`; unchanged C++20/toolchain policy; source-coded route and countertest requirements | TriDi EXPLORATORY / REWRITTEN / VERIFY; all 46 original assets DUE; explicit approval pending |
+| 2026-11-19 | ChatGPT, editorial drafting only | Introduced SigmaDi four-link butterfly review with alternating polarity; linked but did not redefine existing COLLISION12 | SOP commit `0fe3bfc07f68`, source-note commit `116d56f0ee35`; existing C++20 and tests unchanged | SigmaDi-review-v0 EXPLORATORY / REWRITTEN / VERIFY; exact sign/endpoint semantics proposed, approval pending |
 
 **Completion requirement:** For each row, independently record reviewer identity, approval, current SHA, tests/run IDs, decision, outstanding limits and provenance. Until then it remains DUE or REWRITTEN / VERIFY. **Failure never becomes policy; chosen, never assumed.**
