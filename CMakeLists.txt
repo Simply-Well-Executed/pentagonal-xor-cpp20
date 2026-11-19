@@ -311,6 +311,7 @@ install(EXPORT swe_sigma_penta_ping_targets
 install(FILES
   shared/sigma_penta_ping.hpp
   shared/sigmadi_handecasigma_presentation.hpp
+  shared/sigmadi_collision12.hpp
   DESTINATION include/swe)
 install(FILES
   docs/SIGMA_PENTA_HAN_PRESENTATION.md
@@ -326,4 +327,14 @@ if(BUILD_TESTING)
   target_compile_features(sigmadi_handecasigma_presentation_test PRIVATE cxx_std_20)
   add_test(NAME sigma_di_han_osi6_audit
            COMMAND sigmadi_handecasigma_presentation_test)
+endif()
+
+# 12-axis declaration witness (exploratory, nonmutating on collision).
+install(FILES docs/SIGMADI_COLLISION12.md
+        DESTINATION share/doc/pentagonal-xor)
+if(BUILD_TESTING)
+  add_executable(sigmadi_collision12_test tests/sigmadi_collision12_test.cpp)
+  target_compile_features(sigmadi_collision12_test PRIVATE cxx_std_20)
+  add_test(NAME sigmadi_collision12_declaration_custody
+           COMMAND sigmadi_collision12_test)
 endif()
