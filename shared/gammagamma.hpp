@@ -5,6 +5,7 @@
 #ifndef SWE_GAMMAGAMMA_HPP
 #define SWE_GAMMAGAMMA_HPP
 
+#include "toolong.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <string>
@@ -37,63 +38,6 @@ struct Result {
 // Rather than fabricate precision, return symbolic_only.
 inline constexpr unsigned max_exact_factorial_argument=2048u;
 inline constexpr std::uint32_t decimal_base=1'000'000'000u;
-
-class BigUnsigned {
-    std::vector<std::uint32_t> limbs_{1u};  // little endian, base 1e9
-public:
-    [[nodiscard]] static BigUnsigned factorial(unsigned n) {
-        BigUnsigned result;
-        for(unsigned k=2;k<=n;++k) {
-            std::uint64_t carry=0;
-            for(auto& limb:result.limbs_) {
-                const std::uint64_t p=std::uint64_t(limb)*k+carry;
-                limb=std::uint32_t(p%decimal_base);
-                carry=p/decimal_base;
-            }
-            while(carry!=0u) {
-                result.limbs_.push_back(std::uint32_t(carry%decimal_base));
-                carry/=decimal_base;
-            }
-        }
-        return result;
-    }
-    [[nodiscard]] int compare(const BigUnsigned& other) const noexcept {
-        if(limbs_.size()!=other.limbs_.size())
-            return limbs_.size()<other.limbs_.size()?-1:1;
-        for(std::size_t i=limbs_.size();i>0;--i)
-            if(limbs_[i-1]!=other.limbs_[i-1])
-                return limbs_[i-1]<other.limbs_[i-1]?-1:1;
-        return 0;
-    }
-    [[nodiscard]] BigUnsigned minus_smaller(const BigUnsigned& rhs) const {
-        BigUnsigned result=*this;
-        std::uint64_t borrow=0;
-        for(std::size_t i=0;i<result.limbs_.size();++i){
-            const std::uint64_t sub=borrow+
-              (i<rhs.limbs_.size()?rhs.limbs_[i]:0u);
-            const std::uint64_t val=result.limbs_[i];
-            if(val<sub) {
-                result.limbs_[i]=std::uint32_t(val+decimal_base-sub);
-                borrow=1;
-            } else {
-                result.limbs_[i]=std::uint32_t(val-sub);
-                borrow=0;
-            }
-        }
-        while(result.limbs_.size()>1u&&result.limbs_.back()==0u)
-            result.limbs_.pop_back();
-        return result;
-    }
-    [[nodiscard]] std::string str() const {
-        std::string s=std::to_string(limbs_.back());
-        for(std::size_t i=limbs_.size()-1;i>0;--i) {
-            const std::string part=std::to_string(limbs_[i-1]);
-            s.append(9u-part.size(),'0');
-            s+=part;
-        }
-        return s;
-    }
-};
 
 [[nodiscard]] inline bool all_decimal_digits(std::string_view value) noexcept {
     if(value.empty())return false;
@@ -143,16 +87,16 @@ public:
         result.status=Status::symbolic_only;
         return result;
     }
-    const auto lf=BigUnsigned::factorial(l);
-    const auto rf=BigUnsigned::factorial(r);
+    const auto lf=toolong::factorial(l);
+    const auto rf=toolong::factorial(r);
     const int comparison=lf.compare(rf);
     result.left_factorial=lf.str();
     result.right_factorial=rf.str();
     result.direction=comparison<0?Direction::negative:
                      comparison>0?Direction::positive:
                      Direction::neutral;
-    result.magnitude=(comparison>=0?lf.minus_smaller(rf):
-                                      rf.minus_smaller(lf)).str();
+    result.magnitude=(comparison>=0?(lf-rf):
+                                      (rf-lf)).str();
     result.status=Status::exact;
     return result;
 }
@@ -168,6 +112,11 @@ inline constexpr std::string_view pi_digits="314159265358979323";
 inline constexpr std::uint64_t pi_integer=314159265358979323ULL;
 inline constexpr std::string_view bipi_square=
     "98696044010893585656621344341538329";
+[[nodiscard]] inline toolong bipi_exact() {
+    const toolong pi{pi_digits};
+    return pi*pi;
+}
+// PiPi stays symbolic: roughly 5e18 output decimal digits for this huge exponent.
 inline constexpr std::string_view pipi_symbolic="ℼ^ℼ";
 inline constexpr std::uint64_t pidi_mod4=pi_integer%4u; // 3; label "I" unresolved
 
