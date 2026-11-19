@@ -267,6 +267,14 @@ jobs:
           if ($LASTEXITCODE -ne 0 -or $sha -cne $env:GITHUB_SHA) { throw 'Source commit mismatch.' }
           Write-Host "Source SHA verified: $sha"
 
+      # This is an advisory host capability report. The native CTest lanes,
+      # separately vetted container lanes, and optional Windows OCI smoke
+      # remain the authorities for actual executable/container conformance.
+      - name: 'Regression: OCI host probe exit and evidence semantics'
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: ./ci/Test-ContainerHostProbe.ps1
+
       - name: 'Inspect Docker engine capability without unlicensed images'
         shell: pwsh
         run: ./ci/Inspect-ContainerHost.ps1 -EvidenceDir evidence-oci-host
