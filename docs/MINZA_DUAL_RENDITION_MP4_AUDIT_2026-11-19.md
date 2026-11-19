@@ -256,3 +256,8 @@ The requested sequence was carried out on local **copies of both videos**. Both 
 | Structurally valid MOV wrapper with payload inside `free` | `65683ac104c3bd28c3a6839a1710fb66b18fab3ca3ab38f377e773837590583d` | `9f504eb71987ab013c25376c1035caa9df199e25f3f096e619aee40a1e1305e1` |
 
 **Interpretation:** `XFE` and `EFX` are not standard QuickTime atom framing. A real MOV can contain arbitrary bytes in `free` without declaring playable tracks. Reversal is reversible but does not itself demultiplex, decrypt or change H.264 into a different codec. Validated FLV and AVI structures were not found after the tested operations; raw three-byte patterns can still occur randomly. This negative result is bounded to these specified variants and is not proof that no nonstandard steganography or another online rendition exists. Changing any stage requires a new experiment ID, leaving this evidence unmodified.
+
+
+## Reversal follow-up (2026-11-19)
+
+A separate locked experiment, [`MINZA-REV-XFE-ROT16-20261119-O2-v1`](MINZA_REVERSE_XFE_ROT16_O2_2026-11-19.md), tested exact byte reversal and complete bit reversal, each followed by `XFE + transformed payload + EFX`; alphabetic ±16 ROT, bytewise ±16 rotation and 32-bit halfword swap were scanned. Both source files round-tripped exactly through inversion, but no new structurally valid FLV, AVI or MOV track appeared. This is a negative result for **the specified transforms**, not a universal steganography exclusion. Original source hash and codec claims remain unchanged.
