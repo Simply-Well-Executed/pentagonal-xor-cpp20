@@ -40,6 +40,11 @@ struct VistaPass {
     std::uint64_t source_token{};
     std::uint32_t observed{}, expected{};
     bool structurally_consistent{};
+    bool capture_complete{};       // phase A
+    bool verification_complete{};  // phase B and carried to C
+    bool synthesis_complete{};     // phase C
+    std::uint8_t active_gate_outputs{}; // phase C only
+    std::uint16_t anomaly_flags{};       // phase C only; never repaired
     bool witness_reported{};
     bool independently_authenticated{}; // always false without external proof
 };
@@ -140,6 +145,15 @@ inline Report execute(const std::array<Input, loop_count>& source) noexcept {
             v.observed = original.observed; // preserve caller's full input
             v.expected = original.expected;
             v.structurally_consistent = consistent;
+            v.capture_complete = true;
+            v.verification_complete = (p >= 1u) && consistent;
+            v.synthesis_complete = (p == 2u) && consistent;
+            if (p == 2u) {
+                for (unsigned gate=0; gate<gate_count; ++gate)
+                    v.active_gate_outputs = static_cast<std::uint8_t>(
+                        v.active_gate_outputs + (v.history[gate].output ? 1u : 0u));
+                v.anomaly_flags = cor.rupture;
+            }
             v.witness_reported = original.witness_present;
             // Mere witness_present booleans, local hashes or matching
             // expected values never establish independently verified origin.
