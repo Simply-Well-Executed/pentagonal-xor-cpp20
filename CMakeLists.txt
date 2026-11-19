@@ -364,3 +364,9 @@ if(BUILD_TESTING)
   set_tests_properties(vista9x9_separate_terminal_route PROPERTIES
     PASS_REGULAR_EXPRESSION "terminal_flops=5.*terminal_flips=4.*final_reversed=0")
 endif()
+
+# Ship the copyright/0BSD/marks boundary and the outstanding review audit.
+install(FILES
+  docs/LICENSE_AND_MARKS.md
+  docs/DOCUMENT_REVIEW_REGISTER.md
+  DESTINATION share/doc/pentagonal-xor)
