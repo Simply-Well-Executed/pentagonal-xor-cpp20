@@ -39,7 +39,10 @@ inline void require_nonnegative(const toolong& value) {
     require_nonnegative(value);return value*toolong::power(toolong{2},by);
 }
 [[nodiscard]] inline toolong shift_right(const toolong& value,std::uint64_t by){
-    require_nonnegative(value);return value/toolong::power(toolong{2},by);
+    require_nonnegative(value);
+    // A d-digit decimal integer is less than 2^(4*d).
+    if(value.is_zero() || by/4u >= value.decimal_digits())return toolong{};
+    return value/toolong::power(toolong{2},by);
 }
 [[nodiscard]] inline toolong bitwise_not_width(const toolong& value,unsigned bits){
     require_nonnegative(value);
