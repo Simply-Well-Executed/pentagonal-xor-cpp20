@@ -16,7 +16,11 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   guard:
+    needs: pondaz
     name: 'Native C++20 + C11 + installed consumer · ${{ matrix.label }}'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
@@ -134,6 +138,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Native ${{ matrix.label }}'
 
   docker-linux:
+    needs: pondaz
     name: 'Docker safespace · Linux C++20/C11 and installed consumer'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
@@ -169,6 +174,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Linux'
 
   docker-android:
+    needs: pondaz
     name: 'Docker safespace · Android JDK17/SDK35 (no Gradle)'
     runs-on: ubuntu-24.04
     timeout-minutes: 55
@@ -204,6 +210,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Android unsigned'
 
   docker-leap:
+    needs: pondaz
     name: 'Docker safespace · pinned openSUSE Leap 16.0 C++20/C11'
     runs-on: ubuntu-24.04
     timeout-minutes: 50
@@ -240,6 +247,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-leap -Label 'Pinned openSUSE Leap'
 
   container-host-capability:
+    needs: pondaz
     name: 'OCI feasibility check · ${{ matrix.label }}'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
@@ -284,6 +292,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-oci-host -Label 'OCI capability ${{ matrix.label }}'
 
   publish-docker:
+    needs: pondaz
     name: 'Trusted publish · paulcheek/android-source-study-v1:latest'
     needs: [guard, docker-linux, docker-android, docker-leap]
     if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) }}
@@ -329,6 +338,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence-docker -Label 'Docker Hub publication'
 
   pinned-linux:
+    needs: pondaz
     name: 'openSUSE Leap pinned Docker x64'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
@@ -371,6 +381,7 @@ jobs:
         run: ./ci/Record-GuardEvidence.ps1 -EvidenceDir evidence -Label 'Pinned openSUSE Leap'
 
   pinned-android:
+    needs: pondaz
     name: 'Android SDK-free source-study, pinned Docker x64 host'
     runs-on: ubuntu-24.04
     timeout-minutes: 40
