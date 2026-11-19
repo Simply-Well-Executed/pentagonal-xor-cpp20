@@ -92,6 +92,23 @@ if(BUILD_TESTING)
     target_compile_features(coreo_stereo_test PRIVATE cxx_std_20)
     add_test(NAME coreo_stereo_invertibility COMMAND coreo_stereo_test)
 
+    # COREAO exact GammaGamma and toolong tests: part of the standard
+    # CMake/CTest matrix on Linux, macOS, MSVC and supported ARM targets.
+    add_executable(gammagamma_pi_precision_test
+        tests/gammagamma_pi_precision_test.cpp)
+    target_compile_features(gammagamma_pi_precision_test PRIVATE cxx_std_20)
+    set_target_properties(gammagamma_pi_precision_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME gammagamma_pi_precision_boundaries
+        COMMAND gammagamma_pi_precision_test)
+
+    add_executable(toolong_arithmetic_test tests/toolong_arithmetic_test.cpp)
+    target_compile_features(toolong_arithmetic_test PRIVATE cxx_std_20)
+    set_target_properties(toolong_arithmetic_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME toolong_exact_arithmetic
+        COMMAND toolong_arithmetic_test)
+
     if(MSVC)
         target_compile_options(parity_reference_test PRIVATE /W4 /permissive-)
         target_compile_options(deca_sigma_test PRIVATE /W4 /permissive-)
@@ -101,6 +118,8 @@ if(BUILD_TESTING)
         target_compile_options(counterarccosine_secondwave_test PRIVATE /W4 /permissive-)
         target_compile_options(stability10d_test PRIVATE /W4 /permissive-)
         target_compile_options(coreo_stereo_test PRIVATE /W4 /permissive-)
+        target_compile_options(gammagamma_pi_precision_test PRIVATE /O2 /W4 /permissive-)
+        target_compile_options(toolong_arithmetic_test PRIVATE /O2 /W4 /permissive-)
     else()
         target_compile_options(parity_reference_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(deca_sigma_test PRIVATE -Wall -Wextra -Wpedantic)
@@ -110,6 +129,8 @@ if(BUILD_TESTING)
         target_compile_options(counterarccosine_secondwave_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(stability10d_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(coreo_stereo_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(gammagamma_pi_precision_test PRIVATE -O2 -Wall -Wextra -Wpedantic)
+        target_compile_options(toolong_arithmetic_test PRIVATE -O2 -Wall -Wextra -Wpedantic)
     endif()
 endif()
 
@@ -130,6 +151,12 @@ install(FILES
     shared/tri_pi.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
+    shared/gammagamma.hpp
+    shared/pi_precision.hpp
+    shared/toolong.hpp
+    shared/toolong_ratio.hpp
+    shared/toolong_bits.hpp
+    shared/toolong_photon_model.hpp
     shared/stability10d.hpp
     shared/coreo_stereo.hpp
     shared/pentagonal_xor_std_free.h
@@ -139,7 +166,7 @@ install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
 if(MSVC)
     install(FILES "$<TARGET_PDB_FILE:pentagonal_xor>" DESTINATION symbols OPTIONAL)
 endif()
-install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md docs/STABILITY10D.md docs/ANDROID.md docs/COREAO_GAIN.md docs/COUNTERARCCOSINE_2NDWAVE.svg DESTINATION share/doc/pentagonal-xor)
+install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md docs/STABILITY10D.md docs/ANDROID.md docs/COREAO_GAIN.md docs/TOOLONG.md docs/GAMMAGAMMA_PI_PRECISION.md docs/COUNTERARCCOSINE_2NDWAVE.svg DESTINATION share/doc/pentagonal-xor)
 
 
 # Experimental gate controller, isolated from the original XOR executable.

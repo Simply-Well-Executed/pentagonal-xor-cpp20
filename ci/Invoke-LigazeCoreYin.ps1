@@ -32,6 +32,8 @@ $sha=((& git rev-parse HEAD)|Out-String).Trim()
 Guard ($LASTEXITCODE -eq 0 -and $sha -match '^[a-f0-9]{40}$') 'Git SHA missing'
 Guard (!$env:GITHUB_SHA -or $sha -ceq $env:GITHUB_SHA) 'Git SHA mismatch'
 New-Item -ItemType Directory -Path $BuildRoot,$Evidence -Force | Out-Null
+$BuildRoot=(Resolve-Path -LiteralPath $BuildRoot).Path
+$Evidence=(Resolve-Path -LiteralPath $Evidence).Path
 $cpuAvx2=[System.Runtime.Intrinsics.X86.Avx2]::IsSupported
 $requestedCompiler='/std:c++20 /O2 /Ob3 /GL /Gw /fp:fast /arch:AVX2 /Qpar /EHsc'
 $compiler=$requestedCompiler+' /DNDEBUG'
@@ -62,6 +64,43 @@ function Save-Record{
   $record|ConvertTo-Json -Depth 18|Set-Content -LiteralPath $file -Encoding utf8
   Write-Host ('CORE_YIN|EVIDENCE|'+(Digest $file))
 }
+# /GENPROFILE instruments the executable and introduces an MSVC PGO runtime
+# dependency (pgort140.dll). The GitHub Windows runner does not necessarily
+# have the compiler's bin directory on PATH. Locate the installed, exact VS
+# toolset runtime rather than downloading or committing a DLL.
+function Enable-PgoRuntime {
+  $installer=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
+  Guard (Test-Path -LiteralPath $installer -PathType Leaf) 'vswhere.exe missing; cannot locate MSVC PGO runtime'
+  $installation=@(& $installer '-latest' '-products' '*' '-requires' 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' '-property' 'installationPath')
+  Guard ($LASTEXITCODE -eq 0 -and $installation.Count -gt 0 -and ![string]::IsNullOrWhiteSpace($installation[-1])) 'MSVC toolset installation not found'
+  $msvcRoot=Join-Path ([string]$installation[-1]).Trim() 'VC/Tools/MSVC'
+  Guard (Test-Path -LiteralPath $msvcRoot -PathType Container) 'MSVC tools directory missing'
+  $versions=@(Get-ChildItem -LiteralPath $msvcRoot -Directory | Sort-Object Name -Descending)
+  Guard ($versions.Count -gt 0) 'MSVC runtime version directory missing'
+  $runtime=$null
+  foreach($version in $versions) {
+    $candidate=Join-Path $version.FullName 'bin/Hostx64/x64/pgort140.dll'
+    if(Test-Path -LiteralPath $candidate -PathType Leaf) {
+      $runtime=$candidate
+      break
+    }
+  }
+  Guard (![string]::IsNullOrWhiteSpace($runtime)) 'MSVC pgort140.dll missing; instrumented binaries cannot run'
+  $runtimeDir=Split-Path -Parent $runtime
+  $record.pgo_runtime=[ordered]@{
+    dependency='pgort140.dll'
+    origin='local Microsoft Visual Studio C++ toolset; never copied into repository'
+    source=$runtime
+    sha256=(Digest $runtime)
+    signature_status=[string](Get-AuthenticodeSignature -LiteralPath $runtime).Status
+    added_to_process_path=$true
+  }
+  # A process-local PATH modification is enough for Windows DLL resolution.
+  # No runtime binaries are bundled with the source or archived evidence.
+  $env:PATH=$runtimeDir+';'+$env:PATH
+  Write-Host ('CORE_YIN|PGO_RUNTIME|'+$runtime+'|sha256='+$record.pgo_runtime.sha256)
+  Save-Record
+}
 # Compile with AVX2 even on unsupported hosts, but never execute its binary.
 if(!$cpuAvx2){
   $record.status='UNSUPPORTED_HOST_AVX2'
@@ -85,10 +124,25 @@ function Build-Target([string]$dir,[string]$target,[string]$log){
   Log-Command $log 'cmake' @('--build',$dir,'--config','Release',
     '--target',$target,'--parallel','2','--verbose')
 }
-function Read-CoreBenchmark([string]$exe){
-  $result=@(& $exe ([string]$TrainingIterations) ([string]$TrainingWarmup) ([string]$TrainingRepeats))
-  Guard ($LASTEXITCODE -eq 0 -and $result.Count -gt 0) 'CORE runtime rejected'
-  $m=([string]$result[-1]|ConvertFrom-Json)
+function Read-CoreBenchmark([string]$exe,[string]$variant,[string]$phase){
+  # Keep native process evidence even when PGO instrumentation rejects the run.
+  # Do not infer success from a blank PowerShell pipeline or suppress stderr.
+  $stdout=Join-Path $Evidence ($variant+'-'+$phase+'-runtime.stdout.log')
+  $stderr=Join-Path $Evidence ($variant+'-'+$phase+'-runtime.stderr.log')
+  $arguments=@([string]$TrainingIterations,[string]$TrainingWarmup,[string]$TrainingRepeats)
+  $process=Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory (Split-Path -Parent $exe) -NoNewWindow -PassThru -Wait -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+  $exit=[int64]$process.ExitCode
+  $out=Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue
+  $err=Get-Content -LiteralPath $stderr -Raw -ErrorAction SilentlyContinue
+  $record.variants[$variant][$phase+'_runtime_exit']=$exit
+  $record.variants[$variant][$phase+'_stdout_sha256']=Digest $stdout
+  $record.variants[$variant][$phase+'_stderr_sha256']=Digest $stderr
+  $record.variants[$variant][$phase+'_stderr_text']=if($err){$err.Trim()}else{''}
+  Write-Host ('CORE_YIN|RUNTIME|'+$variant+'|'+$phase+'|exit='+$exit)
+  Save-Record
+  Guard ($exit -eq 0 -and ![string]::IsNullOrWhiteSpace($out)) ('CORE runtime rejected: variant='+$variant+', phase='+$phase+', exit='+$exit+', stderr='+$err)
+  try{$m=($out.Trim()|ConvertFrom-Json -ErrorAction Stop)}
+  catch{throw ('CORE_YIN: runtime output not valid JSON: '+$variant+'/'+$phase+'; '+$_.Exception.Message)}
   Guard ($m.schema -ceq 'SWE-LIGAZE-BENCH-v1' -and $m.threat_fixtures -ceq 'PASS' -and
     $m.iterations -eq $TrainingIterations -and $m.repeats -eq $TrainingRepeats) 'CORE numerical witness invalid'
   $m
@@ -114,10 +168,12 @@ try {
     $exe=[IO.Path]::GetFullPath((Join-Path $dir 'Release/pentagonal_ligaze_benchmark.exe'))
     Guard (Test-Path -LiteralPath $exe -PathType Leaf) ('Missing instrumented binary: '+$variant)
     $v.training_binary_sha256=Digest $exe
+    # Resolve the MSVC PGO loader dependency before first instrumented execution.
+    if($variant -eq 'baseline'){Enable-PgoRuntime}
     $binaryDir=Split-Path -Parent $exe
     Push-Location -LiteralPath $binaryDir
     try {
-      $measured=Read-CoreBenchmark $exe
+      $measured=Read-CoreBenchmark $exe $variant 'training'
     }finally{Pop-Location}
     $v.trained_checksum=[string]$measured.checksum
     $pgc=@(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.pgc')
@@ -144,7 +200,7 @@ try {
     }
     Guard (Test-Path -LiteralPath $exe -PathType Leaf) ('Optimized binary missing: '+$variant)
     $v.optimized_binary_sha256=Digest $exe
-    $optimized=Read-CoreBenchmark $exe
+    $optimized=Read-CoreBenchmark $exe $variant 'optimized'
     $v.optimized_checksum=[string]$optimized.checksum
     $v.optimized_median_ns=[double]$optimized.median_ns_per_call
     Guard ($v.optimized_checksum -ceq $v.trained_checksum) ('PGO transformed COR checksum: '+$variant)
