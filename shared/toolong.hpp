@@ -79,6 +79,18 @@ class toolong {
     [[nodiscard]] static std::pair<toolong, toolong> divmod_abs(
         const toolong& dividend, const toolong& divisor) {
         toolong quotient, remainder;
+        if (divisor.limbs_.size() == 1u) {
+            const std::uint64_t d = divisor.limbs_[0];
+            std::uint64_t rem = 0u;
+            quotient.limbs_.assign(dividend.limbs_.size(), 0u);
+            for (std::size_t i = dividend.limbs_.size(); i-- > 0u;) {
+                const std::uint64_t cur = rem * BASE + dividend.limbs_[i];
+                quotient.limbs_[i] = std::uint32_t(cur / d);
+                rem = cur % d;
+            }
+            quotient.normalize();
+            return {std::move(quotient), from_unsigned(rem)};
+        }
         quotient.limbs_.assign(dividend.limbs_.size(), 0u);
         for (std::size_t i = dividend.limbs_.size(); i-- > 0u;) {
             remainder.append_low_limb(dividend.limbs_[i]);
