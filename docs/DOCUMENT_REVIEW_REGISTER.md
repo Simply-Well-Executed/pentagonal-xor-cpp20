@@ -1,95 +1,103 @@
-# DOCUMENT_REVIEW_REGISTER · full documentation review inventory
+# PENTAGONAL XOR | complete documentation rewrite register
 
-> **Status: CURRENT review inventory; all entries DUE FOR UPDATE (2026-11-19).**
-> Copyright (c) 2026 Paul Allen Cheek for original project contributions;
-> SPDX-License-Identifier: 0BSD for covered work. See [LICENSE](../LICENSE)
-> and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md) for rights exclusions.
+> **Register ID:** PX-DOC-REWRITE-2026-11-19 · **Status:** CURRENT custody ledger, NOT a statement that every rewrite is complete. · **Copyright:** (c) 2026 Paul Allen Cheek · **License:** 0BSD where applicable.
 
-The user explicitly requested that **every** file in `docs/` be
-flagged **DUE FOR UPDATE**. This inventory includes all **34
-documents**: the 29 previously existing files
-(26 Markdown documents,
-3 SVG diagrams) plus
-this register, the license/marks notice, the NINZA/PING adapter document, the DOLPHIN subject-search specification, and the new Centrix native-DOM v12 specification.
+## BLUF
 
-**Do not confuse DUE with FAILED.** A review flag schedules verification;
-it does not replace algorithms, negate successful experiments, erase
-historical evidence or silently retire established protocols. Each
-prior source SHA below refers to its blob **before** review-banner
-modification at the checked main head `352cf73ac8a8`. A status change
-requires explicit reviewer provenance, not only an edited paragraph.
+The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every existing item remains **DUE** for substantive re-authoring and independent verification unless a separately recorded reviewer decision changes its status. The editorial procedure is committed as a **draft operating procedure**, not as a claim that the Air Force publications have been read or verified. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
-## Per-document action-verb checklist
+Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance**. A new version is not validated merely because it was rewritten.
 
-**Compare** source code against prose. **Trace** every measurement to its
-input and transformation. **Verify** formulas and CLI commands against
-real tests. **Strengthen** verbs without broadening claims. **Inspect**
-permissions, 0BSD scope and externally sourced materials. **Label**
-project names without unverified trademark registrations. **Check**
-SVG text, keyboard access, contrast and alt descriptions. **Record**
-evidence, disagreement and source commits. **Keep** every item DUE
-until the review closes with a separately documented decision.
+**Source freeze for this inventory:** branch `docs/complete-rewrite-af-writing-critical-thinking-20261119`, base `main` as of 2026-11-19. The blob identifiers below identify the versions available to this review. Check Git history before changing any file; do not treat a later SHA as equivalent.
 
-| Document | Type | Pre-review blob SHA (12) | Status |
-| --- | --- | --- | --- |
-| [`ANDROID.md`](ANDROID.md) | Markdown | `922b5943241e` | **DUE FOR UPDATE** |
-| [`BUILD_EVIDENCE.md`](BUILD_EVIDENCE.md) | Markdown | `35dcd7726611` | **DUE FOR UPDATE** |
-| [`COREAO.md`](COREAO.md) | Markdown | `b288583b98e4` | **DUE FOR UPDATE** |
-| [`COREAO_GAIN.md`](COREAO_GAIN.md) | Markdown | `77f0611e0f3a` | **DUE FOR UPDATE** |
-| [`COR_WITNESS_THREAT_MODEL_BENCHMARK.md`](COR_WITNESS_THREAT_MODEL_BENCHMARK.md) | Markdown | `7d59ff1d54e4` | **DUE FOR UPDATE** |
-| [`COUNTERARCCOSINE_2NDWAVE.svg`](COUNTERARCCOSINE_2NDWAVE.svg) | SVG | `875237deb069` | **DUE FOR UPDATE** |
-| [`DECASIGMA.md`](DECASIGMA.md) | Markdown | `481c3ef4966c` | **DUE FOR UPDATE** |
-| [`DOCKER_SOURCE_STUDY.md`](DOCKER_SOURCE_STUDY.md) | Markdown | `6e56e090a50a` | **DUE FOR UPDATE** |
-| [`GAMP4_VALIDATION.md`](GAMP4_VALIDATION.md) | Markdown | `630db3a6bc14` | **DUE FOR UPDATE** |
-| [`LIGAZE_WINDOWS_HEADER_V2.md`](LIGAZE_WINDOWS_HEADER_V2.md) | Markdown | `93640f500250` | **DUE FOR UPDATE** |
-| [`LIGAZE_WINDOWS_OPTIMIZER_AB.md`](LIGAZE_WINDOWS_OPTIMIZER_AB.md) | Markdown | `d21d58b9e1a5` | **DUE FOR UPDATE** |
-| [`MINZA_COLOR_EYES_RGBA64.md`](MINZA_COLOR_EYES_RGBA64.md) | Markdown | `568b0d61cdef` | **DUE FOR UPDATE** |
-| [`MINZA_FEMTOSECOND_GEOMETRY.md`](MINZA_FEMTOSECOND_GEOMETRY.md) | Markdown | `8083e1ac831a` | **DUE FOR UPDATE** |
-| [`MINZA_PINWHEEL_ATLAS.md`](MINZA_PINWHEEL_ATLAS.md) | Markdown | `486878335b18` | **DUE FOR UPDATE** |
-| [`MINZA_TEMPORAL_PENTAGONAL.md`](MINZA_TEMPORAL_PENTAGONAL.md) | Markdown | `93d35dea1c3e` | **DUE FOR UPDATE** |
-| [`PENTAGONAL_GAMP4_VALIDATION.md`](PENTAGONAL_GAMP4_VALIDATION.md) | Markdown | `d7da204af2f2` | **DUE FOR UPDATE** |
-| [`PENTAGONAL_GATE_CASCADE.md`](PENTAGONAL_GATE_CASCADE.md) | Markdown | `04b3ac46c054` | **DUE FOR UPDATE** |
-| [`PENTAGONAL_LIGAZE_NATIVE.md`](PENTAGONAL_LIGAZE_NATIVE.md) | Markdown | `7fd4a221a548` | **DUE FOR UPDATE** |
-| [`PENTAGONAL_TEST_TILT_VALIDATE_RUN.md`](PENTAGONAL_TEST_TILT_VALIDATE_RUN.md) | Markdown | `bcd93d366087` | **DUE FOR UPDATE** |
-| [`RELEASE_PREFLIGHT.md`](RELEASE_PREFLIGHT.md) | Markdown | `126cb951bb67` | **DUE FOR UPDATE** |
-| [`SIGMADI_COLLISION12.md`](SIGMADI_COLLISION12.md) | Markdown | `ad7ab8a85819` | **DUE FOR UPDATE** |
-| [`SIGMA_PENTA_HAN_PRESENTATION.md`](SIGMA_PENTA_HAN_PRESENTATION.md) | Markdown | `667a045c0051` | **DUE FOR UPDATE** |
-| [`SIGMA_PENTA_HAN_VISTA_BOARD.svg`](SIGMA_PENTA_HAN_VISTA_BOARD.svg) | SVG | `5aa9ae19b9bf` | **DUE FOR UPDATE** |
-| [`STABILITY10D.md`](STABILITY10D.md) | Markdown | `a1ff7ba3db48` | **DUE FOR UPDATE** |
-| [`SUPERTAOISM_GAMP4_JAVA_JAR.md`](SUPERTAOISM_GAMP4_JAVA_JAR.md) | Markdown | `fa1d799f67fb` | **DUE FOR UPDATE** |
-| [`TRI_PI.md`](TRI_PI.md) | Markdown | `438c49b53081` | **DUE FOR UPDATE** |
-| [`VISTA_9X9.md`](VISTA_9X9.md) | Markdown | `130cf13f95f9` | **DUE FOR UPDATE** |
-| [`VISTA_9X9_LADDER.svg`](VISTA_9X9_LADDER.svg) | SVG | `2ad609f4040d` | **DUE FOR UPDATE** |
-| [`VISTA_9X9_SHOWCASE.md`](VISTA_9X9_SHOWCASE.md) | Markdown | `6a530c4f9df7` | **DUE FOR UPDATE** |
-| [`DOCUMENT_REVIEW_REGISTER.md`](DOCUMENT_REVIEW_REGISTER.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
-| [`LICENSE_AND_MARKS.md`](LICENSE_AND_MARKS.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
-| [`NINZA_PING_UNFORGE_UNTWIRL.md`](NINZA_PING_UNFORGE_UNTWIRL.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
-| [`DOLPHIN_SUBJECT_SEARCH.md`](DOLPHIN_SUBJECT_SEARCH.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
-| [`MINZA_CENTRIX_NATIVE_DOM_V12.md`](MINZA_CENTRIX_NATIVE_DOM_V12.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
+## Source-reference gate
 
-## Priority and validation
+- User reported locating copies of AFH 33-337, ALQ Writing Guide (7 Apr 2025), DAFI 36-2803, AF Form 716 and DAFI 36-2907. **Copies not yet provided in this chat**: edition, page citations, operative wording and applicability remain **PENDING SOURCE REVIEW**.
+- Six Sigma critical thinking reference: reasoning lens only. Distinguish hypothesis, evidence, failure, dissent, and decision.
+- The Air Force writing/administrative references are **style and accountability inspirations**, not endorsements or compulsory software-development regulations. Do not invent endorsement, official signatures, award claims, or legal coverage.
 
-**P1: route/code drift.** Compare
-[VISTA_9X9.md](VISTA_9X9.md),
-[SIGMA_PENTA_HAN_PRESENTATION.md](SIGMA_PENTA_HAN_PRESENTATION.md),
-[MINZA_PINWHEEL_ATLAS.md](MINZA_PINWHEEL_ATLAS.md),
-and [PENTAGONAL_GATE_CASCADE.md](PENTAGONAL_GATE_CASCADE.md).
-The current patch documents the **native six-stage FLOP** independently
-of the **FLOP-FLIP-FLOP-FLIP-FLOP-FLIP-FLOP-FLIP-FLOP** route. Confirm
-both with compiled tests before closing their review flags.
+## Status and evidence semantics
 
-**P2: metrics and provenance.** Verify ratios, 64-bit fields, time
-units, source-token claims, COR witness limits, security and benchmark
-statements, including negative cases.
+| Status | Meaning | Permitted next action |
+| --- | --- | --- |
+| DUE | Source not yet comprehensively checked or rewritten | Read code, tests, CI and user-supplied publications |
+| REWRITTEN / VERIFY | Text changed, tests/provenance not independently signed off | Run targeted gates and record exact evidence |
+| VERIFIED / CURRENT | Reviewer, source SHA, tests, and limitations documented | Maintain with change detection |
+| NEEDS REVIEW | Source, rights or meaning ambiguous | Leave original interpretation intact; request evidence |
+| CONTRADICTED | A claim conflicts with evidence | Correct visibly, preserve prior source/version and dissent |
+| ARCHIVE | Historical evidence, not current normative guidance | Retain unchanged; cross-link current protocol |
 
-**P3: accessibility and language.** Inspect the SVG boards and
-documentation links. Sharpen ambiguous verbs, repair formatting,
-and retain all source attribution and licensing exclusions.
+## Full asset register
 
-**Review-complete record:** reviewer/evidence source, date, source commit,
-examined path, test outcomes, decisions, unresolved limitations and
-reason for changing the status. No silent YES, removal, or retirement.
+| Priority | Document | Classification | Baseline blob SHA-12 | Current review state |
+| --- | --- | --- | --- | --- |
+| P0 | [`.github/pull_request_template.md`](../.github/pull_request_template.md) | Repository entry / policy | `6ebe8e300800` | DUE · substantive rewrite and verification |
+| P1 | [`ci/CONTAINER-VALIDATION.md`](../ci/CONTAINER-VALIDATION.md) | Build / verification | `a580045afe8a` | DUE · substantive rewrite and verification |
+| P0 | [`CONTRIBUTING.md`](../CONTRIBUTING.md) | Repository entry / policy | `81e9fad8b3e7` | DUE · substantive rewrite and verification |
+| P2 | [`docs/ANDROID.md`](../docs/ANDROID.md) | Build / verification | `a0bdfea78ad8` | DUE · substantive rewrite and verification |
+| P1 | [`docs/BUILD_EVIDENCE.md`](../docs/BUILD_EVIDENCE.md) | Build / verification | `72c9bda1a6b5` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COR_WITNESS_THREAT_MODEL_BENCHMARK.md`](../docs/COR_WITNESS_THREAT_MODEL_BENCHMARK.md) | Algorithm / operator | `e02531b86996` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COREAO_GAIN.md`](../docs/COREAO_GAIN.md) | Algorithm / operator | `9ea638d61c25` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COREAO.md`](../docs/COREAO.md) | Algorithm / operator | `1a9bfdebc868` | DUE · substantive rewrite and verification |
+| P2 | [`docs/COUNTERARCCOSINE_2NDWAVE.svg`](../docs/COUNTERARCCOSINE_2NDWAVE.svg) | Diagram / accessible media | `af8f59fc723a` | DUE · substantive rewrite and verification |
+| P1 | [`docs/DECASIGMA.md`](../docs/DECASIGMA.md) | Algorithm / operator | `191a455fd200` | DUE · substantive rewrite and verification |
+| P2 | [`docs/DOCKER_SOURCE_STUDY.md`](../docs/DOCKER_SOURCE_STUDY.md) | Build / verification | `a0ff7608cc2f` | DUE · substantive rewrite and verification |
+| P0 | [`docs/DOCUMENT_REVIEW_REGISTER.md`](../docs/DOCUMENT_REVIEW_REGISTER.md) | Governance / review | `e9b43a7fa431` | DUE · substantive rewrite and verification |
+| P2 | [`docs/DOLPHIN_SUBJECT_SEARCH.md`](../docs/DOLPHIN_SUBJECT_SEARCH.md) | LAB / experiment | `68f49147ec05` | DUE · substantive rewrite and verification |
+| P1 | [`docs/GAMMAGAMMA_PI_PRECISION.md`](../docs/GAMMAGAMMA_PI_PRECISION.md) | Algorithm / operator | `bd9cde131bc6` | DUE · substantive rewrite and verification |
+| P1 | [`docs/GAMP4_VALIDATION.md`](../docs/GAMP4_VALIDATION.md) | Build / verification | `83300c9f0118` | DUE · substantive rewrite and verification |
+| P2 | [`docs/LICENSE_AND_MARKS.md`](../docs/LICENSE_AND_MARKS.md) | Algorithm / operator | `cee7858b9c59` | DUE · substantive rewrite and verification |
+| P1 | [`docs/LIGAZE_WINDOWS_HEADER_V2.md`](../docs/LIGAZE_WINDOWS_HEADER_V2.md) | Build / verification | `78b34f47dc31` | DUE · substantive rewrite and verification |
+| P1 | [`docs/LIGAZE_WINDOWS_OPTIMIZER_AB.md`](../docs/LIGAZE_WINDOWS_OPTIMIZER_AB.md) | Build / verification | `31837e768b56` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_CENTRIX_NATIVE_DOM_V12.md`](../docs/MINZA_CENTRIX_NATIVE_DOM_V12.md) | LAB / experiment | `a5deadac3151` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_COLOR_EYES_RGBA64.md`](../docs/MINZA_COLOR_EYES_RGBA64.md) | LAB / experiment | `92ab3df33438` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md`](../docs/MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md) | LAB / experiment | `22c113ea47b5` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_FEMTOSECOND_GEOMETRY.md`](../docs/MINZA_FEMTOSECOND_GEOMETRY.md) | LAB / experiment | `054b20984990` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_PINWHEEL_ATLAS.md`](../docs/MINZA_PINWHEEL_ATLAS.md) | LAB / experiment | `075b8e33c4fa` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_REVERSE_XFE_ROT16_O2_2026-11-19.md`](../docs/MINZA_REVERSE_XFE_ROT16_O2_2026-11-19.md) | LAB / experiment | `9f31f06be453` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_ROT_EBG_1_256.md`](../docs/MINZA_ROT_EBG_1_256.md) | LAB / experiment | `c9850c556837` | DUE · substantive rewrite and verification |
+| P2 | [`docs/MINZA_TEMPORAL_PENTAGONAL.md`](../docs/MINZA_TEMPORAL_PENTAGONAL.md) | LAB / experiment | `97a485a0fb98` | DUE · substantive rewrite and verification |
+| P2 | [`docs/NINZA_PING_UNFORGE_UNTWIRL.md`](../docs/NINZA_PING_UNFORGE_UNTWIRL.md) | LAB / experiment | `bb90d204ea3d` | DUE · substantive rewrite and verification |
+| P1 | [`docs/PENTAGONAL_GAMP4_VALIDATION.md`](../docs/PENTAGONAL_GAMP4_VALIDATION.md) | Build / verification | `14ce835b090a` | DUE · substantive rewrite and verification |
+| P1 | [`docs/PENTAGONAL_GATE_CASCADE.md`](../docs/PENTAGONAL_GATE_CASCADE.md) | Algorithm / operator | `c4bd4ee92e49` | DUE · substantive rewrite and verification |
+| P1 | [`docs/PENTAGONAL_LIGAZE_NATIVE.md`](../docs/PENTAGONAL_LIGAZE_NATIVE.md) | Algorithm / operator | `8285ee295e4e` | DUE · substantive rewrite and verification |
+| P2 | [`docs/PENTAGONAL_TEST_TILT_VALIDATE_RUN.md`](../docs/PENTAGONAL_TEST_TILT_VALIDATE_RUN.md) | Algorithm / operator | `b363d4195cf7` | DUE · substantive rewrite and verification |
+| P1 | [`docs/RELEASE_PREFLIGHT.md`](../docs/RELEASE_PREFLIGHT.md) | Build / verification | `b3e2a190064d` | DUE · substantive rewrite and verification |
+| P2 | [`docs/SIGMA_PENTA_HAN_PRESENTATION.md`](../docs/SIGMA_PENTA_HAN_PRESENTATION.md) | LAB / experiment | `1f304bb0d787` | DUE · substantive rewrite and verification |
+| P2 | [`docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg`](../docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg) | Diagram / accessible media | `490554f0251f` | DUE · substantive rewrite and verification |
+| P2 | [`docs/SIGMADI_COLLISION12.md`](../docs/SIGMADI_COLLISION12.md) | LAB / experiment | `4e2305d14810` | DUE · substantive rewrite and verification |
+| P2 | [`docs/STABILITY10D.md`](../docs/STABILITY10D.md) | Algorithm / operator | `c519fc4fcfa1` | DUE · substantive rewrite and verification |
+| P1 | [`docs/SUPERTAOISM_GAMP4_JAVA_JAR.md`](../docs/SUPERTAOISM_GAMP4_JAVA_JAR.md) | Build / verification | `a8bb36df0302` | DUE · substantive rewrite and verification |
+| P1 | [`docs/TOOLONG.md`](../docs/TOOLONG.md) | Algorithm / operator | `f9648568e823` | DUE · substantive rewrite and verification |
+| P1 | [`docs/TRI_PI.md`](../docs/TRI_PI.md) | Algorithm / operator | `01ac2b0ff692` | DUE · substantive rewrite and verification |
+| P2 | [`docs/VISTA_9X9_LADDER.svg`](../docs/VISTA_9X9_LADDER.svg) | Diagram / accessible media | `3a769b74c2ce` | DUE · substantive rewrite and verification |
+| P2 | [`docs/VISTA_9X9_SHOWCASE.md`](../docs/VISTA_9X9_SHOWCASE.md) | LAB / experiment | `9e5e8db1c9d7` | DUE · substantive rewrite and verification |
+| P2 | [`docs/VISTA_9X9.md`](../docs/VISTA_9X9.md) | LAB / experiment | `44d90b1fb46b` | DUE · substantive rewrite and verification |
+| P0 | [`docs/WRITING_OPERATING_PROCEDURE.md`](../docs/WRITING_OPERATING_PROCEDURE.md) | Governance / review | `906c8cb45e85` | PROCEDURE DRAFT · official sources pending |
+| P0 | [`README.md`](../README.md) | Repository entry / policy | `62bf8918e946` | DUE · substantive rewrite and verification |
+| P0 | [`SECURITY.md`](../SECURITY.md) | Repository entry / policy | `d993abe4d562` | DUE · substantive rewrite and verification |
+| P1 | [`shared/README.md`](../shared/README.md) | Repository entry / policy | `793afe2aabe4` | DUE · substantive rewrite and verification |
 
-**Source authority:** canonical algorithm + source records → route
-and derived streams → witness → audit ledger → render. The ledger does
-not outrank the algorithm.
+## Acceptance criteria for each rewritten asset
+
+1. **Scope:** State a one-paragraph BLUF identifying the actual component and an explicit decision or usage goal. Do not silently promote LAB to canonical source.
+2. **Source authority:** Link to source implementation, independent tests and, if pertinent, exact CI workflow. For images, verify code points, coordinates, visual alternative text and embedded third-party media rights.
+3. **Accuracy:** Recompute any example, units, numeric counts and precision convention from available code/test or mark them `UNVERIFIED`.
+4. **Counterexample:** Include a failure case, unsupported environment, threat model or alternative explanation. Protect author-defined experimental terminology and frozen protocols.
+5. **Action:** Give verified PowerShell 7 commands and relevant platform-specific flags; do not require Python, JavaScript toolchains or unsupported automation.
+6. **Provenance:** Carry original copyrights, upstream rights and historical baselines forward; avoid invented official citations or trademark claims.
+7. **Gate:** A green CI run cannot substitute for a document-specific content review; an inability to retrieve an official source must be marked explicitly.
+
+## Priority and action
+
+- **P0, editorial and policy entrypoints:** Establish the BLUF for README, the contribution and security policies, the PR template, this register and operating procedure. Resolve stale references to already merged PRs and outdated workflow states.
+- **P1, canonical algorithm and validation:** Reconcile C11 five-input parity, `toolong`, GammaGamma, DecaSigma, Triℼ, COREAO, source-evidence scripts, CI build/install gates, Windows PGO and OCI status codes.
+- **P2, research and media records:** Rewrite explanations and diagram descriptions; preserve frozen trials, renderer/input limits, exact original values and source-hash provenance. Do not retroactively claim physical or mathematical validation beyond experiment evidence.
+
+## Review handoff record
+
+| Date | Reviewer / actor | Change | Evidence | Decision |
+| --- | --- | --- | --- | --- |
+| 2026-11-19 | ChatGPT, editorial drafting only | Replaced incomplete prior 34-item index with full current inventory; created SOP | Git file tree and blob IDs; linked source paths | Inventory CURRENT; individual rewrites DUE, official publication content PENDING |
+
+**Completion requirement:** For each row, independently record reviewer identity, approval, current SHA, tests/run IDs, decision, outstanding limits and provenance. Until then it remains DUE or REWRITTEN / VERIFY. **Failure never becomes policy; chosen, never assumed.**
