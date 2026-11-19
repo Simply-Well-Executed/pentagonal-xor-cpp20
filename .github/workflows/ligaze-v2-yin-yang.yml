@@ -9,7 +9,11 @@ concurrency:
   group: v2-yin-yang-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   compare:
+    needs: pondaz
     name: Windows x64 YANG 5 and no-GL YIN 5
     runs-on: windows-2025
     timeout-minutes: 45
@@ -42,6 +46,7 @@ jobs:
           if-no-files-found: warn
 
   core-yin:
+    needs: pondaz
     name: CORE YIN C++20 AVX2 PGO · research only
     runs-on: windows-2025
     timeout-minutes: 50
