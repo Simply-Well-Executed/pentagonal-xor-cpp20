@@ -92,6 +92,23 @@ if(BUILD_TESTING)
     target_compile_features(coreo_stereo_test PRIVATE cxx_std_20)
     add_test(NAME coreo_stereo_invertibility COMMAND coreo_stereo_test)
 
+    # COREAO exact GammaGamma and toolong tests: part of the standard
+    # CMake/CTest matrix on Linux, macOS, MSVC and supported ARM targets.
+    add_executable(gammagamma_pi_precision_test
+        tests/gammagamma_pi_precision_test.cpp)
+    target_compile_features(gammagamma_pi_precision_test PRIVATE cxx_std_20)
+    set_target_properties(gammagamma_pi_precision_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME gammagamma_pi_precision_boundaries
+        COMMAND gammagamma_pi_precision_test)
+
+    add_executable(toolong_arithmetic_test tests/toolong_arithmetic_test.cpp)
+    target_compile_features(toolong_arithmetic_test PRIVATE cxx_std_20)
+    set_target_properties(toolong_arithmetic_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME toolong_exact_arithmetic
+        COMMAND toolong_arithmetic_test)
+
     if(MSVC)
         target_compile_options(parity_reference_test PRIVATE /W4 /permissive-)
         target_compile_options(deca_sigma_test PRIVATE /W4 /permissive-)
@@ -101,6 +118,8 @@ if(BUILD_TESTING)
         target_compile_options(counterarccosine_secondwave_test PRIVATE /W4 /permissive-)
         target_compile_options(stability10d_test PRIVATE /W4 /permissive-)
         target_compile_options(coreo_stereo_test PRIVATE /W4 /permissive-)
+        target_compile_options(gammagamma_pi_precision_test PRIVATE /O2 /W4 /permissive-)
+        target_compile_options(toolong_arithmetic_test PRIVATE /O2 /W4 /permissive-)
     else()
         target_compile_options(parity_reference_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(deca_sigma_test PRIVATE -Wall -Wextra -Wpedantic)
@@ -110,6 +129,8 @@ if(BUILD_TESTING)
         target_compile_options(counterarccosine_secondwave_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(stability10d_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(coreo_stereo_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(gammagamma_pi_precision_test PRIVATE -O2 -Wall -Wextra -Wpedantic)
+        target_compile_options(toolong_arithmetic_test PRIVATE -O2 -Wall -Wextra -Wpedantic)
     endif()
 endif()
 
