@@ -180,3 +180,16 @@ validation until corresponding completed checks are observed.
 MINZA/NINZA/PING → OSI-6 display → audit. Retained records do not
 authorize a correction or an identity inference. No mutation to
 the source data is an invariant, not just a display choice.
+
+
+## Dimension 12: declaration-collision provenance
+
+The [SIGMADI-COLLISION-12D-v1 witness](SIGMADI_COLLISION12.md) adds
+exactly twelve zero-based **metadata** coordinates D0..D11;
+D11 records the declaration instance. The originating error was
+a genuine duplicate `r` binding in the tool-side SVG builder.
+It does not change H11 or imply a physical H12. The header
+`shared/sigmadi_collision12.hpp` classifies distinct, duplicate,
+scoped reuse, revised, and inconsistent declarations without
+mutating the canonical data. The OSI-6 `View` exposes its axis
+names read-only; it does not automatically parse source code.
