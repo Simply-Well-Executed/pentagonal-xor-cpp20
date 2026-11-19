@@ -2,11 +2,11 @@
 
 > **Register ID:** PX-DOC-REWRITE-2026-11-19 · **Status:** CURRENT custody ledger, NOT a statement that every rewrite is complete. · **Copyright:** (c) 2026 Paul Allen Cheek · **License:** 0BSD where applicable.
 
-## BLUF
+## Completed publication action
 
-The repository currently has **46 Markdown and SVG documentation assets**, all inventoried below. Every original item remains **DUE** for substantive re-authoring and independent verification unless an explicit reviewer decision changes its status. The editorial procedure is now **REWRITTEN / VERIFY** with the original **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
+**Track 47 Markdown and SVG documentation assets:** the 46 original inventory entries plus the new `docs/HANDI.md` publication. Keep original baseline hashes and Git history; some source pages are now partially rewritten, but all original assets remain subject to independent verification and explicit decisions. The editorial procedure is now **REWRITTEN / VERIFY** with the original **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
-Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite with **purpose → source → method → evidence → limitations → action → provenance** and the **TriDi YIN/YANG/AIRGAP → proposed SigmaDi signed four-link challenge → YAN accountable synthesis** review. A new version is not validated merely because it was rewritten.
+**Apply** [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md)'s single completed-action publication rule: express the performed action in active present tense and make the method, source, evidence, limitations and decision agree. **Publish** [HANDI.md](HANDI.md) as a working specification for BiDi/TriDi/SigmaDi standards, tagged BiPi/TriPi/SigmaPi adherence observations, and MINZA/NINZA/PING folding. **Retain** the TriDi and SigmaDi routes and YAN reconciliation without implying completed software validation. A new version is not validated merely because it was rewritten.
 
 **Source freeze for this inventory:** branch `docs/complete-rewrite-af-writing-critical-thinking-20261119`, base `main` as of 2026-11-19. The blob identifiers below identify the versions available to this review. Check Git history before changing any file; do not treat a later SHA as equivalent.
 
@@ -29,7 +29,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 
 ## Full asset register
 
-| Priority | Document | Classification | Baseline blob SHA-12 | Current review state |
+| Priority | Document | Classification | Source blob SHA-12 / origin | Current review state |
 | --- | --- | --- | --- | --- |
 | P0 | [`.github/pull_request_template.md`](../.github/pull_request_template.md) | Repository entry / policy | `6ebe8e300800` | DUE · substantive rewrite and verification |
 | P1 | [`ci/CONTAINER-VALIDATION.md`](../ci/CONTAINER-VALIDATION.md) | Build / verification | `a580045afe8a` | DUE · substantive rewrite and verification |
@@ -46,6 +46,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 | P2 | [`docs/DOLPHIN_SUBJECT_SEARCH.md`](../docs/DOLPHIN_SUBJECT_SEARCH.md) | LAB / experiment | `68f49147ec05` | DUE · substantive rewrite and verification |
 | P1 | [`docs/GAMMAGAMMA_PI_PRECISION.md`](../docs/GAMMAGAMMA_PI_PRECISION.md) | Algorithm / operator | `bd9cde131bc6` | DUE · substantive rewrite and verification |
 | P1 | [`docs/GAMP4_VALIDATION.md`](../docs/GAMP4_VALIDATION.md) | Build / verification | `83300c9f0118` | DUE · substantive rewrite and verification |
+| P0 | [`docs/HANDI.md`](../docs/HANDI.md) | Governance / observation protocol | `BRANCH:843db858ce6b` | NEW · REWRITTEN / VERIFY · HANDI naming and folding specification; implementation unverified |
 | P2 | [`docs/LICENSE_AND_MARKS.md`](../docs/LICENSE_AND_MARKS.md) | Algorithm / operator | `cee7858b9c59` | DUE · substantive rewrite and verification |
 | P1 | [`docs/LIGAZE_WINDOWS_HEADER_V2.md`](../docs/LIGAZE_WINDOWS_HEADER_V2.md) | Build / verification | `78b34f47dc31` | DUE · substantive rewrite and verification |
 | P1 | [`docs/LIGAZE_WINDOWS_OPTIMIZER_AB.md`](../docs/LIGAZE_WINDOWS_OPTIMIZER_AB.md) | Build / verification | `31837e768b56` | DUE · substantive rewrite and verification |
@@ -80,7 +81,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 
 ## Acceptance criteria for each rewritten asset
 
-1. **Scope:** State a one-paragraph BLUF identifying the actual component and an explicit decision or usage goal. Do not silently promote LAB to canonical source.
+1. **Completed-action statement:** Write an active, present-tense declaration of what the page actually delivers; carry it recursively through methods, results, limitations and decisions, or label unperformed work PROPOSED / NOT RUN / NEEDS REVIEW. Do not promote LAB to canonical source.
 2. **Source authority:** Link to source implementation, independent tests and, if pertinent, exact CI workflow. For images, verify code points, coordinates, visual alternative text and embedded third-party media rights.
 3. **Accuracy:** Recompute any example, units, numeric counts and precision convention from available code/test or mark them `UNVERIFIED`.
 4. **TriDi / counterexample:** Run and record YIN (claim to evidence), YANG (evidence to permissible claim), and AIRGAP (orthogonal assumptions, alternative explanation, negative test and threat/rights boundary); reconcile through YAN without two-out-of-three voting. Protect author-defined terminology and frozen protocols.
@@ -90,7 +91,7 @@ Follow [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md). Rewrite
 
 ## Priority and action
 
-- **P0, editorial and policy entrypoints:** Establish the BLUF for README, the contribution and security policies, the PR template, this register and operating procedure. Resolve stale references to already merged PRs and outdated workflow states.
+- **P0, editorial and policy entrypoints:** Implement the SOP's completed-action present-tense publication rule in README, contribution and security policies, the PR template, HANDI, this register and operating procedure. Resolve stale references to already merged PRs and outdated workflow states.
 - **P1, canonical algorithm and validation:** Reconcile C11 five-input parity, `toolong`, GammaGamma, DecaSigma, Triℼ, COREAO, source-evidence scripts, CI build/install gates, Windows PGO and OCI status codes.
 - **P2, research and media records:** Rewrite explanations and diagram descriptions; preserve frozen trials, renderer/input limits, exact original values and source-hash provenance. Do not retroactively claim physical or mathematical validation beyond experiment evidence.
 
@@ -144,6 +145,16 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 **Completion:** Only explicitly scoped, source-backed four-link reports, underlying TriDi evidence and named reviewer approval make a claim eligible for verification. All 46 original documentation assets remain in the review queue; only the SOP and COLLISION12 cross-reference received partial edits. The maintainer's C++20, `-O2`/`/O2`-only, PowerShell Core latest stable `Set-StrictMode -Version 2.0`, and license/source provenance requirements remain unchanged.
 
+## HANDI publication and source-practice separation
+
+**Implement the proposed `HANDI-OBSERVATION-v0` document:** [HANDI.md](HANDI.md) defines BiDi/TriDi/SigmaDi as theory, standards and expectations; BiPi/TriPi/SigmaPi as appropriately namespaced practical adherence observations; and MINZA/NINZA/PING as first-, second- and third-degree folding. A third-degree PING may summarize a scoped record, not certify the source or automatically pass the standard.
+
+**Record the proposed traversal orders:** `XYZ`, `ZYX`, `XZY`, and `ZXY` remain exploratory. Exact reversal `reverse(XZY)=YZX` and `reverse(ZXY)=YXZ` prevents accidental conflation. No traversal is automatically adopted.
+
+**Preserve named mathematical operations:** BiPi integer squaring, TriPi DecaSigma route checking, and SigmaPi GammaGamma prefix remain in their separate original namespaces. Both existing SigmaDi protocols remain independently identified. The former working system label `zzzDi` is retained in source history, not treated as a deleted record.
+
+**Complete the sole publication rule:** State actual completed work in active present tense, revise all sections until they support the statement, and disclose each outstanding test as PROPOSED, NOT RUN or NEEDS REVIEW. This action updates the operating procedure, HANDI, this register and the SigmaDi COLLISION12 description; it does not change the C++20 binary or claim enforcement of unmodified CI.
+
 ## Review handoff record
 
 | Date | Reviewer / actor | Change | Evidence | Decision |
@@ -152,5 +163,6 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 | 2026-11-19 | ChatGPT, editorial drafting only | Revised SOP with BiDi YIN/YANG/YAN source-evidence checks; incorporated inspected USAF source editions; recorded latest PowerShell Core StrictMode 2.0, C++20/-O2-only and supply-chain/IP restrictions | Uploaded AFH 33-337, ALQ 2023, DAFI 36-2803 and DAFI 36-2907; GitHub current workflow review; SOP commit `7e38bbff7d55` | SOP REWRITTEN / VERIFY, policies proposed and current CI conflicts NEEDS REVIEW; no retroactive validation |
 | 2026-11-19 | ChatGPT, editorial drafting only | Upgraded current editorial review from BiDi to TriDi X/Y/Z with YAN reconciliation, preserving prior method and source records | SOP commit `05c190ced5e0`; unchanged C++20/toolchain policy; source-coded route and countertest requirements | TriDi EXPLORATORY / REWRITTEN / VERIFY; all 46 original assets DUE; explicit approval pending |
 | 2026-11-19 | ChatGPT, editorial drafting only | Introduced SigmaDi four-link butterfly review with alternating polarity; linked but did not redefine existing COLLISION12 | SOP commit `0fe3bfc07f68`, source-note commit `116d56f0ee35`; existing C++20 and tests unchanged | SigmaDi-review-v0 EXPLORATORY / REWRITTEN / VERIFY; exact sign/endpoint semantics proposed, approval pending |
+| 2026-11-19 | ChatGPT, editorial drafting only | Publish HANDI observation and degree-fold specification; replace unfinished opening labels with one active, completed-action publication standard; preserve retired draft terminology only in Git history | HANDI publication commit `b7614f3dbcef`; SOP `f64a5967b6fe`; COLLISION12 `3b4333943aca`; Git source references | HANDI EXPLORATORY / REWRITTEN / VERIFY; all existing source and tests unchanged; further verification and explicit adoption pending |
 
 **Completion requirement:** For each row, independently record reviewer identity, approval, current SHA, tests/run IDs, decision, outstanding limits and provenance. Until then it remains DUE or REWRITTEN / VERIFY. **Failure never becomes policy; chosen, never assumed.**
