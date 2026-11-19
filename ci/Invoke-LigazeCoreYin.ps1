@@ -64,6 +64,43 @@ function Save-Record{
   $record|ConvertTo-Json -Depth 18|Set-Content -LiteralPath $file -Encoding utf8
   Write-Host ('CORE_YIN|EVIDENCE|'+(Digest $file))
 }
+# /GENPROFILE instruments the executable and introduces an MSVC PGO runtime
+# dependency (pgort140.dll). The GitHub Windows runner does not necessarily
+# have the compiler's bin directory on PATH. Locate the installed, exact VS
+# toolset runtime rather than downloading or committing a DLL.
+function Enable-PgoRuntime {
+  $installer=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
+  Guard (Test-Path -LiteralPath $installer -PathType Leaf) 'vswhere.exe missing; cannot locate MSVC PGO runtime'
+  $installation=@(& $installer '-latest' '-products' '*' '-requires' 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' '-property' 'installationPath')
+  Guard ($LASTEXITCODE -eq 0 -and $installation.Count -gt 0 -and ![string]::IsNullOrWhiteSpace($installation[-1])) 'MSVC toolset installation not found'
+  $msvcRoot=Join-Path ([string]$installation[-1]).Trim() 'VC/Tools/MSVC'
+  Guard (Test-Path -LiteralPath $msvcRoot -PathType Container) 'MSVC tools directory missing'
+  $versions=@(Get-ChildItem -LiteralPath $msvcRoot -Directory | Sort-Object Name -Descending)
+  Guard ($versions.Count -gt 0) 'MSVC runtime version directory missing'
+  $runtime=$null
+  foreach($version in $versions) {
+    $candidate=Join-Path $version.FullName 'bin/Hostx64/x64/pgort140.dll'
+    if(Test-Path -LiteralPath $candidate -PathType Leaf) {
+      $runtime=$candidate
+      break
+    }
+  }
+  Guard (![string]::IsNullOrWhiteSpace($runtime)) 'MSVC pgort140.dll missing; instrumented binaries cannot run'
+  $runtimeDir=Split-Path -Parent $runtime
+  $record.pgo_runtime=[ordered]@{
+    dependency='pgort140.dll'
+    origin='local Microsoft Visual Studio C++ toolset; never copied into repository'
+    source=$runtime
+    sha256=(Digest $runtime)
+    signature_status=[string](Get-AuthenticodeSignature -LiteralPath $runtime).Status
+    added_to_process_path=$true
+  }
+  # A process-local PATH modification is enough for Windows DLL resolution.
+  # No runtime binaries are bundled with the source or archived evidence.
+  $env:PATH=$runtimeDir+';'+$env:PATH
+  Write-Host ('CORE_YIN|PGO_RUNTIME|'+$runtime+'|sha256='+$record.pgo_runtime.sha256)
+  Save-Record
+}
 # Compile with AVX2 even on unsupported hosts, but never execute its binary.
 if(!$cpuAvx2){
   $record.status='UNSUPPORTED_HOST_AVX2'
@@ -131,6 +168,8 @@ try {
     $exe=[IO.Path]::GetFullPath((Join-Path $dir 'Release/pentagonal_ligaze_benchmark.exe'))
     Guard (Test-Path -LiteralPath $exe -PathType Leaf) ('Missing instrumented binary: '+$variant)
     $v.training_binary_sha256=Digest $exe
+    # Resolve the MSVC PGO loader dependency before first instrumented execution.
+    if($variant -eq 'baseline'){Enable-PgoRuntime}
     $binaryDir=Split-Path -Parent $exe
     Push-Location -LiteralPath $binaryDir
     try {
