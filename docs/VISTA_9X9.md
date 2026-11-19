@@ -39,13 +39,17 @@ observed and expected input values, and the same caller-supplied
 `source_token`. No source data are modified.
 
 1. **VISTA-A / CAPTURE:** preserve six gate outputs, the 64-bit COR
-   record, original observed/expected values and source handle.
+   record, original observed/expected values and source handle; set
+   `capture_complete` without claiming independent verification.
 2. **VISTA-B / VERIFY:** read the same trace and report whether gate
    order, XOR/OR/AND/NOP held values, 64-bit COR field packing, and
-   FLOP next-entry agree with the existing source implementation.
+   FLOP next-entry agree with the existing source implementation;
+   record `verification_complete` only when these checks agree.
 3. **VISTA-C / SYNTHESIZE:** present the same retained trace and the
-   structural agreement. This is a read-only summary, not a repair,
-   correction, independent measurement or majority authorization.
+   structural agreement, the number of true held gate outputs, and
+   the unmodified COR anomaly flags. The synthesis has its own
+   `synthesis_complete` status; it is not a repair, correction,
+   independent measurement or majority authorization.
 
 The current C++ interface has three explicitly labeled snapshot types,
 each with a `structurally_consistent` indicator and the six gate records.
