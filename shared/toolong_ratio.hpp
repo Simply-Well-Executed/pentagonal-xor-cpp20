@@ -19,6 +19,20 @@ class toolong_ratio {
     }
 public:
     toolong_ratio() = default;
+    toolong_ratio(const toolong_ratio&) = default;
+    toolong_ratio& operator=(const toolong_ratio&) = default;
+    toolong_ratio(toolong_ratio&& other) : toolong_ratio() {
+        std::swap(num_, other.num_);
+        std::swap(den_, other.den_);
+    }
+    toolong_ratio& operator=(toolong_ratio&& other) {
+        if (this != &other) {
+            toolong_ratio tmp(std::move(other));
+            std::swap(num_, tmp.num_);
+            std::swap(den_, tmp.den_);
+        }
+        return *this;
+    }
     explicit toolong_ratio(toolong numerator) : num_(std::move(numerator)) {}
     toolong_ratio(toolong numerator, toolong denominator)
       : num_(std::move(numerator)), den_(std::move(denominator)) { canonicalize(); }
