@@ -294,3 +294,36 @@ if(BUILD_TESTING)
   set_tests_properties(pentagonal_vista_9x9_native_demo PROPERTIES
     PASS_REGULAR_EXPRESSION "total=81")
 endif()
+
+
+# SIGMA-PENTA-PING v1 and SigmaDi / HANDecaSigma[11] OSI-6 display.
+# Exploratory derived measurements; canonical six-stage Machine stays intact.
+add_library(swe_sigma_penta_ping INTERFACE)
+target_compile_features(swe_sigma_penta_ping INTERFACE cxx_std_20)
+target_include_directories(swe_sigma_penta_ping INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+  $<INSTALL_INTERFACE:include>)
+install(TARGETS swe_sigma_penta_ping EXPORT swe_sigma_penta_ping_targets)
+install(EXPORT swe_sigma_penta_ping_targets
+  FILE SWESigmaPentaPingTargets.cmake
+  NAMESPACE swe::
+  DESTINATION lib/cmake/SWESigmaPentaPing)
+install(FILES
+  shared/sigma_penta_ping.hpp
+  shared/sigmadi_handecasigma_presentation.hpp
+  DESTINATION include/swe)
+install(FILES
+  docs/SIGMA_PENTA_HAN_PRESENTATION.md
+  docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg
+  DESTINATION share/doc/pentagonal-xor)
+if(BUILD_TESTING)
+  add_executable(sigma_penta_ping_test tests/sigma_penta_ping_test.cpp)
+  target_compile_features(sigma_penta_ping_test PRIVATE cxx_std_20)
+  add_test(NAME sigma_penta_ping_triple_ring_and_braid
+           COMMAND sigma_penta_ping_test)
+  add_executable(sigmadi_handecasigma_presentation_test
+    tests/sigmadi_handecasigma_presentation_test.cpp)
+  target_compile_features(sigmadi_handecasigma_presentation_test PRIVATE cxx_std_20)
+  add_test(NAME sigma_di_han_osi6_audit
+           COMMAND sigmadi_handecasigma_presentation_test)
+endif()
