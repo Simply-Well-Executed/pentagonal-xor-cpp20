@@ -338,3 +338,21 @@ if(BUILD_TESTING)
   add_test(NAME sigmadi_collision12_declaration_custody
            COMMAND sigmadi_collision12_test)
 endif()
+
+# MINZA Pinwheel Atlas · Hanzeye 九眼: independent C++20 color/time audit.
+# No modifications to canonical Pentagonal XOR, COR, or VISTA machinery.
+install(FILES shared/MINZA_Color_Eyes_Gate_Core_CXX20.hpp DESTINATION include/swe)
+install(FILES
+  docs/MINZA_PINWHEEL_ATLAS.md
+  docs/MINZA_COLOR_EYES_RGBA64.md
+  docs/MINZA_TEMPORAL_PENTAGONAL.md
+  docs/MINZA_FEMTOSECOND_GEOMETRY.md
+  DESTINATION share/doc/pentagonal-xor)
+if(BUILD_TESTING)
+  add_executable(minza_color_eyes_test tests/minza_color_eyes_test.cpp)
+  target_compile_features(minza_color_eyes_test PRIVATE cxx_std_20)
+  set_target_properties(minza_color_eyes_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  add_test(NAME minza_color_eyes_rgba64_temporal_integrity
+           COMMAND minza_color_eyes_test)
+endif()
