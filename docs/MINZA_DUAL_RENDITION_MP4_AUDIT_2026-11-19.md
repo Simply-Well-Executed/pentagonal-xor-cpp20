@@ -114,3 +114,27 @@ The owner proposes these labels for *SVT-AV1 encoder builds*:
 - [AOMedia AV1 codec and bitstream specification](https://aomedia.org/specifications/av1/)
 
 **Custody:** this amendment is newly exploratory; it leaves the original `MINZA-DUAL-MP4-20261119-O2-v1` evidence and the original media hashes unchanged. Distinguish user-defined build labels from standards and test results at every reporting layer.
+
+
+## H.267: Doom9 community usage and official future-codec programme
+
+**Separate protocol amendment:** `MINZA-H267-SOURCE-REVIEW-20261119-v1`. **Evidence level:** independently sourced terminology and ongoing research. This section does **not** modify the two video-file audits, change the codec identifiers already observed or redefine the prior LTO/PGO user labels.
+
+The owner provided [Doom9's Forum](https://forum.doom9.org/) as a source for **H.267** video-codec discussion. The forum's archived threads contain discussion of H.267 as a prospective successor to H.266/VVC, **not** an umbrella name for all codecs discussed at Doom9:
+- [Alliance for Open Media codecs, archived thread](https://forum.doom9.org/archive/index.php/t-172550-p-3.html) discusses experimental H.267 compression progress relative to VVC alongside AV-family encoder work.
+- [Guesses on when AV2?, archived thread](https://forum.doom9.org/archive/index.php/t-182888.html) compares prospective H.267 timing against AV2, explicitly treating them as separate codec initiatives.
+- [AOmedia next (AV2) codec, archived thread](https://forum.doom9.org/archive/index.php/t-184835.html) includes older estimates for H.267 timing; those projections are not certification or present-day publication status.
+
+The strongest corroboration is primary: the [17 January 2025 ITU/ISO workshop programme](https://www.itu.int/en/ITU-T/Workshops-and-Seminars/2025/0117/Pages/programme.aspx) names a session **"Towards H.267/MPEG-Next: Current Status in JVET and Future Time Horizon"**. This establishes H.267 as a term genuinely used by video-coding standards experts for the next-generation effort, while **"Towards"** indicates development rather than completion.
+
+The [ITU's July 28, 2026 Beyond-VVC Call for Proposals](https://www.itu.int/hub/2026/07/beyond-vvc-call-for-proposals-on-future-video-coding/) and [MPEG's August 12, 2026 meeting report](https://www.mpeg.org/155th-meeting-of-mpeg/) confirm a new standardization process, with **January 2027 evaluations** and **targeted first-version completion by end of 2029**. A historical Doom9 prediction of 2026/2027 ratification must not displace that newer, primary-source schedule.
+
+### Source-to-claim boundaries
+
+- **Supported:** H.267 is used as a prospective name for a next-generation **post-H.266/VVC** video coding effort. It is more than a made-up MINZA label.
+- **Not supported:** all codecs discussed on Doom9 are collectively H.267. The forum covers H.264, H.265, H.266, AV1, AV2, many encoders and tuning forks as distinct things.
+- **Not supported:** compiling SVT-AV1 using LTO or PGO turns its AV1 output into an H.267 format. The owner's separate experimental H.268/H.269 **build labels** continue to be recorded as labels, not normative identifiers.
+- **Still verified for the two uploaded MP4s:** each declares `avc1` and has H.264-compatible SPS, PPS and NAL structure according to the cited local parsers. H.267 *terminology* cannot establish a second embedded codec stream, hidden image, encryption, or bitstream syntax that the file audit did not detect.
+- **Further method:** if an alleged H.267 sample is supplied, preserve its source hash and exact research-model revision, parse it against that model's published syntax, cross-check with a compatible independently built decoder, and keep it out of the H.264/H.265/H.266/AV1 claims unless proven. No guesswork from file names or optimization flags.
+
+Doom9 full-page retrieval was restricted in this audit; the forum-related findings are grounded in indexed thread text and corroborated with ITU/MPEG primary sources. No uninspected thread details are asserted.
