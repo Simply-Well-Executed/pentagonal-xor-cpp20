@@ -487,3 +487,7 @@ Copyright (c) 2026 Paul Allen Cheek and 0BSD permissions for owned work
 from project-identifying names and third-party rights. Do not infer a
 registered trademark from project branding. Compare the separate
 [native FLOP and experimental nine-loop FLOP/FLIP route](docs/VISTA_9X9.md).
+
+## NINZA Unforging / PING Untwirling
+
+[The independent C++20 adapter](shared/minza_ninza_ping_unfold.hpp) compares nine NINZA primary/mirrored six-byte lanes and inverts the 54-byte PING column braid without changing its source. [Its tests](tests/minza_ninza_ping_unfold_test.cpp) expose a deliberately changed mirrored byte and braided byte. [Documentation](docs/NINZA_PING_UNFORGE_UNTWIRL.md) marks the visualization **DUE FOR UPDATE**, declares its separate source-to-byte sampling protocol, and excludes personal media from the 0BSD code license.

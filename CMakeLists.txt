@@ -370,3 +370,17 @@ install(FILES
   docs/LICENSE_AND_MARKS.md
   docs/DOCUMENT_REVIEW_REGISTER.md
   DESTINATION share/doc/pentagonal-xor)
+
+# Independent NINZA (copy comparison) and PING (permutation inverse) adapter.
+# The original Sigma-PENTA producer and six-stage Machine remain unchanged.
+install(FILES shared/minza_ninza_ping_unfold.hpp DESTINATION include/swe)
+install(FILES docs/NINZA_PING_UNFORGE_UNTWIRL.md
+        DESTINATION share/doc/pentagonal-xor)
+if(BUILD_TESTING)
+  add_executable(minza_ninza_ping_unfold_test tests/minza_ninza_ping_unfold_test.cpp)
+  target_compile_features(minza_ninza_ping_unfold_test PRIVATE cxx_std_20)
+  set_target_properties(minza_ninza_ping_unfold_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  add_test(NAME minza_ninza_ping_54byte_inverse_and_mismatch
+           COMMAND minza_ninza_ping_unfold_test)
+endif()

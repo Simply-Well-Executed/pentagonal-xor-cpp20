@@ -6,11 +6,11 @@
 > and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md) for rights exclusions.
 
 The user explicitly requested that **every** file in `docs/` be
-flagged **DUE FOR UPDATE**. This inventory includes all **31
+flagged **DUE FOR UPDATE**. This inventory includes all **32
 documents**: the 29 previously existing files
 (26 Markdown documents,
 3 SVG diagrams) plus
-this register and the new license/marks notice.
+this register, the license/marks notice and the new NINZA/PING adapter documentation.
 
 **Do not confuse DUE with FAILED.** A review flag schedules verification;
 it does not replace algorithms, negate successful experiments, erase
@@ -63,6 +63,7 @@ until the review closes with a separately documented decision.
 | [`VISTA_9X9_SHOWCASE.md`](VISTA_9X9_SHOWCASE.md) | Markdown | `6a530c4f9df7` | **DUE FOR UPDATE** |
 | [`DOCUMENT_REVIEW_REGISTER.md`](DOCUMENT_REVIEW_REGISTER.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
 | [`LICENSE_AND_MARKS.md`](LICENSE_AND_MARKS.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
+| [`NINZA_PING_UNFORGE_UNTWIRL.md`](NINZA_PING_UNFORGE_UNTWIRL.md) | Markdown | `NEW` | **DUE FOR UPDATE** |
 
 ## Priority and validation
 

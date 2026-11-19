@@ -38,7 +38,7 @@ Additional 21 plates:
 - Five custom directional axes: RED↔GREEN, BLUE↔YELLOW, PURPLE↔BLUE, GREEN↔RED, LAVENDER↔LYLACK (requested spelling).
 - MONOCHROMATIX hexagon/grayscale.
 
-**Total: 27 separately removable plates**, plus non-plate action buttons: FLOP (schedule next existing tick), VISTA-A/B/C read-only snapshots, source-pixel RGBA64 inspect, SHOWCASE FAN, ALL PLATES OFF, audit export, rotation, unfold and time controls. Documents get `OPEN` buttons, **never executable** by default.
+**Total: 29 separately removable plates**, plus non-plate action buttons: FLOP (schedule next existing tick), VISTA-A/B/C read-only snapshots, source-pixel RGBA64 inspect, SHOWCASE FAN, ALL PLATES OFF, audit export, rotation, unfold and time controls. Documents get `OPEN` buttons, **never executable** by default.
 
 The ordinary plate Z-separation is a display property (0.06 CSS px/layer in the initial prototype), not a physical measurement. SHOWCASE FAN visibly separates them for inspection; turning it OFF returns them close to the source.
 
@@ -90,3 +90,7 @@ A browser session log is not a certified external witness or immutable store.
 - [../shared/MINZA_Color_Eyes_Gate_Core_CXX20.hpp](../shared/MINZA_Color_Eyes_Gate_Core_CXX20.hpp)
 
 **Chosen, never assumed.** Movement is not editing. A source-image display failure is not proof of damaged source bytes.
+
+## NINZA / PING opt-in plates (v8)
+
+Expose separate bold ON/OFF controls for **NINZA UNFORGE** and **PING UNTWIRL**. UNFORGE separates the nine primary and mirrored six-byte NINZA lanes and displays bytewise XOR differences. UNTWIRL uses the exact six-column, nine-position inverse PING permutation and prints source and destination indices; it never guesses missing data. Both overlays remain attached to the same nine source-UV tiles, and ALL PLATES OFF removes them. The two mirror streams are copied from one source, not independent witnesses. See [NINZA_PING_UNFORGE_UNTWIRL.md](NINZA_PING_UNFORGE_UNTWIRL.md) and its C++20 reference header. The original source bytes are unchanged.

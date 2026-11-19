@@ -206,3 +206,7 @@ against [VISTA_9X9.md](VISTA_9X9.md). **Record** the five FLOPs and four
 FLIPs separately from the nine native end-of-cycle FLOPs. **Verify**
 that only route FLIPs toggle the reverse flag; the ninth loop returns
 forward. **Preserve** the six-stage native gate schedule unchanged.
+
+## New opt-in NINZA/PING inversion views
+
+The [unforge/untwirl adapter](NINZA_PING_UNFORGE_UNTWIRL.md) preserves and compares NINZA's two six-byte copies per loop, then inverts PING's established column-dependent 54-byte braid. It provides source-index and destination-index provenance, retains every original lane, and generates no independent witness. The canonical producer remains unchanged. Review status stays **DUE FOR UPDATE** pending source and viewer verification.
