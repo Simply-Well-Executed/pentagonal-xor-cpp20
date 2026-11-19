@@ -427,3 +427,30 @@ C++20 header: `shared/pentagonal_vista_9x9.hpp`; native demo:
 illustrations and source files as **production-style examples only**,
 not verified real-world deployments. Their original private images
 have not been copied into the public repository.
+
+
+### 🌀 SIGMA-PENTA-LIGAND-COREAO-PING · 9-DoF / 72° / OSI Layer 6
+
+[Illustrated nine-loop board](docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg)
+and [full implementation protocol](docs/SIGMA_PENTA_HAN_PRESENTATION.md).
+
+The **experimental, zero-based** `sigma_penta_ping.hpp` adapts five
+caller-supplied 8-bit samples to ALPHA (support mask), BETA (median),
+CLIMAX (maximum), VERTEX (mean), and OMEGA (mode with tie flag and
+max-minus-min range). It computes three overlapping canonical
+five-ligand Stability rings in each of nine loops, groups the loops
+into three MINZA triples, mirrors nine NINZA six-byte lanes, and
+reversibly braids 54 bytes into PING. Mirrors cannot add entropy.
+
+Five grating directions are **72° apart**; the common phase advances
+9° per loop. Terminal route controls alternate **FLOP, FLIP** at
+indices 0–8; this does not alter the existing controller's internal
+FLOP. The nonmutating `sigmadi_handecasigma_presentation.hpp`
+formats nine audit-eye roles, ten provisional real-language labels,
+and 108 explicitly *virtual* VietQuang view slots. No image is
+reconstructed by this adapter. Video activity-centroid H11 does not
+verify physical motion or generate the unavailable same-object S11.
+
+Two dedicated CTest cases verify zero-based indexing, stats, ring
+quantization, 54-byte braid roundtrip, view counts and H11 null
+guards. This is research code, not independently attested deployment.
