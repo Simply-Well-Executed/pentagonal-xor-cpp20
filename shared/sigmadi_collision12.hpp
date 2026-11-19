@@ -136,10 +136,12 @@ struct Ledger {
         }
         if(size==Capacity)
             return {Outcome::capacity_exceeded,Relation::distinct,0,size,false};
-        if(scoped)
-            return {Outcome::recorded_scoped,Relation::scoped_reuse,scoped_index,size+1,true};
+        // The precise same-scope historical revision is more relevant
+        // than unrelated legal reuse in another lexical scope.
         if(revised)
             return {Outcome::recorded_revision,Relation::changed_revision,revised_index,size+1,true};
+        if(scoped)
+            return {Outcome::recorded_scoped,Relation::scoped_reuse,scoped_index,size+1,true};
         return {Outcome::recorded,Relation::distinct,0,size+1,true};
     }
     constexpr Receipt append(const Coordinate& candidate) noexcept {
