@@ -7,6 +7,7 @@ on:
       - 'tests/minza_original_contributions_test.cpp'
       - 'tests/minza_media_control_gates_test.cpp'
       - 'tests/minza_phase_routes_test.cpp'
+      - 'tools/minza_zlib_carve.cpp'
       - '.github/workflows/minza-coreao-adversarial.yml'
   workflow_dispatch:
 permissions:
@@ -29,6 +30,7 @@ jobs:
           g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -fstack-protector-strong -D_FORTIFY_SOURCE=2 tests/minza_original_contributions_test.cpp -lz -o /tmp/minza_originals_test
           g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2 tests/minza_media_control_gates_test.cpp -lz -o /tmp/minza_media_gates_test
           g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2 tests/minza_phase_routes_test.cpp -o /tmp/minza_phase_routes_test
+          g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2 tools/minza_zlib_carve.cpp -lz -o /tmp/minza_zlib_carve
       - name: Validate unchanged original demonstrations
         run: |
           timeout 90s /tmp/minza_scalar_original
@@ -38,3 +40,4 @@ jobs:
           /tmp/minza_originals_test
           /tmp/minza_media_gates_test
           /tmp/minza_phase_routes_test
+          /tmp/minza_zlib_carve
