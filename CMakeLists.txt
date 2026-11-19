@@ -384,3 +384,7 @@ if(BUILD_TESTING)
   add_test(NAME minza_ninza_ping_54byte_inverse_and_mismatch
            COMMAND minza_ninza_ping_unfold_test)
 endif()
+
+# Distribute source-independent Dolphin subject-catalog instructions, not private media.
+install(FILES docs/DOLPHIN_SUBJECT_SEARCH.md
+        DESTINATION share/doc/pentagonal-xor)

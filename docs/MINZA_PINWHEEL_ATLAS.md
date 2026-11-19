@@ -38,7 +38,7 @@ Additional 21 plates:
 - Five custom directional axes: RED↔GREEN, BLUE↔YELLOW, PURPLE↔BLUE, GREEN↔RED, LAVENDER↔LYLACK (requested spelling).
 - MONOCHROMATIX hexagon/grayscale.
 
-**Total: 29 separately removable plates**, plus non-plate action buttons: FLOP (schedule next existing tick), VISTA-A/B/C read-only snapshots, source-pixel RGBA64 inspect, SHOWCASE FAN, ALL PLATES OFF, audit export, rotation, unfold and time controls. Documents get `OPEN` buttons, **never executable** by default.
+**Total: 30 separately removable plates (v9)**, plus non-plate action buttons: FLOP (schedule next existing tick), VISTA-A/B/C read-only snapshots, source-pixel RGBA64 inspect, SHOWCASE FAN, ALL PLATES OFF, audit export, rotation, unfold and time controls. Documents get `OPEN` buttons, **never executable** by default.
 
 The ordinary plate Z-separation is a display property (0.06 CSS px/layer in the initial prototype), not a physical measurement. SHOWCASE FAN visibly separates them for inspection; turning it OFF returns them close to the source.
 
@@ -94,3 +94,13 @@ A browser session log is not a certified external witness or immutable store.
 ## NINZA / PING opt-in plates (v8)
 
 Expose separate bold ON/OFF controls for **NINZA UNFORGE** and **PING UNTWIRL**. UNFORGE separates the nine primary and mirrored six-byte NINZA lanes and displays bytewise XOR differences. UNTWIRL uses the exact six-column, nine-position inverse PING permutation and prints source and destination indices; it never guesses missing data. Both overlays remain attached to the same nine source-UV tiles, and ALL PLATES OFF removes them. The two mirror streams are copied from one source, not independent witnesses. See [NINZA_PING_UNFORGE_UNTWIRL.md](NINZA_PING_UNFORGE_UNTWIRL.md) and its C++20 reference header. The original source bytes are unchanged.
+
+## DOLPHIN subject catalog and reversible focus (v9)
+
+The standalone, offline Atlas has one **always-visible, last-superimposed bottom catalog**. A selected subject is exactly one people/article/pending entry at a time; each selection replaces the previous focus rather than merging categories. The catalog supports search, category buttons, 52 sampled full-scene views, manually drawn region bounds, and a derived focus crop. Initial local source-specific labels remain inside the user-held HTML/XHTML; **they and the embedded personal video stills are not committed to this repository**.
+
+The thirtieth independent UV-locked plate, **DOLPHIN ORIGAMI**, optionally projects the selected subject onto the existing nine folding tiles. OFF reveals the untouched original source face. All existing gates remain tied to their originally declared face-source samples; a visual projection does **not** silently change algorithm input, or establish identity across cuts.
+
+The **DOLPHIN FOCUS BOX** has a separate ON/OFF visibility control. NINZA LABEL MARKERS and PING LABEL MARKERS start OFF; CENTRIX CROSS and REAR FACEPLATE start ON, with independent ON/OFF buttons. The back is a deliberately schematic patterned **UNOBSERVED** plate, not a recovered photograph of hidden geometry. No checkbox/radio control is required. Record every selection, annotation and visibility toggle in the local audit.
+
+See [DOLPHIN_SUBJECT_SEARCH.md](DOLPHIN_SUBJECT_SEARCH.md) for precise scope and provenance. The feature is a curated catalog, not an independently validated exhaustive detector.
