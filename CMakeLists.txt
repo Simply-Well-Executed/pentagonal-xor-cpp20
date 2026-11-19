@@ -273,3 +273,23 @@ if(BUILD_TESTING)
         "${CMAKE_CURRENT_SOURCE_DIR}/ci/Test-ReleaseSafetyPolicy.ps1")
   endif()
 endif()
+
+
+# Experimental 9x9 VISTA audit extension.
+# Keeps original six-gate Machine and its canonical XOR implementation unchanged.
+add_executable(pentagonal_vista9x9 tools/pentagonal_vista9x9.cpp)
+target_compile_features(pentagonal_vista9x9 PRIVATE cxx_std_20)
+install(TARGETS pentagonal_vista9x9 RUNTIME DESTINATION bin)
+install(FILES shared/pentagonal_vista_9x9.hpp DESTINATION include/swe)
+install(FILES docs/VISTA_9X9.md docs/VISTA_9X9_SHOWCASE.md
+        DESTINATION share/doc/pentagonal-xor)
+if(BUILD_TESTING)
+  add_executable(pentagonal_vista_9x9_test tests/pentagonal_vista_9x9_test.cpp)
+  target_compile_features(pentagonal_vista_9x9_test PRIVATE cxx_std_20)
+  add_test(NAME pentagonal_vista_9x9_complete_and_readonly
+           COMMAND pentagonal_vista_9x9_test)
+  add_test(NAME pentagonal_vista_9x9_native_demo
+           COMMAND pentagonal_vista9x9 0x17 0x1f)
+  set_tests_properties(pentagonal_vista_9x9_native_demo PROPERTIES
+    PASS_REGULAR_EXPRESSION "total=81")
+endif()
