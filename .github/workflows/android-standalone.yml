@@ -15,7 +15,11 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   android-sdk:
+    needs: pondaz
     name: 'Standalone Java 17 + SDK 35 APK · no Gradle'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
