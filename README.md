@@ -495,3 +495,7 @@ registered trademark from project branding. Compare the separate
 ## DOLPHIN · single subject at a time
 
 The [DOLPHIN subject-search contract](docs/DOLPHIN_SUBJECT_SEARCH.md) documents the opt-in MINZA v9 one-subject bottom catalog, reversible focused nine-tile projection, explicit manual annotation, NINZA/PING label visibility, restored centrix/rear faceplate toggles, and provenance boundaries. The original video, embedded thumbnails, and personally sourced example labels **remain outside this public code repository**. This exploratory document remains **DUE FOR UPDATE**.
+
+## MINZA v12 · native CSS 3D Centrix light
+
+[Source-independent specification](docs/MINZA_CENTRIX_NATIVE_DOM_V12.md) and the [C++20 light reference](shared/minza_centrix_light_cxx20.hpp) define the transparent CSS 3D globe, centered cross, mirror-paired front/rear tiles and R10 exposure-only visual lighting. The local XHTML viewer retains original personal video frames outside this repository. Its new globe uses no SVG/Canvas; older analytical pixel buffers still use offscreen Canvas. The sources of account-private ChatGPT Sites were **not retrieved**, so no source-code equivalence is claimed. Status remains **DUE FOR UPDATE** until browser rendering is tested.

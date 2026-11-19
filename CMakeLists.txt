@@ -388,3 +388,15 @@ endif()
 # Distribute source-independent Dolphin subject-catalog instructions, not private media.
 install(FILES docs/DOLPHIN_SUBJECT_SEARCH.md
         DESTINATION share/doc/pentagonal-xor)
+
+# Source-free v12 centered-Centrix geometry and symmetric R10 illumination.
+install(FILES shared/minza_centrix_light_cxx20.hpp DESTINATION include/swe)
+install(FILES docs/MINZA_CENTRIX_NATIVE_DOM_V12.md
+        DESTINATION share/doc/pentagonal-xor)
+if(BUILD_TESTING)
+  add_executable(minza_centrix_light_test tests/minza_centrix_light_test.cpp)
+  target_compile_features(minza_centrix_light_test PRIVATE cxx_std_20)
+  set_target_properties(minza_centrix_light_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  add_test(NAME minza_centrix_light_symmetry COMMAND minza_centrix_light_test)
+endif()
