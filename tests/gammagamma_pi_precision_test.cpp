@@ -17,6 +17,7 @@ int main() {
     static_assert(gammagamma::pidi_mod4==3u);
     static_assert(gammagamma::pi_integer==314159265358979323ULL);
     if(gammagamma::bipi_square!="98696044010893585656621344341538329")return 1;
+    if(gammagamma::bipi_exact().str()!=gammagamma::bipi_square)return 13;
 
     const auto a=gammagamma::evaluate("3.14");
     if(!a.exact() || a.magnitude!="87178291194" ||
