@@ -50,6 +50,7 @@ inline void require_nonnegative(const toolong& value) {
 [[nodiscard]] inline toolong rotate_left_width(const toolong& value,unsigned bits,unsigned shift){
     require_nonnegative(value);
     if(bits==0)throw std::invalid_argument("toolong_bits: width zero");
+    if(value.is_zero())return {};
     const toolong modulus=toolong::power(toolong{2},bits);
     if(value>=modulus)throw std::domain_error("toolong_bits: operand exceeds declared width");
     shift%=bits;
