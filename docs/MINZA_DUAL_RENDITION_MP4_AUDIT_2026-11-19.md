@@ -84,3 +84,33 @@ The user reports that an earlier conversation titled **Image inscription analysi
 **No mutation after analysis.** If a decoder, crop, tolerance, timestamp mapping, normalization or source file is changed, issue a new protocol ID, retain the earlier evidence and mark the two results non-comparable until separately validated.
 
 Related repo methods: [MINZA temporal gate definitions](MINZA_TEMPORAL_PENTAGONAL.md), [provenance and projection rules](MINZA_PINWHEEL_ATLAS.md), [document-review register](DOCUMENT_REVIEW_REGISTER.md), and [0BSD scope](LICENSE_AND_MARKS.md). Third-party media rights remain with their holders.
+
+
+## Codec-family expansion: SVT-AV1 LTO / PGO user-defined labels
+
+**Protocol amendment:** `MINZA-SVT-BUILD-LABELS-20261119-v1`. **Status:** EXPLORATORY naming convention, not normative ITU-T codec identification. Added after the initial source inspection without altering its original results or protocol ID.
+
+The owner proposes these labels for *SVT-AV1 encoder builds*:
+
+| User-defined build label | SVT-AV1 build condition | On-disk bitstream codec |
+| --- | --- | --- |
+| `H.269` (experimental) | LTO enabled; PGO disabled | AV1 if standard SVT-AV1 output |
+| `H.268` (experimental) | PGO enabled; LTO disabled | AV1 if standard SVT-AV1 output |
+| `SVT-BASE` | Neither LTO nor PGO | AV1 if standard SVT-AV1 output |
+| `SVT-LTO-PGO` | Both enabled | AV1 if standard SVT-AV1 output |
+
+**Disambiguation:** upstream SVT-AV1 explicitly permits combining LTO and PGO; therefore the fourth row is a distinct combined profile, not silently `H.268` or `H.269`. A compiler's default LTO behavior must be explicitly inspected before claiming the PGO-only case. All experiment builds must enforce the owner's `-O2` policy in actual compiler invocation logs. LTO and PGO are compiler/linker optimization procedures, not codec specifications and not evidence of encryption.
+
+**Codec-identification order:** file SHA-256 → valid MP4 `stsd` sample entry → codec configuration records → bounded parsing of the actual elementary bitstream → independently validated decoding → encoder provenance if available. For AV1-in-MP4, check `av01` and `av1C` plus AV1 open bitstream units; for AVC check `avc1`/`avc3` and `avcC`; for HEVC check `hvc1`/`hev1` and `hvcC`; for VVC check `vvc1`/`vvi1` and `vvcC` as appropriate. These codec names identify syntax families, not optimization recipes. If declared format and payload disagree, record a **mismatch requiring investigation**, not a speculative new codec identity.
+
+**Retrospective limitation:** absent trusted compiler/encoder provenance, observing the compressed output alone does **not** establish that a binary was produced with LTO or PGO. Even an SVT-AV1 LTO/PGO executable cannot retroactively make an already-inspected AVC stream into AV1. Both supplied recordings still declare `avc1`; the user-defined H.268/H.269 labels are hypotheses or future comparison profiles, not observed properties of either recording.
+
+**Reproducible comparison:** pin SVT-AV1 commit, platform/CPU, compiler and linker versions, full resolved flags, actual LTO and PGO settings, training video/corpus checksum for PGO, encoder CLI/preset/QP/CRF, input SHA-256, output stream SHA-256 and decoder test. Use identical input and encoder controls for all four variants. Compare encoding time, file size, decoded-frame hashes and objective metrics. A changed bitstream hash alone does not prove changed displayed scenes. Do not put third-party source recordings or frame crops into the public repository.
+
+**Upstream references:**
+- [SVT-AV1 project on GitLab (archived)](https://gitlab.com/AOMediaCodec/SVT-AV1)
+- [Active SVT-AV1 upstream repository](https://github.com/AOMediaCodec/SVT-AV1)
+- [Upstream LTO and PGO discussion](https://github.com/AOMediaCodec/SVT-AV1/blob/main/Docs/CommonQuestions.md)
+- [AOMedia AV1 codec and bitstream specification](https://aomedia.org/specifications/av1/)
+
+**Custody:** this amendment is newly exploratory; it leaves the original `MINZA-DUAL-MP4-20261119-O2-v1` evidence and the original media hashes unchanged. Distinguish user-defined build labels from standards and test results at every reporting layer.
