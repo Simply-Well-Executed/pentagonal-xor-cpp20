@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SPDX-License-Identifier: 0BSD -->
 <!-- Copyright (c) 2026 Paul Allen Cheek -->
+<!-- REVIEW DUE 2026-11-19. Copyright (c) 2026 Paul Allen Cheek for original contributions; SPDX-License-Identifier: 0BSD for owned material only. Third-party material and marks retain their rights. See docs/DOCUMENT_REVIEW_REGISTER.md and docs/LICENSE_AND_MARKS.md. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" role="img" aria-label="Experimental counterarccosine second-wave phase graph where horizontal axis is sample index i and vertical axis is phase in multiples of pi. Solid green curve is theta equals pi minus arccos of cosine four pi i over N, dotted violet is the complementary arccos curve.">
   <style>
     .grid {stroke:#d2d9e2;stroke-width:1;stroke-dasharray:3 5}

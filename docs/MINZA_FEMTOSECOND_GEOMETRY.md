@@ -1,5 +1,10 @@
 # MINZA Hanzeye · femtosecond addressing and figure-eight / joint geometry
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** EXPLORATORY mathematical and visualization protocol. Not clinical age estimation or a new camera measurement.
 
 ## Time interval accuracy

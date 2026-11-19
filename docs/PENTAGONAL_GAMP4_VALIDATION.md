@@ -1,5 +1,10 @@
 # PENTAGONAL-COR: GAMP 4-style supplier verification plan
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** EXPLORATORY / supplier-side verification protocol, 2026-11-16.
 **Not:** formal GAMP certification, validated clinical use, FDA approval,
 an installed system PQ, a compliant electronic-signature application,

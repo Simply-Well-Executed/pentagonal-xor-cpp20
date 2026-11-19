@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: 0BSD
+// Copyright (c) 2026 Paul Allen Cheek
 // Native C++20 VISTA 9x9 example: no input file mutation, no photo inference.
 #include "../shared/pentagonal_vista_9x9.hpp"
+#include "../shared/sigma_penta_ping.hpp"
 #include <array>
 #include <cerrno>
 #include <cstdint>
@@ -53,8 +55,19 @@ int main(int argc, char** argv) {
     }
     const Report r=execute(source);
     std::cout << "SWE-VISTA-9X9-v1|EXPERIMENTAL|no production claim\n";
+    unsigned route_flops=0, route_flips=0;
+    bool route_reversed=false;
     for(unsigned n=0;n<loop_count;++n) {
-        std::cout << "loop=" << (n+1u);
+        const auto term=swe::sigma_penta_ping::terminal(n);
+        const bool is_flip=term==swe::sigma_penta_ping::Terminal::flip;
+        const bool was_reversed=route_reversed;
+        if(is_flip){route_reversed=!route_reversed;++route_flips;}
+        else ++route_flops;
+        std::cout << "loop=" << (n+1u) << "|loop_index=" << n
+                  << "|native_last_gate=FLOP|route_terminal="
+                  << (is_flip?"FLIP":"FLOP")
+                  << "|route_before=" << (was_reversed?1u:0u)
+                  << "|route_after=" << (route_reversed?1u:0u);
         for(unsigned g=0;g<gate_count;++g) {
             const Step& s=r.loops[n].gates[g];
             std::cout << "|" << label(s.stage) << "=" << static_cast<unsigned>(s.output);
@@ -68,11 +81,16 @@ int main(int argc, char** argv) {
         }
         std::cout << "|loops_completed=" << r.loops[n].gates[5].loops_completed << "\n";
     }
+    std::cout << "terminal_route=FLOP,FLIP,FLOP,FLIP,FLOP,FLIP,FLOP,FLIP,FLOP"
+                 "|terminal_flops=" << route_flops
+              << "|terminal_flips=" << route_flips
+              << "|final_reversed=" << (route_reversed?1u:0u) << "\n";
     std::cout << "summary|gates=" << r.gate_ticks
               << "|vista=" << r.vista_ticks
               << "|total=" << r.extended_ticks
               << "|gate_reads=" << r.gate_observations
               << "|control_flow=" << static_cast<unsigned>(r.control_flow_consistent)
               << "|authenticated=0\n";
-    return r.control_flow_consistent && r.extended_ticks==81u ? 0 : 1;
+    return r.control_flow_consistent && r.extended_ticks==81u &&
+           route_flops==5u && route_flips==4u && !route_reversed ? 0 : 1;
 }

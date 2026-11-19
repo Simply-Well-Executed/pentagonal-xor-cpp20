@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: 0BSD
+// Copyright (c) 2026 Paul Allen Cheek
 // Experimental VISTA 9x9: nine six-gate loops and three read-only reports.
 // Does NOT alter the canonical parity scorer or the six-stage Machine.
+// Every native loop ends with FLOP. The separate MINZA terminal-route
+// FLOP/FLIP metadata belongs to sigma_penta_ping.hpp, not this Machine.
 #ifndef SWE_PENTAGONAL_VISTA_9X9_HPP
 #define SWE_PENTAGONAL_VISTA_9X9_HPP
 

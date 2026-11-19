@@ -1,5 +1,10 @@
 # VISTA 9×9 · Source demonstration inventory
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** EXPLORATORY visual-reference index. These nine user-provided
 attachments informed the presentation and provenance fields of
 `pentagonal_vista_9x9.hpp`; they are **not** proof of deployed production
@@ -70,3 +75,12 @@ not verified operational deployments.
 
 **Retention rule:** display/renderer changes never mutate the source
 record; ambiguity remains visible. Chosen labels do not confer authority.
+
+## Two terminal meanings, one retained source
+
+**Label** each loop's native sixth gate FLOP. **Annotate** the
+independent presentation terminal as
+`FLOP-FLIP-FLOP-FLIP-FLOP-FLIP-FLOP-FLIP-FLOP`.
+The four route FLIPs **toggle display direction** without changing
+source pixels, native stages, timing or the 81-step count. See
+[VISTA_9X9.md](VISTA_9X9.md).

@@ -1,5 +1,10 @@
 # MINZA Pinwheel Atlas · Hanzeye 九眼 · reversible origami plates
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** EXPLORATORY independent presentation adapter. **License:** 0BSD.
 **Authority:** original source coordinates and recorded source data; all displayed plates and audits are derived. **No changes** to the canonical Pentagonal XOR kernel, six-stage `Machine`, COR register, or VISTA 9×9 source.
 
@@ -36,6 +41,31 @@ Additional 21 plates:
 **Total: 27 separately removable plates**, plus non-plate action buttons: FLOP (schedule next existing tick), VISTA-A/B/C read-only snapshots, source-pixel RGBA64 inspect, SHOWCASE FAN, ALL PLATES OFF, audit export, rotation, unfold and time controls. Documents get `OPEN` buttons, **never executable** by default.
 
 The ordinary plate Z-separation is a display property (0.06 CSS px/layer in the initial prototype), not a physical measurement. SHOWCASE FAN visibly separates them for inspection; turning it OFF returns them close to the source.
+
+## Nine explicit terminal route buttons
+
+Display the nine zero-based terminal-route labels in exactly this order:
+
+```text
+loop index:   0    1    2    3    4    5    6    7    8
+terminal:   FLOP FLIP FLOP FLIP FLOP FLIP FLOP FLIP FLOP
+```
+
+Each bold route button **selects** a loop; it does not mutate its image,
+execute another native instruction, or imply a new camera view. A separate
+`RUN TERMINAL` button **records** the loop, native final FLOP,
+experimental terminal label, before/after direction, and next-loop index
+before advancing. Odd-index FLIP toggles the presentation route's direction.
+Even-index FLOP leaves that direction unchanged. Four FLIPs return the
+ninth loop to the starting FORWARD orientation.
+
+All native six-gate loops still end in FLOP. Do not count the route
+FLIP as a substituted gate or a tenth VISTA step. Keep the HTML and
+XHTML byte-equivalent and every image-treatment plate independently
+removable through bold ON/OFF controls.
+
+The 0BSD license covers owned viewer code and original project writing;
+it does not automatically license user-provided or third-party video frames.
 
 ## Gate / VISTA relationship
 

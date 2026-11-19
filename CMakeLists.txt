@@ -356,3 +356,11 @@ if(BUILD_TESTING)
   add_test(NAME minza_color_eyes_rgba64_temporal_integrity
            COMMAND minza_color_eyes_test)
 endif()
+
+# Verify experimental nine-loop terminal labels separately from native FLOP.
+if(BUILD_TESTING)
+  add_test(NAME vista9x9_separate_terminal_route
+           COMMAND pentagonal_vista9x9 0x17 0x1f)
+  set_tests_properties(vista9x9_separate_terminal_route PROPERTIES
+    PASS_REGULAR_EXPRESSION "terminal_flops=5.*terminal_flips=4.*final_reversed=0")
+endif()

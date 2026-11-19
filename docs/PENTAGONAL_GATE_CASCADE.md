@@ -1,5 +1,10 @@
 # PENTAGONAL: XOR, OR, AND, NOP, COR, VISTA and FLOP
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** Exploratory native C++20 software controller. **License:** 0BSD.
 **Dated:** 2026-11-16. This is not an official USAF, DoD or vendor
 microcontroller instruction set. AFMAN 17-210 and its PENTAGONAL-COR
@@ -204,3 +209,12 @@ shared/pentagonal_gates.hpp includes and invokes the original scorer
 rather than replacing it. Build/test targets: pentagonal_gates_test
 and pentagonal_gates_benchmark. Installation exposes the additional
 header and this document, without changing the old command line.
+
+## Native FLOP and experimental nine-loop terminal route
+
+The original six-gate controller **always** completes with native
+FLOP. The separate MINZA terminal-route adapter labels nine loops
+`FLOP-FLIP-FLOP-FLIP-FLOP-FLIP-FLOP-FLIP-FLOP`.
+An odd loop's route FLIP **toggles presentation direction** without
+replacing the native final FLOP or adding a seventh gate. See
+[VISTA_9X9.md](VISTA_9X9.md). Preserve both traces in audits.

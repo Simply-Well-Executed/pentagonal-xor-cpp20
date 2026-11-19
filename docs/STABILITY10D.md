@@ -1,5 +1,10 @@
 # Stability-10D: PR #17 operator extraction
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** experimental 0BSD C++20 and Java 17 implementation, pending *this repository's* CI and review.
 
 **Provenance:** [source PR #17](https://github.com/pcheek1991/faster-whisper-4d-abandonedware-uniunlicensd/pull/17), head `432a228f1dddbb2532de1bd1f439ee8ef34af4e9`. This is a reverse-repository of **explicitly attributable operators and tests**, not a claim that two repositories have identical histories. Existing Pentagonal XOR C11 parity, DecaSigma, TriPi and scalar COREAO modules remain unchanged.

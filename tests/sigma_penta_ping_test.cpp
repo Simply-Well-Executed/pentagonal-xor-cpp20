@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: 0BSD
+// Copyright (c) 2026 Paul Allen Cheek
 #include "../shared/sigma_penta_ping.hpp"
 #include <array>
 #include <cstdint>
@@ -69,6 +70,20 @@ int main() {
        report.loop[1].route_reversed_before || !report.loop[1].route_reversed_after ||
        !report.loop[2].route_reversed_before || !report.loop[2].route_reversed_after)
         return 16;
+    // Audit all nine terminal route actions, not just the first three.
+    bool expected_route_reversed=false;
+    unsigned counted_flops=0, counted_flips=0;
+    for(unsigned n=0;n<loops;++n) {
+        const auto& row=report.loop[n];
+        if(row.route_reversed_before!=expected_route_reversed) return 17;
+        if(row.terminal==Terminal::flip){
+            ++counted_flips;
+            expected_route_reversed=!expected_route_reversed;
+        } else ++counted_flops;
+        if(row.route_reversed_after!=expected_route_reversed) return 18;
+    }
+    if(counted_flops!=5u || counted_flips!=4u ||
+       expected_route_reversed) return 19;
     // Rejecting a changed output must not rewrite that output.
     Report before=report;
     Input invalid=source;

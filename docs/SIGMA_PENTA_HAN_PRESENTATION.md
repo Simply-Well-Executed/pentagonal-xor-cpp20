@@ -1,5 +1,10 @@
 # SIGMA-PENTA-LIGAND-COREAO-PING × SigmaDi × HANDecaSigma[11]
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status: EXPLORATORY, 0BSD, zero-based, OSI layer 6 (Presentation).**
 Authority: `shared/sigma_penta_ping.hpp` and
 `shared/sigmadi_handecasigma_presentation.hpp`. The original
@@ -76,7 +81,7 @@ permutation, reverses the permutation, and verifies byte-for-byte
 roundtrip. It is not encryption, a cryptographic hash, compression,
 physical string twisting, or an actual filesystem/RAID array.
 
-The experimental terminal sequence on loop indices 0..8 is:
+The experimental terminal-route sequence on loop indices 0..8 is:
 
 ```text
 FLOP, FLIP, FLOP, FLIP, FLOP, FLIP, FLOP, FLIP, FLOP
@@ -193,3 +198,11 @@ It does not change H11 or imply a physical H12. The header
 scoped reuse, revised, and inconsistent declarations without
 mutating the canonical data. The OSI-6 `View` exposes its axis
 names read-only; it does not automatically parse source code.
+
+## Cross-document terminal route check
+
+**Compare** the existing `shared/sigma_penta_ping.hpp` terminal function
+against [VISTA_9X9.md](VISTA_9X9.md). **Record** the five FLOPs and four
+FLIPs separately from the nine native end-of-cycle FLOPs. **Verify**
+that only route FLIPs toggle the reverse flag; the ninth loop returns
+forward. **Preserve** the six-stage native gate schedule unchanged.

@@ -476,3 +476,14 @@ a twelfth physical dimension or a derivation of a new HANDecaSigma
 temporal measurement. The new axis is exposed read-only to the OSI-6
 presentation adapter and does not alter VISTA, H11, S11, the source
 images, or the canonical XOR engine.
+
+## Document review, copyright and project marks
+
+[Every document in `docs/`](docs/DOCUMENT_REVIEW_REGISTER.md) is now
+explicitly marked **DUE FOR UPDATE**. The mark schedules a source-to-doc
+review; it does not declare the document incorrect or supersede CANON.
+Consult [LICENSE_AND_MARKS.md](docs/LICENSE_AND_MARKS.md) to distinguish
+Copyright (c) 2026 Paul Allen Cheek and 0BSD permissions for owned work
+from project-identifying names and third-party rights. Do not infer a
+registered trademark from project branding. Compare the separate
+[native FLOP and experimental nine-loop FLOP/FLIP route](docs/VISTA_9X9.md).

@@ -1,5 +1,10 @@
 # PENTAGONAL-LIGAZE: five scenarios held by native C++20 COR
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** experimental, source preserving, 2026-11-16.
 **License:** 0BSD. This is a real compiled C++20 executable on each
 target OS. The Java 17 JAR is JVM bytecode, **not** a native executable.

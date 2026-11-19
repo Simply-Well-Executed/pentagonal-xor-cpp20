@@ -1,5 +1,10 @@
 # MINZA Color Eyes · RGB / CMYK / MONOCHROMATIX / RGBA64
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** EXPLORATORY derived image visualization, not calibrated color management or printer forensics.
 **C++20 reference:** [MINZA_Color_Eyes_Gate_Core_CXX20.hpp](../shared/MINZA_Color_Eyes_Gate_Core_CXX20.hpp).
 **Tests:** [minza_color_eyes_test.cpp](../tests/minza_color_eyes_test.cpp).
