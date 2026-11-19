@@ -13,7 +13,34 @@ concurrency:
 
 jobs:
   pondaz:
-    uses: ./.github/workflows/pondaz.yml
+    name: 'Pondaz · preflight before all job lanes'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: 'Checkout exact source SHA using PowerShell Core'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20') { throw 'Unexpected repository' }
+          & git init .
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git remote add origin 'https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20.git'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $actual = (& git rev-parse HEAD).Trim()
+          if ($LASTEXITCODE -ne 0 -or $actual -cne $env:GITHUB_SHA) { throw 'Pondaz source SHA mismatch' }
+      - name: 'Run Pondaz fixture and tracked-text/event input audit'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          & ./ci/Invoke-Pondaz.ps1 -SelfTest
+          if (-not $?) { throw 'Pondaz fixture suite failed' }
+          & ./ci/Invoke-Pondaz.ps1 -RepositoryRoot . -EventPath $env:GITHUB_EVENT_PATH -EvidenceDir pondaz-evidence
+          if (-not $?) { throw 'Pondaz rejected untrusted input' }
 
   pentagonal-ttvr:
     needs: pondaz
