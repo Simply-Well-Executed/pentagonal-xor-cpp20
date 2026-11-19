@@ -400,3 +400,79 @@ Windows CI performs a negative compiler contract test on the full
 experimental header, and compares safe v2 headers with matched
 pre-LTCG/LTCG controls to avoid crediting the same optimizer twice.
 See [the Windows header v2 methodology](docs/LIGAZE_WINDOWS_HEADER_V2.md).
+
+
+## ⬟ VISTA 9×9 · three read-only passes after six gates
+
+The experimental [VISTA 9×9 operator](docs/VISTA_9X9.md) schedules
+**nine** complete canonical six-gate loops, each followed by **three**
+read-only VISTA passes:
+
+```text
+[XOR][OR][AND][NOP][COR][FLOP][VISTA-A][VISTA-B][VISTA-C] × 9
+= 54 original gate ticks + 27 VISTA reports = 81 extended steps
+```
+
+Every VISTA pass reads all six gate outcomes: 162 gate-view snapshots
+across nine loops. The original parity scorer, COR layout, and
+six-stage Machine remain unchanged; no additional XOR runs at FLOP.
+VISTA-A captures, VISTA-B checks consistency, and VISTA-C synthesizes
+a read-only report. This does **not** authenticate provenance, add image
+resolution, or establish true measurements from photographs.
+
+C++20 header: `shared/pentagonal_vista_9x9.hpp`; native demo:
+`pentagonal_vista9x9 0x17 0x1f`; tests:
+`pentagonal_vista_9x9_test`. The
+[showcase inventory](docs/VISTA_9X9_SHOWCASE.md) records nine user-supplied
+illustrations and source files as **production-style examples only**,
+not verified real-world deployments. Their original private images
+have not been copied into the public repository.
+
+
+### 🌀 SIGMA-PENTA-LIGAND-COREAO-PING · 9-DoF / 72° / OSI Layer 6
+
+[Illustrated nine-loop board](docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg)
+and [full implementation protocol](docs/SIGMA_PENTA_HAN_PRESENTATION.md).
+
+The **experimental, zero-based** `sigma_penta_ping.hpp` adapts five
+caller-supplied 8-bit samples to ALPHA (support mask), BETA (median),
+CLIMAX (maximum), VERTEX (mean), and OMEGA (mode with tie flag and
+max-minus-min range). It computes three overlapping canonical
+five-ligand Stability rings in each of nine loops, groups the loops
+into three MINZA triples, mirrors nine NINZA six-byte lanes, and
+reversibly braids 54 bytes into PING. Mirrors cannot add entropy.
+
+Five grating directions are **72° apart**; the common phase advances
+9° per loop. Terminal route controls alternate **FLOP, FLIP** at
+indices 0–8; this does not alter the existing controller's internal
+FLOP. The nonmutating `sigmadi_handecasigma_presentation.hpp`
+formats nine audit-eye roles, ten provisional real-language labels,
+and 108 explicitly *virtual* VietQuang view slots. No image is
+reconstructed by this adapter. Video activity-centroid H11 does not
+verify physical motion or generate the unavailable same-object S11.
+
+Two dedicated CTest cases verify zero-based indexing, stats, ring
+quantization, 54-byte braid roundtrip, view counts and H11 null
+guards. This is research code, not independently attested deployment.
+
+
+### 🧭 The exploratory 12th dimension: SigmaDi declaration collision guard
+
+[Research note and source-case analysis](docs/SIGMADI_COLLISION12.md) ·
+[native C++20 header](shared/sigmadi_collision12.hpp).
+
+A duplicate `r` declaration during a generated SVG board build was a
+real tool-side JavaScript naming collision. The `SIGMADI-COLLISION-12D-v1`
+exploration maps it into exactly twelve **zero-based provenance axes**
+D0..D11, where **D11 = declaration-instance identity**. Two separately
+declared identical symbols in one lexical scope are reported as
+`DUPLICATE_BINDING`, not silently merged or overwritten. Legitimate
+scoped reuse, exact repeats, later revisions, Unicode byte distinctions,
+and contradictory source claims have separate outcomes. A CTest fixture
+verifies these rules and nonmutation of a blocked ledger.
+
+"12th dimension" here is a labeled *metadata coordinate*, **not**
+a twelfth physical dimension or a derivation of a new HANDecaSigma
+temporal measurement. The new axis is exposed read-only to the OSI-6
+presentation adapter and does not alter VISTA, H11, S11, the source
+images, or the canonical XOR engine.
