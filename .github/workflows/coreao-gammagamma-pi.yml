@@ -20,7 +20,11 @@ on:
 permissions:
   contents: read
 jobs:
+  pondaz:
+    uses: ./.github/workflows/pondaz.yml
+
   validate:
+    needs: pondaz
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
