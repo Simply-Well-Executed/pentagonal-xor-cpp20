@@ -5,7 +5,7 @@ This is an opt-in extension, not a replacement for canonical
 `shared/pentagonal_xor_std_free.h`, `shared/pentagonal_gates.hpp`, or
 the original six-stage `Machine`.
 
-## Why 9 × 9
+![Nine-loop nine-stage VISTA ladder](VISTA_9X9_LADDER.svg)\n\n## Why 9 × 9
 
 The user asks for *nine complete cycles* and *three VISTA passes after the
 existing six gates*. We define one **extended loop** as:
