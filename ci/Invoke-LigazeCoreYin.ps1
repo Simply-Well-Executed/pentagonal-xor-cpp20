@@ -32,6 +32,8 @@ $sha=((& git rev-parse HEAD)|Out-String).Trim()
 Guard ($LASTEXITCODE -eq 0 -and $sha -match '^[a-f0-9]{40}$') 'Git SHA missing'
 Guard (!$env:GITHUB_SHA -or $sha -ceq $env:GITHUB_SHA) 'Git SHA mismatch'
 New-Item -ItemType Directory -Path $BuildRoot,$Evidence -Force | Out-Null
+$BuildRoot=(Resolve-Path -LiteralPath $BuildRoot).Path
+$Evidence=(Resolve-Path -LiteralPath $Evidence).Path
 $cpuAvx2=[System.Runtime.Intrinsics.X86.Avx2]::IsSupported
 $requestedCompiler='/std:c++20 /O2 /Ob3 /GL /Gw /fp:fast /arch:AVX2 /Qpar /EHsc'
 $compiler=$requestedCompiler+' /DNDEBUG'
@@ -85,10 +87,25 @@ function Build-Target([string]$dir,[string]$target,[string]$log){
   Log-Command $log 'cmake' @('--build',$dir,'--config','Release',
     '--target',$target,'--parallel','2','--verbose')
 }
-function Read-CoreBenchmark([string]$exe){
-  $result=@(& $exe ([string]$TrainingIterations) ([string]$TrainingWarmup) ([string]$TrainingRepeats))
-  Guard ($LASTEXITCODE -eq 0 -and $result.Count -gt 0) 'CORE runtime rejected'
-  $m=([string]$result[-1]|ConvertFrom-Json)
+function Read-CoreBenchmark([string]$exe,[string]$variant,[string]$phase){
+  # Keep native process evidence even when PGO instrumentation rejects the run.
+  # Do not infer success from a blank PowerShell pipeline or suppress stderr.
+  $stdout=Join-Path $Evidence ($variant+'-'+$phase+'-runtime.stdout.log')
+  $stderr=Join-Path $Evidence ($variant+'-'+$phase+'-runtime.stderr.log')
+  $arguments=@([string]$TrainingIterations,[string]$TrainingWarmup,[string]$TrainingRepeats)
+  $process=Start-Process -FilePath $exe -ArgumentList $arguments -WorkingDirectory (Split-Path -Parent $exe) -NoNewWindow -PassThru -Wait -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+  $exit=[int64]$process.ExitCode
+  $out=Get-Content -LiteralPath $stdout -Raw -ErrorAction SilentlyContinue
+  $err=Get-Content -LiteralPath $stderr -Raw -ErrorAction SilentlyContinue
+  $record.variants[$variant][$phase+'_runtime_exit']=$exit
+  $record.variants[$variant][$phase+'_stdout_sha256']=Digest $stdout
+  $record.variants[$variant][$phase+'_stderr_sha256']=Digest $stderr
+  $record.variants[$variant][$phase+'_stderr_text']=if($err){$err.Trim()}else{''}
+  Write-Host ('CORE_YIN|RUNTIME|'+$variant+'|'+$phase+'|exit='+$exit)
+  Save-Record
+  Guard ($exit -eq 0 -and ![string]::IsNullOrWhiteSpace($out)) ('CORE runtime rejected: variant='+$variant+', phase='+$phase+', exit='+$exit+', stderr='+$err)
+  try{$m=($out.Trim()|ConvertFrom-Json -ErrorAction Stop)}
+  catch{throw ('CORE_YIN: runtime output not valid JSON: '+$variant+'/'+$phase+'; '+$_.Exception.Message)}
   Guard ($m.schema -ceq 'SWE-LIGAZE-BENCH-v1' -and $m.threat_fixtures -ceq 'PASS' -and
     $m.iterations -eq $TrainingIterations -and $m.repeats -eq $TrainingRepeats) 'CORE numerical witness invalid'
   $m
@@ -117,7 +134,7 @@ try {
     $binaryDir=Split-Path -Parent $exe
     Push-Location -LiteralPath $binaryDir
     try {
-      $measured=Read-CoreBenchmark $exe
+      $measured=Read-CoreBenchmark $exe $variant 'training'
     }finally{Pop-Location}
     $v.trained_checksum=[string]$measured.checksum
     $pgc=@(Get-ChildItem -LiteralPath $dir -Recurse -File -Filter '*.pgc')
@@ -144,7 +161,7 @@ try {
     }
     Guard (Test-Path -LiteralPath $exe -PathType Leaf) ('Optimized binary missing: '+$variant)
     $v.optimized_binary_sha256=Digest $exe
-    $optimized=Read-CoreBenchmark $exe
+    $optimized=Read-CoreBenchmark $exe $variant 'optimized'
     $v.optimized_checksum=[string]$optimized.checksum
     $v.optimized_median_ns=[double]$optimized.median_ns_per_call
     Guard ($v.optimized_checksum -ceq $v.trained_checksum) ('PGO transformed COR checksum: '+$variant)
