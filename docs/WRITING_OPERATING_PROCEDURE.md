@@ -21,59 +21,114 @@ This is a project editorial standard, **not** a Department of the Air Force inst
 Use meaningful headings, short paragraphs, active verbs, parallel constructions, and plain definitions. Use the minimum acronyms necessary and define each on first use. Put the essential conclusion first; reserve complete technical derivations for later sections.
 
 
-## 2. BiDi critical-thinking gate: forward claims and reverse evidence
+## 2. TriDi critical-thinking gate: three directions, one accountable decision
 
-**BLUF:** Check every material claim in both directions. **YIN, the forward pass**, tests whether the claim leads to valid evidence. **YANG, the reverse pass**, starts at the evidence and reconstructs the narrowest claim that it actually supports. **YAN, the BiDi reconciliation**, compares both trails and records disagreement. A complete, traceable two-way review is necessary for a VERIFIED decision, but it is not itself a proof of authenticity.
+**BLUF:** TriDi builds on the existing BiDi method without erasing it. Review each material claim along **three separately traceable directions**: YIN checks claims forward against evidence, YANG checks evidence backward against claims, and **AIRGAP** independently tests the assumptions, threat boundaries, negative controls, and provenance neither route can establish alone. **YAN** reconciles their findings and records a scoped decision; it is a synthesis, not a fourth vote or a superior source.
 
-BiDi here names a **bidirectional reasoning protocol**, not a Unicode text-direction command. Reviewing the same source twice is not independent corroboration, and the passes must not merge separate records or silently change original data.
+**Status:** TRI-DI-CRITICAL-THINKING-v1, **EXPLORATORY / REWRITTEN / VERIFY** pending maintainer adoption. This is a *project-designed review method* and not an official Air Force, Six Sigma, quantum-mechanical, physical air-gap, cryptographic or independent-certification standard.
 
-### YIN: claim → source → method → evidence → boundary
+### Geometry and direction ownership
 
-| Step | Question | Required evidence |
+| Direction | Coordinate | Named route | Objective | Output |
+| --- | --- | --- | --- | --- |
+| X / Forward | `[1,0,0]` | **YIN** | Start with the author-defined claim and seek supporting evidence | Defensible claim boundary, source and method |
+| Y / Reverse | `[0,1,0]` | **YANG** | Start with actual evidence and infer the smallest justified claim | Evidence-bounded permissible statement |
+| Z / Orthogonal | `[0,0,1]` | **AIRGAP** | Isolate assumptions and independently challenge both other routes | Countermodel, threat/rights checks, evidence gaps |
+| Origin | `[0,0,0]` | **CORE** | Hold the original source statement, algorithm and frozen input unchanged | Authoritative source reference, not a fabricated fourth finding |
+
+The coordinates identify *review directions*, not spatial movements, ownership, physical security boundaries or three independent experiments. Shared sources must be recorded as shared, even if reviewers perform independent analyses. Neither repetition nor three displayed viewpoints creates extra empirical witnesses.
+
+### X: YIN / forward trace
+
+`CLAIM → SOURCE → METHOD → EVIDENCE → SCOPE`
+
+| Gate | Required action | Record |
 | --- | --- | --- |
-| F1. Clarify | What exact claim, term, namespace, units, audience and intended decision are involved? | Unchanged claim text and claim ID |
-| F2. Attribute | Is its authority the algorithm, original input, test, official publication, observation, hypothesis or presentation? | Canonical source path/edition, date and SHA where applicable |
-| F3. Reconstruct | Can the claimed transformation be repeated using its frozen inputs, ordered stages, precision, guard conditions and platform? | Actual results, method or explicit NOT RUN |
-| F4. Challenge | What negative control, alternative cause, counterexample, stale artifact or bias might disprove it? | Contrary evidence, dissent and unresolved cases |
-| F5. Bound | Does the evidence have adequate **trust, accuracy, precision, relevance and sufficiency** for the entire claim? | Narrowed permissible statement, with limits |
+| X1. Clarify | Preserve the original wording, project namespace, units, context and intended audience | Claim ID and unmodified source statement |
+| X2. Attribute | Name original algorithm/input, publication edition, code commit and applicable license | Source path and immutable ID/SHA |
+| X3. Reproduce | Follow original operation order, frozen protocol, precision and environment; do not infer an unrun test | Inputs, procedure, result or NOT RUN |
+| X4. Challenge | Check invalid inputs, counterexamples and alternative explanations | Negative control and limits |
+| X5. Bound | Apply trust, accuracy, precision, relevance and sufficiency | Maximum supported forward claim |
 
-### YANG: evidence → method → source → permissible claim → challenge
+### Y: YANG / reverse trace
 
-| Step | Question | Required evidence |
+`EVIDENCE → METHOD → SOURCE → PERMISSIBLE CLAIM → LIMIT`
+
+| Gate | Required action | Record |
 | --- | --- | --- |
-| R1. Inspect | Starting from the retained artifact rather than the author's conclusion, what was actually observed? | Independent reading of log, test, data, source record or publication |
-| R2. Reconstruct | What exact procedure produced the evidence, on what inputs and at what commit/environment? | Measured route and recorded assumptions |
-| R3. Trace | What original source and transformations account for it? Does any ledger disagree with the algorithm or primary record? | Provenance chain; algorithm and original input outrank derived ledgers |
-| R4. Limit | Which **smallest** claim is warranted? Which broader interpretation is not warranted? | Permissible claim and explicit exclusions |
-| R5. Challenge | Which negative controls, contradictions, alternatives and untested cases remain? | Counterevidence and uncertainty |
+| Y1. Begin from evidence | Inspect the actual artifact, test, primary observation or source, not the forward conclusion | Artifact ID, bytes/hash where relevant |
+| Y2. Reconstruct | Recover true configuration, runner, timestamps, measured values, sample count and code version | Method and environment |
+| Y3. Trace origin | Follow `algorithm/source → route → stream → witness → ledger → render → audit` backward without editing inputs | Attribution and derivation chain |
+| Y4. Restrict inference | State the narrowest claim justified by the observed evidence | Permissible claim and exclusions |
+| Y5. Contradict | Locate inconsistent records, missing conditions or failed counterexamples | Disagreement, missing witnesses |
 
-### YAN: compare forward ↔ reverse; record the decision
+The algorithm and original source records take precedence over derived ledgers and presentations. An incorrect ledger is corrected with an audit entry; the original algorithm is not silently rewritten.
 
-| Check | Required agreement | On mismatch |
+### Z: AIRGAP / independent orthogonal challenge
+
+`ASSUMPTIONS → ALTERNATIVE MODEL → ATTACK / NEGATIVE CONTROL → BOUNDARY → DISSENT`
+
+AIRGAP is a deliberate *methodological separation* from the other two directions. Before seeing their proposed final decision, the reviewer must record the independently chosen threat model or competing explanation and applicable exclusions. **AIRGAP does not claim that a real network is physically air-gapped.**
+
+| Gate | Required action | Record |
 | --- | --- | --- |
-| Identity | Same namespaced claim, definition, source version and inputs | NEEDS REVIEW; never equate merely similar records |
-| Trace | Source → route → witness → ledger ↔ ledger → witness → route → source reconcile | Repair derived ledger with audit, not original algorithm |
-| Scope | Reverse permissible claim covers *all* of forward assertion | Narrow or retract unsupported scope |
-| Quantity | Units, precision, sample count, bounds, environment and result agree | Recompute; record exact conflict |
-| Counterexample | Negative tests and adverse evidence are actually examined | Do not call an incomplete review PASS |
-| Immutability | Frozen protocols and original input remain unchanged | Stop comparison; changes require new ID and explicit provenance |
+| Z1. Declare separation | Record the reviewer, available data, shared dependencies, and what was hidden or already known. Do not claim blind review if none occurred | Independence scope and overlap |
+| Z2. Challenge assumptions | Identify an untested assumption, omitted case, different causal mechanism, or incompatible rights/security interpretation | Competing explanation and why it matters |
+| Z3. Design countertest | Use an adversarial or out-of-domain input, a negative control, an alternative calculation or independent source where practical | Exact countertest plan, not merely rhetoric |
+| Z4. Observe and contain | Record executed result, blocked prerequisite or NOT RUN; check licensing, binary provenance, tooling and environment boundaries as relevant | Actual observations, resource limits, provenance |
+| Z5. Preserve dissent | Produce an explicitly scoped challenge, even if no defect is found, and retain conflicts with X/Y | Orthogonal finding and unresolved risks |
 
-**Decision record:**
-- **BIDI_PASS, eligible for VERIFIED / CURRENT:** Both traces are complete, reconcilable and appropriately evidenced; a named reviewer explicitly approves. PASS does not assume approval.
-- **BIDI_NEEDS_REVIEW:** A path is stale, absent, untested, ambiguous or unsupported. Leave the existing status and unresolved issues visible.
-- **BIDI_CONTRADICTED:** The reverse trace refutes or materially narrows the forward claim. Correct the derived text, retain the original version and record the reason.
-- **REWRITTEN / VERIFY:** Documentation text changed but independent verification remains incomplete.
+A failed or unavailable AIRGAP check is evidence of an incomplete investigation, not evidence that a claim passed or that a failed process has become policy. Its scope is proportional to the claim: a spelling correction does not need an unnecessary physics experiment, but a release-security assertion needs its threat and dependency boundaries examined.
 
-**Minimum ledger fields:** claim ID and namespace; source statement; source revision and SHA; forward operations; evidence IDs; reverse reconstructed operations; reverse permissible claim; units/precision/environment; positive and negative tests; dissent and mismatch; disposition; reviewer/date; resulting commit. A missing reviewer, silent stakeholder, failed renderer, unavailable tool or skipped test is **never** a YES or evidence of deletion.
+### YAN: reconcile X, Y and Z; no voting shortcut
 
-**Demonstration A, OCI:** An `ENGINE_RESPONDING` result from `docker info` establishes that the daemon responded. It **does not** establish that Windows container builds ran. When `host_container_build_executed=false`, the reverse pass rejects the forward statement "Windows containers were validated." Report only observed capability.
+The three directions yield distinct records: `X_claim_limit`, `Y_permissible_claim`, and `Z_challenge`. YAN does not merge their evidence or average away disagreement. Its conclusion must be no broader than the intersection of supported claims and must address every material Z objection.
 
-**Demonstration B, counting physics:** An exact population variance of 150 for three synthetic counts warrants a statement about those counts, not a claim of observed quantum-mechanical dispersion. A green CTest run verifies that test on its commit and runner, not general physical validity.
+| Invariant | Acceptance criterion | If violated |
+| --- | --- | --- |
+| Identity | Same namespaced source statement, commit/edition, frozen inputs and defined terms | NEEDS REVIEW; similar is not identical |
+| Provenance | Each observation has an attributable source, route and hash where appropriate | NEEDS REVIEW; no invented lineage |
+| Semantic coverage | X claim does not exceed Y permissible claim, and Z does not expose an unresolved material counterexample | Narrow the claim or mark CONTRADICTED |
+| Units and execution | Precision, sample sizes, runtime, operating system, exact compiler profile and outcome agree where applicable | Recompute; distinguish NOT RUN from PASS |
+| Independences | Shared artifacts and correlated tests remain explicitly attributed; no synthetic majority | Treat dependence as a limitation |
+| Source immutability | Original algorithm, source record, code points and frozen experiment configuration are not changed during review | Stop comparison; new protocol needs explicit change and new ID |
+| Governance | A named authorized reviewer explicitly approves documented scope and acknowledges dissent | No automatic VERIFIED, even with 3 favorable reports |
 
-**Separate Unicode direction protocol:** Do not let the word BiDi change text provenance. When writing genuine RTL/LTR passages, identify the semantic owner of each span; preserve exact Unicode code points, normalization, and source-order positions. LRI/RLI/FSI open an isolate and PDI closes it, subject to balanced nesting. Explicit newlines bound the project display protocol; a soft wrap does not. Renderer failure is not data failure.
+**Possible decisions:**
+- `TRIDI_PASS` **eligible for VERIFIED / CURRENT** only when all three directions meet their scoped requirements and an authorized reviewer explicitly signs off.
+- `TRIDI_NEEDS_REVIEW` when any direction is absent, inconclusive, stale, unavailable or subject to unresolved material doubt.
+- `TRIDI_CONTRADICTED` when observed evidence or a substantiated orthogonal counterexample refutes the proposed statement. Preserve the original, mark the correction and record supporting evidence.
+- `REWRITTEN / VERIFY` when editorial changes are committed but the three-route audit and explicit sign-off have not occurred.
 
-**Critical-thinking provenance:** The supplied *Tongue and Quill*, AFH 33-337, PDF pages 53-54, distinguishes fact from inference and addresses trust, accuracy, precision, relevance and sufficiency of evidence. The **YIN/YANG/YAN BiDi process is a project-defined adaptation**, not an Air Force-issued procedure.
+**No two-out-of-three or quorum decision:** Two agreeing routes do not defeat a material contradiction in the third. Silence, abstention, missing tooling, unrendered content or an empty seat is not agreement. A reviewer may record PASS, dissent, request changes or decline; none is assigned automatically.
 
+### Traceable TriDi review record
+
+Use one canonical record for each claim or document version. Required fields:
+
+`review_id | claim_id | namespace | original_text | source_path | source_commit_or_edition | original_inputs | X_route_and_scope | Y_evidence_and_permissible_claim | Z_independent_assumptions_and_countertests | shared_dependencies | negative_test_results_or_NOT_RUN | units_and_precision | mismatch_and_dissent | decision | reviewer | explicit_approval | decision_time | revised_commit | historical_baseline`
+
+**Completed example: a Windows OCI capability claim**
+
+- **X / YIN:** Proposed claim: "Windows containers were validated." Supporting artifact: `docker info` returned an engine type.
+- **Y / YANG:** The evidence supports only `ENGINE_RESPONDING`. With `host_container_build_executed=false`, no Windows container execution is established.
+- **Z / AIRGAP:** Test a daemon-unavailable response, empty or unexpected engine type, wrong daemon/platform, and the absence of an executed container. An engine probe cannot substitute for a tested licensed Windows base image.
+- **YAN outcome:** `TRIDI_CONTRADICTED` for the broad claim; eligible revised wording: "The Windows runner's Docker engine responded during the capability probe; no container build or execution was verified." The narrower statement still requires appropriate evidence and explicit sign-off.
+
+**Completed example: synthetic photon-count statistics**
+
+- **X:** Exact sample arithmetic reports mean and population variance for the specified counts.
+- **Y:** Reverse inspection limits the result to the synthetic sample, numerical formula and source test.
+- **Z:** Consider sample dependence, calibration, detector physics, shot noise and alternative distributions; do not label an unperformed measurement a quantum experiment.
+- **YAN:** Preserve exact statistical claims; classify a physical gain/dispersion inference as EXPLORATORY / NOT VERIFIED.
+
+### Compatibility, rendering and source authority
+
+**BiDi is retained inside TriDi.** The prior two-pass gate and its original Git history remain identifiable. Old `BIDI_*` decisions are historical records; they are not automatically promoted to `TRIDI_PASS`. TriDi is a named evolution of review procedure, not a retroactive rewrite of previous evidence.
+
+The review directions do **not** determine Unicode writing direction. For RTL/LTR spans, preserve semantic ownership and source code points, pair LRI/RLI/FSI with PDI, and do not cross an explicit newline in the project display protocol. Soft wrapping is not a paragraph boundary. A display failure does not authorize a canonical-data change.
+
+**References:** AFH 33-337, *The Tongue and Quill*, inspected PDF pages 53-54, discusses evaluating trust, accuracy, precision, relevance and sufficiency and distinguishing facts from inference. The ALQ guide supports precise action/outcome writing. Neither source establishes this project's TriDi, YIN, YANG, AIRGAP or YAN names. The critical-thinking reference is a conceptual lens, not a certification.
 
 ## 3. Writing and accountability guides: inspected editions
 
@@ -196,4 +251,4 @@ The CORE YIN MSVC PGO workflow is **historical research evidence** and is not co
 
 ### Audit acceptance criteria
 
-A document or release may be labeled **POLICY-CONFORMANT** only after the BiDi gate traces its claim to current C++20 compile flags, the PowerShell Core latest-stable/StrictMode 2.0 execution evidence, dependency/toolchain provenance, applicable license obligations and negative controls. A missing artifact, silent permission, or green job on an unreviewed toolchain cannot establish policy conformity.
+A document or release may be labeled **POLICY-CONFORMANT** only after the TriDi gate (YIN, YANG and AIRGAP, reconciled by YAN) traces its claim to current C++20 compile flags, the PowerShell Core latest-stable/StrictMode 2.0 execution evidence, dependency/toolchain provenance, applicable license obligations and negative controls. A missing artifact, silent permission, or green job on an unreviewed toolchain cannot establish policy conformity.
