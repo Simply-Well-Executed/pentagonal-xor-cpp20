@@ -392,6 +392,13 @@ if(BUILD_TESTING)
     PASS_REGULAR_EXPRESSION "terminal_flops=5.*terminal_flips=4.*final_reversed=0")
 endif()
 
+# Ship all public documentation in the same flat directory as the register,
+# including HANDI, the writing procedure and other sibling-linked pages.
+# The original files remain in docs/ with their Git history unchanged.
+install(DIRECTORY docs/
+  DESTINATION share/doc/pentagonal-xor
+  FILES_MATCHING PATTERN "*.md" PATTERN "*.svg")
+
 # Ship the copyright/0BSD/marks boundary and the outstanding review audit.
 install(FILES
   docs/LICENSE_AND_MARKS.md
