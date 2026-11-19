@@ -299,3 +299,11 @@ The CORE YIN MSVC PGO workflow is **active LAB research on pull requests** as we
 ### Audit acceptance criteria
 
 A document or release may be labeled **POLICY-CONFORMANT** only after the TriDi gate and the applicable SigmaDi four-link review overlay (both reconciled by YAN) trace its claim to current C++20 compile flags, the PowerShell Core latest-stable/StrictMode 2.0 execution evidence, dependency/toolchain provenance, applicable license obligations and negative controls. A missing artifact, silent permission, or green job on an unreviewed toolchain cannot establish policy conformity.
+
+## 10. Pondaz Unicode input gate
+
+**Validate** repository and GitHub event text before dependent CI jobs execute; use the native PowerShell Core (latest stable version) script `ci/Invoke-Pondaz.ps1` with `Set-StrictMode -Version 2.0` and .NET's NFKC normalizer. **Record** strict UTF-8 decoding, invisible/control exclusions, normalized comparison differences, source SHA, test conditions and disagreements in `pondaz-evidence/pondaz.json`.
+
+**Block** invalid UTF-8, U+200B–U+200D, U+FEFF, disallowed controls and compatibility-altering workflow YAML. **Retain** historical and other semantic research text even when NFKC would fold its characters; record these as review warnings, never replace the original bytes. See [Pondaz's actual evidence boundary](PONDAZ.md) for positive/negative fixtures and limitations. This is a scoped gate on **Git-tracked text and GitHub event data**, not a guarantee that every future runtime value or external binary is sanitized. Missing glyphs alone do not demonstrate memory corruption.
+
+**Place** the `pondaz` job before downstream workflow job lanes through `needs: pondaz`. Reuse the one authoritative validator, not a second implementation hidden in each workflow. **Preserve** the single completed-action publication rule, TriDi/SigmaDi original meanings, C++20/`-O2`/MSVC `/O2` constraints, and rights review. A failed or missing Pondaz witness does not become an approval and does not silently mutate source.
