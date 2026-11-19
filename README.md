@@ -454,3 +454,25 @@ verify physical motion or generate the unavailable same-object S11.
 Two dedicated CTest cases verify zero-based indexing, stats, ring
 quantization, 54-byte braid roundtrip, view counts and H11 null
 guards. This is research code, not independently attested deployment.
+
+
+### 🧭 The exploratory 12th dimension: SigmaDi declaration collision guard
+
+[Research note and source-case analysis](docs/SIGMADI_COLLISION12.md) ·
+[native C++20 header](shared/sigmadi_collision12.hpp).
+
+A duplicate `r` declaration during a generated SVG board build was a
+real tool-side JavaScript naming collision. The `SIGMADI-COLLISION-12D-v1`
+exploration maps it into exactly twelve **zero-based provenance axes**
+D0..D11, where **D11 = declaration-instance identity**. Two separately
+declared identical symbols in one lexical scope are reported as
+`DUPLICATE_BINDING`, not silently merged or overwritten. Legitimate
+scoped reuse, exact repeats, later revisions, Unicode byte distinctions,
+and contradictory source claims have separate outcomes. A CTest fixture
+verifies these rules and nonmutation of a blocked ledger.
+
+"12th dimension" here is a labeled *metadata coordinate*, **not**
+a twelfth physical dimension or a derivation of a new HANDecaSigma
+temporal measurement. The new axis is exposed read-only to the OSI-6
+presentation adapter and does not alter VISTA, H11, S11, the source
+images, or the canonical XOR engine.
