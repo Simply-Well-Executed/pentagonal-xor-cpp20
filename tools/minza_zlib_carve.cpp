@@ -120,7 +120,7 @@ static void scan(const char* name,const fs::path& p){
  std::cout<<"\n";
 }
 static bool control(){
- const std::string source="FLV\x01\x05\x00\x00\x00\x09 control candidate known payload";
+ const std::string source="FLV synthetic zlib positive control. Not an actual media stream.";
  uLong len=compressBound(source.size());std::vector<Byte> compressed(len);
  if(compress2(compressed.data(),&len,reinterpret_cast<const Byte*>(source.data()),
               source.size(),Z_BEST_COMPRESSION)!=Z_OK)return false;
