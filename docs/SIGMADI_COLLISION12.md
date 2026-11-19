@@ -1,11 +1,19 @@
 # SigmaDi COLLISION12: the exploratory 12th provenance coordinate
 
-> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+> **Document status: PARTIALLY REWRITTEN / VERIFY (2026-11-19).** Added a namespaced separation from the proposed SigmaDi butterfly review and a PowerShell Core strict-mode example. Complete source, CI and licensing verification remain DUE; this is not a declaration that the implementation changed. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
 >
 > **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
 
 
 **Status:** EXPLORATORY · `SIGMADI-COLLISION-12D-v1` · native C++20 · 0BSD
+
+## Namespace separation: SigmaDi review butterfly versus COLLISION12
+
+**BLUF:** This document describes **only** the existing `SIGMADI-COLLISION-12D-v1` implementation, whose 12 coordinates record declaration identity and provenance. The additional [SigmaDi review extension](WRITING_OPERATING_PROCEDURE.md#2a-sigmadi-review-extension-four-alternating-butterfly-connections) is a distinct **`SIGMADI-REVIEW-BUTTERFLY4-v0` EXPLORATORY** documentation-review overlay: four signed cross-checks of TriDi YIN/YANG/AIRGAP evidence, synthesized by YAN. It is not implemented by `shared/sigmadi_collision12.hpp`, cannot rename its 12 coordinates, and does not treat four links as four independent empirical observations.
+
+**Authority boundary:** A review may consume a valid COLLISION12 receipt only as a declaration/provenance witness. It cannot use COLLISION12 to classify arbitrary reasoning claims, nor promote a prior BiDi/TriDi decision to VERIFIED by renaming it. The proposed butterfly endpoint and polarity conventions require explicit approval before they become established. The canonical C++20 guard and existing source tests remain unchanged.
+
+
 
 **Source example:** during the creation of the
 `SIGMA_PENTA_HAN_VISTA_BOARD.svg` illustration, one tool-side
@@ -133,11 +141,21 @@ automatic renaming, editing, replacement, deletion or merge occurs.
 
 ## Reproducibility
 
+**PowerShell Core (latest stable version), with `Set-StrictMode -Version 2.0` mandatory.** The following is a proposed command sequence, not evidence of a new run at this commit. The native C++20 target must use only `-O2` (MSVC `/O2`) when compiling under the maintainer's new normative optimization policy. Retain historical CI records with their actual flags rather than mislabeling them.
+
 ```powershell
-cmake -S . -B build -DBUILD_TESTING=ON
+Set-StrictMode -Version 2.0
+$ErrorActionPreference = 'Stop'
+$PSVersionTable.PSVersion
+cmake -S . -B build -DBUILD_TESTING=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF
+if ($LASTEXITCODE -ne 0) { throw 'CMake configuration failed' }
 cmake --build build --config Release
+if ($LASTEXITCODE -ne 0) { throw 'CMake build failed' }
 ctest --test-dir build -C Release --output-on-failure -R collision12
+if ($LASTEXITCODE -ne 0) { throw 'Collision12 CTest failed' }
 ```
+
+**Optimization caveat:** The command above sets C++20 but does not independently prove that the target uses only `-O2` or `/O2`. Inspect the generated compile commands or build transcript and stop if any actual toolchain configuration violates the policy. Do not claim the new policy is technically enforced until CI implements and verifies it.
 
 Until this repository's CI completes on the commit containing this
 file, the source is implemented but cross-platform test results
