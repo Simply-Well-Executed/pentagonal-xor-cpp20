@@ -18,6 +18,12 @@
 
 ---
 
+## ⬟ toolong: exact C++20 arbitrary-precision integers (draft PR #17)
+
+The optional [`swe::toolong`](shared/toolong.hpp) class provides exact signed integers with dynamically sized decimal digits, including addition, subtraction, multiplication, division, modulo, powers, factorials, GCD, and explicit-width bitwise views. [Exact reduced fractions](shared/toolong_ratio.hpp) and a separate [synthetic photon-count gain/dispersion example](shared/toolong_photon_model.hpp) use integer arithmetic rather than floating-point approximations. See [the operator and evidence contract](docs/TOOLONG.md).
+
+The ℼ-derived [16-significant-digit display policy](shared/pi_precision.hpp) applies to floating-point presentations, **not** to exact integer source records or numeric results. The additions remain under review in [draft PR #17](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/17).
+
 ## 📡 COREAO RF: input → +9 dBi → EIRP output
 
 New in PR #4: [`shared/coreao_gain.hpp`](shared/coreao_gain.hpp)
