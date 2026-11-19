@@ -141,7 +141,7 @@ automatic renaming, editing, replacement, deletion or merge occurs.
 
 ## Reproducibility
 
-**PowerShell Core (latest stable version), with `Set-StrictMode -Version 2.0` mandatory.** The following is a proposed command sequence, not evidence of a new run at this commit. The native C++20 target must use only `-O2` (MSVC `/O2`) when compiling under the maintainer's new normative optimization policy. Retain historical CI records with their actual flags rather than mislabeling them.
+**PowerShell Core (latest stable version), with `Set-StrictMode -Version 2.0` mandatory.** This is an **EXPLORATORY, NON-POLICY BUILD** only: it tests the existing CMake configuration, which has not been migrated to the C++20 and `-O2`/MSVC `/O2`-only normative profile. A successful test does not demonstrate optimizer-policy compliance. Retain prior CI records with their exact flags.
 
 ```powershell
 Set-StrictMode -Version 2.0
@@ -155,7 +155,7 @@ ctest --test-dir build -C Release --output-on-failure -R collision12
 if ($LASTEXITCODE -ne 0) { throw 'Collision12 CTest failed' }
 ```
 
-**Optimization caveat:** The command above sets C++20 but does not independently prove that the target uses only `-O2` or `/O2`. Inspect the generated compile commands or build transcript and stop if any actual toolchain configuration violates the policy. Do not claim the new policy is technically enforced until CI implements and verifies it.
+**Policy boundary:** The existing CMake Release preset can select `-O3` on Unix toolchains, and MSVC Release includes additional interprocedural optimization in some targets. Neither the command above nor `--config Release` enforces `-O2`/`/O2` universally. Inspect exact compile and link commands, and treat this example as **NON-POLICY / EXPLORATORY** until a separately reviewed toolchain change enforces the prescribed profile.
 
 Until this repository's CI completes on the commit containing this
 file, the source is implemented but cross-platform test results
