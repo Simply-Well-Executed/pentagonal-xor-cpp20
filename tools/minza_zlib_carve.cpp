@@ -140,6 +140,7 @@ static bool control(){
 int main(int argc,char**argv){
  try{
   if(!control())return 2;
+  if(argc==1)return 0; // Exercise positive and negative controls without external media.
   if(argc!=3){std::cerr<<"Usage: minza_zlib_carve inputA.mp4 inputB.mp4\n";return 2;}
   scan("VIDEO_A",argv[1]);scan("OBS_B",argv[2]);return 0;
  }catch(const std::exception&e){std::cerr<<"ERROR "<<e.what()<<"\n";return 3;}
