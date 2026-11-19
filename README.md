@@ -400,3 +400,30 @@ Windows CI performs a negative compiler contract test on the full
 experimental header, and compares safe v2 headers with matched
 pre-LTCG/LTCG controls to avoid crediting the same optimizer twice.
 See [the Windows header v2 methodology](docs/LIGAZE_WINDOWS_HEADER_V2.md).
+
+
+## ⬟ VISTA 9×9 · three read-only passes after six gates
+
+The experimental [VISTA 9×9 operator](docs/VISTA_9X9.md) schedules
+**nine** complete canonical six-gate loops, each followed by **three**
+read-only VISTA passes:
+
+```text
+[XOR][OR][AND][NOP][COR][FLOP][VISTA-A][VISTA-B][VISTA-C] × 9
+= 54 original gate ticks + 27 VISTA reports = 81 extended steps
+```
+
+Every VISTA pass reads all six gate outcomes: 162 gate-view snapshots
+across nine loops. The original parity scorer, COR layout, and
+six-stage Machine remain unchanged; no additional XOR runs at FLOP.
+VISTA-A captures, VISTA-B checks consistency, and VISTA-C synthesizes
+a read-only report. This does **not** authenticate provenance, add image
+resolution, or establish true measurements from photographs.
+
+C++20 header: `shared/pentagonal_vista_9x9.hpp`; native demo:
+`pentagonal_vista9x9 0x17 0x1f`; tests:
+`pentagonal_vista_9x9_test`. The
+[showcase inventory](docs/VISTA_9X9_SHOWCASE.md) records nine user-supplied
+illustrations and source files as **production-style examples only**,
+not verified real-world deployments. Their original private images
+have not been copied into the public repository.
