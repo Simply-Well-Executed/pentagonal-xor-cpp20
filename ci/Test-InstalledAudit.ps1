@@ -25,9 +25,9 @@ foreach ($path in $required) {
     }
 }
 
-# The public register must be navigable in the installed package, not just in
-# a source checkout. All sibling-linked .md/.svg assets are installed flat.
-$docsRoot=Join-Path $prefix 'share/doc/pentagonal-xor'
+
+# Verify packaged documentation from the installed root rather than checkout.
+$docsRoot = Join-Path $prefix 'share/doc/pentagonal-xor'
 foreach($doc in @(
     'DOCUMENT_REVIEW_REGISTER.md',
     'WRITING_OPERATING_PROCEDURE.md',
@@ -39,33 +39,18 @@ foreach($doc in @(
         throw "Installed documentation missing: $doc"
     }
 }
-$register=Get-Content -LiteralPath (Join-Path $docsRoot 'DOCUMENT_REVIEW_REGISTER.md') -Raw
-$links=[regex]::Matches($register,'\]\(([^)\s]+)\)')
+$register = Get-Content -LiteralPath (Join-Path $docsRoot 'DOCUMENT_REVIEW_REGISTER.md') -Raw
+$links = [regex]::Matches($register,'\]\(([^)\s]+)\)')
 foreach($match in $links) {
-    $dest=[string]$match.Groups[1].Value
+    $dest = [string]$match.Groups[1].Value
     if($dest -match '^https?://') { continue }
-    $docPath=Join-Path $docsRoot ($dest -replace '#.*
-$args = @('-S', 'tests/consumer', '-B', $BuildDir,
-          "-DSWE_AUDIT_PREFIX=$prefix")
-if ($IsWindows -and ![string]::IsNullOrWhiteSpace($VsArch)) {
-    $args += @('-A', $VsArch)
-}
-& cmake @args
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-& cmake --build $BuildDir --config Release --parallel
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-& ctest --test-dir $BuildDir -C Release --output-on-failure
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-Write-Host 'PASS: shipped headers compile and run from an isolated consumer project.'
-,'')
+    $destPath = ($dest -split '#',2)[0]
+    $docPath = Join-Path $docsRoot $destPath
     if(!(Test-Path -LiteralPath $docPath -PathType Leaf)) {
         throw "Installed register link does not resolve: $dest"
     }
 }
-Write-Host ('PASS: installed documentation register links='+$links.Count)
-
+Write-Host ('PASS: installed documentation register links=' + $links.Count)
 
 $args = @('-S', 'tests/consumer', '-B', $BuildDir,
           "-DSWE_AUDIT_PREFIX=$prefix")
