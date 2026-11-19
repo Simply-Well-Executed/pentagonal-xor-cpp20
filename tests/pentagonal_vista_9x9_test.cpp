@@ -47,11 +47,19 @@ int main() {
                     v.source_token != original[n].source_token ||
                     v.observed != original[n].observed ||
                     v.expected != original[n].expected ||
-                    !v.structurally_consistent || v.witness_reported ||
-                    v.independently_authenticated ||
+                    !v.structurally_consistent || !v.capture_complete ||
+                    v.verification_complete != (p>=1u) ||
+                    v.synthesis_complete != (p==2u) ||
+                    v.witness_reported || v.independently_authenticated ||
                     !same_vista(v.cor,canonical) ||
                     !(v.cor.rupture & missing_witness))
                     return 5;
+                unsigned true_outputs=0;
+                for (bool bit: outputs) true_outputs+=bit?1u:0u;
+                if (p==2u && (v.active_gate_outputs!=true_outputs ||
+                              v.anomaly_flags!=canonical.rupture)) return 9;
+                if (p!=2u && (v.active_gate_outputs!=0u ||
+                               v.anomaly_flags!=0u)) return 10;
                 for (unsigned gate=0; gate<gate_count; ++gate)
                     if (v.history[gate].stage != stages[gate] ||
                         v.history[gate].output != outputs[gate])
