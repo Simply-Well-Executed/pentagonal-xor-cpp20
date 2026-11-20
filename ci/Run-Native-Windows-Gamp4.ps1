@@ -117,7 +117,7 @@ try {
  if($LASTEXITCODE -ne 0){throw 'Archive install failed'}
  $bin=Join-Path $package 'bin'
  [void][IO.Directory]::CreateDirectory($bin)
- foreach($name in @('pentagonal_xor','pentagonal_xor_std_free','pentagonal_xor_cli','pentagonal_suite_cli')){
+ foreach($name in @('pentagonal_xor','pentagonal_xor_std_free','pentagonal_xor_cli','pentagonal_suite_cli','pentagonal_gamp4_validation_test')){
    $exe=Join-Path (Join-Path $full 'Release') ($name+'.exe')
    if(-not(Test-Path -LiteralPath $exe -PathType Leaf)){throw "Missing native tested executable $exe"}
    Copy-Item -LiteralPath $exe -Destination (Join-Path $bin ($name+'.exe'))
