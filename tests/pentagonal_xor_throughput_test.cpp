@@ -37,7 +37,7 @@ constexpr bool test_constexpr_scoped_plaintext() {
     bool correct = false;
     literal.with_decrypted([&](pxor::StringSlice view) {
         correct = view.size() == 5 &&
-                  view[0] == 'I' && view.data()[1] == 'D' &&
+                  view.data()[0] == 'I' && view.data()[1] == 'D' &&
                   view.data()[2] == 'K' && view.data()[3] == 'F' &&
                   view.data()[4] == 'A';
     });
