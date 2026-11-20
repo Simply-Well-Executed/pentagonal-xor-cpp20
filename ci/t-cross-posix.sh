@@ -41,7 +41,7 @@ gate_no_live_rest() {
         \( -name '*.ps1' -o -name '*.sh' -o -name '*.cpp' -o -name '*.c' \
            -o -name '*.h' -o -name '*.hpp' -o -name '*.cmake' \
            -o -name '*.Dockerfile' \) \
-        -exec grep -nE "$pattern" {} + 2>&1) || fail 'source scanning errored'
+        -exec grep -nE "$pattern" {} + 2>&1 || :)
     cmake_hits=$(grep -nE 'FetchContent|ExternalProject_Add|file[[:space:]]*[(][[:space:]]*DOWNLOAD|https?://api[.]github[.]com' CMakeLists.txt || :)
     if test -n "$hits" || test -n "$cmake_hits"; then
         printf '%s\n%s\n' "$hits" "$cmake_hits" >&2
@@ -169,8 +169,9 @@ emit_diff_yaml() {
     printf "authority: 'local-Git-committed-line-diff'\n"
     printf "before: '%s'\nafter: '%s'\n" "$T_CROSS_BASE_SHA" "$head"
     printf "runtime_status: 'NOT_TESTED_BY_SOURCE_DIFF'\n"
-    git diff --numstat "$T_CROSS_BASE_SHA" "$head" -- |
-        awk -F '\t' '
+    numstat=$(git diff --numstat "$T_CROSS_BASE_SHA" "$head" --) ||
+        fail 'committed Git diff failed'
+    printf '%s\n' "$numstat" | awk -F '\t' '
           BEGIN { print "files:"; add=0; rem=0; incomplete=0; count=0 }
           NF>=3 {
             path=$3; gsub(/\\/, "\\\\", path); gsub(/"/, "\\\"", path)
@@ -191,6 +192,8 @@ emit_diff_yaml() {
 }
 
 default() {
+    emit_diff_yaml > "$root/.iron-t-cross-diff.yml"
+    pass 'emit-diff-yaml|local-artifact=.iron-t-cross-diff.yml'
     gate_no_remote_git
     gate_no_github_workflows
     gate_no_live_rest
