@@ -64,3 +64,30 @@ At inspection, GitHub's open-issues endpoint returned **only PR #19** (the GitHu
 ## Provenance rule
 
 Algorithm and exact source records are authoritative. This audit is derived evidence, not a replacement for code or run logs. Preserve the baseline SHA, changed SHA, observed versus simulated labels, dissent and unresolved gates. Failure never becomes policy.
+
+## Native-only transition: retire all GitHub Actions runner images (2026-11-19)
+
+**Superseding status for execution:** the earlier workflow-based snapshot above is retained for provenance; it is not the current execution design after this change.
+
+**DOLPHIN subject:** hosted GitHub Actions runner image. Source: the prior `.github/workflows/native-core.yml` contained `runs-on: windows-2025`. Observed GitHub job 44661958832 resolved to `windows-2025-vs2026` with PowerShell 7.6.9. The operator-required latest stable was 7.7.0. The earlier version gate blocked as intended, after 34/34 CTests passed and 164 source files passed Magic Comb.
+
+**Disposition:** remove the last workflow definition from the PR branch rather than changing it to `runs-on: self-hosted`, which would still require GitHub's remote runner service. The locally controlled entrypoint is `ci/Invoke-NativeCore.ps1`. It does not request an image, launch a container, download source, query a REST service or install dependencies. It uses only the already-installed Windows PowerShell, local Git history, local Visual Studio MSVC, CMake and CTest.
+
+**Version assertion contract:** the operator must independently verify the latest stable release and supply both `-LatestStableVersion` and its corresponding official release URL. The entrypoint compares the local PowerShell version exactly before invoking project source. It fails closed on mismatch and does not automatically fetch release metadata. The operator-supplied URL is an auditable assertion **not** a cryptographically checked or live-verified release fact. At authoring time the official latest release was 7.7.0; no version is hard-coded into the script.
+
+### T-CROSS side-by-side
+
+| Gate | Old hosted workflow (observed) | New local-native process (static inspection) | Disposition |
+| --- | --- | --- | --- |
+| Runner image | GitHub Windows VM image used | No GitHub Actions workflow and no VM-image request | Removed from PR branch |
+| Networked source checkout | GitHub `git fetch` | Local `git rev-parse` and `git diff`, no fetch | Remote source fetch removed from execution code |
+| PowerShell selection | 7.6.9 inherited from hosted image | Locally installed executable must exactly match operator-declared latest | Intended fail-closed; local runtime untested |
+| Mandatory source verifier | Magic Comb SelfTest + Verify, 164 files checked in last hosted run | Same Magic Comb source and modes invoked | Retained; new local run NOT TESTED |
+| C++20 /O2 compile and CTest | 34/34 passed on hosted Windows | Same CMake options, compile and CTest commands | Retained; new local run NOT TESTED |
+| Java, Docker, Node and Linux runtime steps | None in last workflow | None in new entrypoint | No new dependencies in entrypoint |
+| Historical manual scripts and Dockerfiles | Tracked but outside active CI | Still tracked, not invoked by new entrypoint | Residual surface, separate review required |
+| Proof of zero network and zero calls | Not demonstrated | Not demonstrated | **IRON NOT CERTIFIED** |
+
+**Important limitations:** no independent local Windows execution, complete import-table review, call-graph closure, offline firewall enforcement, or source/toolchain signing inspection has yet occurred. Merely removing an Actions workflow is not proof that CMake, a compiler, third-party tool, or manually invoked historical scripts cannot access a network. No production runtime code or mathematical source was changed by this transition. The PR stays draft and unmerged; `main` still has its historical workflows until the branch is promoted.
+
+**Evidence custody:** The old runner definition, job IDs, exit conditions and reason for removal remain in Git history and this audit. The new local entrypoint records its own JSON evidence in `.iron-native-evidence.json`; this generated record is not committed automatically. Its status must not be confused with hosted CI status.
