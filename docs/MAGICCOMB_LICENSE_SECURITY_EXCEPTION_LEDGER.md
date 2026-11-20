@@ -48,6 +48,13 @@ Oracle JDK is used to compile/test Java sources in the **unpublished** experimen
 
 An authenticated build can function correctly while violating licensing or security admission rules. The new Oracle Java/.NET/PowerShell image is only a GitHub-hosted **probe**. The chosen rule 'failure never becomes policy' means the failed security/license gates remain blocked and visible. No `latest` overwrite, GHCR candidate publication, Docker Hub candidate publication, GitHub release, or production Deployment is authorized by this branch.
 
+## CVE-2026-97054 exact executable provenance and scoped remediation
+
+GitHub-hosted [run #44766220131](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44766220131) verified that the inherited Linux/amd64 Go-based executable is `/usr/bin/pebble`, exactly **10,584,224 bytes** with SHA256 `5e9859b77a7ed5c4421f5c43435cc3822d5090d0f4ced422adade068e3b974e3`. `dpkg-query -S /usr/bin/pebble` returned **not owned by a Debian package**. Docker Scout independently attributed the medium finding to this file, `pkg:golang/stdlib@1.27.3`, fixed in Go 1.27.4. This is not an Oracle Java or PowerShell file.
+
+Experimental GitHub commit [`c134f7b8ef9d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/c134f7b8ef9def72f93bd70c39a9b99583e89d82) proposes a narrowly scoped **removal only from the newly built, unpublished trial image**, not from history or the Microsoft original base: require existing non-symlink file, **exact SHA256 match**, and still-unowned `dpkg-query` state before removing it, with explicit `IRON|MAGICCOMB|PEBBLE|REMOVED` audit. A changed upstream binary or package owner makes the build fail. Full CTest, Java and Docker Scout validation are still required to establish that removing the unused binary is safe and actually eliminates the CVE.
+
+**No release permitted even if this CVE reaches zero:** the GNU/EPL policy remains blocked pending source-matched licensing of distributable files, and Oracle NFTC review remains separate. Any CVE reduction is evidence, not permission.
 ## Next audit requirements
 
 Re-run a complete package/SBOM license scanner with normalized architecture suffixes; capture explicit license identifiers and third-party legal bundles from Microsoft .NET, PowerShell and Oracle Java; identify which files actually ship in a proposed runtime versus remain in disposable build infrastructure. Re-scan with the same Docker Scout release and exact platform/digest. Require zero applicable and unsuppressed CVEs plus no GNU/EPL packages or documented operator-approved exceptions before any new release.
