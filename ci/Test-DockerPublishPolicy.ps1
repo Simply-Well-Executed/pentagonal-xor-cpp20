@@ -1,199 +1,118 @@
-# SPDX-License-Identifier: 0BSD
-# Copyright (c) 2026 Paul Allen Cheek
-# Exercise Docker publish gating with a local mock CLI; no registry access.
 [CmdletBinding()]
 param()
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
+if ($IsWindows) { throw 'POSIX Docker mock negative controls require Unix host' }
 
-if ($IsWindows) {
-    throw 'Docker publish policy test requires a Unix runner.'
+$legacy = Join-Path $PSScriptRoot 'Run-DockerValidation.ps1'
+$new = Join-Path $PSScriptRoot 'Publish-AndroidSourceStudy.ps1'
+$work = Join-Path ([IO.Path]::GetTempPath()) ('swe-docker-negative-'+[Guid]::NewGuid().ToString('N'))
+$shim = Join-Path $work 'docker'
+$log = Join-Path $work 'docker-commands.log'
+$vars = @('PATH','DOCKER_CALL_LOG','DOCKER_HOST','DOCKERHUB_USERNAME',
+          'DOCKER_MOCK_SOURCE_DIGEST','DOCKER_MOCK_MEDIA_TYPE',
+          'GITHUB_EVENT_NAME','GITHUB_REF','DOCKERHUB_TOKEN')
+$original = @{}
+foreach ($v in $vars) {
+  $original[$v] = [Environment]::GetEnvironmentVariable($v,'Process')
 }
-
-$root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
-$publishScript = Join-Path $PSScriptRoot 'Run-DockerValidation.ps1'
-$testRoot = Join-Path ([IO.Path]::GetTempPath()) (
-    'swe-docker-publish-policy-' + [Guid]::NewGuid().ToString('N'))
-$dockerPath = Join-Path $testRoot 'docker'
-$environmentNames = @(
-    'PATH',
-    'GITHUB_EVENT_NAME',
-    'GITHUB_REF',
-    'GITHUB_SHA',
-    'DOCKER_CONFIG',
-    'DOCKERHUB_USERNAME',
-    'DOCKERHUB_TOKEN',
-    'RUNNER_TEMP',
-    'DOCKER_CALL_LOG',
-    'OS_LICENSE_REVIEW_APPROVED',
-    'OS_PACKAGE_LICENSE_MANIFEST_SHA256'
-)
-$originalEnvironment = @{}
-foreach ($name in $environmentNames) {
-    $originalEnvironment[$name] = [Environment]::GetEnvironmentVariable($name, 'Process')
-}
-
 try {
-    [void][IO.Directory]::CreateDirectory($testRoot)
-    $dockerStub = @'
+  [void][IO.Directory]::CreateDirectory($work)
+  $shell = @'
 #!/bin/sh
 set -eu
 printf '%s\n' "$*" >> "$DOCKER_CALL_LOG"
-if [ "$1" = "image" ] && [ "$2" = "inspect" ]; then
-    printf '%s\n' 'sha256:fixture'
-elif [ "$1" = "run" ]; then
-    case " $* " in
-        *" --entrypoint rpm "*)
-            printf '%s\n' 'fixture-package|1.0|MIT'
-            ;;
-        *)
-            printf '%s\n' 'MOCK RUN SUCCEEDED'
-            ;;
-    esac
+if [ "$1" = context ] && [ "$2" = inspect ]; then
+  printf '%s\n' 'unix:///var/run/docker.sock'
+elif [ "$1" = info ]; then
+  exit 0
+elif [ "$1" = buildx ] && [ "$2" = imagetools ] && [ "$3" = inspect ]; then
+  case "$4" in
+    *:sha-07eb2a4561f0)
+      printf '{"digest":"%s","mediaType":"%s"}\n' "$DOCKER_MOCK_SOURCE_DIGEST" "$DOCKER_MOCK_MEDIA_TYPE"
+      ;;
+    *:latest)
+      printf '%s\n' '{"digest":"sha256:0000000000000000000000000000000000000000000000000000000000000001","mediaType":"application/vnd.docker.distribution.manifest.v2+json"}'
+      ;;
+    *) exit 50 ;;
+  esac
+else
+  exit 60
 fi
 '@
-    [IO.File]::WriteAllText(
-        $dockerPath,
-        $dockerStub.Replace("`r`n", "`n"),
-        [Text.UTF8Encoding]::new($false)
-    )
-    & chmod +x $dockerPath
-    if ($LASTEXITCODE -ne 0) {
-        throw 'Could not make mock Docker CLI executable.'
-    }
+  [IO.File]::WriteAllText($shim,$shell.Replace([char]13+[string][char]10,[string][char]10),[Text.UTF8Encoding]::new($false))
+  & chmod +x $shim
+  if ($LASTEXITCODE -ne 0) { throw 'Could not enable mock executable' }
+  [Environment]::SetEnvironmentVariable('PATH',$work+[IO.Path]::PathSeparator+$original['PATH'],'Process')
+  [Environment]::SetEnvironmentVariable('DOCKER_CALL_LOG',$log,'Process')
+  [Environment]::SetEnvironmentVariable('DOCKER_HOST','unix:///var/run/docker.sock','Process')
+  [Environment]::SetEnvironmentVariable('DOCKERHUB_USERNAME','paulcheek','Process')
+  [Environment]::SetEnvironmentVariable('GITHUB_EVENT_NAME','push','Process')
+  [Environment]::SetEnvironmentVariable('GITHUB_REF','refs/heads/main','Process')
+  [Environment]::SetEnvironmentVariable('DOCKERHUB_TOKEN','mock','Process')
+  [Environment]::SetEnvironmentVariable(
+    'DOCKER_MOCK_SOURCE_DIGEST',
+    'sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30',
+    'Process'
+  )
+  [Environment]::SetEnvironmentVariable(
+    'DOCKER_MOCK_MEDIA_TYPE',
+    'application/vnd.docker.distribution.manifest.v2+json',
+    'Process'
+  )
 
-    $mockPath = $testRoot + [IO.Path]::PathSeparator + $originalEnvironment['PATH']
-    [Environment]::SetEnvironmentVariable('PATH', $mockPath, 'Process')
-    [Environment]::SetEnvironmentVariable('GITHUB_EVENT_NAME', 'push', 'Process')
-    [Environment]::SetEnvironmentVariable('GITHUB_REF', 'refs/heads/main', 'Process')
-    [Environment]::SetEnvironmentVariable(
-        'GITHUB_SHA',
-        '0123456789abcdef0123456789abcdef01234567',
-        'Process'
-    )
-    [Environment]::SetEnvironmentVariable('DOCKERHUB_USERNAME', 'paulcheek', 'Process')
-    [Environment]::SetEnvironmentVariable('DOCKERHUB_TOKEN', 'mock', 'Process')
-    [Environment]::SetEnvironmentVariable('RUNNER_TEMP', $testRoot, 'Process')
-    [Environment]::SetEnvironmentVariable('OS_LICENSE_REVIEW_APPROVED', $null, 'Process')
-    [Environment]::SetEnvironmentVariable(
-        'OS_PACKAGE_LICENSE_MANIFEST_SHA256',
-        $null,
-        'Process'
-    )
+  $blocked = $false
+  try { & $legacy -Mode Publish -EvidenceDir $work | Out-Null }
+  catch { $blocked = $_.Exception.Message -match 'Legacy environment-variable-controlled Docker publication is retired' }
+  if (-not $blocked) { throw 'Old publish entrypoint was not retired' }
+  if (Test-Path -LiteralPath $log) { throw 'Legacy script attempted Docker before rejection' }
 
-    $resolvedDocker = Get-Command docker -CommandType Application |
-        Select-Object -First 1
-    if ([IO.Path]::GetFullPath($resolvedDocker.Source) -cne [IO.Path]::GetFullPath($dockerPath)) {
-        throw 'Mock Docker CLI did not take precedence on PATH.'
-    }
+  & $new | Out-Null
+  if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw 'New publisher dry-run failed unexpectedly' }
+  $calls = @(Get-Content -LiteralPath $log)
+  if (@($calls | Where-Object { $_ -match '^(?:push|tag|login)\s' }).Count -ne 0) {
+    throw 'Dry-run invoked a mutation or Docker login'
+  }
+  if (@($calls | Where-Object { $_ -match '^buildx imagetools inspect' }).Count -ne 2) {
+    throw 'Dry-run failed to inspect immutable and latest registry manifests'
+  }
 
-    $unapprovedLog = Join-Path $testRoot 'unapproved-docker.log'
-    [Environment]::SetEnvironmentVariable('DOCKER_CALL_LOG', $unapprovedLog, 'Process')
-    $unapprovedEvidence = Join-Path $testRoot 'unapproved-evidence'
-    $unapprovedEvidenceRelative = [IO.Path]::GetRelativePath($root, $unapprovedEvidence)
-    & $publishScript -Mode Publish -EvidenceDir $unapprovedEvidenceRelative | Out-Null
+  $blocked = $false
+  try {
+    & $new -Publish -AcknowledgeLatestReplacement (
+      'paulcheek/android-source-study-v1:latest@sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30') | Out-Null
+  } catch { $blocked = $_.Exception.Message -match 'required' }
+  if (-not $blocked) { throw 'Missing approval and validation evidence failed open' }
+  $calls = @(Get-Content -LiteralPath $log)
+  if (@($calls | Where-Object { $_ -match '^(?:push|tag|login)\s' }).Count -ne 0) {
+    throw 'Publisher mutated a tag without approval evidence'
+  }
 
-    $unapprovedCalls = @(Get-Content -LiteralPath $unapprovedLog)
-    $androidPushes = @($unapprovedCalls | Where-Object {
-        $_ -match '^push paulcheek/android-source-study-v1:'
-    })
-    if ($androidPushes.Count -ne 2 -or
-        $unapprovedCalls -notcontains 'push paulcheek/android-source-study-v1:sha-0123456789ab' -or
-        $unapprovedCalls -notcontains 'push paulcheek/android-source-study-v1:latest') {
-        throw 'Android immutable and latest tags were not both pushed without OpenSUSE approval.'
-    }
-    if ($unapprovedCalls -match 'opensuse-leap-hardened|opensuse-leap-hardened\.Dockerfile') {
-        throw 'OpenSUSE Docker operations occurred without review approval.'
-    }
-    if (@($unapprovedCalls | Where-Object { $_ -match '^run ' }).Count -ne 1) {
-        throw 'Unexpected container validation occurred without OpenSUSE review approval.'
-    }
+  [Environment]::SetEnvironmentVariable('DOCKER_MOCK_SOURCE_DIGEST',('f' * 64).Insert(0,'sha256:'),'Process')
+  $blocked = $false
+  try { & $new | Out-Null }
+  catch { $blocked = $_.Exception.Message -match 'operator-supplied SHA256' }
+  if (-not $blocked) { throw 'Digest mismatch did not block publisher' }
 
-    $unapprovedPublish = Get-Content -LiteralPath (
-        Join-Path $unapprovedEvidence 'publish.json'
-    ) -Raw | ConvertFrom-Json
-    if ($unapprovedPublish.android_published -ne $true -or
-        $unapprovedPublish.opensuse_published -ne $false -or
-        $unapprovedPublish.opensuse_skip_reason -notmatch 'OS_LICENSE_REVIEW_APPROVED') {
-        throw 'Publication evidence did not record the independent Android publish and OpenSUSE skip.'
-    }
-
-    $fixtureLicenseFile = Join-Path $testRoot 'approved-license-fixture.tsv'
-    'fixture-package|1.0|MIT' |
-        Set-Content -LiteralPath $fixtureLicenseFile -Encoding utf8
-    $approvedManifestSha = (Get-FileHash -LiteralPath $fixtureLicenseFile -Algorithm SHA256).Hash.ToLowerInvariant()
-    $approvedLog = Join-Path $testRoot 'approved-docker.log'
-    [Environment]::SetEnvironmentVariable('DOCKER_CALL_LOG', $approvedLog, 'Process')
-    [Environment]::SetEnvironmentVariable('OS_LICENSE_REVIEW_APPROVED', 'true', 'Process')
-    [Environment]::SetEnvironmentVariable(
-        'OS_PACKAGE_LICENSE_MANIFEST_SHA256',
-        $approvedManifestSha,
-        'Process'
-    )
-    $approvedEvidence = Join-Path $testRoot 'approved-evidence'
-    $approvedEvidenceRelative = [IO.Path]::GetRelativePath($root, $approvedEvidence)
-    & $publishScript -Mode Publish -EvidenceDir $approvedEvidenceRelative | Out-Null
-
-    $approvedCalls = @(Get-Content -LiteralPath $approvedLog)
-    $approvedPushes = @($approvedCalls | Where-Object { $_ -match '^push ' })
-    $approvedAndroidPushes = @($approvedCalls | Where-Object {
-        $_ -match '^push paulcheek/android-source-study-v1:'
-    })
-    $opensuseImmutablePushes = @($approvedCalls | Where-Object {
-        $_ -match '^push paulcheek/opensuse-leap-hardened:sha-'
-    })
-    $opensuseLatestPushes = @($approvedCalls | Where-Object {
-        $_ -match '^push paulcheek/opensuse-leap-hardened:latest$'
-    })
-    if ($approvedPushes.Count -ne 4 -or
-        $approvedAndroidPushes.Count -ne 2 -or
-        $opensuseImmutablePushes.Count -ne 1 -or
-        $opensuseLatestPushes.Count -ne 1) {
-        throw 'A matching OpenSUSE review manifest did not permit both images to publish.'
-    }
-    $approvedPublish = Get-Content -LiteralPath (
-        Join-Path $approvedEvidence 'publish.json'
-    ) -Raw | ConvertFrom-Json
-    if ($approvedPublish.opensuse_published -ne $true -or
-        $approvedPublish.opensuse_license_manifest_sha256 -cne $approvedManifestSha) {
-        throw 'Publication evidence did not record the approved OpenSUSE image and manifest.'
-    }
-
-    $mismatchLog = Join-Path $testRoot 'mismatch-docker.log'
-    [Environment]::SetEnvironmentVariable('DOCKER_CALL_LOG', $mismatchLog, 'Process')
-    [Environment]::SetEnvironmentVariable(
-        'OS_PACKAGE_LICENSE_MANIFEST_SHA256',
-        ('0' * 64),
-        'Process'
-    )
-    $mismatchEvidence = Join-Path $testRoot 'mismatch-evidence'
-    $mismatchEvidenceRelative = [IO.Path]::GetRelativePath($root, $mismatchEvidence)
-    $mismatchRejected = $false
-    try {
-        & $publishScript -Mode Publish -EvidenceDir $mismatchEvidenceRelative | Out-Null
-    } catch {
-        if ($_.Exception.Message -notmatch 'Unapproved or changed OS package license manifest') {
-            throw
-        }
-        $mismatchRejected = $true
-    }
-    if (!$mismatchRejected) {
-        throw 'A mismatched OpenSUSE license inventory was not rejected.'
-    }
-    $mismatchCalls = @(Get-Content -LiteralPath $mismatchLog)
-    if (@($mismatchCalls | Where-Object { $_ -match '^(push|login) ' }).Count -ne 0) {
-        throw 'Registry login or a push occurred with a mismatched OpenSUSE license inventory.'
-    }
-    if (!(Test-Path -LiteralPath (Join-Path $mismatchEvidence 'opensuse-os-licenses.tsv'))) {
-        throw 'The OpenSUSE license inventory was not captured for the mismatch test.'
-    }
-
-    Write-Output 'PASS Docker publish policy: Android is independent; OpenSUSE remains review/hash gated.'
-} finally {
-    if (Test-Path -LiteralPath $testRoot) {
-        Remove-Item -LiteralPath $testRoot -Recurse -Force
-    }
-    foreach ($name in $environmentNames) {
-        [Environment]::SetEnvironmentVariable($name, $originalEnvironment[$name], 'Process')
-    }
+  [Environment]::SetEnvironmentVariable(
+    'DOCKER_MOCK_SOURCE_DIGEST',
+    'sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30',
+    'Process'
+  )
+  [Environment]::SetEnvironmentVariable('DOCKER_MOCK_MEDIA_TYPE','application/vnd.oci.image.index.v1+json','Process')
+  $blocked = $false
+  try { & $new | Out-Null }
+  catch { $blocked = $_.Exception.Message -match 'image index' }
+  if (-not $blocked) { throw 'Multi-platform index was incorrectly accepted for docker push' }
+  $calls = @(Get-Content -LiteralPath $log)
+  if (@($calls | Where-Object { $_ -match '^(?:push|tag|login)\s' }).Count -ne 0) {
+    throw 'A negative fixture caused a Docker mutation'
+  }
+  Write-Output 'PASS Docker publishing negative controls: legacy blocked; dry-run, missing approval, digest mismatch and multi-platform index fail closed.'
+}
+finally {
+  foreach ($v in $vars) {
+    [Environment]::SetEnvironmentVariable($v,$original[$v],'Process')
+  }
+  if (Test-Path -LiteralPath $work) { Remove-Item -LiteralPath $work -Recurse -Force }
 }
