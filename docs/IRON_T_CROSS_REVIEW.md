@@ -168,6 +168,7 @@ Status: **SOURCE CHANGE COMMITTED / NEW LOCAL RUNTIME NOT TESTED**. This continu
 - `CMAKE_CXX_STANDARD 20` is the numeric language level; setting it to `TRUE` is not a valid way to request C++20.
 - `CMAKE_CXX_STANDARD_REQUIRED ON` is the boolean that prevents silent fallback to older C++ modes.
 - `CMAKE_CXX_EXTENSIONS OFF` requests ISO C++20 rather than compiler-specific dialect extensions. All 11 prior target-level `CXX_EXTENSIONS YES` overrides were changed to `NO`, and the dedicated parity-core object explicitly uses standard C++20.
+- A subsequent whole-repository review also found `CXX_EXTENSIONS ON` in `shared/CMakeLists.txt` and `tests/consumer/CMakeLists.txt`. Both independent CMake projects now set global and explicit target extensions `OFF`, avoiding downstream dialect inconsistency.
 - Optimization remains MSVC `/O2` or GCC/Clang `-O2`. Compiler-extension selection is not a performance optimization setting. This source change still needs full CMake configure/build and regression testing.
 
 ### Derived audit YAML and execution source
