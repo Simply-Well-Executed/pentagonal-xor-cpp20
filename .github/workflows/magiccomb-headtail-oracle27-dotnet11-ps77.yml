@@ -87,6 +87,24 @@ jobs:
             throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_changed'
           }
           Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|exact_legal_reference_bytes'
+      - name: Verify OpenBSD 8.0 release source pins at MagicComb HEAD and TAIL
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $gate = Join-Path $src 'ci/Assert-OpenBSD80SourceLock.ps1'
+          if (-not [IO.File]::Exists($gate)) { throw 'OPENBSD|HOLD|missing_source_pin_gate' }
+          $head = Join-Path $env:RUNNER_TEMP 'openbsd-source-head.txt'
+          $tail = Join-Path $env:RUNNER_TEMP 'openbsd-source-tail.txt'
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $head
+          if ($LASTEXITCODE -ne 0) { throw 'OPENBSD|HOLD|HEAD_failed' }
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $tail
+          if ($LASTEXITCODE -ne 0) { throw 'OPENBSD|HOLD|TAIL_failed' }
+          if (-not [StringComparer]::Ordinal.Equals([IO.File]::ReadAllText($head),
+                                                   [IO.File]::ReadAllText($tail))) {
+            throw 'OPENBSD|HOLD|HEAD_TAIL_drift'
+          }
+          Write-Host 'OPENBSD|8.0|HEAD_TAIL_SOURCE_LOCK_PASS|NO_NETWORK|SOURCE_BUILD_UNVERIFIED|STABLE_PATCH_PIN_PENDING|HOLD'
       - name: Verify FRESH source custody and variable-free terminal without shell execution
         shell: pwsh
         run: |

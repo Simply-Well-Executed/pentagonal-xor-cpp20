@@ -1,20 +1,26 @@
 cmake_minimum_required(VERSION 3.23)
 project(PentagonalXOR VERSION 0.2.0 LANGUAGES CXX)
 
-# ISO C++20 and user-specified release optimization policy.
-# MSVC /O2 in Release, GCC/Clang -O3 in Release; non-Release stays O2.
-# Historical O2 evidence is not silently relabeled as O3 evidence.
+# ISO C++20, strict O2 optimization (no O0/O3).
+# Historical O3 evidence remains in Git history, never relabeled.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
+  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+     NOT CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "22.1.6")
+    message(FATAL_ERROR
+      "OPENBSD|HOLD|expected_base_clang_22_1_6|source_and_license_review_required")
+  endif()
+  message(STATUS
+    "OPENBSD|8.0|CLANG_VERSION_MATCH_ONLY|SOURCE_PIN_IN_ci/OPENBSD_80_SOURCE_LOCK.tsv|STABLE_PATCH_AND_LICENSE_HOLD")
+endif()
 foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
   if(MSVC)
     set(CMAKE_CXX_FLAGS_${_config} "/MD /O2 /DNDEBUG" CACHE STRING "MSVC optimized O2" FORCE)
-  elseif(_config STREQUAL "RELEASE" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
-    set(CMAKE_CXX_FLAGS_${_config} "-O3 -DNDEBUG" CACHE STRING "GCC/Clang Release O3" FORCE)
   else()
-    set(CMAKE_CXX_FLAGS_${_config} "-O2 -DNDEBUG" CACHE STRING "Non-Release or other compiler O2" FORCE)
+    set(CMAKE_CXX_FLAGS_${_config} "-O2 -DNDEBUG" CACHE STRING "Native compiler optimized O2" FORCE)
   endif()
 endforeach()
 
