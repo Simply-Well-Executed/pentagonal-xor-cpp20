@@ -223,3 +223,44 @@ Status: **SOURCE CHANGE COMMITTED / NEW LOCAL RUNTIME NOT TESTED**. This continu
 **Preserved:** The established odd-parity probability formula and CLI remain intact, historical Docker/Java source remains under review, no GitHub Actions workflow was added, and the PR remains **DRAFT / UNMERGED**. Removing standard-library APIs from a newly added independent throughput module does not establish machine-level zero-CALL, secure secrets, memory isolation or whole-repository freestanding compliance.
 
 Canonical source-level contract: [STD-free native T-CROSS](STD_FREE_NATIVE_T_CROSS.md). The full [throughput engineering protocol](PENTAGONAL_XOR_THROUGHPUT.md) contains historical design provenance and a superseding pointer.
+
+## Pentagonal Suite T-CROSS +&-DIFF frozen source snapshot
+
+**Status: VERIFIED GIT DIFF, SOURCE INSPECTION COMPLETE, COMPILE AND RUNTIME NOT TESTED.** This is a new, scoped source ledger, not a revision of earlier historical T-CROSS counts. Changes after the candidate commit must generate a new record.
+
+- **CORE (before):** `9f678c13d02e55eb736838c413d41e49dd864f6c`, draft PR #19 prior to Pentagonal Suite additions.
+- **CANDIDATE (after):** `2aca633391d8fafc589f022f35f49316e49b709b`, includes three comment-free suite sources, CMake targets, POSIX/YAML gates and supporting documentation.
+- **Authority:** [actual Git compare](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/9f678c13d02e55eb736838c413d41e49dd864f6c...2aca633391d8fafc589f022f35f49316e49b709b). **10 files, 11 commits, +647 / -37, net +610 source lines**. These are Git line counts, not memory/performance or machine-code measurements.
+- **Future reports:** `sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml` derives fresh `before`, `after`, per-file additions/deletions and totals from the actual local Git state; frozen figures below must not masquerade as a future head.
+
+| Source path | Git status | + added | - removed |
+| --- | --- | ---: | ---: |
+| `.github/pull_request_template.md` | modified | +9 | -0 |
+| `CMakeLists.txt` | modified | +21 | -0 |
+| `CONTRIBUTING.md` | modified | +2 | -1 |
+| `README.md` | modified | +8 | -0 |
+| `Taskfile.yml` | modified | +10 | -4 |
+| `ci/t-cross-posix.sh` | modified | +46 | -32 |
+| `docs/PENTAGONAL_SUITE.md` | added | +57 | -0 |
+| `include/pentagonal_suite.hpp` | added | +259 | -0 |
+| `src/suite_main.cpp` | added | +78 | -0 |
+| `tests/pentagonal_suite_test.cpp` | added | +157 | -0 |
+| **TOTAL** | **10 files** | **+647** | **-37** |
+
+### Nine-operation implementation and acceptance
+
+| T-CROSS subject | - Baseline `9f678c13` | + Candidate `2aca6333` | Evidence |
+| --- | --- | --- | --- |
+| Bitwise operation family | Existing exact XOR and periodic LUT XOR only | Adds OR, AND, NAND, NOP, NIL as separate exact-seeded and periodic functions | Source inspected, CTest NOT RUN |
+| Quiet-NaN payloads | No suite NaN boxing | `pentagonal_nan_bits`, `extract_nan_payload`, `is_pentagonal_nan`, complete 8-byte LE boxes and 0xFF tail | Source inspected, CTest NOT RUN |
+| Stateful generator | No bounded COR | `PentagonalCor` uses remaining count and checked exhaustion, no `start+count` overflow | Source inspected, CTest NOT RUN |
+| Lazy counted range | No suite VISTA | `PentagonalVista` clamps at the 64-bit index boundary and supports indexed/iterator/subvista access | Source inspected, CTest NOT RUN |
+| Canonical XOR and keystream | Existing `pentagonal_xor.hpp` authority | Suite imports existing `pentagonal_xor.hpp`; no duplicate `PENTAGONAL_LUT` or `fast_xor_buffer` | Source comparison inspected |
+| Suite source STD usage | Previous suite sources absent | All three new suite sources: zero `std::` names and no C/C++ standard-library includes | Static source check; native audit command NOT RUN |
+| Source comments | Previous suite sources absent | All three new suite sources have zero `//` or `/*...*/` comments | Static source check; native audit command NOT RUN |
+| Native CLI and CTest | Existing parity/throughput CLIs | Adds independent 16 MiB Suite CLI and `pentagonal_suite_operations` plus `pentagonal_suite_cli_smoke` CTests | Targets present, build/CTest NOT RUN |
+| Whole-repository STD and binary imports | Historical C/C++ STD usage and POSIX/Windows system-library dependencies | Remain in place; strict global STD and binary gates remain blocking | **NOT CERTIFIED** |
+
+**Special limitations:** `is_pentagonal_nan` detects a quiet-NaN header pattern, not cryptographic origin or mathematical inverse provenance. NIL zero-fill is not guaranteed secure memory erasure. The NOP mode performs no memory accesses and has O(1) semantics, not a guaranteed constant-duration full-buffer benchmark. CPU affinity and moderate priority are best-effort hints only. COR's 64-bit *index* bounds do not guarantee arbitrary-precision pentagonal *values*. Integer qNaN bytes are not interpreted as floating-point values in the implementation.
+
+**Execution boundary:** No GitHub Actions workflow, hosted/self-hosted runner or container was added to this PR. Existing unrelated C++ headers and algorithms were not deleted. **PR remains DRAFT / UNMERGED. Release, performance, compiler portability, object disassembly, zero-runtime-import and whole-repository STD-free certification remain HOLD pending direct evidence.**
