@@ -10,7 +10,7 @@ vars:
   # Reviewed operator assertions; not an automatically detected latest release.
   EXPECTED_PWSH_VERSION: '7.7.0'
   EXPECTED_CMAKE_VERSION: '3.30.0'
-  T_CROSS_BASE_SHA: '3570a7512bc0cd66b39df0fa26133a584b7a35fe'
+  T_CROSS_BASE_SHA: '313e25251243b85fb79f10c04236eb355beca1ce'
 
 env:
   BUILD_DIR: '{{.BUILD_DIR}}'
@@ -55,12 +55,12 @@ tasks:
       - sh ci/t-cross-posix.sh gate-no-residual-surfaces
 
   gate-pinned-versions:
-    desc: 'Fail closed unless locally installed CMake and PowerShell match operator assertions'
+    desc: 'Require pinned local CMake; check PowerShell version only when pwsh is installed'
     cmds:
       - sh ci/t-cross-posix.sh gate-pinned-versions
 
   build-cpp20:
-    desc: 'Configure required ISO C++20, extensions OFF, existing O2; compile locally'
+    desc: 'Configure ISO C++20: MSVC Release O2, GCC/Clang Release O3; compile locally'
     cmds:
       - sh ci/t-cross-posix.sh build-cpp20
 
@@ -70,12 +70,12 @@ tasks:
       - sh ci/t-cross-posix.sh gate-zero-function-calls
 
   gate-zero-network-imports:
-    desc: 'Inspect direct CLI imports for known networking libraries; not runtime isolation proof'
+    desc: 'Inspect both parity and throughput CLI imports; not runtime isolation proof'
     cmds:
       - sh ci/t-cross-posix.sh gate-zero-network-imports
 
   test-ctest:
-    desc: 'Run native CTest regression suite with recorded outcomes'
+    desc: 'Run parity, SWAR roundtrip and throughput CLI CTest suites locally'
     cmds:
       - sh ci/t-cross-posix.sh test-ctest
 
