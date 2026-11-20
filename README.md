@@ -18,6 +18,14 @@
 
 ---
 
+## STD-free throughput engine (exploratory PR #19)
+
+The optional [byte-stream XOR header](include/pentagonal_xor.hpp), [fixed-buffer and borrowed-view header](include/pxor_memory.hpp), [native benchmark CLI](src/main.cpp), and [throughput regression](tests/pentagonal_xor_throughput_test.cpp) have been refactored to **zero C/C++ standard-library headers and zero `std::` calls in those four sources**. They use C++20 language features and explicit Win32/POSIX APIs. `fast_xor_buffer` now uses `constexpr` little-endian byte packing and unpacking instead of `std::memcpy`; scoped decrypted literals use runtime volatile cleanup without `std::is_constant_evaluated`. Native OS page allocation replaces C++ `new` for optional buffers over the default 16 MiB.
+
+The original five-feature [parity CLI](pentagonal_xor_cpp20.cpp), other historical libraries and existing tests **are not yet STD-free**. A whole-repository T-CROSS gate is present and must remain blocking until those files are independently migrated and regression-tested. Runtime linkage to libc/UCRT or standard C++ libraries has **not been inspected on a compiled PR binary**. Source-level absence of `std::` does not imply freestanding operation, zero imports, or absence of system calls. The new CLI's native I/O backend supports Windows and Linux; other hosts retain the public header without the benchmark executable.
+
+See [STD-free native T-CROSS audit](docs/STD_FREE_NATIVE_T_CROSS.md) and [POSIX/YAML gates](Taskfile.yml). No new full-build or linker result is asserted by this source change. The periodic 256-byte stream remains distinct from the exact seeded sequence.
+
 ## Local native verification (Draft PR #19)
 
 **No GitHub Actions runner, VM image or self-hosted runner.** The PR branch removes the remaining `.github/workflows/native-core.yml` and runs verification only when the maintainer invokes [`ci/Invoke-NativeCore.ps1`](ci/Invoke-NativeCore.ps1) on a locally controlled Windows machine. It uses installed PowerShell, Git (local inspection only), MSVC, CMake and CTest. It does not install dependencies, fetch source, query a REST API, invoke Node, or call Docker. Historical workflow files remain in Git history; `main` is unchanged until the PR is merged.
