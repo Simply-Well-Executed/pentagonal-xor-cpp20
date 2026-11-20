@@ -37,7 +37,7 @@ Canonical mathematics and source identity remain in the existing parity implemen
 
 ## Offline, pinned and least-privilege Docker preflight
 
-The operator must independently review and preload image manifests by digest in the *local* Docker store and verify third-party base and SDK licenses. No `latest` tag can substitute for a digest. The POSIX wrapper refuses remote Docker endpoints and uncached images. Docker Compose uses `pull_policy: never`, `network_mode: none`, non-root host UID:GID, read-only root filesystem, read-only source and NDK mounts, dropped capabilities and no-new-privileges.
+The operator must independently review and preload image manifests by digest in the *local* Docker store and verify third-party base and SDK licenses. No `latest` tag can substitute for a digest. The POSIX wrapper refuses remote Docker endpoints and uncached images. Docker Compose uses `pull_policy: never`, `network_mode: none`, non-root host UID:GID, read-only root filesystem, read-only committed source snapshot and NDK mounts, dropped capabilities and no-new-privileges.
 
 Required preloaded Linux images contain CMake, CTest, Git, C++20 compiler, POSIX shell, SHA256 tools, find, grep and awk. The preloaded NDK builder also contains the operator-installed Android NDK exposed by a **read-only bind mount**. No build stage runs `apt`, `zypper`, `curl`, `wget`, `npm` or a network checkout. Registry access for initial image acquisition, if required, happens **outside** this workflow and needs separate human review. No container runs with the Docker socket mounted.
 
