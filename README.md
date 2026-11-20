@@ -20,7 +20,9 @@
 
 ## Exploratory calculus operator lexicon: three independent modes
 
-The [experimental operand protocol](docs/EXPLORATORY_OPERAND_MODES.md) preserves exact operators such as `=`, `;=`, `[=`, `]=`, the ten original COREAO PlusStar spellings and the user's additional gain/dispersion/stability modes. Every one of the **14 underlying operand identities** has **three conceptual mode slots**, giving **42** slots. The separate STD-free C++20 [lexicon](shared/quantum_operand_lexicon.hpp) stores 22 exact spelling records, including `+p/-p/=p`, `+P/-P/=P`, shift-up `+/` and shift-down `+\`.
+The [experimental operand protocol](docs/EXPLORATORY_OPERAND_MODES.md) preserves exact operators such as `=`, `;=`, `[=`, `]=`, the ten original COREAO PlusStar spellings and the user's additional gain/dispersion/stability modes. Every one of the **14 underlying operand identities** has **three conceptual mode slots**, giving **42** slots. The separate STD-free C++20 [lexicon](shared/quantum_operand_lexicon.hpp) stores 24 exact spelling records, including standalone `+`, newly specified `+=`, the historical distinct `+;`, `+'`, `+-` tokens, and `+p/-p/=p`, `+P/-P/=P`, shift-up `+/` and shift-down `+\`.
+
+The directly listed `+=` occupies an Equality operand gain-prefix **syntax slot only**. Its numerical, assignment, and comparison semantics are not inferred. Standalone `+` is a separate unassigned-mode literal, not an alias of `++`.
 
 The proposed counterparts `-/`, `=/`, `-\`, and `=\` have explicitly **inferred notation**; their three semantic modes are user-specified, but the exact written forms are not yet independently confirmed. Association of shift up with inverse-square law and shift down with the root-of-square theorem is **descriptive**, not a complete numerical function. Nothing here claims a new quantum-physics law or performs an unreviewed calculation.
 
