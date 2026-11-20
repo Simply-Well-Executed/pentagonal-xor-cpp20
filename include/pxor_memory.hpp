@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Paul Allen Cheek
 // Public fixed storage and non-owning read/write views, with NO standard headers.
 // C++ access qualifiers are not operating-system memory isolation.
-#pragma once
+#ifndef SWE_PXOR_MEMORY_HPP
+#define SWE_PXOR_MEMORY_HPP
 
 namespace pxor {
 
@@ -86,3 +87,5 @@ struct StringSlice {
 
 // Views borrow storage: no ownership, sharing synchronization or lifetime extension.
 } // namespace pxor
+
+#endif // SWE_PXOR_MEMORY_HPP
