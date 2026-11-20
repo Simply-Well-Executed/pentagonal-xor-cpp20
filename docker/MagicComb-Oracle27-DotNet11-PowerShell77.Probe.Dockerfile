@@ -85,3 +85,33 @@ USER 65534:65534
 # Tail tests and license inventory run in the GitHub Actions cloud job; this
 # Dockerfile NEVER declares a publication tag or a production release.
 CMD ["/bin/sh", "-c", "dotnet --version && pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' && java -version"]
+
+# MagicComb TAIL: Create a flattened, clean-filesystem experiment from the
+# verified upstream toolchain stage. The original base layers (including
+# inherited /usr/bin/pebble) remain preserved in the GitHub build provenance
+# and immutable base reference; the output does NOT republish these layers.
+# Standard multistage COPY, NOT a scanner suppression or metadata rewrite.
+# GNU/EPL licensing remains forbidden; flattening does not relicense files.
+FROM scratch AS flattened_audit_only
+COPY --from=toolchain_probe / /
+ARG SOURCE_REVISION
+LABEL org.opencontainers.image.source="https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opencontainers.image.title="MagicComb clean-rootfs .NET11 PowerShell7.7 OracleJava27 (UNPUBLISHED)" \
+      org.opencontainers.image.licenses="LicenseRef-MIXED-REVIEW-REQUIRED"
+ENV POWERSHELL_TELEMETRY_OPTOUT=1 \
+    DOTNET_CLI_TELEMETRY_OPTOUT=1 \
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1 \
+    JAVA_HOME=/opt/oracle/java \
+    PATH=/opt/oracle/java/bin:/opt/microsoft/powershell/7:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+WORKDIR /study
+RUN set -eu; \
+    test -x /usr/share/dotnet/dotnet; \
+    test -x /opt/microsoft/powershell/7/pwsh; \
+    test -x /opt/oracle/java/bin/java; \
+    test ! -e /usr/bin/pebble; \
+    /bin/sh /study/ci/Assert-AndroidLinux-NoPython.sh image; \
+    echo 'IRON|MAGICCOMB|TAIL|FLATTENED_ROOTFS|PEBBLE_ABSENT'
+USER 65534:65534
+CMD ["/bin/sh", "-c", "dotnet --version && pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' && java -version"]
+
