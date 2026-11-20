@@ -102,18 +102,9 @@ jobs:
             $wf = Join-Path (Join-Path $src '.github/workflows') $name
             if (-not [IO.File]::Exists($wf)) { throw ('POLICY|HOLD|missing_workflow|' + $name) }
             $body = [IO.File]::ReadAllText($wf)
-            $count = [regex]::Matches($body,'(?m)^  [a-z0-9_-]+:\s*
-          if ([IO.File]::Exists($docker)) {
-            $line = [IO.File]::ReadAllText($docker)
-            $gnuTooling = [regex]::IsMatch($line,'\b(g\+\+|gcc|gawk|make|grep|findutils)\b')
-            if ($gnuTooling) { Write-Host 'POLICY|GNU|UNAPPROVED|experimental_Dockerfile_toolchain' }
-          }
-          if ($scripts.Count -ne 0 -or $gnuTooling) {
-            throw "POLICY|HOLD|posix_scripts=$($scripts.Count)|unapproved_gnu_probe=$gnuTooling|migration_required"
-          }
-          Write-Host 'POLICY|SOURCE_CHECK|PASS|no_known_unapproved_ci_shell_or_probe'
-          Write-Host 'POLICY|LIMIT|source_scan_only|third_party_and_organization_inventory_still_required'
-).Count
+            $jobsBlock = [regex]::Match($body,'(?ms)^jobs:\r?\n(?<entries>.*)$')
+            if (-not $jobsBlock.Success) { throw ('POLICY|HOLD|missing_jobs|' + $name) }
+            $count = [regex]::Matches($jobsBlock.Groups['entries'].Value,'(?m)^  [a-z0-9_-]+:\s*$').Count
             $blocked = [regex]::Matches($body,'(?m)^    if: \$\{\{ false \}\}').Count
             if ($count -eq 0 -or $count -ne $blocked) {
               throw ('POLICY|HOLD|legacy_workflow_executable|' + $name + '|jobs=' + $count + '|blocked=' + $blocked)
