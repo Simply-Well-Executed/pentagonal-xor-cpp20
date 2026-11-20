@@ -199,3 +199,27 @@ Status: **SOURCE CHANGE COMMITTED / NEW LOCAL RUNTIME NOT TESTED**. This continu
 | Residual Java/Docker/Android directories | Present | Still present, strict gate reports a blocker | Source existence confirmed; retirement NOT DONE |
 
 **Current IRON verdict:** no runner images in the draft branch; ISO C++20 policy and POSIX T-CROSS source changes committed. New local tests and disassembly are unobserved, residual-surface and REST reviews remain open, and PR #19 remains draft/unmerged. This section is a methodology/source-change record, **not** certification of passing gates.
+
+## STD-free high-throughput XOR branch continuation
+
+**Decision: SOURCE-MODULE MIGRATION COMMITTED; RUNTIME VALIDATION PENDING; WHOLE-REPO GATE BLOCKED.** This is a new T-CROSS continuation after the prior frozen source-diff ledgers. Historical numeric +/- counts above are unchanged and must not be silently promoted to counts for this newer change set.
+
+**Frozen source-before reference:** `45bd2c004427906ed8fb5ba9a2056ed904ab65d3`, on draft PR #19 before the STD-free conversion. Current after-revision must be taken from the actual Git HEAD at review time. `sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml` is the authority for current source added/removed counts; no invented ledger values.
+
+| T-CROSS dimension | - Before | + Candidate | Evidence/status |
+| --- | --- | --- | --- |
+| Native memory aliases | `std::size_t`, `std::int64_t`, library headers | `unsigned char`, `int`, `long long`, `decltype(sizeof(0))`; compiler-width static assertions | Source inspected |
+| Fixed buffers / borrowed views | `std::`-based pointer/array facades | `FixedBuffer`, `ByteSlice`, `ConstByteSlice`, `StringSlice` in `include/pxor_memory.hpp` | Source inspected |
+| 8-byte XOR | `std::memcpy` payload/key load and store | C++20 constexpr `pack_u64_le`/`unpack_u64_le` and 0..7-byte tail | Source inspected; optimized machine code NOT TESTED |
+| String obfuscation | `std::is_constant_evaluated` conditional cleanup | C++20 compile-time cipher; runtime-only `void` scoped callback with volatile buffer cleanup | Source inspected; cleanup not cryptographic |
+| CLI storage | `std::vector`, `std::unique_ptr`, `std::chrono`, `std::printf` | 16 MiB fixed buffer, native Win32/POSIX page mapping/output/clock, bounded manual decimal parsing | Source inspected; Windows/Linux runtime NOT TESTED |
+| Test dependencies | `std::array`, `std::vector`, `std::span` and traits | Built-in arrays, C++20 core language compile-time assertions, runtime regression return codes | Source inspected; CTest NOT TESTED |
+| Downstream install | Throughput header only | Throughput header **plus** `pxor_memory.hpp` | CMake source inspected |
+| Other repository modules | Previously used standard-library code | Left unchanged, explicit `gate-no-std-repository` failure until migrated | **WHOLE-REPOSITORY NOT CERTIFIED** |
+| Runtime linkage | Not inspected | New `gate-no-std-binary` inspects direct C/C++ standard runtime imports | **NOT TESTED**; may fail because POSIX calls depend on libc |
+
+**Gate semantics:** `gate-no-std-throughput` examines four named source files. `gate-no-std-repository` searches all tracked C/C++ source and header paths and fails when legacy `std::` references remain. `gate-no-std-binary` checks compiled throughput CLI runtime imports, including C runtime dependencies, but even a clean direct import table is insufficient to prove full absence of dynamically resolved or transitive dependencies. The default YAML Taskfile and POSIX executor include these gates; any unrun gate is **NOT TESTED**, not automatically green.
+
+**Preserved:** The established odd-parity probability formula and CLI remain intact, historical Docker/Java source remains under review, no GitHub Actions workflow was added, and the PR remains **DRAFT / UNMERGED**. Removing standard-library APIs from a newly added independent throughput module does not establish machine-level zero-CALL, secure secrets, memory isolation or whole-repository freestanding compliance.
+
+Canonical source-level contract: [STD-free native T-CROSS](STD_FREE_NATIVE_T_CROSS.md). The full [throughput engineering protocol](PENTAGONAL_XOR_THROUGHPUT.md) contains historical design provenance and a superseding pointer.
