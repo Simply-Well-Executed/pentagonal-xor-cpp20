@@ -510,6 +510,8 @@ install(EXPORT swe_sigma_penta_ping_targets
   DESTINATION lib/cmake/SWESigmaPentaPing)
 install(FILES
   shared/sigma_penta_ping.hpp
+  shared/handi_sigmapi.hpp
+  shared/handi_rot_triad.hpp
   shared/sigmadi_handecasigma_presentation.hpp
   shared/sigmadi_collision12.hpp
   DESTINATION include/swe)
@@ -518,6 +520,17 @@ install(FILES
   docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg
   DESTINATION share/doc/pentagonal-xor)
 if(BUILD_TESTING)
+  add_executable(handi_sigmapi_test tests/handi_sigmapi_test.cpp)
+  target_compile_features(handi_sigmapi_test PRIVATE cxx_std_20)
+  set_target_properties(handi_sigmapi_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  if(MSVC)
+    target_compile_options(handi_sigmapi_test PRIVATE /O2)
+  else()
+    target_compile_options(handi_sigmapi_test PRIVATE -O2)
+  endif()
+  add_test(NAME handi_sigmapi_observation_not_automatic_pass
+           COMMAND handi_sigmapi_test)
   add_executable(sigma_penta_ping_test tests/sigma_penta_ping_test.cpp)
   target_compile_features(sigma_penta_ping_test PRIVATE cxx_std_20)
   add_test(NAME sigma_penta_ping_triple_ring_and_braid
