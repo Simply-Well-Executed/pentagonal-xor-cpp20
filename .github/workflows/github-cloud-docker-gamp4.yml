@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  statuses: write
 
 concurrency:
   group: github-cloud-gamp4-${{ github.ref }}
@@ -22,6 +23,7 @@ jobs:
     timeout-minutes: 75
     permissions:
       contents: read
+  statuses: write
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -33,7 +35,18 @@ jobs:
           test "${RUNNER_ENVIRONMENT:-}" = github-hosted
           test "$(uname -m)" = x86_64
           docker info
+      - name: Mark exact source Git commit as cloud validation pending
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data "{\"state\":\"pending\",\"target_url\":\"https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"GitHub-hosted Linux GAMP4 Docker running; not release-qualified\",\"context\":\"swe/github-cloud-gamp4-linux-amd64\"}" >/dev/null
       - name: Fetch the event commit using Git only (no Node checkout action)
+        id: validation
         shell: bash
         run: |
           set -euo pipefail
@@ -45,6 +58,24 @@ jobs:
           test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
           test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
           /bin/sh "$src/ci/Run-GitHubCloud-Gamp4.sh"
+      - name: Report actual validation result to commit status
+        if: always()
+        shell: bash
+        env:
+          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: |
+          set -euo pipefail
+          case "$VALIDATION_OUTCOME" in
+            success) state=success; description='GitHub-hosted Linux/amd64 Docker CTest and URS passed; not QA release' ;;
+            failure) state=failure; description='GitHub-hosted Linux/amd64 Docker validation failed' ;;
+            *) state=error; description='GitHub cloud Docker validation not completed' ;;
+          esac
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data "{\"state\":\"$state\",\"target_url\":\"https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"$description\",\"context\":\"swe/github-cloud-gamp4-linux-amd64\"}" >/dev/null
       - name: Final release-boundary notice
         if: always()
         shell: bash
