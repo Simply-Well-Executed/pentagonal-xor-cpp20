@@ -26,7 +26,8 @@ enum class Provenance : unsigned char {
     UserEqualsNovember2026,
     CoreaoPlusStarNovember2026,
     UserModeNovember2026,
-    InferredModeNotationNovember2026
+    InferredModeNotationNovember2026,
+    UserPlusLiteralNovember2026
 };
 
 enum class Mode : unsigned char {
@@ -86,10 +87,17 @@ inline constexpr Record records[] = {
     {"]=", 2u, Family::Equals, Status::Exploratory, Provenance::UserEqualsNovember2026,
         Operand::CloseEquality, Mode::Unassigned, Notation::DirectUser},
 
+    // Standalone + is an exact user-supplied literal, not shorthand for ++.
+    {"+", 1u, Family::CoreaoPlusStar, Status::Exploratory,
+        Provenance::UserPlusLiteralNovember2026, Operand::Plus, Mode::Unassigned, Notation::DirectUser},
     {"++", 2u, Family::CoreaoPlusStar, Status::InterpretedNoncanonical,
         Provenance::CoreaoPlusStarNovember2026, Operand::Plus, Mode::Gain, Notation::Recovered},
     {"+-", 2u, Family::CoreaoPlusStar, Status::InterpretedNoncanonical,
         Provenance::CoreaoPlusStarNovember2026, Operand::Minus, Mode::Gain, Notation::Recovered},
+    // += is directly supplied notation; only the gain-prefix slot is classified.
+    // No assignment, comparison, conservation, or numerical semantics are inferred.
+    {"+=", 2u, Family::CoreaoPlusStar, Status::Exploratory,
+        Provenance::UserPlusLiteralNovember2026, Operand::Equality, Mode::Gain, Notation::DirectUser},
     {"+\\", 2u, Family::CoreaoPlusStar, Status::Exploratory,
         Provenance::CoreaoPlusStarNovember2026, Operand::ShiftDown, Mode::Gain, Notation::DirectUser},
     {"+/", 2u, Family::CoreaoPlusStar, Status::Exploratory,
@@ -245,7 +253,7 @@ constexpr bool unique_mode_spellings() noexcept {
     return true;
 }
 
-static_assert(record_count == 22u);
+static_assert(record_count == 24u);
 static_assert(!valid_operand(static_cast<Operand>(255u)));
 static_assert(!mode_slot(static_cast<Operand>(255u), Mode::Gain).applicable);
 static_assert(conceptual_mode_slots == 42u);
@@ -257,6 +265,15 @@ static_assert(lookup_exact(";=", 2u)->status == Status::Exploratory);
 static_assert(lookup_exact("[=", 2u)->status == Status::Exploratory);
 static_assert(lookup_exact("]=", 2u)->status == Status::Exploratory);
 static_assert(lookup_exact("+p", 2u) != lookup_exact("+P", 2u));
+static_assert(lookup_exact("+", 1u)->mode == Mode::Unassigned);
+static_assert(lookup_exact("+", 1u)->operand == Operand::Plus);
+static_assert(lookup_exact("+=", 2u)->mode == Mode::Gain);
+static_assert(lookup_exact("+=", 2u)->operand == Operand::Equality);
+static_assert(lookup_exact("+=", 2u)->notation == Notation::DirectUser);
+static_assert(lookup_exact("+=", 2u)->status == Status::Exploratory);
+static_assert(lookup_exact("+", 1u) != lookup_exact("++", 2u));
+static_assert(lookup_mode(Operand::Equality, Mode::Gain) == lookup_exact("+=", 2u));
+static_assert(lookup_mode(Operand::Plus, Mode::Gain) == lookup_exact("++", 2u));
 static_assert(lookup_exact("+[", 2u) != lookup_exact("+]", 2u));
 static_assert(lookup_exact("+/", 2u)->operand == Operand::ShiftUp);
 static_assert(lookup_exact("+\\", 2u)->operand == Operand::ShiftDown);
