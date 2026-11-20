@@ -38,6 +38,31 @@ else()
     add_compile_options(-g)
 endif()
 
+# Cross-platform STD-free core packaging. The legacy application and
+# experiments remain available with the explicit OFF setting. Core-only builds
+# compile one ISO C++20 object and create a native static archive, without any
+# STL source includes, C++ runtime link step, network fetch or executable tests.
+option(SWE_STD_FREE_CORE_ONLY
+  "Build and package only the native STD-free bytewise Suite core" OFF)
+if(SWE_STD_FREE_CORE_ONLY)
+  add_library(swe_std_free_portable_core STATIC
+    tests/std_free_portable_probe.cpp)
+  target_include_directories(swe_std_free_portable_core PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/swe>)
+  target_compile_features(swe_std_free_portable_core PUBLIC cxx_std_20)
+  set_target_properties(swe_std_free_portable_core PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS swe_std_free_portable_core ARCHIVE DESTINATION lib)
+  install(FILES
+    include/pxor_memory.hpp
+    include/pentagonal_xor.hpp
+    include/pentagonal_suite.hpp
+    DESTINATION include/swe)
+  message(STATUS "IRON native STD-free core-only: archive build, no legacy targets")
+  return()
+endif()
+
 add_executable(pentagonal_xor pentagonal_xor_cpp20.cpp)
 target_compile_features(pentagonal_xor PRIVATE cxx_std_20)
 set_target_properties(pentagonal_xor PROPERTIES
