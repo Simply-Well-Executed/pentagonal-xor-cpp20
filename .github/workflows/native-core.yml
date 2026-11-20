@@ -62,17 +62,16 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Native C++20 build failed' }
           & ctest --test-dir build -C Release --output-on-failure
           if ($LASTEXITCODE -ne 0) { throw 'Native CTest failed' }
-      - name: 'Check latest stable PowerShell Core availability'
+      - name: 'Fail closed on reviewed PowerShell Core version (offline check)'
         shell: pwsh
         run: |
           Set-StrictMode -Version 2.0
           $ErrorActionPreference='Stop'
-          $release=Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -Headers @{'User-Agent'='PENTAGONAL-XOR-native-ci'} -TimeoutSec 30
-          $tag=[string]$release.tag_name
-          $latest=[version]($tag -replace '^v','')
+          # Reviewed floor as of 2026-11-19, not a claim of perpetual latest.
+          # Offline: no GitHub REST release API or dynamic binary download.
+          $requiredVersion=[version]'7.7.0'
           $present=[version]$PSVersionTable.PSVersion
-          if ($present -lt $latest) {
-            Write-Warning "PowerShell Core runner $present is behind latest stable $latest (runner image update pending)"
-          } else {
-            Write-Host "PowerShell Core $present matches latest stable $latest"
+          if ($present -lt $requiredVersion) {
+            throw "PowerShell Core $present is below reviewed minimum $requiredVersion; native gate BLOCKED"
           }
+          Write-Host "PowerShell Core $present meets reviewed minimum $requiredVersion"
