@@ -52,17 +52,24 @@ gate_no_live_rest() {
 
 gate_no_std_throughput() {
     need grep
-    # Seven new native C++20 sources must be free of standard APIs and intrinsics.
     for file in include/pxor_memory.hpp include/pentagonal_xor.hpp \
-                include/pentagonal_suite.hpp src/main.cpp src/suite_main.cpp \
+                include/pentagonal_suite.hpp shared/pentagonal_xor_std_free.h \
+                src/main.cpp src/suite_main.cpp src/parity_std_free_main.cpp \
                 tests/pentagonal_xor_throughput_test.cpp \
-                tests/pentagonal_suite_test.cpp; do
+                tests/pentagonal_suite_test.cpp \
+                tests/std_free_portable_probe.cpp; do
         test -f "$file" || fail "missing STD-free source: $file"
-        if grep -nE 'std::|#[[:space:]]*include[[:space:]]*<(array|vector|span|ranges|type_traits|cstddef|cstdint|cstdio|cstring|memory|new|chrono|charconv|concepts|stdio[.]h|stdlib[.]h|string[.]h|stdint[.]h)>|__builtin_' "$file"; then
-            fail "standard-library or compiler-builtin candidate in $file"
+        if grep -nE 'std::|__builtin_' "$file"; then
+            fail "standard-library namespace or compiler-specific builtin in $file"
+        fi
+        includes=$(grep -nE '^[[:space:]]*#[[:space:]]*include[[:space:]]*<' "$file" |
+            grep -Ev '<(windows[.]h|sched[.]h|sys/mman[.]h|sys/resource[.]h|time[.]h|unistd[.]h)>' || :)
+        if test -n "$includes"; then
+            printf '%s\n' "$includes" >&2
+            fail "unreviewed C/C++ header include in STD-free source: $file"
         fi
     done
-    pass 'gate-no-std-throughput|seven-sources|source-only'
+    pass 'gate-no-std-throughput|ten-sources|native-platform-headers-whitelisted'
 }
 
 gate_suite_no_comments() {
@@ -275,6 +282,9 @@ emit_diff_yaml() {
 default() {
     emit_diff_yaml > "$root/.iron-t-cross-diff.yml"
     pass 'emit-diff-yaml|local-artifact=.iron-t-cross-diff.yml'
+    sh "$root/ci/Export-StdFreeInventory.sh" > "$root/.iron-std-free-inventory.yml" ||
+        fail 'derived STD-free inventory YAML failed'
+    pass 'emit-std-inventory-yaml|local-artifact=.iron-std-free-inventory.yml'
     gate_no_remote_git
     gate_no_github_workflows
     gate_no_live_rest
@@ -307,5 +317,6 @@ case "${1:-default}" in
   gate-no-std-binary) gate_no_std_binary ;;
   test-ctest) test_ctest ;;
   emit-diff-yaml) emit_diff_yaml ;;
+  emit-std-inventory-yaml) sh "$root/ci/Export-StdFreeInventory.sh" ;;
   *) fail "unknown T-CROSS task: $1" ;;
 esac
