@@ -2,7 +2,17 @@
 
 > **Release status: HOLD.** This ledger is a custody and triage record, not a license grant, production approval, or an instruction to delete historical images. All identities are source-bound. Every exception is **UNAPPROVED** until explicit operator review.
 
-## Licensing decision delta, 2026-11-20 (CURRENT; supersedes the earlier blanket LGPL approval)
+## CURRENT operator decision: zero GNU and zero POSIX approvals (2026-11-20)
+
+The owner explicitly clarified that **no GNU or POSIX components are approved anywhere in the repository, project, organization or related hierarchy**, including build-only tools and disposable container stages. This **supersedes** the earlier permission for LGPL-2.1-only, which is a GNU license. The current [LOCK.tsv](../LICENSES/LOCK.tsv) marks both LGPL-2.1-only and LGPL-2.1-or-later **FORBIDDEN** without deleting their exact texts or earlier Git revisions. Preferred: 0BSD, BSD-2-Clause, BSD-3-Clause and MIT; official Oracle Java remains subject to the actual vendor terms, component provenance and third-party dependencies.
+
+**POSIX is an interface standard, not a software license.** A `$name` shell expansion is not a GNU copyright grant. GNU licenses and authored POSIX execution are two separate owner-defined denial predicates; neither permits the other by implication. No auto-executed GNU/POSIX development or build probe is approved. The old Linux/Docker pipeline was replaced in this draft PR by a PowerShell-based Windows-hosted **reference-integrity-only** gate. Other tracked `.sh` files, older Dockerfiles and branch-scoped workflows require separately inventoried replacements, not silent deletion. The existing source check is expected to fail until migration completes.
+
+The present PR **does not establish zero GNU/POSIX across other organization repositories, inherited toolchains or previously published artifacts**. Their status remains Needs Review/HOLD. No CI success, historic build, or source presence conveys an implicit exception. See [zero-approval migration protocol](GNU_POSIX_ZERO_APPROVAL_POLICY.md).
+
+## Prior decision trail (ARCHIVED)
+
+## Licensing decision delta, 2026-11-20 (ARCHIVED; superseded by zero-GNU/POSIX decision)
 
 **Preferred:** `0BSD`, `BSD-2-Clause`, `BSD-3-Clause`, `MIT`, approved **official Oracle Java** under the applicable **Oracle NFTC/vendor terms**, and `LGPL-2.1-only` (often written LGPL-2.1). **Forbidden:** `LGPL-3.0-only`, `LGPL-3.0-or-later`, GPL, AGPL, EUPL, EPL, and other unapproved GNU licenses. **Needs Review / HOLD:** unknown, mixed, or version-ambiguous licensing; `LGPL-2.1-or-later` requires an explicit choice of usable 2.1 terms and scope verification. **Oracle** is an approved vendor/toolchain family, not an SPDX license identifier and not blanket redistribution permission.
 
@@ -78,6 +88,6 @@ The independent Docker Scout v1.29.0 report on the new **local-only** experiment
 **A zero-reported-CVE scanner result does NOT mean an image is free from unreported, undiscovered or context-specific risk.** Supply-chain evaluation still failed **5/7 policy criteria**: Docker Scout counted **563 copyleft-licensed package records** and **two missing supply-chain attestations**. The independent conservative GNU/EPL metadata gate found **161 records requiring review**, with **0 missing-copyright-path records** after multiarchitecture normalization. These counts represent different scopes and methods, not interchangeable GPL-only proof. Oracle NFTC and its third-party notices remain a separate explicit licensing review.
 
 The cloud workflow **correctly returned FAILURE/HOLD, with no GHCR/Docker Hub push or production deployment**. `EXC-GNU-LINUX-001` [issue #29](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/issues/29) is still awaiting an explicit answer about disposable build-only GNU components. CVE [issue #30](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/issues/30) must retain the original finding and the experimental mitigation evidence; closing it as a production remediation would be premature. The older published Docker Hub candidate continues to report **3C/89H/204M/162L** and remains unchanged.
-## Next audit requirements
+## Next audit requirements (ARCHIVED; superseded by zero-GNU/POSIX migration prerequisites)
 
 Re-run a complete package/SBOM license scanner with normalized architecture suffixes; capture explicit license identifiers and third-party legal bundles from Microsoft .NET, PowerShell and Oracle Java; identify which files actually ship in a proposed runtime versus remain in disposable build infrastructure. Re-scan with the same Docker Scout release and exact platform/digest. Require zero applicable and unsuppressed CVEs plus an independently reviewed license inventory that admits verified preferred licenses (including LGPL-2.1-only and MIT), rejects LGPL-3.0/GPL/AGPL/EUPL/EPL components, and documents any other operator-approved exceptions before any new release.

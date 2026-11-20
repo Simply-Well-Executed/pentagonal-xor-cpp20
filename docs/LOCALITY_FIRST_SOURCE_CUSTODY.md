@@ -2,6 +2,8 @@
 
 **CURRENT METHOD, 2026-11-20.** Scope: first-party code, third-party dependency records, licensed toolchains, security scans, release evidence and canonical inputs across this repository. Preferred execution: **GitHub-hosted toolchains only** for the current cloud effort. Local-first means **resolve verified, version-pinned, committed evidence before network lookups**, not that remote verification is always unnecessary or that network topology alone proves legality/security.
 
+**CURRENT zero-approval constraint:** GNU packages and toolchains, including LGPL-2.1, and authored POSIX shell or POSIX-dependent build execution have **no approvals**. Existing historical source or inherited vendor tools do not establish consent. The new PowerShell-only LICENSES custody workflow does not imply that the broader tree has passed compliance. See [migration policy](GNU_POSIX_ZERO_APPROVAL_POLICY.md).
+
 ## HEAD -> use -> TAIL invariant
 
 1. **HEAD:** resolve a source revision and canonical byte stream; verify exact identity, UTF-8 validity where applicable, source/license provenance, pin/digest, and named authorization. Preserve raw third-party license bytes without NFKC or MagicComb alteration. The human-approved license status is distinct from the vendor's actual license grant.

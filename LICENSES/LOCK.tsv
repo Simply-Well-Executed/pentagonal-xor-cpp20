@@ -18,8 +18,8 @@ LICENSES/text/GPL-2.0-only.txt	GPL-2.0-only	FORBIDDEN	spdx/license-list-data	31b
 LICENSES/text/GPL-3.0-only.txt	GPL-3.0-only	FORBIDDEN	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/GPL-3.0-only.txt	f6cdd22a6c1fbc887e08a215cb4beb3c47048041
 LICENSES/text/GPL-3.0-or-later.txt	GPL-3.0-or-later	FORBIDDEN	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/GPL-3.0-or-later.txt	f6cdd22a6c1fbc887e08a215cb4beb3c47048041
 LICENSES/text/LGPL-2.0-only.txt	LGPL-2.0-only	FORBIDDEN	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/LGPL-2.0-only.txt	843b00b561a44454249f6554c609b2899251b3fd
-LICENSES/text/LGPL-2.1-only.txt	LGPL-2.1-only	PREFERRED	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/LGPL-2.1-only.txt	c6487f4fdf701640ac0f559eb0130cdf76c5d3f4
-LICENSES/text/LGPL-2.1-or-later.txt	LGPL-2.1-or-later	REVIEW	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/LGPL-2.1-or-later.txt	c6487f4fdf701640ac0f559eb0130cdf76c5d3f4
+LICENSES/text/LGPL-2.1-only.txt	LGPL-2.1-only	FORBIDDEN	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/LGPL-2.1-only.txt	c6487f4fdf701640ac0f559eb0130cdf76c5d3f4
+LICENSES/text/LGPL-2.1-or-later.txt	LGPL-2.1-or-later	FORBIDDEN	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/LGPL-2.1-or-later.txt	c6487f4fdf701640ac0f559eb0130cdf76c5d3f4
 LICENSES/text/LGPL-3.0-only.txt	LGPL-3.0-only	FORBIDDEN	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/LGPL-3.0-only.txt	513d1c01fe5b5b9724e999d8eb041ff17d444eaa
 LICENSES/text/MIT-0.txt	MIT-0	REVIEW	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/MIT-0.txt	a4e9dc9061885b4d1d4dde9d5db62608a973b26a
 LICENSES/text/MIT.txt	MIT	PREFERRED	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/MIT.txt	d817195dad53ec992418c28ffca5fbd1cd86502a

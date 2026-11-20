@@ -1,6 +1,6 @@
 # Local-first licensing reference and evidence registry
 
-**Current policy (2026-11-20):** Preferred: `0BSD`, `BSD-2-Clause`, `BSD-3-Clause`, `MIT`, `LGPL-2.1-only`, and official Oracle Java *under its exact vendor license terms and separate redistribution review*. Forbidden: `LGPL-3.0`, GPL, AGPL, EUPL, EPL and other unapproved GNU licenses. Unknown, mixed, or version-ambiguous grants: **HOLD / REVIEW**.
+**CURRENT zero-GNU/POSIX decision (2026-11-20, superseding earlier LGPL permission):** Preferred license candidates: `0BSD`, `BSD-2-Clause`, `BSD-3-Clause`, `MIT`; official Oracle Java remains subject to its exact vendor and bundled third-party terms. **No GNU license, including LGPL-2.1-only/or-later, GNU toolchain or GNU runtime, or authored POSIX shell/dependent execution is approved** in the project, including build and development. Unknown and mixed terms are **HOLD / REVIEW, never inferred consent**. Retain all 25 exact reference texts even when forbidden.
 
 ## Identity and custody
 
@@ -25,3 +25,7 @@ Exact `BSD-3-Clause` is **PREFERRED**. Separately named `BSD-3-Clause-Clear`, `B
 [UNKNOWN](UNKNOWN.md), [MIXED](MIXED.md), and [UNAPPROVED-GNU](UNAPPROVED-GNU.md) are **policy records**, not fictitious license texts. The registry intentionally includes prohibited reference terms for dispute resolution. It does **not** relicense any upstream or first-party material.
 
 Locality is a deliberate reproducibility and availability preference for this project, not a universal performance guarantee or a technical claim that Fibre Channel fabrics and license repositories behave identically. Remote verification may still be required at separately approved source-refresh boundaries; normal verification is offline.
+
+## Newer decision and provenance
+
+The previous `LGPL-2.1-only` Preferred classification and `LGPL-2.1-or-later` review-to-choose pathway are **superseded** by the user's explicit zero-GNU and zero-POSIX instruction. Their reference text bytes, source hashes, filenames and historical decisions remain in Git; both current lock rows are **FORBIDDEN**. See [zero-approval migration](../docs/GNU_POSIX_ZERO_APPROVAL_POLICY.md). Inclusion in this registry never authorizes execution, copying into a release, or a build-only exception. Non-GNU weak-copyleft terms such as MPL-2.0 and CDDL-1.0 are **not automatically approved** and require a source-specific review.
