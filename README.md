@@ -18,6 +18,14 @@
 
 ---
 
+## PENTAGONAL SUITE: nine native C++20 operations
+
+The additional [Pentagonal Suite header](include/pentagonal_suite.hpp) supplies **XOR, OR, AND, NAND, NOP, NIL, NAN, COR and VISTA** as an independent operation family. It reuses the original pentagonal numeric source and bytewise XOR implementation rather than duplicating either. The suite includes [an independent Windows/Linux CLI](src/suite_main.cpp) and [compile-time plus runtime regression cases](tests/pentagonal_suite_test.cpp); it does **not** replace the established five-feature parity CLI or the original throughput benchmark.
+
+These three new suite C++ files use **zero C/C++ standard-library headers, zero `std::` references and zero code comments**. See [operation mapping and overflow/NAN contracts](docs/PENTAGONAL_SUITE.md). A new local T-CROSS gate checks comment-free source, and the existing STD-free source and binary-import gates now include the suite. Exact-seeded transforms and 256-byte-periodic LUT transforms remain distinct; NIL zero-fill is not a guarantee of secure memory erasure; NAN boxing stores integer bit patterns rather than floating-point secrets.
+
+The newly added suite target and its tests have not been independently built or executed in the actual PR checkout. The strict whole-repository STD-free and residual historical-source gates remain blocking. The PR remains draft and unmerged.
+
 ## STD-free throughput engine (exploratory PR #19)
 
 The optional [byte-stream XOR header](include/pentagonal_xor.hpp), [fixed-buffer and borrowed-view header](include/pxor_memory.hpp), [native benchmark CLI](src/main.cpp), and [throughput regression](tests/pentagonal_xor_throughput_test.cpp) have been refactored to **zero C/C++ standard-library headers and zero `std::` calls in those four sources**. They use C++20 language features and explicit Win32/POSIX APIs. `fast_xor_buffer` now uses `constexpr` little-endian byte packing and unpacking instead of `std::memcpy`; scoped decrypted literals use runtime volatile cleanup without `std::is_constant_evaluated`. Native OS page allocation replaces C++ `new` for optional buffers over the default 16 MiB.
