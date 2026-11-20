@@ -2,7 +2,8 @@
 // Copyright (c) 2026 Paul Allen Cheek
 // Independent C++20 byte-stream XOR engine; not the parity probability API.
 // Public/private/shared below are C++ access/borrow scopes, not OS memory maps.
-#pragma once
+#ifndef SWE_PXOR_ENGINE_HPP
+#define SWE_PXOR_ENGINE_HPP
 
 #include "pxor_memory.hpp"
 
@@ -364,3 +365,5 @@ inline void release_pages(u8* memory, usize length) noexcept {
 }
 
 } // namespace pxor
+
+#endif // SWE_PXOR_ENGINE_HPP
