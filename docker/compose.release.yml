@@ -18,7 +18,7 @@ services:
     tmpfs: ["/tmp:rw,nosuid,nodev,size=256m"]
     volumes:
       - type: bind
-        source: ..
+        source: ${SWE_SOURCE_STAGING_DIR:?sanitized_committed_source_snapshot}
         target: /src
         read_only: true
       - type: bind
@@ -43,7 +43,7 @@ services:
     tmpfs: ["/tmp:rw,nosuid,nodev,size=256m"]
     volumes:
       - type: bind
-        source: ..
+        source: ${SWE_SOURCE_STAGING_DIR:?sanitized_committed_source_snapshot}
         target: /src
         read_only: true
       - type: bind
