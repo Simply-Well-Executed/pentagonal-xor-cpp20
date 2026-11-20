@@ -7,7 +7,7 @@ test "$#" -eq 1 || fail 'usage: sh ci/Invoke-LocalDocker-Gamp4.sh linux-amd64|li
 profile=$1
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd -P) || fail 'invalid repo path'
 cd "$root" || fail 'unable to enter source root'
-for tool in git docker grep id; do need "$tool"; done
+for tool in git docker grep id tar sha256sum find sort awk; do need "$tool"; done
 case "${DOCKER_HOST:-}" in ''|unix://*|npipe://*) : ;; *) fail 'remote Docker daemon transport not permitted' ;; esac
 endpoint=$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null) ||
   fail 'cannot inspect Docker daemon context'
@@ -26,6 +26,39 @@ export SWE_EXPECTED_SHA
 SWE_RELEASE_OUTPUT="${SWE_RELEASE_OUTPUT:-$root/build/gamp4-release/$SWE_EXPECTED_SHA}"
 case "$SWE_RELEASE_OUTPUT" in /*) : ;; *) fail 'SWE_RELEASE_OUTPUT must be an absolute path' ;; esac
 mkdir -p "$SWE_RELEASE_OUTPUT" || fail 'cannot create local artifact root'
+SWE_SOURCE_STAGING_DIR="$SWE_RELEASE_OUTPUT/_source/$SWE_EXPECTED_SHA"
+snapshot_root="$SWE_RELEASE_OUTPUT/_source"
+snapshot_manifest="$snapshot_root/$SWE_EXPECTED_SHA.sha256"
+snapshot_tar="$snapshot_root/$SWE_EXPECTED_SHA.tar"
+mkdir -p "$snapshot_root" || fail 'cannot create source snapshot directory'
+if test ! -d "$SWE_SOURCE_STAGING_DIR"; then
+  mkdir -p "$SWE_SOURCE_STAGING_DIR" || fail 'cannot stage Git source'
+  git archive --format=tar HEAD > "$snapshot_tar" ||
+    fail 'cannot export current committed source without network'
+  tar -xf "$snapshot_tar" -C "$SWE_SOURCE_STAGING_DIR" ||
+    fail 'cannot unpack committed source snapshot'
+  printf '%s\n' "$SWE_EXPECTED_SHA" > "$SWE_SOURCE_STAGING_DIR/.swe-source-commit"
+  (
+    cd "$SWE_SOURCE_STAGING_DIR"
+    find . -type f -exec sha256sum '{}' ';' | sort
+  ) > "$snapshot_manifest" || fail 'cannot hash staged committed source'
+fi
+test -f "$snapshot_manifest" || fail 'snapshot checksum manifest missing'
+test -f "$snapshot_tar" || fail 'source archive provenance missing'
+test ! -e "$SWE_SOURCE_STAGING_DIR/.git" || fail 'Git metadata must not enter container'
+test -z "$(find "$SWE_SOURCE_STAGING_DIR" -type l -print)" ||
+  fail 'symlinks in container snapshot require separate review'
+test "$(cat "$SWE_SOURCE_STAGING_DIR/.swe-source-commit")" = "$SWE_EXPECTED_SHA" ||
+  fail 'source marker changed'
+(
+  cd "$SWE_SOURCE_STAGING_DIR"
+  sha256sum -c "$snapshot_manifest" >/dev/null
+) || fail 'committed source snapshot changed after export'
+snapshot_files=$(find "$SWE_SOURCE_STAGING_DIR" -type f | awk 'END {print NR}')
+manifest_files=$(awk 'END {print NR}' "$snapshot_manifest")
+test "$snapshot_files" -eq "$manifest_files" ||
+  fail 'source snapshot contains unmanifested files'
+export SWE_SOURCE_STAGING_DIR
 SWE_HOST_UID=$(id -u)
 SWE_HOST_GID=$(id -g)
 export SWE_RELEASE_OUTPUT SWE_HOST_UID SWE_HOST_GID
