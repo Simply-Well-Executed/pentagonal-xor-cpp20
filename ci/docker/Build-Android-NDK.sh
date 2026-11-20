@@ -11,6 +11,8 @@ test ! -d /src/.git || fail 'Docker build cannot mount .git metadata'
 test -d /out || fail 'artifact mount missing'
 test -f /ndk/build/cmake/android.toolchain.cmake || fail 'read-only installed NDK mount missing'
 test -n "${SWE_EXPECTED_SHA:-}" || fail 'expected source SHA missing'
+test -f /src/ci/Assert-AndroidLinux-NoPython.sh || fail 'required Python-free gate absent from NDK source snapshot'
+/bin/sh /src/ci/Assert-AndroidLinux-NoPython.sh image || fail 'NDK/Linux builder has prohibited Python interpreter'
 for tool in cmake grep sha256sum awk find sort cat; do need "$tool"; done
 head=$(cat /src/.swe-source-commit) || fail 'source archive SHA unreadable'
 test "$head" = "$SWE_EXPECTED_SHA" || fail 'source commit mismatch'
