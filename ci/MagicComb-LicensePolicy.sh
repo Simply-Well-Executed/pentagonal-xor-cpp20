@@ -35,17 +35,22 @@ dpkg-query -W -f='${binary:Package}\t${db:Status-Abbrev}\n' |
     if test ! -r "$copyright"; then
       printf 'IRON|MAGICCOMB|LICENSE|UNKNOWN|%s|missing_copyright_file\n' "$name"
       unknown=$((unknown + 1))
-    elif grep -iEq '(^|[^A-Za-z])(AGPL|GPL|EUPL|EPL)([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+(General|Affero[[:space:]]+General)[[:space:]]+Public[[:space:]]+License|Eclipse[[:space:]]+Public[[:space:]]+License|European[[:space:]]+Union[[:space:]]+Public[[:space:]]+License' "$copyright"; then
+    # Inspect machine-readable DEP5 License fields, not license prose: LGPL
+    # license texts sometimes discuss GPL, which is not GPL attribution.
+    elif ! grep -iqE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright"; then
+      printf 'IRON|MAGICCOMB|LICENSE|UNKNOWN|%s|missing_machine_readable_declaration\n' "$name"
+      unknown=$((unknown + 1))
+    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq '(^|[^A-Za-z])(AGPL|GPL|EUPL|EPL)([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+(General|Affero[[:space:]]+General)[[:space:]]+Public[[:space:]]+License|Eclipse[[:space:]]+Public[[:space:]]+License|European[[:space:]]+Union[[:space:]]+Public[[:space:]]+License'; then
       # GPL + LGPL together is mixed REVIEW, not automatic LGPL admission.
       # A documented SPDX OR alternative can only be chosen in a scoped review.
       printf 'IRON|MAGICCOMB|LICENSE|FORBIDDEN_OR_MIXED|%s|operator_review_required\n' "$name"
       forbidden=$((forbidden + 1))
-    elif grep -iEq '(^|[^A-Za-z])LGPL([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+Lesser[[:space:]]+General[[:space:]]+Public[[:space:]]+License' "$copyright"; then
+    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq '(^|[^A-Za-z])LGPL([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+Lesser[[:space:]]+General[[:space:]]+Public[[:space:]]+License'; then
       # User approved LGPL; obligations, file scope, and other bundled licenses
       # still require independently verified attribution before distribution.
       printf 'IRON|MAGICCOMB|LICENSE|LGPL_PERMITTED|%s|obligations_and_file_scope_review\n' "$name"
       allowed=$((allowed + 1))
-    elif grep -iqE '^License:[[:space:]]*[^[:space:]]+' "$copyright"; then
+    elif grep -iqE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright"; then
       printf 'IRON|MAGICCOMB|LICENSE|REVIEW|%s|non_GNU_not_equivalent_to_approved\n' "$name"
       unknown=$((unknown + 1))
     else
