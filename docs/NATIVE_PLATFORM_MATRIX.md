@@ -1,5 +1,8 @@
 # IRON native platform matrix and staged STD-free migration
 
+
+**CURRENT operator-selected Docker exception:** [GAMP4 Docker release candidate](GAMP4_DOCKER_RELEASE.md) adds a separate, explicit local-only, digest-pinned Docker validation and artifact-transport path. It does not replace native Windows/macOS toolchains, or alter the historical core archive manifest's target identities. All GAMP4 results and release assets remain NOT TESTED for this candidate until executed.
+
 **Current status: CONFIGURED / NOT TESTED across the specified hosts.** The platform matrix is a local, declaration-only YAML file, not GitHub Actions, a container recipe, a VM runner, or a request to download SDKs. No OS/CPU success is inferred from the presence of a profile.
 
 ## Canonical paths
