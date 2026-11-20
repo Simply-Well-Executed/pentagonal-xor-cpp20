@@ -1,5 +1,8 @@
 name: GitHub cloud Docker Hub same-digest re-push (authorized)
 
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
 # Publication scope: ONLY re-push the already-published verified digest.
 # Never promote unvalidated new source or replace latest with different bytes.
 # Only an owner-controlled branch push triggers this workflow.
@@ -18,6 +21,7 @@ concurrency:
 
 jobs:
   verify-and-repush:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
     name: GitHub-hosted exact-manifest Docker Hub latest re-push
     runs-on: ubuntu-24.04
     timeout-minutes: 50

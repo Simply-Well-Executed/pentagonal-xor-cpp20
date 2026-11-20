@@ -5,14 +5,21 @@ name: Canonical LICENSES custody and zero-POSIX/GNU policy hold (PowerShell)
 # The previous pipeline is preserved in the commit history for forensic review.
 # An unapproved dependency is a HOLD, not a build-only exception.
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
+      - main
+      - 29-exc-gnu-linux-001-prefer-mit-oracle-lgpl-21-forbid-lgpl-3-gpl-eupl-epl-release-hold
       - feat/magiccomb-license-oracle27-dotnet11-ps77-20261120
     paths:
       - .github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml
       - LICENSE
       - LICENSES/**
       - ci/Assert-LocalLicenseRegistry.ps1
+      - .github/workflows/**
+      - docs/ISSUE_29_REMEDIATION.md
       - ci/**
       - docker/**
       - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
@@ -85,11 +92,34 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
-          $scripts = @(Get-ChildItem -LiteralPath (Join-Path $src 'ci') -Filter '*.sh' -File -Recurse)
+          $scripts = @(Get-ChildItem -LiteralPath $src -Filter '*.sh' -File -Recurse -Force)
           foreach ($item in $scripts) {
             Write-Host ('POLICY|POSIX|UNAPPROVED|' + $item.FullName.Substring($src.Length + 1))
           }
           $docker = Join-Path $src 'docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile'
+          $legacyWorkflows = @('cloud-dockerhub-repush.yml','cloud-ghcr-android-no-python.yml','dockerhub-pythonfree-candidate-deployment.yml','github-cloud-docker-gamp4.yml')
+          foreach ($name in $legacyWorkflows) {
+            $wf = Join-Path (Join-Path $src '.github/workflows') $name
+            if (-not [IO.File]::Exists($wf)) { throw ('POLICY|HOLD|missing_workflow|' + $name) }
+            $body = [IO.File]::ReadAllText($wf)
+            $count = [regex]::Matches($body,'(?m)^  [a-z0-9_-]+:\s*
+          if ([IO.File]::Exists($docker)) {
+            $line = [IO.File]::ReadAllText($docker)
+            $gnuTooling = [regex]::IsMatch($line,'\b(g\+\+|gcc|gawk|make|grep|findutils)\b')
+            if ($gnuTooling) { Write-Host 'POLICY|GNU|UNAPPROVED|experimental_Dockerfile_toolchain' }
+          }
+          if ($scripts.Count -ne 0 -or $gnuTooling) {
+            throw "POLICY|HOLD|posix_scripts=$($scripts.Count)|unapproved_gnu_probe=$gnuTooling|migration_required"
+          }
+          Write-Host 'POLICY|SOURCE_CHECK|PASS|no_known_unapproved_ci_shell_or_probe'
+          Write-Host 'POLICY|LIMIT|source_scan_only|third_party_and_organization_inventory_still_required'
+).Count
+            $blocked = [regex]::Matches($body,'(?m)^    if: \$\{\{ false \}\}').Count
+            if ($count -eq 0 -or $count -ne $blocked) {
+              throw ('POLICY|HOLD|legacy_workflow_executable|' + $name + '|jobs=' + $count + '|blocked=' + $blocked)
+            }
+            Write-Host ('POLICY|WORKFLOW|FROZEN|' + $name + '|jobs=' + $blocked)
+          }
           $gnuTooling = $false
           if ([IO.File]::Exists($docker)) {
             $line = [IO.File]::ReadAllText($docker)
