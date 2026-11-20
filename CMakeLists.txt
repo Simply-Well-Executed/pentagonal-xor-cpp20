@@ -85,8 +85,8 @@ target_include_directories(swe_pentagonal_xor_throughput INTERFACE
   $<INSTALL_INTERFACE:include>)
 target_compile_features(swe_pentagonal_xor_throughput INTERFACE cxx_std_20)
 # Native OS-backed stdout, monotonic time and memory mapping are
-# implemented for Windows and Linux only. Keep the header portable elsewhere.
-if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+# implemented for Windows, Linux and supported macOS. Android uses the core-only archive.
+if(WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_executable(pentagonal_xor_cli src/main.cpp)
   target_link_libraries(pentagonal_xor_cli PRIVATE swe_pentagonal_xor_throughput)
   set_target_properties(pentagonal_xor_cli PROPERTIES
