@@ -102,6 +102,10 @@ try {
     $gamp.oq_automated_status -cne 'PASS'){
    throw 'GAMP4 SHA, 12 URS or OQ report mismatch'
  }
+ $logFile=Join-Path $evidence ([string]$gamp.text_log)
+ if(-not(Test-Path -LiteralPath $logFile -PathType Leaf)){throw 'GAMP4 raw stdout log missing'}
+ $summaryRows=@(Get-Content -LiteralPath $logFile | Where-Object { $_ -ceq 'GAMP4_STYLE_SUMMARY|PASS|cases=12|failures=0' })
+ if($summaryRows.Count -ne 1){throw 'GAMP4 terminal PASS summary missing or repeated'}
  $record.gamp4_summary='PASS|cases=12|failures=0'
  $record.binary_sha256=[string]$gamp.executable_sha256
  $record.stage='core-archive'
