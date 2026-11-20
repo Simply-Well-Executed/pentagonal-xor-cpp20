@@ -1,19 +1,32 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.23)
 project(PentagonalXOR VERSION 0.2.0 LANGUAGES CXX)
 
-# Maintainer standard: required ISO C++20, compiler extensions OFF, and only O2.
-# All configurations use the same optimizer level; no LTO / whole-program IPO.
+# ISO C++20 and user-specified release optimization policy.
+# MSVC /O2 in Release, GCC/Clang -O3 in Release; non-Release stays O2.
+# Historical O2 evidence is not silently relabeled as O3 evidence.
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
 foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
   if(MSVC)
-    set(CMAKE_CXX_FLAGS_${_config} "/MD /O2 /DNDEBUG" CACHE STRING "Only MSVC /O2 is permitted" FORCE)
+    set(CMAKE_CXX_FLAGS_${_config} "/MD /O2 /DNDEBUG" CACHE STRING "MSVC optimized O2" FORCE)
+  elseif(_config STREQUAL "RELEASE" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    set(CMAKE_CXX_FLAGS_${_config} "-O3 -DNDEBUG" CACHE STRING "GCC/Clang Release O3" FORCE)
   else()
-    set(CMAKE_CXX_FLAGS_${_config} "-O2 -DNDEBUG" CACHE STRING "Only -O2 is permitted" FORCE)
+    set(CMAKE_CXX_FLAGS_${_config} "-O2 -DNDEBUG" CACHE STRING "Non-Release or other compiler O2" FORCE)
   endif()
 endforeach()
+
+# Apply actionable diagnostics across ALL configurations and C++ targets.
+if(MSVC)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/W4>
+                      $<$<COMPILE_LANGUAGE:CXX>:/permissive->)
+else()
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wall>
+                      $<$<COMPILE_LANGUAGE:CXX>:-Wextra>
+                      $<$<COMPILE_LANGUAGE:CXX>:-Wpedantic>)
+endif()
 
 
 # Produce usable debug symbols even in optimized Release builds.
@@ -39,8 +52,35 @@ else()
     target_compile_options(pentagonal_xor PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+# Optional throughput library and separate benchmark: the established
+# five-feature parity executable remains unmodified and retains its test contract.
+add_library(swe_pentagonal_xor_throughput INTERFACE)
+target_include_directories(swe_pentagonal_xor_throughput INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_features(swe_pentagonal_xor_throughput INTERFACE cxx_std_20)
+add_executable(pentagonal_xor_cli src/main.cpp)
+target_link_libraries(pentagonal_xor_cli PRIVATE swe_pentagonal_xor_throughput)
+set_target_properties(pentagonal_xor_cli PROPERTIES
+  CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+install(TARGETS pentagonal_xor_cli RUNTIME DESTINATION bin)
+install(FILES include/pentagonal_xor.hpp DESTINATION include/swe)
+
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(pentagonal_xor_throughput_test
+        tests/pentagonal_xor_throughput_test.cpp)
+    target_link_libraries(pentagonal_xor_throughput_test
+        PRIVATE swe_pentagonal_xor_throughput)
+    set_target_properties(pentagonal_xor_throughput_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME pentagonal_xor_swar_roundtrip
+        COMMAND pentagonal_xor_throughput_test)
+    add_test(NAME pentagonal_xor_throughput_cli_smoke
+        COMMAND pentagonal_xor_cli --bytes 65536)
+    set_tests_properties(pentagonal_xor_throughput_cli_smoke PROPERTIES
+        PASS_REGULAR_EXPRESSION "periodic 256-byte LUT")
+
     # Isolated canonical parity object for machine-level zero-CALL disassembly.
     # Does not alter the production CLI or create an alternate algorithm.
     add_library(swe_zero_call_core_probe OBJECT tests/zero_call_core_probe.cpp)
