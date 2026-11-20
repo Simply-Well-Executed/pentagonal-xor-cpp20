@@ -37,9 +37,9 @@ The additional reversals `YZX` and `YXZ` complete the six permutations; no order
 
 | Name | Existing mathematical source usage | HANDI adherence usage |
 | --- | --- | --- |
-| **BiPi** | Exact `ℼ × ℼ` for the author's integer `ℼ=314159265358979323` | Observe BiDi adherence; not integer multiplication |
-| **TriPi / Triℼ** | Read-only three-route DecaSigma inspection in `shared/tri_pi.hpp` | Observe TriDi adherence; not an automatic reuse of an unrelated mathematical witness |
-| **SigmaPi** | Prefix GammaGamma on an explicitly decimal-positioned `ℼ` token | Observe SigmaDi adherence; not a factorial or a built-in C++ operation |
+| **BiPi** | Exact `π × π` for the author's integer `π=314159265358979323` | Observe BiDi adherence; not integer multiplication |
+| **TriPi / Triπ** | Read-only three-route DecaSigma inspection in `shared/tri_pi.hpp` | Observe TriDi adherence; not an automatic reuse of an unrelated mathematical witness |
+| **SigmaPi** | Prefix GammaGamma on an explicitly decimal-positioned `π` token | Observe SigmaDi adherence; not a factorial or a built-in C++ operation |
 
 See [GammaGamma/Pi precision](GAMMAGAMMA_PI_PRECISION.md) and [TriPi implementation evidence](TRI_PI.md). Name each result with its **HANDI/adherence** or mathematical namespace; never infer identity or compliance from matching bare names.
 

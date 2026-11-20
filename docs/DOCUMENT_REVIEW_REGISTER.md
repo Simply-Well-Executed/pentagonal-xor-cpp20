@@ -92,7 +92,7 @@
 ## Priority and action
 
 - **P0, editorial and policy entrypoints:** Implement the SOP's completed-action present-tense publication rule in README, contribution and security policies, the PR template, HANDI, this register and operating procedure. Resolve stale references to already merged PRs and outdated workflow states.
-- **P1, canonical algorithm and validation:** Reconcile C11 five-input parity, `toolong`, GammaGamma, DecaSigma, Triℼ, COREAO, source-evidence scripts, CI build/install gates, Windows PGO and OCI status codes.
+- **P1, canonical algorithm and validation:** Reconcile C11 five-input parity, `toolong`, GammaGamma, DecaSigma, Triπ, COREAO, source-evidence scripts, CI build/install gates, Windows PGO and OCI status codes.
 - **P2, research and media records:** Rewrite explanations and diagram descriptions; preserve frozen trials, renderer/input limits, exact original values and source-hash provenance. Do not retroactively claim physical or mathematical validation beyond experiment evidence.
 
 ## Maintainer-directed restrictions: policy conflicts requiring actual implementation review
