@@ -20,6 +20,12 @@ Keep `SPDX-License-Identifier: 0BSD` on newly authored C++ files.
 Retain historical authorship and upstream provenance as records even
 though the license does not require recipients to preserve attribution.
 
+## Local-first license reference and component provenance
+
+The root [`LICENSE`](../LICENSE) is authoritative for the original first-party source under 0BSD; the [`LICENSES/` directory](../LICENSES/README.md) is a separate **reference cache**, not a second repository-wide grant. It retains exact copies of approved **and forbidden** license texts and their pinned publisher/source identities in [`LOCK.tsv`](../LICENSES/LOCK.tsv). The [PowerShell integrity verifier](../ci/Assert-LocalLicenseRegistry.ps1) checks Git object identity without network fetches, normalizing text, or changing the files.
+
+Do **not** infer the license of an individual component from a nearby boilerplate copy. Record its actual version, file-level copyright and NOTICE, SPDX expression, AND/OR alternatives, and approved distribution scope in [`COMPONENT_USAGE.tsv`](../LICENSES/COMPONENT_USAGE.tsv). Unidentified, mixed and Oracle-vendor notices require review; Oracle is a vendor rather than a universal SPDX license. LGPL-2.1-only is preferred; LGPL-3.0 is forbidden. See [locality-first source custody](LOCALITY_FIRST_SOURCE_CUSTODY.md).
+
 ## What the license does not establish
 
 **Verify** independent rights for user-supplied portraits, other

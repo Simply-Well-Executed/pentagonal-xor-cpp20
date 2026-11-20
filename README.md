@@ -18,6 +18,14 @@
 
 ---
 
+## Local-first evidence and licensing registry
+
+The original project license remains the root [0BSD LICENSE](LICENSE). The new [local license registry](LICENSES/README.md) preserves **26 exact legal-text snapshots**, a version-locked [provenance manifest](LICENSES/LOCK.tsv), and separate records for [unknown](LICENSES/UNKNOWN.md), [mixed](LICENSES/MIXED.md), and [unapproved GNU](LICENSES/UNAPPROVED-GNU.md) terms. Verbatim references are **not** permission to use forbidden licenses. Preferred: 0BSD, BSD-2-Clause, BSD-3-Clause, MIT, LGPL-2.1-only and approved official Oracle Java under its actual vendor terms. LGPL-3.0, GPL, AGPL, EUPL, EPL and unapproved GNU remain forbidden; unknown/mixed terms are HOLD.
+
+PowerShell Core [offline integrity verification](ci/Assert-LocalLicenseRegistry.ps1) binds the local copies to exact upstream source revisions and Git blob hashes and emits calculated SHA-256 audit records; the text is never normalized or silently refreshed during a build. A component's **actual source, version and license grant** must be recorded separately before an approved term can be attributed. See the [repository-wide local-first source-custody protocol](docs/LOCALITY_FIRST_SOURCE_CUSTODY.md).
+
+---
+
 ## Container images: Docker Hub and GitHub Packages
 
 **New Docker Hub image and real GitHub Deployment, verified November 20, 2026.** The previously tested, Python-free Android/Linux Linux/amd64 candidate is now published as **[`paulcheek/android-source-study-v1:python-free-candidate-ed28e0544042`](https://hub.docker.com/r/paulcheek/android-source-study-v1/tags?name=python-free-candidate-ed28e0544042)**. GitHub cloud [run #44758095928](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44758095928) performed the new Docker Hub tag push, pulled the resulting immutable digest, and passed the no-Python check. GitHub [Deployment #7944706336](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/deployments) for environment `dockerhub-python-free-candidate` is independently verified as **success**.
