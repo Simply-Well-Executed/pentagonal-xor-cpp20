@@ -1,0 +1,60 @@
+name: Android/Linux no-Python source guard
+
+# Non-publishing GitHub-only repository policy gate.
+# No self-hosted or local compute, no Python and no Node checkout action.
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  prohibit-python:
+    name: Reject Python scripts and dependencies in Android/Linux source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Verify exact GitHub-hosted execution environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          test "$GITHUB_REPOSITORY" = Simply-Well-Executed/pentagonal-xor-cpp20
+          test "$(uname -m)" = x86_64
+      - name: Fetch and validate immutable Git source without Node
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/swe-android-linux-no-python"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          case "$GITHUB_EVENT_NAME" in
+            pull_request)
+              test -n "$PR_NUMBER"
+              git -C "$src" fetch --no-tags --depth=1 origin "refs/pull/$PR_NUMBER/merge" ;;
+            push)
+              test "$GITHUB_REF" = refs/heads/main
+              git -C "$src" fetch --no-tags --depth=1 origin "$GITHUB_SHA" ;;
+            *) echo 'Unsupported workflow event' >&2; exit 1 ;;
+          esac
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+          /bin/sh "$src/ci/Assert-AndroidLinux-NoPython.sh" source
+      - name: Report scope of the source-only guard
+        if: always()
+        shell: bash
+        run: |
+          echo 'GitHub-hosted static no-Python source guard; no secrets or registry writes.'
+          echo 'Runtime/Python-free image qualification remains in the separately gated cloud Docker workflow.'
+          echo 'No claim of Android device OQ or 13-profile release QA.'
