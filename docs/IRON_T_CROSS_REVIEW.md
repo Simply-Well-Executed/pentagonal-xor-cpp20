@@ -318,3 +318,57 @@ Canonical source-level contract: [STD-free native T-CROSS](STD_FREE_NATIVE_T_CRO
 5. Actual CMake configure/build, native CTest, toolchain identification, unsupported ABI negative controls and runtime import/zero-CALL checks remain **HOLD / NOT TESTED**.
 
 Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [platform YAML](../ci/native-platform-matrix.yml), [STD inventory exporter](../ci/Export-StdFreeInventory.sh), [POSIX executor](../ci/Build-PlatformMatrix.sh), [Windows executor](../ci/Build-PlatformMatrix.ps1).
+
+## T-CROSS: operator-authorized post-GAMP4 Docker and native multi-OS release candidate
+
+**State: source-only comparison verified; release HOLD.** New independent section, with all previous T-CROSS numerical history retained.
+
+- Baseline: `cc0f789fee53a6c22e86c31d45b822f7716699f0` on main following merged PR #19.
+- Candidate: `18e52a3739e27721ee790c645a3a47a451be83ff` on draft PR #20 before this audit append.
+- Authority: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/cc0f789fee53a6c22e86c31d45b822f7716699f0...18e52a3739e27721ee790c645a3a47a451be83ff
+- Source delta: 22 commits, 21 files, **+1130 / -2 lines, net +1128**. These are Git source counts, not runtime or validation measurements.
+- Subsequent commits must not be silently represented by this frozen candidate.
+
+| Source path | Status | Added | Removed |
+| --- | --- | ---: | ---: |
+| `.github/pull_request_template.md` | modified | +16 | -0 |
+| `CONTRIBUTING.md` | modified | +13 | -1 |
+| `README.md` | modified | +8 | -0 |
+| `Taskfile.yml` | modified | +46 | -0 |
+| `ci/Assemble-Gamp4-Release.sh` | added | +97 | -0 |
+| `ci/Build-Release-OciPayload.sh` | added | +40 | -0 |
+| `ci/Build-Windows-ReleaseContainer.ps1` | added | +104 | -0 |
+| `ci/Invoke-LocalDocker-Gamp4.sh` | added | +85 | -0 |
+| `ci/Run-Native-Macos-Gamp4.sh` | added | +117 | -0 |
+| `ci/Run-Native-Windows-Gamp4.ps1` | added | +147 | -0 |
+| `ci/docker/Build-Android-NDK.sh` | added | +74 | -0 |
+| `ci/docker/Run-Gamp4-Container.sh` | added | +104 | -0 |
+| `ci/gamp4-docker-release.yml` | added | +75 | -0 |
+| `ci/native-platform-matrix.yml` | modified | +6 | -1 |
+| `docker/ReleasePayload.Dockerfile` | added | +7 | -0 |
+| `docker/WindowsGamp4Smoke.Dockerfile` | added | +11 | -0 |
+| `docker/compose.release.yml` | added | +55 | -0 |
+| `docs/GAMP4_DOCKER_RELEASE.md` | added | +116 | -0 |
+| `docs/GAMP4_VALIDATION.md` | modified | +3 | -0 |
+| `docs/NATIVE_PLATFORM_MATRIX.md` | modified | +3 | -0 |
+| `docs/RELEASE_PREFLIGHT.md` | modified | +3 | -0 |
+| **TOTAL** | **21 files** | **+1130** | **-2** |
+
+### T-CROSS gate mapping
+
+| Gate | - Previous | + Candidate | Evidence |
+| --- | --- | --- | --- |
+| Container policy | Earlier absolute Docker ban | Explicit operator-requested local Docker release-only exception; no hosted runner | Policy diff inspected |
+| Provenance | Earlier unpinned/fetch-enabled Docker experiments | New Compose: cached digest, pull never, local daemon, source RO, no network, non-root, caps dropped | Source inspected, Docker NOT RUN |
+| Linux | Earlier native/experimental artifacts | Full CTest plus exactly URS-11..22 each for amd64, arm64, i386 | Scripts committed; no runtime evidence |
+| Android | Historical APK and core paths | Four NDK archives require exact-SHA Linux source GAMP4, no Android OQ claim | Build code committed, NOT TESTED |
+| macOS | Native source profiles | Native Apple Clang GAMP4 + CTest, arm64/x86_64 receipts prior to universal | Code committed, NOT TESTED |
+| Windows | MSVC source profiles | Native x86/x64/ARM64 GAMP4 + CTest; optional cached Windows x64 container smoke | Code committed, NOT TESTED |
+| Distribution | Historical previews | Thirteen SHA-bound package checksums + release notes; local scratch OCI payload transport only | Release not assembled or published |
+| Runtime STD | Legacy standard headers remain | Opt-in core archive stays separate from full STD-backed GAMP4 test suite | Whole repo STD-free remains BLOCKED |
+
+**Authority boundary:** Supplier-side GAMP4-style automated checks are not GMP certification, operational PQ, independent QA authorization or authentication of an untrusted evidence host. A Mac artifact inside OCI does not run a Mac kernel; Android archives are not APK or device tests. Windows images require matching hosts. macOS 32-bit i386 remains unsupported. Windows AMD64 and x86-64 are aliases of x64.
+
+**Current observations:** No Docker daemon available in assistant environment, no approved preloaded builder image digests, no native Windows/macOS target run, no 12-URS runtime report for this candidate, no 13-profile release artifact, no registry push and no published GitHub release. This is a deliberate HOLD, not a passing release.
+
+**Canonical protocol:** [GAMP4 Docker release custody](GAMP4_DOCKER_RELEASE.md), [13-profile YAML](../ci/gamp4-docker-release.yml), [local Docker Compose](../docker/compose.release.yml), [release assembler](../ci/Assemble-Gamp4-Release.sh).
