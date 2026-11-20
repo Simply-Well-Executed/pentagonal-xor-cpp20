@@ -1,171 +1,103 @@
-name: MagicComb HEAD/TAIL pinned local LICENSES; LGPL-2.1 preferred; LGPL-3 forbidden
+name: Canonical LICENSES custody and zero-POSIX/GNU policy hold (PowerShell)
 
-# Investigational only, explicit owner requirement. NEVER pushes an image.
-# GitHub-hosted Ubuntu only; no authored Node, Python or Go build actions.
-# Vendor-built infrastructure is separately inventoried; it is not claimed Go-free.
+# CURRENT: native PowerShell on GitHub-hosted Windows; no authored POSIX shell.
+# Prior Linux/Docker/GNU jobs are retired from active workflow source.
+# The previous pipeline is preserved in the commit history for forensic review.
+# An unapproved dependency is a HOLD, not a build-only exception.
 on:
   push:
     branches:
       - feat/magiccomb-license-oracle27-dotnet11-ps77-20261120
     paths:
       - .github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml
-      - ci/Run-CloudMagicComb-HeadTail.sh
-      - ci/MagicComb-LicensePolicy.sh
-      - docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile
-      - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
-      - docs/LOCALITY_FIRST_SOURCE_CUSTODY.md
-      - docs/LICENSE_AND_MARKS.md
       - LICENSE
       - LICENSES/**
       - ci/Assert-LocalLicenseRegistry.ps1
-      - ci/Invoke-MagicComb.ps1
-      - .gitattributes
+      - ci/**
+      - docker/**
+      - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
+      - docs/LOCALITY_FIRST_SOURCE_CUSTODY.md
       - README.md
+      - .gitattributes
 
 permissions:
   contents: read
-  statuses: write
-
-concurrency:
-  group: github-cloud-magiccomb-${{ github.ref }}
-  cancel-in-progress: false
 
 jobs:
-  preflight-current-image:
-    name: Audit Docker Hub digest; LGPL allowed, GPL/AGPL/EUPL/EPL HOLD
-    runs-on: ubuntu-24.04
-    timeout-minutes: 45
+  native-pwsh-license-custody:
+    name: Exact local LICENSES verification and legacy-script quarantine
+    runs-on: windows-2025
+    timeout-minutes: 20
     permissions:
       contents: read
-      statuses: write
-    env:
-      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Require GitHub-hosted cloud runner
-        shell: bash
+      - name: Retrieve exact commit snapshot using PowerShell (no checkout action)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          test "${GITHUB_ACTIONS:-}" = true
-          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
-          docker info
-      - name: Fetch and verify the immutable audit source (no Node actions)
-        shell: bash
-        run: |
-          set -euo pipefail
-          src="$RUNNER_TEMP/swe-magiccomb-source"
-          git init -q "$src"
-          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
-          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
-          git -C "$src" checkout --detach FETCH_HEAD
-          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
-          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
-      - name: Verify local LICENSES HEAD with PowerShell Core, no network
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
+            throw 'LOCAL_LICENSE|HOLD|unexpected_runner'
+          }
+          if (-not [StringComparer]::Ordinal.Equals($env:GITHUB_REPOSITORY,'Simply-Well-Executed/pentagonal-xor-cpp20')) {
+            throw 'LOCAL_LICENSE|HOLD|unexpected_repository'
+          }
+          if ($env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'LOCAL_LICENSE|HOLD|invalid_commit'
+          }
+          $zip = Join-Path $env:RUNNER_TEMP 'source-at-exact-commit.zip'
+          $dest = Join-Path $env:RUNNER_TEMP 'source-at-exact-commit'
+          $uri = 'https://api.github.com/repos/' + $env:GITHUB_REPOSITORY + '/zipball/' + $env:GITHUB_SHA
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization = 'Bearer ' + $env:GH_TOKEN
+            Accept = 'application/vnd.github+json'
+            'User-Agent' = 'swe-pwsh-license-custody'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $dest
+          $dirs = @(Get-ChildItem -LiteralPath $dest -Directory)
+          if ($dirs.Count -ne 1 -or -not [IO.File]::Exists((Join-Path $dirs[0].FullName 'LICENSES/LOCK.tsv'))) {
+            throw 'LOCAL_LICENSE|HOLD|untrusted_archive_layout'
+          }
+          $sourceRoot = $dirs[0].FullName
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'),$sourceRoot)
+          Write-Host 'LOCAL_LICENSE|HEAD|PINNED_COMMIT|RETRIEVED'
+      - name: Verify complete SPDX/Oracle registry and root 0BSD at HEAD and TAIL
         shell: pwsh
         run: |
-          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
-          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath (Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl')
-      - name: MagicComb HEAD/TAIL existing candidate, license and Docker Scout
-        id: audit
-        shell: bash
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          /bin/sh "$RUNNER_TEMP/swe-magiccomb-source/ci/Run-CloudMagicComb-HeadTail.sh" audit
-      - name: Verify local LICENSES TAIL after audit, even on release HOLD
-        if: always()
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $gate = Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1'
+          if (-not [IO.File]::Exists($gate)) { throw 'LOCAL_LICENSE|HOLD|missing_gate' }
+          $head = Join-Path $env:RUNNER_TEMP 'license-head.jsonl'
+          $tail = Join-Path $env:RUNNER_TEMP 'license-tail.jsonl'
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $head
+          if ($LASTEXITCODE -ne 0) { throw 'LOCAL_LICENSE|HOLD|HEAD_failed' }
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $tail
+          if ($LASTEXITCODE -ne 0) { throw 'LOCAL_LICENSE|HOLD|TAIL_failed' }
+          if (-not [StringComparer]::Ordinal.Equals([IO.File]::ReadAllText($head),[IO.File]::ReadAllText($tail))) {
+            throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_changed'
+          }
+          Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|exact_legal_reference_bytes'
+      - name: Block project-authored POSIX scripts and unapproved GNU build inputs
         shell: pwsh
         run: |
-          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
-          $head = Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl'
-          $tail = Join-Path $env:RUNNER_TEMP 'license-local-tail.jsonl'
-          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath $tail
-          if (-not [IO.File]::Exists($head)) { throw 'LOCAL_LICENSE|HOLD|HEAD_report_missing' }
-          if ([IO.File]::ReadAllText($head) -cne [IO.File]::ReadAllText($tail)) { throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_mismatch' }
-          Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|unchanged_verbatim_text'
-      - name: Record exact audit status without inventing a PASS
-        if: always()
-        shell: bash
-        env:
-          RESULT: ${{ steps.audit.outcome }}
-        run: |
-          set -euo pipefail
-          case "$RESULT" in
-            success) state=success; desc='Existing image licensing and CVE MagicComb cleared' ;;
-            *) state=failure; desc='License/CVE gate held: see GitHub run for named exception evidence' ;;
-          esac
-          jq -nc --arg state "$state" --arg url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg desc "$desc" --arg ctx 'swe/magiccomb-current-image-license-cve' '{state:$state,target_url:$url,description:$desc,context:$ctx}' > "$RUNNER_TEMP/audit-status.json"
-          curl --fail-with-body --silent --show-error --retry 2 \
-            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-            -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-            --data-binary "@$RUNNER_TEMP/audit-status.json" >/dev/null
-
-  rebase-official-toolchains:
-    name: Verify .NET 11 PowerShell 7.7 Oracle Java 27 with no release
-    runs-on: ubuntu-24.04
-    timeout-minutes: 90
-    permissions:
-      contents: read
-      statuses: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - name: Verify GitHub-hosted-only Docker runner
-        shell: bash
-        run: |
-          set -euo pipefail
-          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
-          docker info
-      - name: Git-fetch exact proposed toolchain commit without Node
-        shell: bash
-        run: |
-          set -euo pipefail
-          src="$RUNNER_TEMP/swe-magiccomb-source"
-          git init -q "$src"
-          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
-          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
-          git -C "$src" checkout --detach FETCH_HEAD
-          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
-          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
-      - name: Verify local LICENSES HEAD with PowerShell Core, no network
-        shell: pwsh
-        run: |
-          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
-          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath (Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl')
-      - name: MagicComb HEAD/TAIL official version rebase and CTest, HOLD on licensing
-        id: rebase
-        shell: bash
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          /bin/sh "$RUNNER_TEMP/swe-magiccomb-source/ci/Run-CloudMagicComb-HeadTail.sh" probe
-      - name: Verify local LICENSES TAIL after audit, even on release HOLD
-        if: always()
-        shell: pwsh
-        run: |
-          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
-          $head = Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl'
-          $tail = Join-Path $env:RUNNER_TEMP 'license-local-tail.jsonl'
-          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath $tail
-          if (-not [IO.File]::Exists($head)) { throw 'LOCAL_LICENSE|HOLD|HEAD_report_missing' }
-          if ([IO.File]::ReadAllText($head) -cne [IO.File]::ReadAllText($tail)) { throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_mismatch' }
-          Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|unchanged_verbatim_text'
-      - name: Report source-matched toolchain/release HOLD
-        if: always()
-        shell: bash
-        env:
-          RESULT: ${{ steps.rebase.outcome }}
-        run: |
-          set -euo pipefail
-          case "$RESULT" in
-            success) state=success; desc='All official toolchain tests, licenses and CVE checks cleared' ;;
-            *) state=failure; desc='New official toolchain unreleased; review HEAD/TAIL exception and test logs' ;;
-          esac
-          jq -nc --arg state "$state" --arg url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg desc "$desc" --arg ctx 'swe/magiccomb-oracle-java27-dotnet11-pwsh77' '{state:$state,target_url:$url,description:$desc,context:$ctx}' > "$RUNNER_TEMP/rebase-status.json"
-          curl --fail-with-body --silent --show-error --retry 2 \
-            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
-            -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
-            --data-binary "@$RUNNER_TEMP/rebase-status.json" >/dev/null
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $scripts = @(Get-ChildItem -LiteralPath (Join-Path $src 'ci') -Filter '*.sh' -File -Recurse)
+          foreach ($item in $scripts) {
+            Write-Host ('POLICY|POSIX|UNAPPROVED|' + $item.FullName.Substring($src.Length + 1))
+          }
+          $docker = Join-Path $src 'docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile'
+          $gnuTooling = $false
+          if ([IO.File]::Exists($docker)) {
+            $line = [IO.File]::ReadAllText($docker)
+            $gnuTooling = [regex]::IsMatch($line,'\b(g\+\+|gcc|gawk|make|grep|findutils)\b')
+            if ($gnuTooling) { Write-Host 'POLICY|GNU|UNAPPROVED|experimental_Dockerfile_toolchain' }
+          }
+          if ($scripts.Count -ne 0 -or $gnuTooling) {
+            throw "POLICY|HOLD|posix_scripts=$($scripts.Count)|unapproved_gnu_probe=$gnuTooling|migration_required"
+          }
+          Write-Host 'POLICY|SOURCE_CHECK|PASS|no_known_unapproved_ci_shell_or_probe'
+          Write-Host 'POLICY|LIMIT|source_scan_only|third_party_and_organization_inventory_still_required'
