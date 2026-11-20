@@ -73,6 +73,14 @@ notes="$stage/RELEASE_NOTES.md"
   printf 'Windows AMD64 and x86-64 are aliases of the x64 architecture.\n\n'
   printf 'Each archive is linked to the source SHA, test evidence and package SHA256 manifest. '
   printf 'Library-free core source does not prove the absence of system/CRT imports.\n\n'
+  printf '\n## Docker Hub source-study target (separate historical image)\n\n'
+  printf 'Requested destination: paulcheek/android-source-study-v1:latest\n'
+  printf 'Immutable source tag: paulcheek/android-source-study-v1:sha-07eb2a4561f0\n'
+  printf 'Historical image source commit: 07eb2a4561f0f5e82db4668d2b4fa453e2a4d733\n'
+  printf 'Operator-provided (unverified) manifest digest: sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30\n'
+  printf 'Registry digest verification: NOT PERFORMED for this new-release candidate.\n'
+  printf 'Registry push: NOT PERFORMED by release assembly.\n'
+  printf 'Historic image requires separate exact-source GAMP4, license/SBOM, QA and Docker registry promotion evidence.\n\n'
   printf 'External publication NOT PERFORMED. Production PQ and independent QA approval NOT PERFORMED.\n'
 } > "$notes"
 for profile in $profiles; do
