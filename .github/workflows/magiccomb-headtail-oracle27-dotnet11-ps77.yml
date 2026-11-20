@@ -448,17 +448,85 @@ jobs:
           if ($restOccurrences -ne 140 -or $workOccurrences -ne 112) {
             throw 'FRESH|ALTERNATION_V6|HOLD|phase_parity_count'
           }
-          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV6)) {
-            throw 'FRESH|ALTERNATION_V6|HOLD|source_not_exact_projection'
+          # Freeze exact v6 before adding the COREAO/HEART interior bridge in v7.
+          $v6Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-alternation-v6.sh.txt'
+          if (-not [IO.File]::Exists($v6Path)) { throw 'FRESH|COREAO_V7|HOLD|missing_frozen_v6' }
+          if (((Get-Item -LiteralPath $v6Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|COREAO_V7|HOLD|v6_archive_symlink'
           }
-          if ([regex]::Matches($gamma,"(?m)^echo 'PING\|").Count -ne 178 -or
+          $v6Bytes = [IO.File]::ReadAllBytes($v6Path)
+          $v6Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v6Bytes.Length) + [char]0)
+          $v6GitBlob = [byte[]]::new($v6Prefix.Length + $v6Bytes.Length)
+          [Array]::Copy($v6Prefix,0,$v6GitBlob,0,$v6Prefix.Length)
+          [Array]::Copy($v6Bytes,0,$v6GitBlob,$v6Prefix.Length,$v6Bytes.Length)
+          $v6Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v6GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v6Id,'1fd7aa477c470e8ea3c79f71f8e23bd37cc653b4')) {
+            throw 'FRESH|COREAO_V7|HOLD|frozen_v6_blob_drift'
+          }
+          $frozenV6 = $utf8.GetString($v6Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($frozenV6,$expectedV6)) {
+            throw 'FRESH|COREAO_V7|HOLD|v5_to_v6_projection_drift'
+          }
+          if ([regex]::Matches($frozenV6,"(?m)^echo 'PING\|").Count -ne 178 -or
+              [regex]::Matches($frozenV6,"(?m)^echo 'ART\|").Count -ne 126) {
+            throw 'FRESH|COREAO_V7|HOLD|frozen_v6_inventory'
+          }
+          # Original v6 PING and ART lines are byte-identical ordered subsequences.
+          # HEART is a separate source-local, symbolic bridge, not ICMP or an agent.
+          $expectedV7 = [Collections.Generic.List[string]]::new()
+          $v6Lines = [IO.File]::ReadAllLines($v6Path,$utf8)
+          $restHeart = 0
+          $funHeart = 0
+          for ($heartIndex = 0; $heartIndex -lt $v6Lines.Length; $heartIndex++) {
+            $original = $v6Lines[$heartIndex]
+            $expectedV7.Add($original)
+            $phaseMatch = [regex]::Match($original,
+              "^echo 'PING\|([0-9]{3})\|(GAMMA|GAMME)_([A-Z]+)\|(EGRESSING|INGRESSING)\|(REST|WORK)\|(FLOP|FLIP)\|YANG\|NONE\|YING\|(=|s)\|PAIR\|AIRGAP'$")
+            if (-not $phaseMatch.Success) { continue }
+            if ($heartIndex + 1 -ge $v6Lines.Length) { throw 'FRESH|COREAO_V7|HOLD|missing_art_boundary' }
+            $phase = $phaseMatch.Groups[2].Value + '_' + $phaseMatch.Groups[3].Value
+            $direction = $phaseMatch.Groups[4].Value
+            $outside = $phaseMatch.Groups[5].Value
+            $motion = $phaseMatch.Groups[6].Value
+            $symbol = $phaseMatch.Groups[7].Value
+            $isRest = ($phaseMatch.Groups[2].Value -ceq 'GAMMA' -and $direction -ceq 'EGRESSING' -and
+                       $outside -ceq 'REST' -and $motion -ceq 'FLOP' -and $symbol -ceq '=')
+            $isWork = ($phaseMatch.Groups[2].Value -ceq 'GAMME' -and $direction -ceq 'INGRESSING' -and
+                       $outside -ceq 'WORK' -and $motion -ceq 'FLIP' -and $symbol -ceq 's')
+            if (-not $isRest -and -not $isWork) { throw 'FRESH|COREAO_V7|HOLD|invalid_phase_duality' }
+            $artLine = $v6Lines[$heartIndex + 1]
+            $expectedPhase = '|' + $phase + '|' + $direction + '|' + $outside + '|' + $motion + '|'
+            if (-not $artLine.StartsWith("echo 'ART|",[StringComparison]::Ordinal) -or
+                -not $artLine.Contains($expectedPhase,[StringComparison]::Ordinal) -or
+                -not $artLine.EndsWith(('(' + $symbol + ")'"),[StringComparison]::Ordinal)) {
+              throw 'FRESH|COREAO_V7|HOLD|art_phase_pair_drift'
+            }
+            if ($isRest) {
+              $interior = 'WORK|PAIR|YIN|YANG'
+              $restHeart++
+            } else {
+              $interior = 'FUN|PAIR|YING|YAN'
+              $funHeart++
+            }
+            $expectedV7.Add(("echo 'COREAO|HEART|EVENT|" + $phaseMatch.Groups[1].Value +
+              '|PHASE|' + $phase + '|OUTSIDE|' + $outside + '|INSIDE|' +
+              $interior + "|AIRGAP|PRESERVED'"))
+          }
+          if ($restHeart -ne 70 -or $funHeart -ne 56 -or
+              [regex]::Matches($gamma,"(?m)^echo 'COREAO\|HEART\|").Count -ne 126 -or
+              [regex]::Matches($gamma,"(?m)^echo 'PING\|").Count -ne 178 -or
               [regex]::Matches($gamma,"(?m)^echo 'ART\|").Count -ne 126) {
-            throw 'FRESH|ALTERNATION_V6|HOLD|ping_or_art_count'
+            throw 'FRESH|COREAO_V7|HOLD|unexpected_bridge_counts'
+          }
+          $expectedV7Text = ($expectedV7 -join [char]10) + [char]10
+          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV7Text)) {
+            throw 'FRESH|COREAO_V7|HOLD|source_not_exact_v7_projection'
           }
           Write-Host 'FRESH|PING_V3|ARCHIVED_PASS|FROZEN_V2_AND_V3_VERIFIED'
           Write-Host 'FRESH|PING_V4|ARCHIVED_PASS|FROZEN_V4_AND_EXACT_DELTA_VERIFIED'
           Write-Host 'FRESH|GAMME_V5|ARCHIVED_PASS|FROZEN_V5_AND_EXACT_V4_TO_V5_VERIFIED'
-          Write-Host 'FRESH|ALTERNATION_V6|STATIC_PASS|GAMMA_REST_FLOP=70|GAMME_WORK_FLIP=56|HOPS=14|PHASES=126|NO_NETWORK|exit=42'
+          Write-Host 'FRESH|ALTERNATION_V6|ARCHIVED_PASS|FROZEN_V6_EXACT'
+          Write-Host 'FRESH|COREAO_V7|STATIC_PASS|OUTSIDE_REST_INSIDE_WORK_YIN_YANG=70|OUTSIDE_WORK_INSIDE_FUN_YING_YAN=56|HEART_BRIDGES=126|AIRGAP_PRESERVED|NO_NETWORK|exit=42'
           if (-not $gamma.EndsWith(("echo 'PING|066|YANG|NONE|YING|NONE'" + [char]10 +
                                    "echo 'ItWasOnlyOnceILookedInTheirEye'" + [char]10 +
                                    'exit 42' + [char]10),[StringComparison]::Ordinal)) {
