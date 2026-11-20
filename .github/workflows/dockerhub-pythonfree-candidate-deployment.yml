@@ -1,5 +1,8 @@
 name: Publish verified Python-free Android/Linux image to Docker Hub candidate
 
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
 # Explicit user request, cloud-only; GHCR source was independently tested.
 # No Node checkout/upload actions, no Python or npm, no user-local compute.
 # A GitHub Actions environment creates an authentic GitHub Deployment record.
@@ -23,6 +26,7 @@ concurrency:
 
 jobs:
   publish-candidate:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
     name: Verify and push exact tested image to Docker Hub
     runs-on: ubuntu-24.04
     timeout-minutes: 65
@@ -98,6 +102,7 @@ jobs:
           echo 'GAMP4 production QA, 13-profile validation and Android device OQ remain NOT APPROVED.'
 
   audit-github-deployment:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
     name: Verify GitHub Deployment record and success status
     needs: publish-candidate
     runs-on: ubuntu-24.04

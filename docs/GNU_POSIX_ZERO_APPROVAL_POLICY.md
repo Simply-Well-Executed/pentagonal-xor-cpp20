@@ -26,3 +26,11 @@ GNU software licenses are specific copyright grants, not an inference from synta
 ## Strict license version admission
 
 **0BSD is the ONLY approved BSD-family license**. BSD-2-Clause, BSD-3-Clause and all named BSD-3 variants are FORBIDDEN, despite historical approvals which remain visible in Git history. MIT, MPL-2.0 and CDDL-1.0 are independently approved by name; MPL-1.0/1.1, CDDL-1.1, NPL-1.0/1.1 and MPL-2.0-no-copyleft-exception remain REVIEW. No GNU or authored POSIX execution approval is implied. Reference copies, unlike component-specific approvals, are inert evidence.
+
+## Issue #29 execution containment (2026-11-20)
+
+Branch `29-exc-gnu-linux-001-prefer-mit-oracle-lgpl-21-forbid-lgpl-3-gpl-eupl-epl-release-hold` makes the four historical Bash/Ubuntu workflows non-executable through explicit false job guards; active no-Python source checking is being migrated to Windows PowerShell. The native license-custody workflow is extended to main, pull requests, and issue #29 branch, and verifies the job guards. This is a code proposal, **not yet merged**. Existing remote historical branches may still carry their original workflow definitions and need independent review. The source guard and a skipped job do **not** certify third-party dependencies or the installed runner. A failing compliance gate remains HOLD.
+
+## FRESH GammaGamma exploratory custody (2026-11-20)
+
+The Issue #29 draft branch has exact archival copies of the 17 original legacy shell scripts, each indexed by original Git blob SHA-1. The original executable paths now contain variable-free, nonfunctional fixed-transfer FRESH GammaGamma stubs, and a central scripted trace exits nonzero with status 42. These files are **not approved to execute**, do not remove the need to migrate GNU/POSIX dependencies, and do not authorize publication or merge. Neither shell text nor a shell trace alone qualifies a toolchain, container or native build.

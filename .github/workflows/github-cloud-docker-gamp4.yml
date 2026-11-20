@@ -1,5 +1,8 @@
 name: GitHub-hosted isolated Docker GAMP4 (manual-source branch)
 
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
 # Explicit exception requested by repository owner: this job is run on GitHub.com,
 # never on their local or self-hosted compute. No marketplace actions/Node.
 # Push to the dedicated branch is the trigger; workflow_dispatch not required.
@@ -18,6 +21,7 @@ concurrency:
 
 jobs:
   linux-amd64-gamp4:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
     name: Native hosted Linux amd64 Docker full CTest + URS-11..22
     runs-on: ubuntu-24.04
     timeout-minutes: 75

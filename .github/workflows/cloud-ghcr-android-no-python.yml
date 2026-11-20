@@ -1,5 +1,8 @@
 name: GitHub Container Registry source study + Python-free Android/Linux candidate
 
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
 # Explicitly requested cloud-only path. No user-local or self-hosted compute.
 # This is independent of Docker Hub :latest and full 13-profile release QA.
 on:
@@ -18,6 +21,7 @@ concurrency:
 
 jobs:
   mirror-historical:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
     name: Exact historical Docker Hub image to repository-linked GHCR package
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -75,6 +79,7 @@ jobs:
             --data-binary "@$RUNNER_TEMP/ghcr-status.json" >/dev/null
 
   python-free-candidate:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
     name: Rebuild Android/Linux with Python removed, native CTest and Java checks
     needs: mirror-historical
     runs-on: ubuntu-24.04
