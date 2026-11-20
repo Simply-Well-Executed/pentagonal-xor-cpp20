@@ -1,8 +1,9 @@
 #!/bin/sh
 # SPDX-License-Identifier: 0BSD
 # MagicComb LICENSE gate: unapproved components must NOT be released.
-# Explicit operator rule 2026-11-20: LGPL is permitted (with obligations).
-# GPL/AGPL, EUPL, EPL and unapproved GNU-licensed components are not.
+# Current operator policy: preferred 0BSD/BSD-2-Clause/BSD-3-Clause/MIT,
+# Oracle (exact vendor terms) and LGPL-2.1-only; LGPL-3.0, GPL/AGPL,
+# EUPL/EPL and unapproved GNU are forbidden. Oracle is NOT an SPDX ID.
 # Do not infer that every copyleft component is forbidden; classify each license.
 # Unknown licensing is a review hold, not silent permission.
 set -eu
@@ -19,7 +20,7 @@ allowed=0
 forbidden=0
 unknown=0
 packages=0
-printf 'IRON|MAGICCOMB|LICENSE|HEAD|policy=LGPL_ALLOWED_GPL_AGPL_EUPL_EPL_REJECTED|other_GNU_and_unknown_review_hold\n'
+printf 'IRON|MAGICCOMB|LICENSE|HEAD|preferred=0BSD_BSD2_BSD3_MIT_ORACLE_VENDOR_LGPL2.1|forbidden=LGPL3_GPL_AGPL_EUPL_EPL|unknown_review_hold\n'
 # Container package inventory comes from its OWN dpkg database. The
 # Linux kernel, files not owned by packages, JAR metadata, and bundled
 # PowerShell/.NET/Oracle assets require SEPARATE attribution.
@@ -40,15 +41,22 @@ dpkg-query -W -f='${binary:Package}\t${db:Status-Abbrev}\n' |
     elif ! grep -iqE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright"; then
       printf 'IRON|MAGICCOMB|LICENSE|UNKNOWN|%s|missing_machine_readable_declaration\n' "$name"
       unknown=$((unknown + 1))
-    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq '(^|[^A-Za-z])(AGPL|GPL|EUPL|EPL)([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+(General|Affero[[:space:]]+General)[[:space:]]+Public[[:space:]]+License|Eclipse[[:space:]]+Public[[:space:]]+License|European[[:space:]]+Union[[:space:]]+Public[[:space:]]+License'; then
+    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq '(^|[^A-Za-z])(AGPL|GPL|EUPL|EPL)([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+(General|Affero[[:space:]]+General)[[:space:]]+Public[[:space:]]+License|Eclipse[[:space:]]+Public[[:space:]]+License|European[[:space:]]+Union[[:space:]]+Public[[:space:]]+License|(^|[^A-Za-z0-9])LGPL[- ]?3([.+-]|[^A-Za-z0-9]|$)|GNU[[:space:]]+Lesser[[:space:]]+General[[:space:]]+Public[[:space:]]+License[[:space:]]+v?3'; then
       # GPL + LGPL together is mixed REVIEW, not automatic LGPL admission.
       # A documented SPDX OR alternative can only be chosen in a scoped review.
       printf 'IRON|MAGICCOMB|LICENSE|FORBIDDEN_OR_MIXED|%s|operator_review_required\n' "$name"
       forbidden=$((forbidden + 1))
-    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq '(^|[^A-Za-z])LGPL([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+Lesser[[:space:]]+General[[:space:]]+Public[[:space:]]+License'; then
-      # User approved LGPL; obligations, file scope, and other bundled licenses
-      # still require independently verified attribution before distribution.
-      printf 'IRON|MAGICCOMB|LICENSE|LGPL_PERMITTED|%s|obligations_and_file_scope_review\n' "$name"
+    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq 'LGPL[- ]?2[.]1([+]|-or-later)'; then
+      # No automatic approval of the LGPL-3 option in an or-later grant.
+      printf 'IRON|MAGICCOMB|LICENSE|REVIEW|%s|LGPL_2.1_or_later_choice_required\n' "$name"
+      unknown=$((unknown + 1))
+    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq '(^|[^A-Za-z0-9])LGPL[- ]?2[.]1([^A-Za-z0-9]|$)|GNU[[:space:]]+Lesser[[:space:]]+General[[:space:]]+Public[[:space:]]+License[[:space:]]+v?2[.]1'; then
+      # Candidate only: mixed expressions, notices and obligations need review.
+      printf 'IRON|MAGICCOMB|LICENSE|PREFERRED_CANDIDATE|%s|LGPL_2.1_scope_review\n' "$name"
+      allowed=$((allowed + 1))
+    elif grep -iE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright" | grep -iEq '(^|[^A-Za-z0-9])(0BSD|BSD-2-Clause|BSD-3-Clause|BSD-2|BSD-3|MIT)([^A-Za-z0-9]|$)'; then
+      # Candidate only: all declarations and files need full AND/OR review.
+      printf 'IRON|MAGICCOMB|LICENSE|PREFERRED_CANDIDATE|%s|MIT_BSD_scope_review\n' "$name"
       allowed=$((allowed + 1))
     elif grep -iqE '^[[:space:]]*License:[[:space:]]*[^[:space:]]+' "$copyright"; then
       printf 'IRON|MAGICCOMB|LICENSE|REVIEW|%s|non_GNU_not_equivalent_to_approved\n' "$name"
