@@ -318,3 +318,33 @@ Canonical source-level contract: [STD-free native T-CROSS](STD_FREE_NATIVE_T_CRO
 5. Actual CMake configure/build, native CTest, toolchain identification, unsupported ABI negative controls and runtime import/zero-CALL checks remain **HOLD / NOT TESTED**.
 
 Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [platform YAML](../ci/native-platform-matrix.yml), [STD inventory exporter](../ci/Export-StdFreeInventory.sh), [POSIX executor](../ci/Build-PlatformMatrix.sh), [Windows executor](../ci/Build-PlatformMatrix.ps1).
+
+## T-CROSS: all-family gain/dispersion/stability exact-token lexicon
+
+**Source audit only / compiler and CTest execution NOT OBSERVED.** A separate exploratory record, preserving preceding frozen audits.
+
+- Base: `cc0f789fee53a6c22e86c31d45b822f7716699f0` from main, after the native OS core transition.
+- Candidate: `d9408bdfe6e1b4db0bc5dc457e4e4466863fd9b3` before this audit documentation append.
+- [Exact Git comparison](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/cc0f789fee53a6c22e86c31d45b822f7716699f0...d9408bdfe6e1b4db0bc5dc457e4e4466863fd9b3): 15 commits, 8 changed files, **+499 / -3 lines, net +496**. These are Git source counts, not measured acceptance.
+
+| Changed file | Status | Added | Removed |
+| --- | --- | ---: | ---: |
+| `CMakeLists.txt` | modified | +12 | -0 |
+| `README.md` | modified | +7 | -0 |
+| `Taskfile.yml` | modified | +1 | -1 |
+| `ci/t-cross-posix.sh` | modified | +4 | -2 |
+| `docs/EXPLORATORY_OPERAND_MODES.md` | added | +59 | -0 |
+| `shared/quantum_operand_lexicon.hpp` | added | +277 | -0 |
+| `tests/quantum_operand_lexicon_test.cpp` | added | +125 | -0 |
+| `tests/std_free_portable_probe.cpp` | modified | +14 | -0 |
+| **TOTAL** | **8 files** | **+499** | **-3** |
+
+### Algebraic safety and provenance boundaries
+
+- Existing fourteen literal source operands have distinct identities, with three conceptual semantic slots each: 14 × 3 = 42. Explicit notation coverage does not equal complete numerical semantics.
+- Twenty-two exact source records: fourteen historical/user-supplied originals, four user-specified coefficient mode variants `-p`, `-P`, `=p`, `=P`, and four inferred shift variants `-/`, `=/`, `-\`, `=\`. Inferred glyphs are tagged `Status::ProposedNotation`, `Notation::Inferred`; no rule labels them confirmed.
+- `+/` is user-associated with shift up/inverse-square and `+\` with shift down/root-of-square, superseding *earlier interpretation labels* but preserving old literal/provenance. No numerical evaluator or physics law is claimed.
+- The `quantum_operand_exact_symbol_registry` CTest and native core static assertions check exact bytes, case, 42 semantic slots, inferred notation status, Unicode full-width equals as a negative, and invalid enum IDs. New source has no `std::` or C++ standard header imports. The legacy parity engine and Docker release PR are untouched.
+- T-CROSS whole-repository STD-free remains a separate blocked condition. No compiler, target OS test, zero-call disassembly, new GAMP4 run, Docker execution, or release publication was observed for this candidate.
+
+**State: DRAFT / HOLD pending actual C++20 build and CTest.** No merge or original mathematical record replacement is authorized by this source-ledger update.
