@@ -18,6 +18,14 @@
 
 ---
 
+## GAMP4-gated local Docker release staging (candidate)
+
+An explicit, operator-requested [GAMP4 Docker release protocol](docs/GAMP4_DOCKER_RELEASE.md) now provides a **local-only, SHA256-digest-pinned Docker Compose** path for full Linux CMake/CTest and all twelve GAMP4-style URS checks, plus offline Android NDK archive builds dependent on the validated source SHA. Native **macOS Intel/Apple Silicon** and **Windows Win32/x64/ARM64** validation scripts produce separate platform-specific GAMP4/CTest evidence. Docker cannot provide a genuine macOS runtime, and Windows container images require matching Windows infrastructure.
+
+The [13-profile release YAML](ci/gamp4-docker-release.yml) and [offline Docker Compose](docker/compose.release.yml) require cached toolchain images, local Docker daemon, disabled container networking, non-root execution, read-only mounted source and no automatic image/SDK downloads. The [release assembler](ci/Assemble-Gamp4-Release.sh) refuses incomplete source-matched evidence or failed package checksums; it stages bundles and release notes with status **STAGED_NOT_PUBLISHED**. The optional [OCI payload Dockerfile](docker/ReleasePayload.Dockerfile) transports multi-OS files but is **not a runnable macOS/Windows/Android container**.
+
+**Validation is NOT YET EXECUTED for this candidate.** No newly built container was pushed and no GitHub release was published. The existing full repository remains not STD-free; the independent core-only archive and the full historical GAMP4 suite retain separate scope. The previous no-container policy is superseded only for this specific operator-requested local release workflow; the ban on hosted/self-hosted GitHub Actions runners remains.
+
 ## Offline STD-free core and native multi-OS matrix
 
 [Native platform matrix](ci/native-platform-matrix.yml) now declares locally buildable C++20 static-archive profiles for **macOS arm64 / x86_64 / universal**, **Windows x86 / x64 (AMD64) / ARM64**, **Linux x86 / x86_64 / ARM64**, and **Android arm64-v8a / armeabi-v7a / x86 / x86_64**. The macOS 32-bit Intel profile is explicitly unsupported on modern macOS, not silently marked green. See [OS/ABI setup and operator commands](docs/NATIVE_PLATFORM_MATRIX.md).
