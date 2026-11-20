@@ -87,7 +87,10 @@ jobs:
           $tampered=Join-Path $env:RUNNER_TEMP 'openbsd-evidence-corrupted.tsv'
           [IO.File]::WriteAllText($tampered,$after,[Text.UTF8Encoding]::new($false))
           & pwsh -NoLogo -NoProfile -File $test -RepositoryRoot $src -EvidencePath $tampered *> $null
-          if($LASTEXITCODE -eq 0){throw 'OPENBSD|EVIDENCE|HOLD|false_stage_accepted'}
+          $negativeExit=$LASTEXITCODE
+          if($negativeExit -eq 0){throw 'OPENBSD|EVIDENCE|HOLD|false_stage_accepted'}
+          # pwsh exits with LASTEXITCODE even after a successful expected-failure assertion.
+          $global:LASTEXITCODE=0
           Write-Host 'OPENBSD|EVIDENCE|TEST_PASS|HEAD_TAIL_EXACT|CORRUPTION_REJECTED|SOURCE_METADATA_ONLY|CORE=OPENBSD2|NATIVE_BUILDS=0|RELEASE=HOLD'
       - name: Compile the portable C++20 core serially on Windows, not OpenBSD
         shell: pwsh
