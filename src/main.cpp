@@ -77,7 +77,8 @@ int main(int argc, char** argv) {
     if (core.pinned) pxor::write_u64(core.core_id);
     else pxor::write_literal("unpinned");
     pxor::write_literal("\nPriority : ");
-    pxor::write_literal(priority_raised ? "moderately elevated" : "unchanged");
+    if (priority_raised) pxor::write_literal("moderately elevated");
+    else pxor::write_literal("unchanged");
     pxor::write_literal("\nMode   : periodic 256-byte LUT (not exact seeded stream)\n");
     pxor::write_literal("Bytes  : ");
     pxor::write_u64(static_cast<pxor::u64>(bytes));
