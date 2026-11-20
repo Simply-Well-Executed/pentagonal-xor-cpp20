@@ -4,6 +4,8 @@
 // Public/private/shared below are C++ access/borrow scopes, not OS memory maps.
 #pragma once
 
+#include "pxor_memory.hpp"
+
 #if defined(__linux__) && !defined(_GNU_SOURCE)
 #  define _GNU_SOURCE 1
 #endif
@@ -35,11 +37,6 @@
 
 namespace pxor {
 
-using u8 = unsigned char;
-using i32 = std::int32_t;
-using i64 = std::int64_t;
-using u64 = std::uint64_t;
-using usize = std::size_t;
 using fixed_t = i32;
 inline constexpr i32 FRACBITS = 16;
 inline constexpr fixed_t FRACUNIT = 1 << FRACBITS;
@@ -58,71 +55,7 @@ template <usize PowerOfTwoSize>
     return index & (PowerOfTwoSize - 1);
 }
 
-// Public fixed-capacity, allocation-free storage. A view never owns this data.
-template <typename T, usize N>
-struct FixedBuffer {
-    static_assert(N > 0, "FixedBuffer requires a positive capacity");
-    T items[N]{};
-
-    [[nodiscard]] constexpr T& operator[](usize i) noexcept { return items[i]; }
-    [[nodiscard]] constexpr const T& operator[](usize i) const noexcept {
-        return items[i];
-    }
-    [[nodiscard]] constexpr T* data() noexcept { return items; }
-    [[nodiscard]] constexpr const T* data() const noexcept { return items; }
-    [[nodiscard]] static constexpr usize size() noexcept { return N; }
-
-    constexpr void fill(const T& value) noexcept {
-        for (usize i = 0; i < N; ++i) items[i] = value;
-    }
-};
-
-struct ByteSlice {
-    u8* ptr{nullptr};
-    usize len{0};
-
-    constexpr ByteSlice() noexcept = default;
-    constexpr ByteSlice(u8* p, usize n) noexcept : ptr(p), len(n) {}
-    template <usize N>
-    constexpr ByteSlice(FixedBuffer<u8, N>& buf) noexcept
-        : ptr(buf.data()), len(N) {}
-
-    [[nodiscard]] constexpr u8& operator[](usize i) const noexcept {
-        return ptr[i];
-    }
-    [[nodiscard]] constexpr u8* data() const noexcept { return ptr; }
-    [[nodiscard]] constexpr usize size() const noexcept { return len; }
-};
-
-struct ConstByteSlice {
-    const u8* ptr{nullptr};
-    usize len{0};
-
-    constexpr ConstByteSlice() noexcept = default;
-    constexpr ConstByteSlice(const u8* p, usize n) noexcept : ptr(p), len(n) {}
-    template <usize N>
-    constexpr ConstByteSlice(const FixedBuffer<u8, N>& buf) noexcept
-        : ptr(buf.data()), len(N) {}
-
-    [[nodiscard]] constexpr const u8& operator[](usize i) const noexcept {
-        return ptr[i];
-    }
-    [[nodiscard]] constexpr const u8* data() const noexcept { return ptr; }
-    [[nodiscard]] constexpr usize size() const noexcept { return len; }
-};
-
-struct StringSlice {
-    const char* ptr{nullptr};
-    usize len{0};
-
-    constexpr StringSlice() noexcept = default;
-    constexpr StringSlice(const char* p, usize n) noexcept : ptr(p), len(n) {}
-    [[nodiscard]] constexpr const char* data() const noexcept { return ptr; }
-    [[nodiscard]] constexpr usize size() const noexcept { return len; }
-};
-
-// Borrowed views do NOT extend ownership or lifetime, protect memory from the
-// operating system, or impose thread synchronization. Never retain beyond owner.
+// Canonical fixed storage and borrowed slices live in pxor_memory.hpp.
 struct CorePinResult {
     unsigned int core_id{0};
     bool pinned{false};
