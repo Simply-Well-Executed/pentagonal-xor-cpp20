@@ -478,3 +478,31 @@ Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [pl
 - T-CROSS whole-repository STD-free remains a separate blocked condition. No compiler, target OS test, zero-call disassembly, new GAMP4 run, Docker execution, or release publication was observed for this candidate.
 
 **State: DRAFT / HOLD pending actual C++20 build and CTest.** No merge or original mathematical record replacement is authorized by this source-ledger update.
+
+## T-CROSS: restored standalone plus and gain-equals exact literals (2026-11-20)
+
+**FROZEN SOURCE DELTA / C++20 COMPILER AND CTEST NOT RUN.** Do not promote this audit to regulatory, QA, or runtime validation.
+
+- Base (main, after PR #21 merged): `5bfe50ba0cc4a198117c6348efbaab3e8cc0d261`.
+- Candidate before this audit append: `6647b4143f57b730d4d1e04c2fbddd251bba5360`.
+- [Git comparison](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/5bfe50ba0cc4a198117c6348efbaab3e8cc0d261...6647b4143f57b730d4d1e04c2fbddd251bba5360): **5 commits, 5 changed files, +58 / -10 lines, net +48**.
+
+| File | Status | Added | Removed |
+| --- | --- | ---: | ---: |
+| `README.md` | modified | +3 | -1 |
+| `docs/EXPLORATORY_OPERAND_MODES.md` | modified | +12 | -4 |
+| `shared/quantum_operand_lexicon.hpp` | modified | +19 | -2 |
+| `tests/quantum_operand_lexicon_test.cpp` | modified | +18 | -2 |
+| `tests/std_free_portable_probe.cpp` | modified | +6 | -1 |
+| **TOTAL** | **5 files** | **+58** | **-10** |
+
+### Evidence and non-mutation conditions
+
+- The available November 9 COREAO PlusStar prior-chat record confirms `+;`, `+'`, `+-` as distinct literal tokens. Their original semantics were UNDEFINED, AMBIGUOUS and INTERPRETED/NONCANONICAL respectively. This change does not erase those statuses.
+- The user's current explicit request adds **standalone `+`** and **`+=`**. They were not recovered as previously assigned custom mathematical functions in accessible earlier material; do not misrepresent ordinary programming `+=` as calculus proof.
+- The source adds exactly two literal rows to the previous 22-record table: **24 exact spellings**. The existing 14 operand identities and three possible Gain/Dispersion/Stability modes remain **42 conceptual slots**.
+- Standalone `+` is a separate unassigned-mode `Operand::Plus` base literal, not an alias of `++`. `+=` is direct-user notation in the Equality operand's syntactic Gain slot, with no computation, assignment semantics or proof inferred. Both are `Status::Exploratory`, and every `evaluable(record)` remains false.
+- Static compile-time assertions and the CTest source check recognition, pointer distinction, historical punctuation independence, user provenance, no-evaluation and updated counts. CMake, STD-free source scanning and all original arithmetic implementations are untouched.
+- No compiler/CTest command or native OS profile run has occurred for this candidate. Old artifacts and GAMP4 evidence do not retroactively validate this source change. No Docker release, registry push, or merge is authorized by this audit.
+
+**Custody:** this is a follow-up to merged PR #21 on a new branch based on current main; it does not rewrite the completed PR or historic PlusStar records.
