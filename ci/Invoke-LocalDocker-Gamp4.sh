@@ -24,7 +24,11 @@ esac
 test "${#SWE_EXPECTED_SHA}" -eq 40 || fail 'source must be a SHA-1 Git commit'
 export SWE_EXPECTED_SHA
 SWE_RELEASE_OUTPUT="${SWE_RELEASE_OUTPUT:-$root/build/gamp4-release/$SWE_EXPECTED_SHA}"
-case "$SWE_RELEASE_OUTPUT" in /*) : ;; *) fail 'SWE_RELEASE_OUTPUT must be an absolute path' ;; esac
+case "$SWE_RELEASE_OUTPUT/" in
+  "$root/build/gamp4-release/"*) : ;;
+  *) fail 'Docker writable output must remain inside repository build/gamp4-release/'
+  ;;
+esac
 mkdir -p "$SWE_RELEASE_OUTPUT" || fail 'cannot create local artifact root'
 SWE_SOURCE_STAGING_DIR="$root/build/gamp4-source-snapshots/$SWE_EXPECTED_SHA"
 snapshot_root="$root/build/gamp4-source-snapshots"
