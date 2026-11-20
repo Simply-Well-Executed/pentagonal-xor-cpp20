@@ -1,0 +1,84 @@
+# SPDX-License-Identifier: 0BSD
+# Native T-CROSS policy manifest. Never place this under .github/workflows.
+# Execution source is POSIX sh; the external Task CLI is optional, not required.
+# Canonical local invocation: sh ci/t-cross-posix.sh
+version: '3'
+
+vars:
+  BUILD_DIR: build
+  BUILD_TYPE: Release
+  # Reviewed operator assertions; not an automatically detected latest release.
+  EXPECTED_PWSH_VERSION: '7.7.0'
+  EXPECTED_CMAKE_VERSION: '3.30.0'
+  T_CROSS_BASE_SHA: '3570a7512bc0cd66b39df0fa26133a584b7a35fe'
+
+env:
+  BUILD_DIR: '{{.BUILD_DIR}}'
+  BUILD_TYPE: '{{.BUILD_TYPE}}'
+  EXPECTED_PWSH_VERSION: '{{.EXPECTED_PWSH_VERSION}}'
+  EXPECTED_CMAKE_VERSION: '{{.EXPECTED_CMAKE_VERSION}}'
+  T_CROSS_BASE_SHA: '{{.T_CROSS_BASE_SHA}}'
+
+tasks:
+  default:
+    desc: 'Run all strict, ordered, local T-CROSS gates without hosted runners'
+    cmds:
+      - task: gate-no-remote-git
+      - task: gate-no-github-workflows
+      - task: gate-no-live-rest
+      - task: gate-no-residual-surfaces
+      - task: gate-pinned-versions
+      - task: build-cpp20
+      - task: gate-zero-function-calls
+      - task: gate-zero-network-imports
+      - task: test-ctest
+
+  gate-no-remote-git:
+    desc: 'Reject configured remotes and dirty tracked files; no Git fetch'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-remote-git
+
+  gate-no-github-workflows:
+    desc: 'Reject active .github/workflows YAML runners'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-github-workflows
+
+  gate-no-live-rest:
+    desc: 'Reject network API/download candidates in CI, tools and CMake'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-live-rest
+
+  gate-no-residual-surfaces:
+    desc: 'Reject retained Java, Docker and Android manual-use directories'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-residual-surfaces
+
+  gate-pinned-versions:
+    desc: 'Fail closed unless locally installed CMake and PowerShell match operator assertions'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-pinned-versions
+
+  build-cpp20:
+    desc: 'Configure required ISO C++20, extensions OFF, existing O2; compile locally'
+    cmds:
+      - sh ci/t-cross-posix.sh build-cpp20
+
+  gate-zero-function-calls:
+    desc: 'Inspect optimized canonical parity object only; do not claim zero CLI calls'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-zero-function-calls
+
+  gate-zero-network-imports:
+    desc: 'Inspect direct CLI imports for known networking libraries; not runtime isolation proof'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-zero-network-imports
+
+  test-ctest:
+    desc: 'Run native CTest regression suite with recorded outcomes'
+    cmds:
+      - sh ci/t-cross-posix.sh test-ctest
+
+  emit-diff-yaml:
+    desc: 'Derive a fresh +/-DIFF YAML audit from frozen base SHA and local Git HEAD'
+    cmds:
+      - sh ci/t-cross-posix.sh emit-diff-yaml
