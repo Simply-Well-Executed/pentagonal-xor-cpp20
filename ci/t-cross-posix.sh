@@ -52,16 +52,29 @@ gate_no_live_rest() {
 
 gate_no_std_throughput() {
     need grep
-    # Four isolated native C++20 sources must have no C/C++ std includes,
-    # std:: names, CRT functions, new/delete or compiler-specific intrinsics.
+    # Seven new native C++20 sources must be free of standard APIs and intrinsics.
     for file in include/pxor_memory.hpp include/pentagonal_xor.hpp \
-                src/main.cpp tests/pentagonal_xor_throughput_test.cpp; do
+                include/pentagonal_suite.hpp src/main.cpp src/suite_main.cpp \
+                tests/pentagonal_xor_throughput_test.cpp \
+                tests/pentagonal_suite_test.cpp; do
         test -f "$file" || fail "missing STD-free source: $file"
         if grep -nE 'std::|#[[:space:]]*include[[:space:]]*<(array|vector|span|ranges|type_traits|cstddef|cstdint|cstdio|cstring|memory|new|chrono|charconv|concepts|stdio[.]h|stdlib[.]h|string[.]h|stdint[.]h)>|__builtin_' "$file"; then
             fail "standard-library or compiler-builtin candidate in $file"
         fi
     done
-    pass 'gate-no-std-throughput|four-sources|source-only'
+    pass 'gate-no-std-throughput|seven-sources|source-only'
+}
+
+gate_suite_no_comments() {
+    need grep
+    for file in include/pentagonal_suite.hpp src/suite_main.cpp \
+                tests/pentagonal_suite_test.cpp; do
+        test -f "$file" || fail "missing comment-free suite source: $file"
+        if grep -nE '//|/\*|\*/' "$file"; then
+            fail "suite code comments found in $file"
+        fi
+    done
+    pass 'gate-suite-no-comments|three-suite-sources'
 }
 
 gate_no_std_repository() {
@@ -161,7 +174,7 @@ gate_zero_network_imports() {
     need grep
     need awk
     test -d "$BUILD_DIR" || fail 'build missing; run build-cpp20 first'
-    for binary_name in pentagonal_xor pentagonal_xor_cli; do
+    for binary_name in pentagonal_xor pentagonal_xor_cli pentagonal_suite_cli; do
         binaries=$(find "$BUILD_DIR" -type f \
             \( -name "$binary_name" -o -name "$binary_name.exe" \) -print) ||
             fail "cannot enumerate $binary_name binaries"
@@ -267,6 +280,7 @@ default() {
     gate_no_github_workflows
     gate_no_live_rest
     gate_no_std_throughput
+    gate_suite_no_comments
     gate_no_std_repository
     gate_no_residual_surfaces
     gate_pinned_versions
@@ -284,6 +298,7 @@ case "${1:-default}" in
   gate-no-github-workflows) gate_no_github_workflows ;;
   gate-no-live-rest) gate_no_live_rest ;;
   gate-no-std-throughput) gate_no_std_throughput ;;
+  gate-suite-no-comments) gate_suite_no_comments ;;
   gate-no-std-repository) gate_no_std_repository ;;
   gate-no-residual-surfaces) gate_no_residual_surfaces ;;
   gate-pinned-versions) gate_pinned_versions ;;
