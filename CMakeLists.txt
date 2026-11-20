@@ -67,6 +67,11 @@ if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set_target_properties(pentagonal_xor_cli PROPERTIES
     CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
   install(TARGETS pentagonal_xor_cli RUNTIME DESTINATION bin)
+  add_executable(pentagonal_suite_cli src/suite_main.cpp)
+  target_link_libraries(pentagonal_suite_cli PRIVATE swe_pentagonal_xor_throughput)
+  set_target_properties(pentagonal_suite_cli PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS pentagonal_suite_cli RUNTIME DESTINATION bin)
 else()
   message(STATUS "STD-free throughput CLI: native I/O backend unsupported on this host")
 endif()
@@ -75,10 +80,26 @@ endif()
 install(FILES
   include/pentagonal_xor.hpp
   include/pxor_memory.hpp
+  include/pentagonal_suite.hpp
   DESTINATION include/swe)
 
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(pentagonal_suite_test
+        tests/pentagonal_suite_test.cpp)
+    target_link_libraries(pentagonal_suite_test
+        PRIVATE swe_pentagonal_xor_throughput)
+    set_target_properties(pentagonal_suite_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME pentagonal_suite_operations
+        COMMAND pentagonal_suite_test)
+    if(TARGET pentagonal_suite_cli)
+      add_test(NAME pentagonal_suite_cli_smoke
+          COMMAND pentagonal_suite_cli)
+      set_tests_properties(pentagonal_suite_cli_smoke PROPERTIES
+          PASS_REGULAR_EXPRESSION "Suite pipeline processed in")
+    endif()
+
     add_executable(pentagonal_xor_throughput_test
         tests/pentagonal_xor_throughput_test.cpp)
     target_link_libraries(pentagonal_xor_throughput_test
