@@ -91,3 +91,71 @@ Algorithm and exact source records are authoritative. This audit is derived evid
 **Important limitations:** no independent local Windows execution, complete import-table review, call-graph closure, offline firewall enforcement, or source/toolchain signing inspection has yet occurred. Merely removing an Actions workflow is not proof that CMake, a compiler, third-party tool, or manually invoked historical scripts cannot access a network. No production runtime code or mathematical source was changed by this transition. The PR stays draft and unmerged; `main` still has its historical workflows until the branch is promoted.
 
 **Evidence custody:** The old runner definition, job IDs, exit conditions and reason for removal remain in Git history and this audit. The new local entrypoint records its own JSON evidence in `.iron-native-evidence.json`; this generated record is not committed automatically. Its status must not be confused with hosted CI status.
+
+
+## T-CROSS +&-DIFF: verified Git source delta
+
+**Status: VERIFIED SOURCE DIFF / LOCAL RUNTIME NOT TESTED.** This section is the canonical plus/minus source-delta ledger for the native-only transition. It does not revise the original algorithm or supersede actual test evidence. Delta labels refer to Git lines, not measurements of performance or inferred security outcomes.
+
+- **CORE (before):** `3570a7512bc0cd66b39df0fa26133a584b7a35fe` (one hosted workflow, warning previously corrected to fail closed).
+- **Candidate (after):** `79c3cab7f094b53002be76292f278fcb1fd39b62` (no active workflows, local-native entrypoint).
+- **Authority:** [GitHub commit comparison](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/3570a7512bc0cd66b39df0fa26133a584b7a35fe...79c3cab7f094b53002be76292f278fcb1fd39b62), seven commits ahead, zero behind, seven changed files, **+198 / -104 lines**, **net +94**. This section itself is added *after* the compared candidate, so future commits must use a new comparison range instead of treating these frozen numbers as live.
+- **Readout convention:** `-` means removed from active branch, `+` means added to active branch, `=` means equivalent intent or unchanged interface, `?` means evidence not obtained. Removing a file from current Git state preserves its prior committed history.
+
+### Exact +/- source ledger
+
+| Path | Git status | + additions | - deletions | net lines |
+| --- | --- | ---: | ---: | ---: |
+| `.github/pull_request_template.md` | modified | +18 | -8 | +10 |
+| `.github/workflows/native-core.yml` | removed | +0 | -77 | -77 |
+| `.gitignore` | modified | +3 | -0 | +3 |
+| `CONTRIBUTING.md` | modified | +19 | -6 | +13 |
+| `README.md` | modified | +24 | -13 | +11 |
+| `ci/Invoke-NativeCore.ps1` | added | +107 | -0 | +107 |
+| `docs/IRON_T_CROSS_REVIEW.md` | modified | +27 | -0 | +27 |
+| **TOTAL** | **7 files** | **+198** | **-104** | **+94** |
+
+### T-CROSS behavior and evidence, side by side
+
+| Subject | - BEFORE: hosted workflow | + AFTER: local native entrypoint | Status and implication |
+| --- | --- | --- | --- |
+| Execution authority | `runs-on: windows-2025` on a GitHub-managed image | `ci/Invoke-NativeCore.ps1` executes locally on Windows | **+** Image scheduling removed; local trust still requires review |
+| Remote source transport | Workflow `git remote add origin` and `git fetch` | Local `git rev-parse` and `git diff --quiet`, no fetch in entrypoint | **+** Automated GitHub checkout transport removed from the defined execution path |
+| PowerShell version | Hosted 7.6.9 was below reviewed 7.7.0 minimum; late workflow gate failed | Operator supplies a verified latest-version assertion; script requires **exact** equality before source checks | **+** Early fail-closed check in code; **?** no local execution or live release proof |
+| Magic Comb | SelfTest + Verify, nesting depth 9 | SelfTest + Verify, nesting depth 9 | **=** Same source-verification intent; **?** local run not observed |
+| C++ toolchain | Windows MSVC, CMake, C++20 extensions ON, `/O2` | Locally installed MSVC, CMake, C++20 extensions ON, `/O2` | **=** Declared flags retained; **?** local toolchain not exercised |
+| Tests | Historical hosted CTest **34/34 passed** on run `44661958832` | Local entrypoint invokes CTest after compilation | **?** Local outcome not measured, do not inherit old green status |
+| Documentation | Workflow links and obsolete release automation statements | README, CONTRIBUTING and PR template describe native review and evidence | **+** Change process documented, but older historical sections may still need targeted review |
+| Native/API/MCP isolation | No proof of complete absence of call edges or network paths | No explicit CI API/downloader in local entrypoint; manual-use historical scripts retained | **?** Whole-repository call graph, binary imports and network monitoring remain unverified |
+
+### Cross-file +/- excerpt (faithful individual lines, not a contiguous unified hunk)
+
+```diff
+-    runs-on: windows-2025
+-          & git remote add origin "https://github.com/$env:GITHUB_REPOSITORY.git"
+-          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_SHA
+-      - name: 'Fail closed on reviewed PowerShell Core version (offline check)'
++    [Parameter(Mandatory = $true)][version] $LatestStableVersion,
++    [Parameter(Mandatory = $true)][string] $ReleaseEvidenceUri
++    if (-not $IsWindows) { throw 'Native verification requires an actual Windows host.' }
++    if ($actual -ne $LatestStableVersion) {
++        throw "PowerShell $actual differs from operator-declared latest stable $LatestStableVersion. No build attempted."
++    }
++    & git -C $root diff --quiet --exit-code HEAD --
++        & cmake --build build --config Release --parallel
++        & ctest --test-dir build -C Release --output-on-failure
+```
+
+The `-` lines are extracted from the deleted `.github/workflows/native-core.yml`; the `+` lines are extracted from the newly added `ci/Invoke-NativeCore.ps1`. These are meaningful source examples, **not** one literal patch hunk. Use the linked GitHub compare for full exact file patches.
+
+### Acceptance and negative controls
+
+- **Source delta:** PASS for the stated frozen Git comparison only. No active workflows remain in the candidate tree at that SHA.
+- **Compatibility:** historical hosted 34/34 CTest passed; native Windows run of new entrypoint **NOT TESTED**. Run the same fixed-input and invalid-input tests locally before claiming parity.
+- **Version negative control:** a local `pwsh` version different from the operator-declared latest must terminate before Magic Comb or compilation; this branch was inspected, **NOT EXECUTED**.
+- **Network negative control:** no active workflow checkout/fetch exists after migration. Offline operation, network activity of compilers and tools, and manual scripts still require direct observation.
+- **C++ call graph:** no changes to the production C++ core in this comparison; strict zero-function-call criterion remains **UNMET / NOT CERTIFIED**.
+- **Publication:** PR #19 stays DRAFT and unmerged. No automatic releases, test verdicts or main-branch mutations are inferred.
+
+**Decision:** Retire runner-image execution on the PR branch (**SOURCE DIFF ACCEPTED**). Keep the whole-project IRON seal **HOLD** until local execution, toolchain provenance, negative controls, call-path inventory and explicit maintainer promotion.
+
