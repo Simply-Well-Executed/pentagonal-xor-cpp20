@@ -264,3 +264,57 @@ Canonical source-level contract: [STD-free native T-CROSS](STD_FREE_NATIVE_T_CRO
 **Special limitations:** `is_pentagonal_nan` detects a quiet-NaN header pattern, not cryptographic origin or mathematical inverse provenance. NIL zero-fill is not guaranteed secure memory erasure. The NOP mode performs no memory accesses and has O(1) semantics, not a guaranteed constant-duration full-buffer benchmark. CPU affinity and moderate priority are best-effort hints only. COR's 64-bit *index* bounds do not guarantee arbitrary-precision pentagonal *values*. Integer qNaN bytes are not interpreted as floating-point values in the implementation.
 
 **Execution boundary:** No GitHub Actions workflow, hosted/self-hosted runner or container was added to this PR. Existing unrelated C++ headers and algorithms were not deleted. **PR remains DRAFT / UNMERGED. Release, performance, compiler portability, object disassembly, zero-runtime-import and whole-repository STD-free certification remain HOLD pending direct evidence.**
+
+## Native OS matrix and repository-wide STD-free T-CROSS continuation
+
+**Status: VERIFIED GIT SOURCE DIFF / OS BUILD NOT TESTED / WHOLE-REPOSITORY STD-FREE BLOCKED.** This snapshot is independent of previous frozen T-CROSS records. No original algorithms or historical evidence are retired by documenting it.
+
+- **CORE baseline:** `51d12b15f7df9f3ec443f7d5a54da9278006e69b` before the native OS/ABI build bridge.
+- **CANDIDATE:** `8e8da3dee92c9c9b37c41df3097296ab886e01ab` prior to this audit-only commit.
+- **Authority:** https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/51d12b15f7df9f3ec443f7d5a54da9278006e69b...8e8da3dee92c9c9b37c41df3097296ab886e01ab
+- **Frozen totals:** 19 commits; 15 files; **+886 / -23 lines; net +863**. These are Git source counts, not compile/CTest/benchmark results.
+- **Current baseline tree:** 184 tracked blobs, 73 C/C++ source/header paths, and zero `.github/workflows` paths at frozen candidate SHA. Subsequent audit changes must not silently revise those figures.
+
+| File | Status | Lines added | Lines removed |
+| --- | --- | ---: | ---: |
+| `.github/pull_request_template.md` | modified | +12 | -1 |
+| `.gitignore` | modified | +1 | -0 |
+| `CMakeLists.txt` | modified | +60 | -2 |
+| `CONTRIBUTING.md` | modified | +10 | -2 |
+| `README.md` | modified | +14 | -4 |
+| `Taskfile.yml` | modified | +65 | -1 |
+| `ci/Build-PlatformMatrix.ps1` | added | +150 | -0 |
+| `ci/Build-PlatformMatrix.sh` | added | +114 | -0 |
+| `ci/Export-StdFreeInventory.sh` | added | +69 | -0 |
+| `ci/native-platform-matrix.yml` | added | +113 | -0 |
+| `ci/t-cross-posix.sh` | modified | +17 | -6 |
+| `docs/NATIVE_PLATFORM_MATRIX.md` | added | +89 | -0 |
+| `include/pentagonal_xor.hpp` | modified | +12 | -7 |
+| `src/parity_std_free_main.cpp` | added | +110 | -0 |
+| `tests/std_free_portable_probe.cpp` | added | +50 | -0 |
+| **TOTAL** | **15 files** | **+886** | **-23** |
+
+### Explicit T-CROSS source and platform gates
+
+| Dimension | Before | Candidate | Acceptance status |
+| --- | --- | --- | --- |
+| macOS | No native macOS CLI backend or fixed matrix | arm64, x86_64 and dual-architecture universal core archives; native POSIX I/O and clock | Configured; native Xcode build and hardware execution NOT TESTED |
+| macOS 32-bit Intel | No dedicated status | i386 explicitly UNSUPPORTED for modern macOS (10.15+) | Not advertised as working |
+| Windows | x64 Windows verifier only | Local MSVC Win32, x64/AMD64 aliases, ARM64 archives; operator-verified exact PowerShell | Configured; local MSVC build NOT TESTED |
+| Android | Historical Java/NDK scripts and container sources | Four installed-NDK ABI static archive profiles without an APK or runtime | Configured; cross compilation NOT TESTED |
+| Linux | General project CMake | local x86_64, ARM64 and native 32-bit x86 archive profiles | Configured; build NOT TESTED |
+| STD-free core build | Full legacy repository by default | Explicit SWE_STD_FREE_CORE_ONLY=ON early CMake archive target and compile-time assertions; default full build retained | Source inspected; compile NOT TESTED |
+| Original parity | Existing std::stod / iostream canonical CLI | Preserved, plus alternative STD-free native parity CLI and six parity/invalid CTests | New CLI NOT TESTED, numeric grammar not asserted identical |
+| Source STD audit | Legacy STD references present | Git-derived per-file YAML inventory and ten-source core-only gate | Inventory generator committed; entire repository still BLOCKED |
+| Network/runner images | No workflows on prior PR branch | Zero hosted/self-hosted workflow YAML remains, no fetch or binary download in new entrypoints | Source inspected; dynamic isolation NOT TESTED |
+| Binary dependencies | No complete linker/import audit | Static archive plus platform-specific output; CRT/libc imports not proven absent | NOT CERTIFIED |
+
+### Frozen acceptance and custody
+
+1. Core-only is a build scope, not a declaration that the 73 tracked C/C++ paths are STD-free. The original math and legacy files remain available under their existing paths. No archive, rename, deletion or wholesale bypass is used to fake repository compliance.
+2. macOS i386 is unsupported on modern macOS. Windows AMD64 and x86-64 use one canonical x64 architecture. Android builds produce installed-NDK static archives, not APKs.
+3. Missing SDKs, dirty tracked source and mismatched version assertions block the local scripts. Their YAML output records actual local source commit, host, stage and status. No profile is green merely because it exists in a manifest.
+4. After this snapshot, run `sh ci/t-cross-posix.sh emit-diff-yaml` and `sh ci/Export-StdFreeInventory.sh` to derive current, rather than historical, counts.
+5. Actual CMake configure/build, native CTest, toolchain identification, unsupported ABI negative controls and runtime import/zero-CALL checks remain **HOLD / NOT TESTED**.
+
+Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [platform YAML](../ci/native-platform-matrix.yml), [STD inventory exporter](../ci/Export-StdFreeInventory.sh), [POSIX executor](../ci/Build-PlatformMatrix.sh), [Windows executor](../ci/Build-PlatformMatrix.ps1).
