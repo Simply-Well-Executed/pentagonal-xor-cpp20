@@ -44,8 +44,11 @@ jobs:
           Set-StrictMode -Version 2.0
           $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
           if (!(Test-Path -LiteralPath $vswhere -PathType Leaf)) { throw 'MSVC discovery tool unavailable' }
-          $installed=(& $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationVersion | Select-Object -First 1)
-          if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($installed)) { throw 'No installed MSVC C++20 toolchain is available' }
+          $global:LASTEXITCODE=0
+          $versions=@(& $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationVersion)
+          $probeExit=[int]$global:LASTEXITCODE
+          $installed=if($versions.Count -gt 0){[string]$versions[0]}else{''}
+          if ($probeExit -ne 0 -or [string]::IsNullOrWhiteSpace($installed)) { throw "No installed MSVC C++20 toolchain is available (vswhere exit $probeExit)" }
           $vsMajor=([version]$installed).Major
           $generator=switch($vsMajor) {
             18 { 'Visual Studio 18 2026' }
