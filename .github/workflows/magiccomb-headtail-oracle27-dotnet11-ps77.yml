@@ -1,0 +1,130 @@
+name: MagicComb HEAD/TAIL GNU-EPL licensing + zero-CVE and Oracle toolchain hold
+
+# Investigational only, explicit owner requirement. NEVER pushes an image.
+# GitHub-hosted Ubuntu only; no Node, Python, Go, marketplace actions or local compute.
+on:
+  push:
+    branches:
+      - feat/magiccomb-license-oracle27-dotnet11-ps77-20261120
+    paths:
+      - .github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml
+      - ci/Run-CloudMagicComb-HeadTail.sh
+      - ci/MagicComb-LicensePolicy.sh
+      - docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile
+      - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: github-cloud-magiccomb-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  preflight-current-image:
+    name: Audit current Docker Hub digest and GPL/EPL/CVE exceptions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Require GitHub-hosted cloud runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          docker info
+      - name: Fetch and verify the immutable audit source (no Node actions)
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/swe-magiccomb-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: MagicComb HEAD/TAIL existing candidate, license and Docker Scout
+        id: audit
+        shell: bash
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          /bin/sh "$RUNNER_TEMP/swe-magiccomb-source/ci/Run-CloudMagicComb-HeadTail.sh" audit
+      - name: Record exact audit status without inventing a PASS
+        if: always()
+        shell: bash
+        env:
+          RESULT: ${{ steps.audit.outcome }}
+        run: |
+          set -euo pipefail
+          case "$RESULT" in
+            success) state=success; desc='Existing image GNU/EPL and CVE MagicComb cleared' ;;
+            *) state=failure; desc='License/CVE gate held: see GitHub run for named exception evidence' ;;
+          esac
+          jq -nc --arg state "$state" --arg url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg desc "$desc" --arg ctx 'swe/magiccomb-current-image-license-cve' '{state:$state,target_url:$url,description:$desc,context:$ctx}' > "$RUNNER_TEMP/audit-status.json"
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data-binary "@$RUNNER_TEMP/audit-status.json" >/dev/null
+
+  rebase-official-toolchains:
+    name: Verify .NET 11 PowerShell 7.7 Oracle Java 27 with no release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify GitHub-hosted-only Docker runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          docker info
+      - name: Git-fetch exact proposed toolchain commit without Node
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/swe-magiccomb-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: MagicComb HEAD/TAIL official version rebase and CTest, HOLD on licensing
+        id: rebase
+        shell: bash
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          /bin/sh "$RUNNER_TEMP/swe-magiccomb-source/ci/Run-CloudMagicComb-HeadTail.sh" probe
+      - name: Report source-matched toolchain/release HOLD
+        if: always()
+        shell: bash
+        env:
+          RESULT: ${{ steps.rebase.outcome }}
+        run: |
+          set -euo pipefail
+          case "$RESULT" in
+            success) state=success; desc='All official toolchain tests, licenses and CVE checks cleared' ;;
+            *) state=failure; desc='New official toolchain unreleased; review HEAD/TAIL exception and test logs' ;;
+          esac
+          jq -nc --arg state "$state" --arg url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg desc "$desc" --arg ctx 'swe/magiccomb-oracle-java27-dotnet11-pwsh77' '{state:$state,target_url:$url,description:$desc,context:$ctx}' > "$RUNNER_TEMP/rebase-status.json"
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' \
+            -X POST "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data-binary "@$RUNNER_TEMP/rebase-status.json" >/dev/null
