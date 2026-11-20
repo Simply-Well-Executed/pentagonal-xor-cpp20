@@ -1,106 +1,96 @@
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
-// Optional periodic XOR benchmark; never replaces the parity CLI.
-// Fixed public storage by default; heap fallback only for larger opt-in sizes.
+// Standalone native bytewise XOR throughput CLI; NOT the parity CLI.
+// Zero C/C++ standard-library headers or calls. System APIs are explicit.
 #include "pentagonal_xor.hpp"
-
-#include <charconv>
-#include <chrono>
-#include <cstdio>
-#include <cstring>
-#include <memory>
-#include <new>
-#include <system_error>
 
 namespace {
 constexpr pxor::usize default_payload = 16u * 1024u * 1024u;
 constexpr pxor::usize max_payload = 256u * 1024u * 1024u;
-static pxor::FixedBuffer<pxor::u8, default_payload> static_payload{};
-static char stdout_buffer[65536]{};
-} // namespace
+static pxor::FixedBuffer<pxor::u8, default_payload> fixed_payload{};
+}
 
 int main(int argc, char** argv) {
     pxor::usize bytes = default_payload;
     bool strict_affinity = false;
     if (argc >= 2) {
-        if (argc < 3 || argc > 4 || std::strcmp(argv[1], "--bytes") != 0) {
-            std::fprintf(stderr,
-                "Usage: %s [--bytes 0..268435456 [--strict-affinity]]\n",
-                argv[0]);
+        if (argc < 3 || argc > 4 ||
+            !pxor::equals_cstr(argv[1], "--bytes")) {
+            pxor::write_literal(
+                "Usage: pentagonal_xor_cli [--bytes 0..268435456 [--strict-affinity]]\n",
+                true);
             return 2;
         }
-        unsigned long long requested = 0;
-        const char* first = argv[2];
-        const char* last = first + std::strlen(first);
-        const auto result = std::from_chars(first, last, requested);
-        if (result.ec != std::errc{} || result.ptr != last ||
-            requested > max_payload ||
-            (argc == 4 && std::strcmp(argv[3], "--strict-affinity") != 0)) {
-            std::fputs("Invalid byte count or option\n", stderr);
+        if (!pxor::parse_decimal_limit(argv[2], max_payload, bytes) ||
+            (argc == 4 &&
+             !pxor::equals_cstr(argv[3], "--strict-affinity"))) {
+            pxor::write_literal("Invalid byte count or option\n", true);
             return 2;
         }
-        bytes = static_cast<pxor::usize>(requested);
         strict_affinity = argc == 4;
     }
 
-    std::setvbuf(stdout, stdout_buffer, _IOFBF, sizeof(stdout_buffer));
-
-    // Scheduler hints precede first explicit write to payload storage.
-    // They never establish guaranteed NUMA or L1 cache locality.
+    // Request before first explicit payload write. Neither is a guarantee.
     const bool priority_raised = pxor::request_moderate_priority();
     const pxor::CorePinResult core = pxor::pin_to_active_core();
     if (strict_affinity && !core.pinned) {
-        std::fputs("Affinity pin requested but OS rejected it\n", stderr);
+        pxor::write_literal("Affinity pin rejected or unsupported\n", true);
         return 3;
     }
 
     constexpr pxor::ObfuscatedData label("IDKFA - PENTAGONAL XOR ENGINE", 42);
     constexpr pxor::u8 tag = pxor::EngineAuditor::first_cipher_byte(label);
-    label.with_decrypted([&](pxor::StringSlice header) {
-        std::printf("Header : %.*s [Tag: 0x%02X]\n",
-                    static_cast<int>(header.size()),
-                    header.data(), static_cast<unsigned int>(tag));
+    label.with_decrypted([&](pxor::StringSlice text) {
+        pxor::write_literal("Header : ");
+        pxor::write_raw(text.data(), text.size());
+        pxor::write_literal(" [Tag: 0x");
+        pxor::write_hex_byte(tag);
+        pxor::write_literal("]\n");
     });
 
-    // Fixed storage covers the default 16 MiB. Larger requests have a
-    // bounded, explicit heap fallback instead of hidden stack overflow.
-    std::unique_ptr<pxor::u8[]> heap;
-    pxor::u8* storage = static_payload.data();
-    if (bytes > static_payload.size()) {
-        heap.reset(new (std::nothrow) pxor::u8[bytes]);
-        if (!heap) {
-            std::fputs("Payload allocation failed\n", stderr);
+    // Fixed static storage at 16 MiB or less. Larger requests use native
+    // OS pages rather than C++ new, malloc or the standard-library allocator.
+    pxor::u8* mapped = nullptr;
+    pxor::u8* storage = fixed_payload.data();
+    if (bytes > fixed_payload.size()) {
+        mapped = pxor::allocate_pages(bytes);
+        if (!mapped) {
+            pxor::write_literal("Native page allocation failed\n", true);
             return 4;
         }
-        storage = heap.get();
+        storage = mapped;
     }
     for (pxor::usize i = 0; i < bytes; ++i) storage[i] = 0x5A;
 
-    const auto t0 = std::chrono::steady_clock::now();
+    const pxor::u64 first = pxor::now_us();
     pxor::fast_xor_buffer(pxor::ByteSlice{storage, bytes});
-    const auto t1 = std::chrono::steady_clock::now();
+    const pxor::u64 last = pxor::now_us();
 
-    // Shared read-only borrowed view for the checksum; it owns no memory.
+    // Read-only borrowed view, not OS-shared memory or thread synchronization.
     const pxor::ConstByteSlice observed{storage, bytes};
     pxor::u64 witness = 0;
     for (pxor::usize i = 0; i < observed.size(); ++i) {
         witness = witness * 131u + observed[i];
     }
-    const auto micros =
-        std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();
 
-    if (core.pinned) {
-        std::printf("Core   : %u (pinned)\n", core.core_id);
-    } else {
-        std::fputs("Core   : unpinned (OS denied/unsupported)\n", stdout);
-    }
-    std::printf("Priority : %s\n",
-                priority_raised ? "moderately elevated" : "unchanged");
-    std::fputs("Mode   : periodic 256-byte LUT (not exact seeded stream)\n", stdout);
-    std::printf("Bytes  : %zu\n", bytes);
-    std::printf("Storage: %s\n",
-                heap ? "bounded heap fallback" : "fixed static buffer");
-    std::printf("Elapsed: %lld us\n", static_cast<long long>(micros));
-    std::printf("Witness: %llu\n", static_cast<unsigned long long>(witness));
+    pxor::write_literal("Core   : ");
+    if (core.pinned) pxor::write_u64(core.core_id);
+    else pxor::write_literal("unpinned");
+    pxor::write_literal("\nPriority : ");
+    pxor::write_literal(priority_raised ? "moderately elevated" : "unchanged");
+    pxor::write_literal("\nMode   : periodic 256-byte LUT (not exact seeded stream)\n");
+    pxor::write_literal("Bytes  : ");
+    pxor::write_u64(static_cast<pxor::u64>(bytes));
+    pxor::write_literal("\nStorage: ");
+    if (mapped) pxor::write_literal("native OS pages");
+    else pxor::write_literal("fixed static buffer");
+    pxor::write_literal("\nElapsed: ");
+    if (first != 0 && last >= first) pxor::write_u64(last - first);
+    else pxor::write_literal("unavailable");
+    pxor::write_literal(" us\nWitness: ");
+    pxor::write_u64(witness);
+    pxor::write_literal("\n");
+
+    pxor::release_pages(mapped, bytes);
     return 0;
 }
