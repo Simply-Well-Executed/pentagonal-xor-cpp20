@@ -107,3 +107,61 @@ tasks:
     desc: 'Derive a fresh +/-DIFF YAML audit from frozen base SHA and local Git HEAD'
     cmds:
       - sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml
+
+  # Local-only platform builds. Each command receives a fixed whitelist ID.
+  # No Task CLI or YAML interpreter is required when invoking sh directly.
+  matrix-macos-arm64:
+    desc: 'Build local native STD-free core archive: macos-arm64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh macos-arm64
+
+  matrix-macos-x86_64:
+    desc: 'Build local native STD-free core archive: macos-x86_64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh macos-x86_64
+
+  matrix-macos-universal:
+    desc: 'Build local native STD-free core archive: macos-universal; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh macos-universal
+
+  matrix-linux-x86_64:
+    desc: 'Build local native STD-free core archive: linux-x86_64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh linux-x86_64
+
+  matrix-linux-arm64:
+    desc: 'Build local native STD-free core archive: linux-arm64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh linux-arm64
+
+  matrix-linux-x86:
+    desc: 'Build local native STD-free core archive: linux-x86; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh linux-x86
+
+  matrix-android-arm64-v8a:
+    desc: 'Build local native STD-free core archive: android-arm64-v8a; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-arm64-v8a
+
+  matrix-android-armeabi-v7a:
+    desc: 'Build local native STD-free core archive: android-armeabi-v7a; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-armeabi-v7a
+
+  matrix-android-x86:
+    desc: 'Build local native STD-free core archive: android-x86; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-x86
+
+  matrix-android-x86_64:
+    desc: 'Build local native STD-free core archive: android-x86_64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-x86_64
+
+  matrix-windows-info:
+    desc: 'Windows x86/x64/AMD64/ARM64 uses PowerShell with independently reviewed latest release'
+    cmds:
+      - pwsh -NoLogo -NoProfile -Command "Write-Host 'Run ci/Build-PlatformMatrix.ps1 with Profile, LatestStablePowerShellVersion and ReleaseEvidenceUri'"
+
