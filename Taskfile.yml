@@ -23,6 +23,7 @@ tasks:
   default:
     desc: 'Run all strict, ordered, local T-CROSS gates without hosted runners'
     cmds:
+      - task: emit-diff-yaml
       - task: gate-no-remote-git
       - task: gate-no-github-workflows
       - task: gate-no-live-rest
@@ -81,4 +82,4 @@ tasks:
   emit-diff-yaml:
     desc: 'Derive a fresh +/-DIFF YAML audit from frozen base SHA and local Git HEAD'
     cmds:
-      - sh ci/t-cross-posix.sh emit-diff-yaml
+      - sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml
