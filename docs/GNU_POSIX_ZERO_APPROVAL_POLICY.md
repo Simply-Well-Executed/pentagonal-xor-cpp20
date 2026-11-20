@@ -22,3 +22,7 @@ GNU software licenses are specific copyright grants, not an inference from synta
 4. Functional, CVE, license and provenance gates pass independently. Unknown, mixed, unattested or unverified terms stay HOLD.
 
 **Chosen, never assumed.** An implementation detail cannot silently create a legal exception.
+
+## Strict license version admission
+
+**0BSD is the ONLY approved BSD-family license**. BSD-2-Clause, BSD-3-Clause and all named BSD-3 variants are FORBIDDEN, despite historical approvals which remain visible in Git history. MIT, MPL-2.0 and CDDL-1.0 are independently approved by name; MPL-1.0/1.1, CDDL-1.1, NPL-1.0/1.1 and MPL-2.0-no-copyleft-exception remain REVIEW. No GNU or authored POSIX execution approval is implied. Reference copies, unlike component-specific approvals, are inert evidence.

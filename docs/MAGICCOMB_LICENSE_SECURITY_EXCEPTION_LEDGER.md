@@ -2,6 +2,10 @@
 
 > **Release status: HOLD.** This ledger is a custody and triage record, not a license grant, production approval, or an instruction to delete historical images. All identities are source-bound. Every exception is **UNAPPROVED** until explicit operator review.
 
+## CURRENT license-variant admission delta (2026-11-20)
+
+**Only 0BSD is approved within the BSD family.** BSD-2-Clause, BSD-3-Clause and its named variants are FORBIDDEN, but their source-bound texts remain retained. MIT, `MPL-2.0` and `CDDL-1.0` are separately PREFERRED. Other identified MPL, CDDL and NPL versions are REVIEW, never automatically authorized by family resemblance. This supersedes earlier BSD-2/3 preferences while retaining archival evidence in Git. The GNU/POSIX zero-approval decision remains unchanged, as does release HOLD.
+
 ## CURRENT operator decision: zero GNU and zero POSIX approvals (2026-11-20)
 
 The owner explicitly clarified that **no GNU or POSIX components are approved anywhere in the repository, project, organization or related hierarchy**, including build-only tools and disposable container stages. This **supersedes** the earlier permission for LGPL-2.1-only, which is a GNU license. The current [LOCK.tsv](../LICENSES/LOCK.tsv) marks both LGPL-2.1-only and LGPL-2.1-or-later **FORBIDDEN** without deleting their exact texts or earlier Git revisions. Preferred: 0BSD, BSD-2-Clause, BSD-3-Clause and MIT; official Oracle Java remains subject to the actual vendor terms, component provenance and third-party dependencies.

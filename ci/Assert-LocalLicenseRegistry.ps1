@@ -22,9 +22,9 @@ $head = @('local_path','license_id','policy_status','source_repository','source_
 if ($lines.Length -lt 2 -or -not [StringComparer]::Ordinal.Equals($lines[0],$head)) { throw 'LOCAL_LICENSE|HOLD|lock_header_invalid' }
 $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $records = [Collections.Generic.List[string]]::new()
-$preferred = @('0BSD','BSD-2-Clause','BSD-3-Clause','MIT')
-$review = @('BSD-3-Clause-Clear','BSD-3-Clause-Attribution','BSD-3-Clause-LBNL','MIT-0')
-$forbidden = @('LGPL-2.0-only','LGPL-2.1-only','LGPL-2.1-or-later','LGPL-3.0-only','GPL-1.0-only','GPL-2.0-only','GPL-3.0-only','GPL-3.0-or-later','AGPL-1.0-only','AGPL-3.0-only','AGPL-3.0-or-later','EPL-1.0','EPL-2.0','EUPL-1.1','EUPL-1.2','GFDL-1.3-only')
+$preferred = @('0BSD','MIT','MPL-2.0','CDDL-1.0')
+$review = @('MIT-0','MPL-1.0','MPL-1.1','MPL-2.0-no-copyleft-exception','CDDL-1.1','NPL-1.0','NPL-1.1')
+$forbidden = @('BSD-2-Clause','BSD-3-Clause','BSD-3-Clause-Clear','BSD-3-Clause-Attribution','BSD-3-Clause-LBNL','LGPL-2.0-only','LGPL-2.1-only','LGPL-2.1-or-later','LGPL-3.0-only','GPL-1.0-only','GPL-2.0-only','GPL-3.0-only','GPL-3.0-or-later','AGPL-1.0-only','AGPL-3.0-only','AGPL-3.0-or-later','EPL-1.0','EPL-2.0','EUPL-1.1','EUPL-1.2','GFDL-1.3-only')
 foreach ($line in $lines[1..($lines.Length-1)]) {
     $f = $line.Split([char]9)
     if ($f.Length -ne 7) { throw 'LOCAL_LICENSE|HOLD|lock_columns_invalid' }
