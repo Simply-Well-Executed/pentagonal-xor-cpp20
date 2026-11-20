@@ -6,25 +6,36 @@
 
 **Simply Well Executed** · **0BSD** · **No external runtime dependencies**
 
-[![Native C++20 Source Test](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/native-core.yml/badge.svg)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/native-core.yml)
+**Local native verification:** [PowerShell + MSVC + CTest](ci/Invoke-NativeCore.ps1) (no hosted runner)
 [![Releases](https://img.shields.io/github/v/release/Simply-Well-Executed/pentagonal-xor-cpp20?include_prereleases&label=release)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus)](CMakeLists.txt)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
-[![Platforms](https://img.shields.io/badge/native-C%2B%2B20%20Windows-violet)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions)
+[![Platforms](https://img.shields.io/badge/native-C%2B%2B20%20Windows-violet)](ci/Invoke-NativeCore.ps1)
 
-**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[⚙️ Watch native C++20 CI](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/native-core.yml)**  ·  **[🛡️ Security policy](SECURITY.md)**
+**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
 
 </div>
 
 ---
 
-## Current source and CI (Draft PR #19)
+## Local native verification (Draft PR #19)
 
-**Normalize** every Git-tracked text input at rest through strict UTF-8 → NFKC → remove U+200B-U+200D and U+FEFF → UTF-8. The [PowerShell Core Magic Comb](ci/Invoke-MagicComb.ps1) applies or verifies the committed bytes with `Set-StrictMode -Version 2.0` and audit depth 9. The single [native C++20 workflow](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/601b4352bc38f146def4642a917ef38a0b37b2d9/.github/workflows/native-core.yml) has no Node-backed action, no Linux container, and no Java/Android build lane; it uses C++20 with extensions ON and MSVC /O2.
+**No GitHub Actions runner, VM image or self-hosted runner.** The PR branch removes the remaining `.github/workflows/native-core.yml` and runs verification only when the maintainer invokes [`ci/Invoke-NativeCore.ps1`](ci/Invoke-NativeCore.ps1) on a locally controlled Windows machine. It uses installed PowerShell, Git (local inspection only), MSVC, CMake and CTest. It does not install dependencies, fetch source, query a REST API, invoke Node, or call Docker. Historical workflow files remain in Git history; `main` is unchanged until the PR is merged.
 
-**Tested evidence:** the 2026-11-20 native run [44654134670](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44654134670) verified **163 cleaned files and 34/34 native C++20 tests**. The overall run remains **FAILED** because hosted PowerShell Core 7.6.9 is older than the required latest stable 7.7.0. That requirement is not bypassed.
+**Current operator command (review the official latest-stable release first):**
 
-**Source custody:** Prior Java/Android, Docker, PGO, native platform-matrix, release and Node-backed workflow definitions were **retired from the active PR branch** and remain in Git history. Older sections below describe historical experiments, not currently enabled CI or available releases. Do not mistake the older `main` branch for the unmerged PR state.
+```powershell
+Set-StrictMode -Version 2.0
+pwsh -NoLogo -NoProfile -File .\ci\Invoke-NativeCore.ps1 -LatestStableVersion 7.7.0 -ReleaseEvidenceUri 'https://github.com/PowerShell/PowerShell/releases/tag/v7.7.0'
+```
+
+The `-LatestStableVersion` argument is **not a repository pin**. The operator must independently check the official [PowerShell releases](https://github.com/PowerShell/PowerShell/releases/latest) and supply the latest stable version at the time of execution, updating the command when newer versions are released. The script requires an exact installed-version match **before** verifying any source or running a build. Its offline evidence record states explicitly that the provided release URL is operator-asserted rather than verified over a network. Native hosting eliminates image drift, but the local machine, toolchain provenance and actual network isolation still require review.
+
+**Source integrity:** The local entrypoint runs the existing [Magic Comb](ci/Invoke-MagicComb.ps1) in SelfTest and Verify modes (strict UTF-8, Unicode NFKC, remove U+200B..U+200D and U+FEFF, nesting depth 9), then configures C++20 with extensions ON and MSVC `/O2`, builds, and invokes CTest. It writes `.iron-native-evidence.json` locally. It does **not** download or execute an automated installer.
+
+**Historical comparison evidence, not a new local test:** [Hosted run 44661958832](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44661958832) passed 164 tracked-source checks and 34/34 CTests but failed the PowerShell 7.6.9 versus 7.7.0 version gate. No completed run of the new local entrypoint has yet been independently observed. See [IRON / T-CROSS audit](docs/IRON_T_CROSS_REVIEW.md). Do not claim native IRON certification from historical hosted checks.
+
+**Source custody:** Historical Java/Android, Docker, PGO, cross-platform, release and Node-backed workflow definitions remain in earlier Git commits. Manually callable historical scripts and source directories also remain tracked pending separate review, but are not part of the local native entrypoint.
 
 ## ⬟ toolong: exact C++20 arbitrary-precision integers (draft PR #17)
 
@@ -54,7 +65,7 @@ a physical antenna measurement. [RF COREAO protocol](docs/COREAO_GAIN.md).
 
 The [`shared/coreo_stereo.hpp`](shared/coreo_stereo.hpp) operator extracts PR #17's reversible stereo-to-four-channel projection with read-only Z-fold verification. Both are C++20 header-only APIs installed with the existing CMake package. Independent tests check parity against 16-minterm references, exact hex golden vectors, original source preservation, domain guards, and forward/reverse/Z-fold inversion. Provenance: [source PR #17](https://github.com/pcheek1991/faster-whisper-4d-abandonedware-uniunlicensd/pull/17) at commit `432a228f`. See [the operator protocol](docs/STABILITY10D.md).
 
-**Historical Android research:** the [experimental offline Java app](docs/ANDROID.md) is no longer built or released by current CI. Earlier experiment records and sources remain for provenance; no new APK or multi-platform release is promised.
+**Historical Android research:** the [experimental offline Java app](docs/ANDROID.md) is not built or released by the local native verifier. Earlier experiment records and sources remain for provenance; no new APK or multi-platform release is promised.
 
 **Critical scope:** this is **model-free audio feature analysis**, not an AI speech-to-text engine. No trained Whisper weights or tokenizer are present; the six-byte Stability signature cannot recognize spoken words. The separate original Whisper/CTranslate2 legacy code is *not* being silently presented as this library. A production-signed Android release requires an additional release-signing process.
 
@@ -98,7 +109,7 @@ equivalent mathematical result is retained for valid inputs.
 
 ## 🧩 Include-free compatibility API
 
-The [std-free C header](shared/pentagonal_xor_std_free.h) exposes the five-feature AND, OR, odd-parity XOR probability, partial, and fifth-root scores without standard headers, C++ standard-library dependencies, allocation, or platform APIs. It was previously verified as C11 in the now-retired cross-platform guard. Current CI compiles and tests the C++20 project; the C11 compatibility API remains a separately identified historical interface.
+The [std-free C header](shared/pentagonal_xor_std_free.h) exposes the five-feature AND, OR, odd-parity XOR probability, partial, and fifth-root scores without standard headers, C++ standard-library dependencies, allocation, or platform APIs. It was previously verified as C11 in the now-retired cross-platform guard. The local native verifier builds and tests the C++20 project; the C11 compatibility API remains a separately identified historical interface.
 
 On Windows, `SWE_PXOR_WINDOWS_LEGACY_TARGET` and `SWE_PXOR_USE_STDFREE_BACKEND` are selected from `_WIN32` and `_WIN32_WINNT`. This detects the **configured compiler target**, not the actual Windows version at runtime. The std-free header is portable and can be used on any supported platform.
 
@@ -215,8 +226,8 @@ compiler executables under this project's 0BSD license.
 ## 🏁 Release pre-flight · no paused code
 
 The [release audit and consumer contract](docs/RELEASE_PREFLIGHT.md)
-documents the full source/workflow inspection. Both CI workflows now
-run a PowerShell 7 pre-flight check for debugger traps, interactive
+documents the historical source/workflow inspection. Former CI workflows
+ran a PowerShell 7 pre-flight check for debugger traps, interactive
 pauses, debug-only branches, disabled source blocks, and obsolete
 terminology. Compile-time invariants and PDB symbols are preserved
 because they do **not** stop execution.
@@ -292,7 +303,7 @@ flowchart LR
 - **Commits to `main`** make a uniquely tagged **preview prerelease** when all non-experimental platforms pass.
 - **Tags beginning with `v`** make versioned release assets.
 - **`SHA256SUMS`** provides SHA-256 checksums for each downloadable archive.
-- **Dependabot** checks GitHub Actions dependencies weekly. Issue forms and pull request templates help contributors.
+- **Historical only:** Dependabot and GitHub Actions updater configuration was retired on the draft PR branch. Issue forms and pull request templates remain.
 
 ## ⚖️ License and scientific limits
 
@@ -356,7 +367,7 @@ conformance mask is `0x1f`. Six named COR five-bit blocks preserve
 the original and NOP-pass-through views without manufacturing six
 independent observations.
 
-The workflow explicitly verifies the YING expected unhandled **Java**
+The retired workflow historically verified the YING expected unhandled **Java**
 exception and associated hot-method JIT record. No operating-system
 kernel panic is produced. ZING separately tests inverse-square numeric
 input and output transformation, zero/NaN rejection, and the actual JIT
