@@ -92,7 +92,7 @@ foreach ($rel in $paths) {
     $scanned++
     # Byte-exact external license copies are separately hash-pinned.
     # Applying Unicode normalization here would corrupt legal evidence.
-    if ($path.StartsWith('LICENSES/text/',[StringComparison]::Ordinal)) { continue }
+    if ($path -ceq 'LICENSE' -or $path.StartsWith('LICENSES/text/',[StringComparison]::Ordinal)) { continue }
     $result = Invoke-TextComb $original
     if ($original -cne $result) {
         $oldSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
@@ -111,7 +111,7 @@ $audit = [ordered]@{
     powershell_core_version=[string]$PSVersionTable.PSVersion
     nesting_depth=$NestingDepth
     transform='strict UTF-8 decode -> Unicode NFKC -> remove U+200B..U+200D and U+FEFF -> UTF-8 encode'
-    legal_texts='LICENSES/text/** verified by local SHA1 Git blob lock and SHA256 audit; never NFKC-transformed'
+    legal_texts='LICENSE and LICENSES/text/** separately verified by standard 0BSD derivation / local Git-blob lock; never NFKC-transformed'
     tracked_files_scanned=$scanned
     files_changed=$changed.Count
     changes=@($changed.ToArray())

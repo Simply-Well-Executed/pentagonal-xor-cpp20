@@ -24,4 +24,3 @@ LICENSES/text/LGPL-3.0-only.txt	LGPL-3.0-only	FORBIDDEN	spdx/license-list-data	3
 LICENSES/text/MIT-0.txt	MIT-0	REVIEW	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/MIT-0.txt	a4e9dc9061885b4d1d4dde9d5db62608a973b26a
 LICENSES/text/MIT.txt	MIT	PREFERRED	spdx/license-list-data	31ba1a50e5397e00a304dbadc76531740e89ee48	text/MIT.txt	d817195dad53ec992418c28ffca5fbd1cd86502a
 LICENSES/text/Oracle-NFTC-reference.txt	Oracle-NFTC-reference	PREFERRED_VENDOR_REVIEW	oracle/tribuo-site	4548f7e2c326c4284adbbd57bfbeca65897fbbc4	learn/4.0/javadoc/legal/LICENSE	ee860d38bbaeb8432a23edf484bac9e50f242093
-LICENSES/text/PROJECT-0BSD.txt	PROJECT-0BSD	PROJECT_LICENSE	Simply-Well-Executed/pentagonal-xor-cpp20	fa9bec5a7efaef9b02b70969cff40c9542b7534c	LICENSE	6f710a65b8756c5d86fe06037aeee6d18f40a08d

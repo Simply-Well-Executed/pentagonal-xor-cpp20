@@ -43,10 +43,6 @@ foreach ($line in $lines[1..($lines.Length-1)]) {
         if ($id -cne 'Oracle-NFTC-reference' -or $policy -cne 'PREFERRED_VENDOR_REVIEW' -or
             $sourceCommit -cne '4548f7e2c326c4284adbbd57bfbeca65897fbbc4' -or
             $upstream -cne 'learn/4.0/javadoc/legal/LICENSE') { throw 'LOCAL_LICENSE|HOLD|Oracle_identity_drift' }
-    } elseif ($source -eq 'Simply-Well-Executed/pentagonal-xor-cpp20') {
-        if ($id -cne 'PROJECT-0BSD' -or $policy -cne 'PROJECT_LICENSE' -or
-            $sourceCommit -cne 'fa9bec5a7efaef9b02b70969cff40c9542b7534c' -or
-            $upstream -cne 'LICENSE') { throw 'LOCAL_LICENSE|HOLD|project_identity_drift' }
     } else { throw "LOCAL_LICENSE|HOLD|source_not_reviewed|$source" }
     $full = [IO.Path]::GetFullPath((Join-Path $root ($relative.Replace('/',[IO.Path]::DirectorySeparatorChar))))
     if (-not $full.StartsWith($textRoot + [IO.Path]::DirectorySeparatorChar,[StringComparison]::Ordinal)) {
@@ -68,6 +64,37 @@ foreach ($line in $lines[1..($lines.Length-1)]) {
     $records.Add(([pscustomobject]@{ path=$relative; spdx_or_reference=$id; status=$policy; source_repository=$source; source_commit=$sourceCommit; git_blob_sha1=$actualSha; sha256=$sha256; length=$bytes.Length } | ConvertTo-Json -Compress -Depth 3))
     Write-Output "LOCAL_LICENSE|VERIFIED|$id|$policy|sha256=$sha256"
 }
+# The root LICENSE must equal the standard SPDX 0BSD boilerplate with only
+# the owner/year/email template placeholders substituted. Never relicense,
+# normalize, or add conditions to the canonical legal terms.
+$canonicalPath = Join-Path $textRoot '0BSD.txt'
+$projectPath = Join-Path $root 'LICENSE'
+if (-not [IO.File]::Exists($projectPath)) { throw 'LOCAL_LICENSE|HOLD|missing_root_license' }
+if (((Get-Item -LiteralPath $projectPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+    throw 'LOCAL_LICENSE|HOLD|root_license_is_link'
+}
+$standard = $utf8.GetString([IO.File]::ReadAllBytes($canonicalPath))
+$placeholder = 'Copyright (C) YEAR by AUTHOR EMAIL'
+$notice = 'Copyright (C) 2026 by PAUL ALLEN CHEEK mail@pcheek.com'
+if (-not $standard.StartsWith($placeholder + "`n`n",[StringComparison]::Ordinal)) {
+    throw 'LOCAL_LICENSE|HOLD|SPDX_0BSD_placeholder_changed'
+}
+$expectedProject = $standard.Replace($placeholder,$notice)
+$projectBytes = [IO.File]::ReadAllBytes($projectPath)
+$projectText = $utf8.GetString($projectBytes)
+if ($projectText -cne $expectedProject) {
+    throw 'LOCAL_LICENSE|HOLD|root_license_differs_from_standard_0BSD'
+}
+$projectSHA256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($projectBytes)).ToLowerInvariant()
+$records.Add(([pscustomobject]@{
+    path='LICENSE'; spdx_or_reference='0BSD'; status='STANDARD_TEXT_WITH_COPYRIGHT_FIELDS';
+    source_repository='spdx/license-list-data';
+    source_commit='31ba1a50e5397e00a304dbadc76531740e89ee48';
+    git_blob_sha1='derived_from_0BSD_template'; sha256=$projectSHA256;
+    length=$projectBytes.Length
+} | ConvertTo-Json -Compress -Depth 3))
+Write-Output "LOCAL_LICENSE|ROOT_0BSD|PASS|sha256=$projectSHA256"
+
 $inventory = @(Get-ChildItem -LiteralPath $textRoot -File -Recurse -Force)
 if ($inventory.Count -ne $seen.Count) { throw "LOCAL_LICENSE|HOLD|unregistered_files|found=$($inventory.Count)|locked=$($seen.Count)" }
 foreach ($item in $inventory) {
@@ -82,4 +109,4 @@ if ($ReportPath) {
     [IO.File]::WriteAllLines($target,$records,$utf8)
     Write-Output "LOCAL_LICENSE|JSONL|$target"
 }
-Write-Output "LOCAL_LICENSE|PASS|verified=$($seen.Count)|offline=true|release_approval=false"
+Write-Output "LOCAL_LICENSE|PASS|references=$($seen.Count)|root_standard_0BSD=PASS|offline=true|release_approval=false"

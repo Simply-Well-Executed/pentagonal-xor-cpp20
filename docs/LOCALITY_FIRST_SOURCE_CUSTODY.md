@@ -10,8 +10,8 @@
 
 ## Layered authority
 
-- **Original project grant:** [root 0BSD LICENSE](../LICENSE).
-- **Legal source records:** [pinned 26-text local cache](../LICENSES/LOCK.tsv), with original publisher commit and exact Git object hash.
+- **Original project grant:** [root LICENSE](../LICENSE), derived directly from the pinned standard SPDX 0BSD template with only the copyright placeholders filled, not a separately authored license. The former PROJECT-0BSD snapshot remains in Git history, not active LICENSES custody.
+- **Legal source records:** [pinned 25-text local cache](../LICENSES/LOCK.tsv), with original publisher commit and exact Git object hash.
 - **Actual component grants:** not inferred from the cache. [Component usage register](../LICENSES/COMPONENT_USAGE.tsv) is a separate **derived record**, requiring a component/version/source hash and an original copyright/NOTICE or license expression, including AND/OR alternatives.
 - **Operator admission policy:** [LICENSES index](../LICENSES/README.md) and [exception ledger](MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md). Policy classification never edits third-party rights.
 - **Computed evidence:** SHA-256 logs, SBOM and security reports. They derive from source bytes/algorithms; do not overrule authoritative source or convert a scan result into legal authorization.
