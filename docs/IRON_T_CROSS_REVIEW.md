@@ -319,6 +319,136 @@ Canonical source-level contract: [STD-free native T-CROSS](STD_FREE_NATIVE_T_CRO
 
 Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [platform YAML](../ci/native-platform-matrix.yml), [STD inventory exporter](../ci/Export-StdFreeInventory.sh), [POSIX executor](../ci/Build-PlatformMatrix.sh), [Windows executor](../ci/Build-PlatformMatrix.ps1).
 
+## T-CROSS: operator-authorized post-GAMP4 Docker and native multi-OS release candidate
+
+**State: source-only comparison verified; release HOLD.** New independent section, with all previous T-CROSS numerical history retained.
+
+- Baseline: `cc0f789fee53a6c22e86c31d45b822f7716699f0` on main following merged PR #19.
+- Candidate: `18e52a3739e27721ee790c645a3a47a451be83ff` on draft PR #20 before this audit append.
+- Authority: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/cc0f789fee53a6c22e86c31d45b822f7716699f0...18e52a3739e27721ee790c645a3a47a451be83ff
+- Source delta: 22 commits, 21 files, **+1130 / -2 lines, net +1128**. These are Git source counts, not runtime or validation measurements.
+- Subsequent commits must not be silently represented by this frozen candidate.
+
+| Source path | Status | Added | Removed |
+| --- | --- | ---: | ---: |
+| `.github/pull_request_template.md` | modified | +16 | -0 |
+| `CONTRIBUTING.md` | modified | +13 | -1 |
+| `README.md` | modified | +8 | -0 |
+| `Taskfile.yml` | modified | +46 | -0 |
+| `ci/Assemble-Gamp4-Release.sh` | added | +97 | -0 |
+| `ci/Build-Release-OciPayload.sh` | added | +40 | -0 |
+| `ci/Build-Windows-ReleaseContainer.ps1` | added | +104 | -0 |
+| `ci/Invoke-LocalDocker-Gamp4.sh` | added | +85 | -0 |
+| `ci/Run-Native-Macos-Gamp4.sh` | added | +117 | -0 |
+| `ci/Run-Native-Windows-Gamp4.ps1` | added | +147 | -0 |
+| `ci/docker/Build-Android-NDK.sh` | added | +74 | -0 |
+| `ci/docker/Run-Gamp4-Container.sh` | added | +104 | -0 |
+| `ci/gamp4-docker-release.yml` | added | +75 | -0 |
+| `ci/native-platform-matrix.yml` | modified | +6 | -1 |
+| `docker/ReleasePayload.Dockerfile` | added | +7 | -0 |
+| `docker/WindowsGamp4Smoke.Dockerfile` | added | +11 | -0 |
+| `docker/compose.release.yml` | added | +55 | -0 |
+| `docs/GAMP4_DOCKER_RELEASE.md` | added | +116 | -0 |
+| `docs/GAMP4_VALIDATION.md` | modified | +3 | -0 |
+| `docs/NATIVE_PLATFORM_MATRIX.md` | modified | +3 | -0 |
+| `docs/RELEASE_PREFLIGHT.md` | modified | +3 | -0 |
+| **TOTAL** | **21 files** | **+1130** | **-2** |
+
+### T-CROSS gate mapping
+
+| Gate | - Previous | + Candidate | Evidence |
+| --- | --- | --- | --- |
+| Container policy | Earlier absolute Docker ban | Explicit operator-requested local Docker release-only exception; no hosted runner | Policy diff inspected |
+| Provenance | Earlier unpinned/fetch-enabled Docker experiments | New Compose: cached digest, pull never, local daemon, source RO, no network, non-root, caps dropped | Source inspected, Docker NOT RUN |
+| Linux | Earlier native/experimental artifacts | Full CTest plus exactly URS-11..22 each for amd64, arm64, i386 | Scripts committed; no runtime evidence |
+| Android | Historical APK and core paths | Four NDK archives require exact-SHA Linux source GAMP4, no Android OQ claim | Build code committed, NOT TESTED |
+| macOS | Native source profiles | Native Apple Clang GAMP4 + CTest, arm64/x86_64 receipts prior to universal | Code committed, NOT TESTED |
+| Windows | MSVC source profiles | Native x86/x64/ARM64 GAMP4 + CTest; optional cached Windows x64 container smoke | Code committed, NOT TESTED |
+| Distribution | Historical previews | Thirteen SHA-bound package checksums + release notes; local scratch OCI payload transport only | Release not assembled or published |
+| Runtime STD | Legacy standard headers remain | Opt-in core archive stays separate from full STD-backed GAMP4 test suite | Whole repo STD-free remains BLOCKED |
+
+**Authority boundary:** Supplier-side GAMP4-style automated checks are not GMP certification, operational PQ, independent QA authorization or authentication of an untrusted evidence host. A Mac artifact inside OCI does not run a Mac kernel; Android archives are not APK or device tests. Windows images require matching hosts. macOS 32-bit i386 remains unsupported. Windows AMD64 and x86-64 are aliases of x64.
+
+**Current observations:** No Docker daemon available in assistant environment, no approved preloaded builder image digests, no native Windows/macOS target run, no 12-URS runtime report for this candidate, no 13-profile release artifact, no registry push and no published GitHub release. This is a deliberate HOLD, not a passing release.
+
+**Canonical protocol:** [GAMP4 Docker release custody](GAMP4_DOCKER_RELEASE.md), [13-profile YAML](../ci/gamp4-docker-release.yml), [local Docker Compose](../docker/compose.release.yml), [release assembler](../ci/Assemble-Gamp4-Release.sh).
+
+## T-CROSS follow-up: sanitized local Docker source isolation
+
+**FROZEN SECURITY SUB-DELTA, SOURCE ONLY.** This record is separate from the preceding +1130/-2 Docker implementation snapshot. It does not erase or merge its provenance.
+
+- Baseline Git SHA: `18e52a3739e27721ee790c645a3a47a451be83ff`.
+- Candidate Git SHA: `23553ce0065bec6cdd34f29f6407c13ecf06553f`.
+- Authoritative comparison: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/18e52a3739e27721ee790c645a3a47a451be83ff...23553ce0065bec6cdd34f29f6407c13ecf06553f
+- **16 commits, 11 files, +131 / -25 lines, net +106**. Figures represent actual source lines only; no test, Docker run or release outcome implied.
+
+| Changed path | Added | Removed |
+| --- | ---: | ---: |
+| `README.md` | +1 | -1 |
+| `ci/Assemble-Gamp4-Release.sh` | +1 | -1 |
+| `ci/Invoke-LocalDocker-Gamp4.sh` | +44 | -3 |
+| `ci/Run-Native-Macos-Gamp4.sh` | +2 | -2 |
+| `ci/Run-Native-Windows-Gamp4.ps1` | +4 | -0 |
+| `ci/docker/Build-Android-NDK.sh` | +4 | -6 |
+| `ci/docker/Run-Gamp4-Container.sh` | +5 | -7 |
+| `ci/gamp4-docker-release.yml` | +4 | -1 |
+| `docker/compose.release.yml` | +2 | -2 |
+| `docs/GAMP4_DOCKER_RELEASE.md` | +10 | -2 |
+| `docs/IRON_T_CROSS_REVIEW.md` | +54 | -0 |
+| **TOTAL** | **+131** | **-25** |
+
+**Security correction:** the initial Compose proposal bound the entire checkout read-only. The candidate instead exports committed source using local `git archive HEAD`, excludes `.git` and untracked source, records `.swe-source-commit`, performs host SHA256 inventory verification and symlink/extra-file checks, and mounts that sanitized snapshot read-only. Docker's writable bind mount is restricted to ignored `build/gamp4-release/`, *separate* from the host snapshot under `build/gamp4-source-snapshots/`; consequently, a container cannot simply mutate its read-only source via the writable output alias. The local builder image must already be digest-pinned and cached; neither downloading an image nor remotely publishing a release is authorized.
+
+**Additional gate refinements:** native macOS and Windows GAMP4 scripts now require a **single terminal** twelve-URS PASS summary. The Android validation stage reads only the sanitized source marker. The release packager uses portable `find` rather than `-maxdepth` where possible.
+
+**Residual risks:** operator workstation, local Docker daemon and builder image remain trusted; a compromised daemon can defeat bind-mount protections. Git source snapshots and unsigned local YAML receipts are *not* independently authenticated supply-chain attestations. Actual full native CTest/URS, Docker builds, NDK device OQ, native hardware testing, third-party license review and human QA remain NOT TESTED / HOLD. Any new changes after the frozen candidate must generate a new diff.
+
+## T-CROSS: Docker Hub historic source-study immutable-digest promotion target
+
+**State: GIT SOURCE TARGET RECORDED / DOCKER HUB MANIFEST NOT VERIFIED / PUBLICATION HOLD.** This independent +/-DIFF does not alter earlier frozen T-CROSS records.
+
+- Baseline: `c7647832fa076891a4f877619b922b6c2a4182d4`, PR #20 immediately before new Docker Hub target request.
+- Candidate: `d3fbc942e015de5a2ef2b031abb6f933b20aa1ae`, before this documentation-only audit append.
+- Authority: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/c7647832fa076891a4f877619b922b6c2a4182d4...d3fbc942e015de5a2ef2b031abb6f933b20aa1ae
+- **10 commits, 9 files, +346 / -182 Git lines, net +164**. This is source change, not runtime proof.
+
+| Changed file | Status | Additions | Deletions |
+| --- | --- | ---: | ---: |
+| `README.md` | modified | +6 | -0 |
+| `Taskfile.yml` | modified | +10 | -0 |
+| `ci/Assemble-Gamp4-Release.sh` | modified | +8 | -0 |
+| `ci/Publish-AndroidSourceStudy.ps1` | added | +154 | -0 |
+| `ci/Run-DockerValidation.ps1` | modified | +3 | -0 |
+| `ci/Test-DockerPublishPolicy.ps1` | modified | +100 | -181 |
+| `ci/dockerhub-source-study-promotion-approval.example.json` | added | +14 | -0 |
+| `ci/gamp4-docker-release.yml` | modified | +10 | -1 |
+| `docs/GAMP4_DOCKER_RELEASE.md` | modified | +41 | -0 |
+| **TOTAL** | **9 files** | **+346** | **-182** |
+
+### Source identity and destination, never conflated
+
+- Requested mutable tag: `paulcheek/android-source-study-v1:latest`.
+- Requested immutable companion: `paulcheek/android-source-study-v1:sha-07eb2a4561f0`.
+- GitHub historic source SHA: `07eb2a4561f0f5e82db4668d2b4fa453e2a4d733` (Git commit lookup, corresponds to preview `preview-319-07eb2a4`).
+- **Operator-claimed** manifest digest: `sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30`.
+- Docker Hub current source-tag registry manifest, local `RepoDigest`, mutable `latest` state, publisher authentication, actual push and post-push digest: **NOT VERIFIED / NOT TESTED**.
+- PR #20 candidate source SHA differs from historical `07eb...`; new matrix GAMP4 results cannot retroactively certify this older image.
+
+### Changed gates and negative controls
+
+| Gate | Before | Candidate | Measurement |
+| --- | --- | --- | --- |
+| Docker target | Existing legacy script pushed mutable latest from runtime CI variables | New fixed source/target/digest in local GAMP4 release YAML and standalone PowerShell publisher | Source committed, registry NOT CHECKED |
+| Manifest | Image ID could be confused with registry manifest | Publisher uses Docker Buildx registry manifest inspection, exact digest, single-platform check and local matching RepoDigest | Source checked, Docker NOT RUN |
+| Validation | Old `-Mode Publish` could run after trusted-main environment assertions without new exact-source GAMP4 evidence | Retired old entrypoint; new path requires historical Git SHA, supplier 12-URS/CTest evidence hashes plus explicit QA/license/SBOM/source-origin/operator approvals | New gate source inspected; evidence NOT SUPPLIED |
+| Permission | Generic mutable tag update | Requires literal acknowledgement and `DOCKERHUB_USERNAME=paulcheek` before local `docker tag`/`docker push`, re-reads latest before mutation | Not executed |
+| Post-push | Old source only wrote image ID and claimed push | New script re-reads remote latest manifest and throws deviation if digest differs | NOT TESTED |
+| Negative controls | Legacy mock expected unaudited pushes | Replaced with mock-only tests: legacy blocked, read-only inspection, missing approval, source digest mismatch, multi-platform index rejection | Test file committed, test NOT EXECUTED |
+| Release notes | Generic 13-profile release listing only | Adds distinct historic Docker Hub target and unverified digest, no false publication | Source committed |
+
+**Release HOLD** pending verified Docker Hub manifest and accessible local Docker engine, actual historical source-matched GAMP4/CTest evidence, independent QA and licensing authorization, target image provenance, registry authentication, operator push decision and post-push digest readback. The historic image is not a Docker macOS/Windows/Android runtime. No repository tag, Docker Hub tag, release binary or source content was actually published during this update. PR #20 remains draft and unmerged.
+
+**Canonical entrypoints:** [publication script](../ci/Publish-AndroidSourceStudy.ps1), [unapproved release approval example](../ci/dockerhub-source-study-promotion-approval.example.json), [GAMP4 Docker release policy](GAMP4_DOCKER_RELEASE.md).
 ## T-CROSS: all-family gain/dispersion/stability exact-token lexicon
 
 **Source audit only / compiler and CTest execution NOT OBSERVED.** A separate exploratory record, preserving preceding frozen audits.

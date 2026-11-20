@@ -171,3 +171,59 @@ tasks:
     cmds:
       - pwsh -NoLogo -NoProfile -Command "Write-Host 'Run ci/Build-PlatformMatrix.ps1 with Profile, LatestStablePowerShellVersion and ReleaseEvidenceUri'"
 
+  # Explicit local Docker exception. These tasks are never in the default gate.
+  gamp4-docker-linux-amd64:
+    desc: 'Local pinned Linux amd64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-amd64
+
+  gamp4-docker-linux-arm64:
+    desc: 'Local pinned Linux arm64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-arm64
+
+  gamp4-docker-linux-x86:
+    desc: 'Local pinned Linux i386 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-x86
+
+  gamp4-docker-android-arm64-v8a:
+    desc: 'NDK arm64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-arm64-v8a
+
+  gamp4-docker-android-armeabi-v7a:
+    desc: 'NDK armv7 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-armeabi-v7a
+
+  gamp4-docker-android-x86:
+    desc: 'NDK x86 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-x86
+
+  gamp4-docker-android-x86_64:
+    desc: 'NDK x86_64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-x86_64
+
+  gamp4-assemble-release:
+    desc: 'Require all 13 source-matched platform receipts and package SHA256 files'
+    cmds:
+      - sh ci/Assemble-Gamp4-Release.sh
+
+  gamp4-local-oci-payload:
+    desc: 'Pack staged release files into a local scratch OCI transport only'
+    cmds:
+      - sh ci/Build-Release-OciPayload.sh
+
+  dockerhub-source-study-inspect:
+    desc: 'Operator-invoked registry read-only check of sha-07eb2a4561f0 versus pinned digest; no push'
+    cmds:
+      - pwsh -NoLogo -NoProfile -File ci/Publish-AndroidSourceStudy.ps1
+
+  dockerhub-source-study-policy-negative-tests:
+    desc: 'Mock-only negative controls for legacy publishing, digest mismatch, absent approval and multi-platform image index'
+    cmds:
+      - pwsh -NoLogo -NoProfile -File ci/Test-DockerPublishPolicy.ps1
+

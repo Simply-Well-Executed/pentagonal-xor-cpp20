@@ -18,6 +18,20 @@
 
 ---
 
+## Docker Hub source-study publication target (on HOLD)
+
+The requested destination is `paulcheek/android-source-study-v1:latest`, sourced from immutable alias `sha-07eb2a4561f0` (Git commit `07eb2a4561f0f5e82db4668d2b4fa453e2a4d733`). Operator-supplied digest: `sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30`; **registry identity remains unverified**, and the historic image is not automatically validated by this PR's new tests.
+
+[`ci/Publish-AndroidSourceStudy.ps1`](ci/Publish-AndroidSourceStudy.ps1) provides dry-run registry inspection by default and an explicitly authorized `docker push paulcheek/android-source-study-v1:latest` path only after historic-source GAMP4/CTest evidence, matched source image digest, independent QA/licensing/SBOM approval, local Docker provenance, and a literal mutable-tag replacement acknowledgement. The old `Run-DockerValidation.ps1 -Mode Publish` shortcut is blocked. No push has been performed. See [release procedure and approval template](docs/GAMP4_DOCKER_RELEASE.md).
+
+## GAMP4-gated local Docker release staging (candidate)
+
+An explicit, operator-requested [GAMP4 Docker release protocol](docs/GAMP4_DOCKER_RELEASE.md) now provides a **local-only, SHA256-digest-pinned Docker Compose** path for full Linux CMake/CTest and all twelve GAMP4-style URS checks, plus offline Android NDK archive builds dependent on the validated source SHA. Native **macOS Intel/Apple Silicon** and **Windows Win32/x64/ARM64** validation scripts produce separate platform-specific GAMP4/CTest evidence. Docker cannot provide a genuine macOS runtime, and Windows container images require matching Windows infrastructure.
+
+The [13-profile release YAML](ci/gamp4-docker-release.yml) and [offline Docker Compose](docker/compose.release.yml) require cached toolchain images, local Docker daemon, disabled container networking, non-root execution, read-only Git-archived committed source without .git or untracked files and no automatic image/SDK downloads. The [release assembler](ci/Assemble-Gamp4-Release.sh) refuses incomplete source-matched evidence or failed package checksums; it stages bundles and release notes with status **STAGED_NOT_PUBLISHED**. The optional [OCI payload Dockerfile](docker/ReleasePayload.Dockerfile) transports multi-OS files but is **not a runnable macOS/Windows/Android container**.
+
+**Validation is NOT YET EXECUTED for this candidate.** No newly built container was pushed and no GitHub release was published. The existing full repository remains not STD-free; the independent core-only archive and the full historical GAMP4 suite retain separate scope. The previous no-container policy is superseded only for this specific operator-requested local release workflow; the ban on hosted/self-hosted GitHub Actions runners remains.
+
 ## Exploratory calculus operator lexicon: three independent modes
 
 The [experimental operand protocol](docs/EXPLORATORY_OPERAND_MODES.md) preserves exact operators such as `=`, `;=`, `[=`, `]=`, the ten original COREAO PlusStar spellings and the user's additional gain/dispersion/stability modes. Every one of the **14 underlying operand identities** has **three conceptual mode slots**, giving **42** slots. The separate STD-free C++20 [lexicon](shared/quantum_operand_lexicon.hpp) stores 22 exact spelling records, including `+p/-p/=p`, `+P/-P/=P`, shift-up `+/` and shift-down `+\`.

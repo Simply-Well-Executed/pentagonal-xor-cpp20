@@ -52,3 +52,19 @@ Describe the exact native C++20 / PowerShell code or documentation change, affec
 ## Review and publication
 
 State what passed, what failed, what was not run, and whether the PR should remain draft. A historical GitHub Actions result is not a current local-native test. No release or merge is implied by this checklist.
+
+## Local GAMP4 Docker release and 13-profile acceptance
+
+- [ ] Operator-requested Docker exception reviewed independently; old absolute container ban is superseded **only** for this local release workflow, not for hosted runners.
+- [ ] No GitHub Actions, remote Docker daemon, unpinned base, image download, new SDK installer, registry push or automated release publisher is present.
+- [ ] Linux amd64/arm64/i386 containers have an actual local SHA256-pinned builder, read-only source, no network, non-root user and dropped privileges.
+- [ ] Full native CMake and all CTests passed independently on every Linux/macOS/Windows target advertised as GAMP4 tested.
+- [ ] Exactly one PASS row for each GAMP4-style URS-11..22, zero FAIL rows, and one PASS summary were observed for each executable native target.
+- [ ] macOS arm64/x86_64 were tested on matching native Apple hardware; universal package has both separately verified source-SHA receipts. macOS i386 is UNSUPPORTED.
+- [ ] Windows x86/x64/ARM64 native tests were executed on compatible Windows hosts; optional x64 Docker Server Core smoke was not substituted for host validation.
+- [ ] Android four NDK ABIs were built using separately licensed installed NDK; report CROSS_COMPILED_NOT_DEVICE_TESTED, never device OQ PASS.
+- [ ] All 13 required profile package trees, SHA256 manifests and validation receipts refer to the **same** source commit. Any missing/stale/edited item must block assembly.
+- [ ] Third-party OS and SDK licenses, runtime dependencies, SBOM expectations and release-authentication limitations reviewed.
+- [ ] `ci/Assemble-Gamp4-Release.sh` produced STAGED_NOT_PUBLISHED after all gates. Actual GitHub release assets, immutable tag and digest are verified separately if later published.
+- [ ] Confirmed GAMP4-style supplier verification is **not** independent QA approval, PQ or GMP certification; no status promoted without explicit evidence.
+

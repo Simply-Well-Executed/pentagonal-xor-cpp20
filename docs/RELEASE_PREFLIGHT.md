@@ -1,5 +1,8 @@
 # Release pre-flight: no paused code and usable audit APIs
 
+
+**CURRENT release rule (PR #20):** The [local GAMP4 Docker/native release procedure](GAMP4_DOCKER_RELEASE.md) requires full CTest and twelve independent GAMP4-style URS records per native OS/CPU target, exact source-SHA receipts, native Apple/Windows evidence, and 13 verified package manifests. The previous text about Actions jobs and artifact uploads is retained as historical context only. The new candidate remains **STAGED_NOT_PUBLISHED only after those checks**; as authored, it is **NOT TESTED / RELEASE HOLD** and has no regulatory QA/PQ approval.
+
 > **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
 >
 > **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
