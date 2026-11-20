@@ -235,6 +235,7 @@ default() {
     gate_no_github_workflows
     gate_no_live_rest
     gate_no_std_throughput
+    gate_no_std_repository
     gate_no_residual_surfaces
     gate_pinned_versions
     build_cpp20
