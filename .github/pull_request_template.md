@@ -22,6 +22,15 @@ Describe the exact native C++20 / PowerShell code or documentation change, affec
 - [ ] Native C++20 consteval, constexpr packing/unpacking, scoped plaintext and CLI CTests were executed, including invalid input controls.
 - [ ] The existing parity algorithm, historical source and test evidence were not silently changed or reclassified.
 
+## Pentagonal Suite T-CROSS
+
+- [ ] `include/pentagonal_suite.hpp`, `src/suite_main.cpp` and `tests/pentagonal_suite_test.cpp` pass `gate-suite-no-comments` with zero source comments.
+- [ ] All seven new throughput and suite C++ sources pass `gate-no-std-throughput` with zero standard-library headers or `std::` calls.
+- [ ] CTest validates all exact and LUT OR/AND/NAND modes, XOR reversibility, NOP/NIL, complete NAN blocks and partial tail, COR exhaustion and VISTA end-of-range behavior.
+- [ ] Distinguish quiet-NaN bit-pattern recognition from proof of payload provenance, and ordinary zero-fill from guaranteed secure erasure.
+- [ ] Preserve established parity and original throughput CLI; record the new suite source delta with the Git-derived T-CROSS +/-DIFF YAML exporter.
+- [ ] Treat compiler/linker/runtime results as NOT TESTED until executed on the PR checkout.
+
 ## Native-only dependency and transport policy
 
 - [ ] No GitHub Actions workflow, runner (hosted or self-hosted), VM/container image, Node, MCP integration, remote build service, runtime download or CI API invocation was introduced.
