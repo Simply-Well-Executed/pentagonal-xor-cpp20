@@ -19,7 +19,7 @@ if (((Get-Item -LiteralPath $textRoot -Force).Attributes -band [IO.FileAttribute
 }
 $lines = [IO.File]::ReadAllLines($lockPath,$utf8)
 $head = @('local_path','license_id','policy_status','source_repository','source_commit','upstream_path','git_blob_sha1') -join [char]9
-if ($lines.Length -lt 2 -or $lines[0] -cne $head) { throw 'LOCAL_LICENSE|HOLD|lock_header_invalid' }
+if ($lines.Length -lt 2 -or -not [StringComparer]::Ordinal.Equals($lines[0],$head)) { throw 'LOCAL_LICENSE|HOLD|lock_header_invalid' }
 $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $records = [Collections.Generic.List[string]]::new()
 $preferred = @('0BSD','BSD-2-Clause','BSD-3-Clause','MIT','LGPL-2.1-only')
@@ -31,18 +31,18 @@ foreach ($line in $lines[1..($lines.Length-1)]) {
     $relative,$id,$policy,$source,$sourceCommit,$upstream,$expectedSha = $f
     if ($relative -cnotmatch '^LICENSES/text/[A-Za-z0-9.-]+[.]txt$') { throw 'LOCAL_LICENSE|HOLD|invalid_relative_path' }
     if (-not $seen.Add($relative)) { throw "LOCAL_LICENSE|HOLD|duplicate|$relative" }
-    if ($id -cne [IO.Path]::GetFileNameWithoutExtension($relative)) { throw "LOCAL_LICENSE|HOLD|name_mismatch|$relative" }
+    if (-not [StringComparer]::Ordinal.Equals($id,[IO.Path]::GetFileNameWithoutExtension($relative))) { throw "LOCAL_LICENSE|HOLD|name_mismatch|$relative" }
     if ($sourceCommit -cnotmatch '^[0-9a-f]{40}$' -or $expectedSha -cnotmatch '^[0-9a-f]{40}$') { throw "LOCAL_LICENSE|HOLD|invalid_revision|$relative" }
     if ($source -eq 'spdx/license-list-data') {
-        if ($sourceCommit -cne '31ba1a50e5397e00a304dbadc76531740e89ee48' -or $upstream -cne "text/$id.txt") {
+        if (-not [StringComparer]::Ordinal.Equals($sourceCommit,'31ba1a50e5397e00a304dbadc76531740e89ee48') -or -not [StringComparer]::Ordinal.Equals($upstream,"text/$id.txt")) {
             throw "LOCAL_LICENSE|HOLD|source_pin_drift|$relative"
         }
         $want = if ($id -cin $preferred) { 'PREFERRED' } elseif ($id -cin $review) { 'REVIEW' } elseif ($id -cin $forbidden) { 'FORBIDDEN' } else { throw "LOCAL_LICENSE|HOLD|unreviewed_id|$id" }
-        if ($policy -cne $want) { throw "LOCAL_LICENSE|HOLD|policy_drift|$id" }
+        if (-not [StringComparer]::Ordinal.Equals($policy,$want)) { throw "LOCAL_LICENSE|HOLD|policy_drift|$id" }
     } elseif ($source -eq 'oracle/tribuo-site') {
-        if ($id -cne 'Oracle-NFTC-reference' -or $policy -cne 'PREFERRED_VENDOR_REVIEW' -or
-            $sourceCommit -cne '4548f7e2c326c4284adbbd57bfbeca65897fbbc4' -or
-            $upstream -cne 'learn/4.0/javadoc/legal/LICENSE') { throw 'LOCAL_LICENSE|HOLD|Oracle_identity_drift' }
+        if (-not [StringComparer]::Ordinal.Equals($id,'Oracle-NFTC-reference') -or -not [StringComparer]::Ordinal.Equals($policy,'PREFERRED_VENDOR_REVIEW') -or
+            -not [StringComparer]::Ordinal.Equals($sourceCommit,'4548f7e2c326c4284adbbd57bfbeca65897fbbc4') -or
+            -not [StringComparer]::Ordinal.Equals($upstream,'learn/4.0/javadoc/legal/LICENSE')) { throw 'LOCAL_LICENSE|HOLD|Oracle_identity_drift' }
     } else { throw "LOCAL_LICENSE|HOLD|source_not_reviewed|$source" }
     $full = [IO.Path]::GetFullPath((Join-Path $root ($relative.Replace('/',[IO.Path]::DirectorySeparatorChar))))
     if (-not $full.StartsWith($textRoot + [IO.Path]::DirectorySeparatorChar,[StringComparison]::Ordinal)) {
@@ -82,7 +82,7 @@ if (-not $standard.StartsWith($placeholder + "`n`n",[StringComparison]::Ordinal)
 $expectedProject = $standard.Replace($placeholder,$notice)
 $projectBytes = [IO.File]::ReadAllBytes($projectPath)
 $projectText = $utf8.GetString($projectBytes)
-if ($projectText -cne $expectedProject) {
+if (-not [StringComparer]::Ordinal.Equals($projectText,$expectedProject)) {
     throw 'LOCAL_LICENSE|HOLD|root_license_differs_from_standard_0BSD'
 }
 $projectSHA256 = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($projectBytes)).ToLowerInvariant()
@@ -94,6 +94,22 @@ $records.Add(([pscustomobject]@{
     length=$projectBytes.Length
 } | ConvertTo-Json -Compress -Depth 3))
 Write-Output "LOCAL_LICENSE|ROOT_0BSD|PASS|sha256=$projectSHA256"
+
+# An internally consistent but incomplete lock is not a valid baseline.
+# The fixed ID set is derived from CURRENT policy categories, not from LOCK.tsv,
+# so deleting a reference and its lock row must fail closed.
+$requiredIds = @($preferred) + @($review) + @($forbidden) + @('Oracle-NFTC-reference')
+$requiredPaths = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+foreach ($requiredId in $requiredIds) {
+    if (-not $requiredPaths.Add("LICENSES/text/$requiredId.txt")) {
+        throw "LOCAL_LICENSE|HOLD|duplicate_required_license|$requiredId"
+    }
+}
+if (-not $seen.SetEquals($requiredPaths)) {
+    $missing = @($requiredPaths | Where-Object { -not $seen.Contains($_) })
+    $extra = @($seen | Where-Object { -not $requiredPaths.Contains($_) })
+    throw "LOCAL_LICENSE|HOLD|required_reference_set_drift|missing=$($missing -join ',')|extra=$($extra -join ',')"
+}
 
 $inventory = @(Get-ChildItem -LiteralPath $textRoot -File -Recurse -Force)
 if ($inventory.Count -ne $seen.Count) { throw "LOCAL_LICENSE|HOLD|unregistered_files|found=$($inventory.Count)|locked=$($seen.Count)" }
