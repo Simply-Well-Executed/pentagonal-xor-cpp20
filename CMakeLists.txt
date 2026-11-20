@@ -59,11 +59,17 @@ target_include_directories(swe_pentagonal_xor_throughput INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(swe_pentagonal_xor_throughput INTERFACE cxx_std_20)
-add_executable(pentagonal_xor_cli src/main.cpp)
-target_link_libraries(pentagonal_xor_cli PRIVATE swe_pentagonal_xor_throughput)
-set_target_properties(pentagonal_xor_cli PROPERTIES
-  CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
-install(TARGETS pentagonal_xor_cli RUNTIME DESTINATION bin)
+# Native OS-backed stdout, monotonic time and memory mapping are
+# implemented for Windows and Linux only. Keep the header portable elsewhere.
+if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_executable(pentagonal_xor_cli src/main.cpp)
+  target_link_libraries(pentagonal_xor_cli PRIVATE swe_pentagonal_xor_throughput)
+  set_target_properties(pentagonal_xor_cli PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS pentagonal_xor_cli RUNTIME DESTINATION bin)
+else()
+  message(STATUS "STD-free throughput CLI: native I/O backend unsupported on this host")
+endif()
 # Both headers form the self-contained STD-free API; installing only
 # pentagonal_xor.hpp would break downstream include resolution.
 install(FILES
@@ -81,10 +87,12 @@ if(BUILD_TESTING)
         CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
     add_test(NAME pentagonal_xor_swar_roundtrip
         COMMAND pentagonal_xor_throughput_test)
-    add_test(NAME pentagonal_xor_throughput_cli_smoke
-        COMMAND pentagonal_xor_cli --bytes 65536)
-    set_tests_properties(pentagonal_xor_throughput_cli_smoke PROPERTIES
-        PASS_REGULAR_EXPRESSION "periodic 256-byte LUT")
+    if(TARGET pentagonal_xor_cli)
+      add_test(NAME pentagonal_xor_throughput_cli_smoke
+          COMMAND pentagonal_xor_cli --bytes 65536)
+      set_tests_properties(pentagonal_xor_throughput_cli_smoke PROPERTIES
+          PASS_REGULAR_EXPRESSION "periodic 256-byte LUT")
+    endif()
 
     # Isolated canonical parity object for machine-level zero-CALL disassembly.
     # Does not alter the production CLI or create an alternate algorithm.
