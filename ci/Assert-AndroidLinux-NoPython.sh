@@ -10,7 +10,7 @@ if test "$mode" = source; then
   command -v git >/dev/null 2>&1 || fail 'source audit requires git'
   root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd -P) || fail 'source root missing'
   cd "$root" || fail 'cannot enter source root'
-  if git ls-files android ci docker include shared src tests |
+  if git ls-files |
       grep -Ei '(^|/)(__pycache__|.*[.]py[ic]?|.*[.]whl|requirements([-.].*)?[.]txt|pyproject[.]toml|pipfile([.]lock)?|poetry[.]lock|setup[.]py)$'; then
     fail 'a tracked Python script or package manifest is present'
   fi
@@ -21,6 +21,14 @@ if test "$mode" = source; then
       fail "Python interpreter or package-manager invocation found: $file"
     fi
   done
+  # The native code and Android Java sources may not quietly introduce a
+  # Python-based subprocess or CMake Python dependency.
+  if git grep -nEi '(find_package\([[:space:]]*Python[0-9.]*|Python[0-9.]*_EXECUTABLE|PYTHON_EXECUTABLE)' -- CMakeLists.txt shared/CMakeLists.txt; then
+    fail 'native CMake configuration requests a Python toolchain'
+  fi
+  if git grep -nEi '(^|[^[:alpha:]])(python([0-9.]*)?|pip([0-9.]*)?|pypy[0-9.]*|pytest)([^[:alpha:]]|$)' -- android/app/src; then
+    fail 'Android application sources reference a Python runtime or tool'
+  fi
   printf 'IRON|ANDROID_LINUX|SOURCE_NO_PYTHON|PASS\n'
 else
   for executable in python python2 python3 python3.12 pip pip2 pip3 pypy pypy3 pipx uv poetry conda pytest; do
