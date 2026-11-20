@@ -252,9 +252,45 @@ jobs:
             throw 'FRESH|PING|HOLD|frozen_v1_group_inventory'
           }
           $expectedPingScript = ($expectedPingLines -join [char]10) + [char]10
-          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedPingScript)) {
-            throw 'FRESH|PING|HOLD|source_not_exact_projection'
+          # v2 remains a frozen, independently hashed source artifact. Projection
+          # tests must never reinterpret v2 output as if it were v3.
+          $v2Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v2.sh.txt'
+          if (-not [IO.File]::Exists($v2Path)) { throw 'FRESH|PING_V3|HOLD|missing_frozen_v2' }
+          if (((Get-Item -LiteralPath $v2Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|PING_V3|HOLD|frozen_v2_symlink'
           }
+          $v2Bytes = [IO.File]::ReadAllBytes($v2Path)
+          $v2Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v2Bytes.Length) + [char]0)
+          $v2GitBlob = [byte[]]::new($v2Prefix.Length + $v2Bytes.Length)
+          [Array]::Copy($v2Prefix,0,$v2GitBlob,0,$v2Prefix.Length)
+          [Array]::Copy($v2Bytes,0,$v2GitBlob,$v2Prefix.Length,$v2Bytes.Length)
+          $v2Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v2GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v2Id,'f1870c1169ccdbb72f39a917dfa292a1b53c3f59')) {
+            throw 'FRESH|PING_V3|HOLD|frozen_v2_git_blob_drift'
+          }
+          $frozenV2 = $utf8.GetString($v2Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($frozenV2,$expectedPingScript)) {
+            throw 'FRESH|PING_V3|HOLD|v1_to_v2_projection_drift'
+          }
+          # Only YING-only records gain AIRGAP as an explicitly separate partner.
+          # Preserve YANG=NONE; do not invent an absent parenthesized witness.
+          $expectedV3 = [Collections.Generic.List[string]]::new()
+          $airgapPairs = 0
+          foreach ($v2Line in [IO.File]::ReadAllLines($v2Path,$utf8)) {
+            $rightOnly = [regex]::Match($v2Line,"^echo 'PING\|[0-9]{3}\|YANG\|NONE\|YING\|([^'|]+)'$")
+            if ($rightOnly.Success -and $rightOnly.Groups[1].Value -cne 'NONE') {
+              $airgapPairs++
+              $expectedV3.Add(($v2Line.Substring(0,$v2Line.Length - 1) + "|PAIR|AIRGAP'"))
+            } else {
+              $expectedV3.Add($v2Line)
+            }
+          }
+          if ($airgapPairs -ne 14) { throw 'FRESH|PING_V3|HOLD|unexpected_ying_airgap_inventory' }
+          $v3Source = ($expectedV3 -join [char]10) + [char]10
+          if (-not [StringComparer]::Ordinal.Equals($gamma,$v3Source)) {
+            throw 'FRESH|PING_V3|HOLD|source_not_exact_v3_projection'
+          }
+          Write-Host 'FRESH|PING_V3|STATIC_PASS|YING_ONLY_AIRGAP_PAIRS=14|YANG_NONE_PRESERVED|FROZEN_V2_VERIFIED|NO_NETWORK'
           if (-not $gamma.EndsWith(("echo 'PING|066|YANG|NONE|YING|NONE'" + [char]10 +
                                    "echo 'ItWasOnlyOnceILookedInTheirEye'" + [char]10 +
                                    'exit 42' + [char]10),[StringComparison]::Ordinal)) {

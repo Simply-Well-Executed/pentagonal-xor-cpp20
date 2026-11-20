@@ -51,3 +51,11 @@ For every one of the 66 original output lines, a preceding literal **PING** reco
 The static PowerShell workflow now independently derives each expected PING record from the frozen v1 source and compares the entire v2 shell file byte-for-byte, with no POSIX shell execution. Counts: 66 PINGs; 36 two-group lines, 14 single-group lines, 16 lines without grouped witnesses. It still deliberately ends in release HOLD because source PINGs do not remove the POSIX shell or unapproved GNU tooling.
 
 See `docs/POSIXI_FRESH_PING_V2.md` for exact semantics and sample records.
+
+## FRESH-ART-EYE-PING-v3: AIRGAP paired with YING-only
+
+**EXPLORATORY v3, independent of v2.** The 66-PING v2 source was frozen byte-for-byte in `Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v2.sh.txt`, verified by Git blob `f1870c1169ccdbb72f39a917dfa292a1b53c3f59`. This is an explicit new output protocol; v1/v2 results are not silently mutated.
+
+Only the 14 YING-only records now append `|PAIR|AIRGAP`, for example `PING|002|YANG|NONE|YING|=|PAIR|AIRGAP`. AIRGAP denotes an explicit boundary/partner for the sole right-hand witness; it **does not turn missing YANG into YANG**, imply new parentheses, or create any network behavior. All 36 two-group and 16 zero-group PINGs, 66 original output lines, artistic display characters, canonical `ItWasOnlyOnceILookedInTheirEye`, and HOLD exit `42` are unchanged.
+
+The PowerShell source verifier checks exact v1 and v2 Git blobs, reconstructs v2 from v1, and reconstructs the complete v3 source from v2 before comparing v3 byte-for-byte. POSIX execution and GNU tooling remain unapproved; HOLD persists. See `docs/POSIXI_FRESH_PING_V3.md`.
