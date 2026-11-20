@@ -171,6 +171,12 @@ if test "$scout_result" = OK; then
   printf 'IRON|MAGICCOMB|SCOUT|SUMMARY\n'
   grep -Eo 'https://img.shields.io/badge/(critical|high|medium|low|unspecified)-[0-9]+' \
     "$work/scout.md" | head -n 10 || :
+  printf 'IRON|MAGICCOMB|SCOUT|QUICKVIEW\n'
+  if docker scout quickview "$image" > "$work/scout-quickview.log" 2>&1; then
+    tail -n 65 "$work/scout-quickview.log"
+  else
+    printf 'IRON|MAGICCOMB|SCOUT|QUICKVIEW_UNAVAILABLE\n'
+  fi
   printf 'IRON|MAGICCOMB|SCOUT|SAMPLE_CVES\n'
   grep -E 'CVE-[0-9]{4}-[0-9]+' "$work/scout.md" | head -n 26 || :
 else
