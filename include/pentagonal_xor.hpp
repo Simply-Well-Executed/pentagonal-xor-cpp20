@@ -10,15 +10,6 @@
 #  define _GNU_SOURCE 1
 #endif
 
-#include <array>
-#include <concepts>
-#include <cstddef>
-#include <cstdint>
-#include <cstring>
-#include <ranges>
-#include <span>
-#include <type_traits>
-
 #if defined(_WIN32)
 #  ifndef WIN32_LEAN_AND_MEAN
 #    define WIN32_LEAN_AND_MEAN
@@ -32,7 +23,10 @@
 #  include <windows.h>
 #elif defined(__linux__)
 #  include <sched.h>
+#  include <sys/mman.h>
 #  include <sys/resource.h>
+#  include <time.h>
+#  include <unistd.h>
 #endif
 
 namespace pxor {
@@ -103,20 +97,29 @@ struct CorePinResult {
 }
 
 // Unsigned modular arithmetic after overflow, NOT arbitrary precision.
-template <std::unsigned_integral T = u64>
-[[nodiscard]] constexpr T pentagonal(T n) noexcept {
-    const T other = static_cast<T>(static_cast<T>(3) * n - static_cast<T>(1));
-    if ((n & static_cast<T>(1)) == 0) {
-        return static_cast<T>((n / 2) * other);
-    }
-    return static_cast<T>(n * (other / 2));
+[[nodiscard]] constexpr u64 pentagonal(u64 n) noexcept {
+    const u64 other = 3u * n - 1u;
+    return (n & 1u) == 0u ? (n / 2u) * other : n * (other / 2u);
 }
 
-[[nodiscard]] constexpr auto pentagonal_numbers() noexcept {
-    return std::views::iota(u64{1})
-         | std::views::transform([](u64 n) noexcept {
-               return pentagonal(n);
-           });
+// A bounded-consumer lazy cursor, implemented only with C++20 core language.
+struct PentagonalSequence {
+    struct Cursor {
+        u64 n{1};
+        [[nodiscard]] constexpr u64 operator*() const noexcept {
+            return pentagonal(n);
+        }
+        constexpr Cursor& operator++() noexcept { ++n; return *this; }
+        constexpr Cursor operator++(int) noexcept {
+            const Cursor old = *this;
+            ++n;
+            return old;
+        }
+    };
+    [[nodiscard]] constexpr Cursor begin() const noexcept { return {}; }
+};
+[[nodiscard]] constexpr PentagonalSequence pentagonal_numbers() noexcept {
+    return {};
 }
 
 // Private construction of the keystream at compile time, publicly readable.
@@ -140,41 +143,36 @@ constexpr void apply_pentagonal_xor(ByteSlice buffer, u64 seed = 1) noexcept {
     }
 }
 
-// Backward-compatible C++20 span facade for existing callers.
-constexpr void apply_pentagonal_xor(std::span<std::byte> buffer,
-                                    u64 seed = 1) noexcept {
-    for (usize i = 0; i < buffer.size(); ++i) {
-        const u64 p = pentagonal(seed + static_cast<u64>(i));
-        buffer[i] ^= static_cast<std::byte>(
-            (p ^ (p >> 8) ^ (p >> 16)) & 0xFFu);
+// Explicit little-endian byte packing avoids aliasing, alignment,
+// library calls, compiler intrinsics and endian-specific pointer casts.
+[[nodiscard]] constexpr u64 pack_u64_le(const u8* bytes) noexcept {
+    return static_cast<u64>(bytes[0])
+         | (static_cast<u64>(bytes[1]) << 8)
+         | (static_cast<u64>(bytes[2]) << 16)
+         | (static_cast<u64>(bytes[3]) << 24)
+         | (static_cast<u64>(bytes[4]) << 32)
+         | (static_cast<u64>(bytes[5]) << 40)
+         | (static_cast<u64>(bytes[6]) << 48)
+         | (static_cast<u64>(bytes[7]) << 56);
+}
+
+constexpr void unpack_u64_le(u8* bytes, u64 value) noexcept {
+    for (unsigned n = 0; n < 8; ++n) {
+        bytes[n] = static_cast<u8>((value >> (n * 8u)) & 255u);
     }
 }
 
-// memcpy is ISO C++ and safe for unaligned byte slices on MSVC/GCC/Clang.
-// A compiler may optimize these operations to register instructions.
-inline void fast_xor_buffer(ByteSlice buffer) noexcept {
+constexpr void fast_xor_buffer(ByteSlice buffer) noexcept {
     usize i = 0;
     const usize n = buffer.size();
     u8* const dst = buffer.data();
     const u8* const lut = PENTAGONAL_LUT.data();
-
-    for (; n - i >= sizeof(u64); i += sizeof(u64)) {
-        u64 data = 0;
-        u64 key = 0;
-        std::memcpy(&data, dst + i, sizeof(data));
-        std::memcpy(&key, lut + fast_wrap<256>(i), sizeof(key));
-        data ^= key;
-        std::memcpy(dst + i, &data, sizeof(data));
+    for (; n - i >= 8; i += 8) {
+        const u64 value = pack_u64_le(dst + i);
+        const u64 key = pack_u64_le(lut + fast_wrap<256>(i));
+        unpack_u64_le(dst + i, value ^ key);
     }
-    for (; i < n; ++i) {
-        dst[i] ^= lut[fast_wrap<256>(i)];
-    }
-}
-
-// Thin compatibility adapter for pre-existing std::byte clients.
-inline void fast_xor_buffer(std::span<std::byte> buffer) noexcept {
-    fast_xor_buffer(ByteSlice{
-        reinterpret_cast<u8*>(buffer.data()), buffer.size()});
+    for (; i < n; ++i) dst[i] ^= lut[fast_wrap<256>(i)];
 }
 
 // An access token models a private C++ API, NOT an OS memory permission.
@@ -185,65 +183,50 @@ class EngineKey {
 
 template <usize N>
 class ObfuscatedData {
-    static_assert(N > 0, "A literal requires a terminator");
+    static_assert(N > 0, "Literal must include a terminator");
     FixedBuffer<u8, N> cipher_{};
     u64 seed_{1};
 
-    template <typename T>
-    static constexpr void wipe_buffer(FixedBuffer<T, N>& buf) noexcept {
-        if (std::is_constant_evaluated()) {
-            buf.fill(T{});
-        } else {
-            // Volatile stores are compiler-observable, but cannot guarantee
-            // removal of all register copies, spills or callback-held aliases.
-            for (usize i = 0; i < N; ++i) {
-                volatile T* item = &buf[i];
-                *item = T{};
-            }
-        }
-    }
-
 public:
-    consteval explicit ObfuscatedData(const char (&source)[N],
+    consteval explicit ObfuscatedData(const char (&literal)[N],
                                       u64 seed = 1) noexcept : seed_(seed) {
         for (usize i = 0; i < N; ++i) {
             cipher_[i] = static_cast<u8>(
-                static_cast<unsigned char>(source[i]));
+                static_cast<unsigned char>(literal[i]));
         }
         apply_pentagonal_xor(ByteSlice{cipher_}, seed_);
     }
 
-    // Restricted shared read-only cipher view, callable only with EngineKey.
-    // Public EngineAuditor intentionally reveals a limited first-byte witness.
     [[nodiscard]] constexpr ConstByteSlice shared_cipher(EngineKey) const noexcept {
         return ConstByteSlice{cipher_};
     }
 
-    // Scoped plaintext borrow: callback must return void. C++ access rules do
-    // not prevent a malicious callback from saving its pointer, so never claim
-    // hardware-backed secrecy or cryptographic protection.
+    // Scoped callback-only access. Runtime volatile writes are best effort;
+    // compiler access control does not enforce OS or process secrecy.
     template <typename Func>
-    constexpr void with_decrypted(Func&& fn) const {
+    void with_decrypted(Func&& fn) const {
         FixedBuffer<u8, N> decoded = cipher_;
         apply_pentagonal_xor(ByteSlice{decoded}, seed_);
         FixedBuffer<char, N> plain{};
         for (usize i = 0; i < N; ++i) {
             plain[i] = static_cast<char>(decoded[i]);
         }
-
-        struct ScopedWipe {
-            FixedBuffer<u8, N>& decoded;
-            FixedBuffer<char, N>& plaintext;
-            constexpr ~ScopedWipe() noexcept {
-                ObfuscatedData::wipe_buffer(decoded);
-                ObfuscatedData::wipe_buffer(plaintext);
+        struct Guard {
+            FixedBuffer<u8, N>& raw;
+            FixedBuffer<char, N>& chars;
+            ~Guard() noexcept {
+                for (usize i = 0; i < N; ++i) {
+                    volatile u8* a = &raw[i];
+                    volatile char* b = &chars[i];
+                    *a = 0;
+                    *b = '\0';
+                }
             }
-        } wipe{decoded, plain};
-
+        } guard{decoded, plain};
         constexpr usize length = N - 1;
-        static_assert(std::is_void_v<decltype(
-            static_cast<Func&&>(fn)(StringSlice{plain.data(), length}))>,
-            "with_decrypted callbacks must return void");
+        static_assert(same_type<decltype(
+            static_cast<Func&&>(fn)(StringSlice{plain.data(), length})), void>,
+            "Scoped plaintext callbacks must return void");
         static_cast<Func&&>(fn)(StringSlice{plain.data(), length});
     }
 };
