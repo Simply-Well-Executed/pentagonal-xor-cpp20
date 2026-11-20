@@ -12,7 +12,7 @@
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android-blue)](docs/NATIVE_PLATFORM_MATRIX.md)
 
-**[📦 GitHub Packages: Android source-study image](https://github.com/orgs/Simply-Well-Executed/packages/container/package/android-source-study-v1)** · **[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
+**[🐳 Docker Hub: new Python-free candidate](https://hub.docker.com/r/paulcheek/android-source-study-v1/tags?name=python-free-candidate-ed28e0544042)** · **[☁️ GitHub Deployments](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/deployments)** · **[📦 GitHub Packages: Android source-study image](https://github.com/orgs/Simply-Well-Executed/packages/container/package/android-source-study-v1)** · **[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
 
 </div>
 
@@ -20,6 +20,14 @@
 
 ## Container images: Docker Hub and GitHub Packages
 
+**New Docker Hub image and real GitHub Deployment, verified November 20, 2026.** The previously tested, Python-free Android/Linux Linux/amd64 candidate is now published as **[`paulcheek/android-source-study-v1:python-free-candidate-ed28e0544042`](https://hub.docker.com/r/paulcheek/android-source-study-v1/tags?name=python-free-candidate-ed28e0544042)**. GitHub cloud [run #44758095928](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44758095928) performed the new Docker Hub tag push, pulled the resulting immutable digest, and passed the no-Python check. GitHub [Deployment #7944706336](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/deployments) for environment `dockerhub-python-free-candidate` is independently verified as **success**.
+
+```text
+New Docker Hub tag: paulcheek/android-source-study-v1:python-free-candidate-ed28e0544042
+Verified digest:    sha256:cf8ea2216382fd030d36caeb8092d28506c1bd74128cfb0f8beedc303aa24b62
+```
+
+The GitHub Deployment records **container image publication**, not a running Android application or production QA approval. The historical `:latest` digest remains unchanged, and no production/image-release gate was bypassed. [Full Docker Hub and GitHub deployment evidence](docs/DOCKERHUB_PYTHONFREE_CANDIDATE_DEPLOYMENT.md). For new images on Docker Hub, use the **Tags** tab; the **General** page does not display a separate per-tag deployment history.
 **Historical Docker Hub image, verified and published.** [Docker Hub source study](https://hub.docker.com/r/paulcheek/android-source-study-v1) is available as `paulcheek/android-source-study-v1:latest`; [GitHub Actions run #44746338664](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44746338664) performed the real authenticated same-digest push and verified the remote manifest:
 
 ```text
