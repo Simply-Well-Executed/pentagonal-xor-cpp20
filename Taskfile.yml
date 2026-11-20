@@ -28,6 +28,7 @@ tasks:
       - task: gate-no-github-workflows
       - task: gate-no-live-rest
       - task: gate-no-std-throughput
+      - task: gate-suite-no-comments
       - task: gate-no-std-repository
       - task: gate-no-residual-surfaces
       - task: gate-pinned-versions
@@ -53,9 +54,14 @@ tasks:
       - sh ci/t-cross-posix.sh gate-no-live-rest
 
   gate-no-std-throughput:
-    desc: 'Require no standard-library headers or std names in four native engine files'
+    desc: 'Require no standard-library headers or std names in seven native engine and suite files'
     cmds:
       - sh ci/t-cross-posix.sh gate-no-std-throughput
+
+  gate-suite-no-comments:
+    desc: 'Reject comment tokens in three Pentagonal Suite C++20 source files'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-suite-no-comments
 
   gate-no-std-repository:
     desc: 'Strict red gate until all legacy C/C++ tracked sources are STD-free'
@@ -83,17 +89,17 @@ tasks:
       - sh ci/t-cross-posix.sh gate-zero-function-calls
 
   gate-zero-network-imports:
-    desc: 'Inspect both parity and throughput CLI imports; not runtime isolation proof'
+    desc: 'Inspect parity, throughput and suite CLI imports; not runtime isolation proof'
     cmds:
       - sh ci/t-cross-posix.sh gate-zero-network-imports
 
   gate-no-std-binary:
-    desc: 'Fail closed if throughput binary directly imports C/C++ standard runtimes'
+    desc: 'Fail closed if throughput or suite binary directly imports C/C++ standard runtimes'
     cmds:
       - sh ci/t-cross-posix.sh gate-no-std-binary
 
   test-ctest:
-    desc: 'Run parity, SWAR roundtrip and throughput CLI CTest suites locally'
+    desc: 'Run parity, SWAR, suite operations and native CLI CTests locally'
     cmds:
       - sh ci/t-cross-posix.sh test-ctest
 
