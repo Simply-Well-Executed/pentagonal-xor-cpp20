@@ -55,7 +55,7 @@ Protanopia, deuteranopia and tritanopia are **approximate** RGB display transfor
 
 An optional reversible plate renders grayscale luminance and a hexagon overlay:
 `Y8 ≈ round(0.2126R + 0.7152G + 0.0722B)`.
-A regular hexagon of circumradius `r` has perimeter `6r` and area `3√3 r²/2`. The hexagon is a spatial grouping, not a concealed-information detector. Retain original coordinate, unmodified RGB8, RGB24 hex/decimal, RGBA64 hex/decimal, channel bins and bit layout for every audited pixel.
+A regular hexagon of circumradius `r` has perimeter `6r` and area `3√3 r2/2`. The hexagon is a spatial grouping, not a concealed-information detector. Retain original coordinate, unmodified RGB8, RGB24 hex/decimal, RGBA64 hex/decimal, channel bins and bit layout for every audited pixel.
 
 ## Scientific boundaries
 
