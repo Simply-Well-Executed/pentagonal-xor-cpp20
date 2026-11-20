@@ -22,7 +22,7 @@
 
 The optional [`swe::toolong`](shared/toolong.hpp) class provides exact signed integers with dynamically sized decimal digits, including addition, subtraction, multiplication, division, modulo, powers, factorials, GCD, and explicit-width bitwise views. [Exact reduced fractions](shared/toolong_ratio.hpp) and a separate [synthetic photon-count gain/dispersion example](shared/toolong_photon_model.hpp) use integer arithmetic rather than floating-point approximations. See [the operator and evidence contract](docs/TOOLONG.md).
 
-The ℼ-derived [16-significant-digit display policy](shared/pi_precision.hpp) applies to floating-point presentations, **not** to exact integer source records or numeric results. The additions remain under review in [draft PR #17](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/17).
+The π-derived [16-significant-digit display policy](shared/pi_precision.hpp) applies to floating-point presentations, **not** to exact integer source records or numeric results. The additions remain under review in [draft PR #17](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/17).
 
 ## 📡 COREAO RF: input → +9 dBi → EIRP output
 
@@ -52,7 +52,7 @@ The [`shared/coreo_stereo.hpp`](shared/coreo_stereo.hpp) operator extracts PR #1
 
 ## ∞ The mathematics
 
-Five independent feature probabilities `h₁...h₅ ∈ [0,1]` produce a single
+Five independent feature probabilities `h1...h5 ∈ [0,1]` produce a single
 odd-parity probability by a direct closed-form calculation:
 
 ```text
@@ -146,9 +146,9 @@ ctest --test-dir build -C Release --output-on-failure
 
 ---
 
-## 🔎 Triℼ · Three inspection routes
+## 🔎 Triπ · Three inspection routes
 
-[Triℼ inspection](docs/TRI_PI.md) adds three **read-only** C++20 checks
+[Triπ inspection](docs/TRI_PI.md) adds three **read-only** C++20 checks
 to the DecaSigma trace, checking **forward transitions**,
 **reverse reconstruction**, and **Z-fold cross-stage witnesses**.
 No special route names are assigned. All three must
@@ -164,7 +164,7 @@ or optional production branches have been added.
 
 ## 🌀 COREAO · one unified scalar
 
-[COREAO](docs/COREAO.md) composes the three Triℼ inspection routes as
+[COREAO](docs/COREAO.md) composes the three Triπ inspection routes as
 **forward → reverse → Z-fold**, without assigning special names to the
 routes. The read-only [include-free implementation](shared/coreao.hpp)
 derives the forward trace from CORE, fills the reverse path using the
@@ -174,7 +174,7 @@ smaller means better consistency. Source-domain validity is retained as
 a separate guard.
 
 The DecaSigma operation sequence is defined **once** in
-`shared/deca_sigma.hpp` and reused by both Triℼ and COREAO.
+`shared/deca_sigma.hpp` and reused by both Triπ and COREAO.
 This is a bounded, constant-space audit, not encryption, authentication,
 or a way to recover five Pentagonal XOR inputs from one score. The
 production XOR calculation still has a single fast path with no extra
@@ -212,7 +212,7 @@ pauses, debug-only branches, disabled source blocks, and obsolete
 terminology. Compile-time invariants and PDB symbols are preserved
 because they do **not** stop execution.
 
-**DecaSigma, Triℼ, and COREAO are now shipped as public header-only APIs**
+**DecaSigma, Triπ, and COREAO are now shipped as public header-only APIs**
 in `include/swe/`, alongside the C11 parity header. The exported
 `swe::swe_audit_headers` CMake target lets downstream C++20 consumers
 compile the APIs. Each release platform must compile and execute a
