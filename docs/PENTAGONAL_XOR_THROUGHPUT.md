@@ -1,5 +1,7 @@
 # Pentagonal XOR throughput engine (independent C++20 module)
 
+**Current implementation update, STD-free:** The earlier `std::span`, `std::memcpy`, `std::vector`, `std::chrono` and `std::views` descriptions below are retained as *earlier design provenance*, not the present source contract. The current throughput header and CLI use only C++20 core-language constructs plus native Win32/POSIX APIs. See the [superseding STD-free T-CROSS record](STD_FREE_NATIVE_T_CROSS.md) for exact current APIs, new compile-time LE packing, scoped cipher access, native 16 MiB fixed storage and separate runtime library/import verification. **No full source/compile/link audit has been executed in this revision.**
+
 **Status: EXPLORATORY / SOURCE COMMITTED / FULL REPOSITORY TEST NOT OBSERVED.**
 
 This is an *additional*, explicitly labeled **bytewise XOR buffer transformation** library. The established `pentagonal_xor` executable implements a five-input odd-parity probability score; that algorithm and its existing public headers remain authoritative and unchanged by this new module. The repository's historical machine-code zero-CALL audit covers a different isolated parity object. It does **not** automatically certify the throughput buffer implementation.
