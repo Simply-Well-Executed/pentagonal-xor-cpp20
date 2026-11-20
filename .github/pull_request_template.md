@@ -25,11 +25,22 @@ Describe the exact native C++20 / PowerShell code or documentation change, affec
 ## Pentagonal Suite T-CROSS
 
 - [ ] `include/pentagonal_suite.hpp`, `src/suite_main.cpp` and `tests/pentagonal_suite_test.cpp` pass `gate-suite-no-comments` with zero source comments.
-- [ ] All seven new throughput and suite C++ sources pass `gate-no-std-throughput` with zero standard-library headers or `std::` calls.
+- [ ] All ten named native parity, throughput, suite and portable-core sources pass `gate-no-std-throughput` with zero standard-library headers or `std::` calls.
 - [ ] CTest validates all exact and LUT OR/AND/NAND modes, XOR reversibility, NOP/NIL, complete NAN blocks and partial tail, COR exhaustion and VISTA end-of-range behavior.
 - [ ] Distinguish quiet-NaN bit-pattern recognition from proof of payload provenance, and ordinary zero-fill from guaranteed secure erasure.
 - [ ] Preserve established parity and original throughput CLI; record the new suite source delta with the Git-derived T-CROSS +/-DIFF YAML exporter.
 - [ ] Treat compiler/linker/runtime results as NOT TESTED until executed on the PR checkout.
+
+## Native OS/ABI matrix (local, fail-closed)
+
+- [ ] Source SHA and host/ABI configuration recorded in `build/iron-matrix/<profile>/iron-build-result.yml`.
+- [ ] Target is one of the declared macOS arm64/x86_64/universal, Windows Win32/x64/ARM64, Linux or Android NDK ABI profiles. macOS 32-bit x86 is recorded **UNSUPPORTED** rather than claimed green.
+- [ ] Native compiler/SDK exists locally; no runner image, GitHub Actions, network fetch, installer or container was introduced.
+- [ ] `SWE_STD_FREE_CORE_ONLY=ON` created an archive and headers with no legacy build target leakage, or exact failure is captured.
+- [ ] Cross-compiled archive status `ARCHIVE_BUILT_NOT_RUNTIME_TESTED` is not misreported as hardware execution, CTest pass or CRT-free linkage.
+- [ ] `sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml` completed; unresolved standard-library references remain explicitly BLOCKED.
+- [ ] Independent STD-free five-feature parity CLI compared with canonical CLI, including decimal-grammar compatibility and invalid-input test outcomes.
+- [ ] Full-repository STD-free goal not marked passed until **all** tracked C/C++ source, public APIs, tests, binaries and linked runtime dependencies have measured acceptance evidence.
 
 ## Native-only dependency and transport policy
 
