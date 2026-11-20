@@ -55,8 +55,7 @@ int main(int argc, char** argv) {
     constexpr pxor::ObfuscatedData label("IDKFA - PENTAGONAL XOR ENGINE", 42);
     const auto plaintext = label.decrypt(42);
 
-    const std::vector<std::byte> initial(bytes, std::byte{0x5A});
-    auto payload = initial; // first touch occurs after affinity attempt
+    std::vector<std::byte> payload(bytes, std::byte{0x5A}); // first touch after pin
 
     const auto start = std::chrono::steady_clock::now();
     pxor::fast_xor_buffer(std::span<std::byte>{payload.data(), payload.size()});
