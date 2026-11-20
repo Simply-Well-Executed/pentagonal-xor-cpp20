@@ -4,12 +4,19 @@ Thank you for improving the Pentagonal Recursive XOR Engine.
 
 ## Native-only execution rule (IRON)
 
-- Keep project behavior native C++20, with C++20 required and compiler extensions OFF and MSVC `/O2` (GCC/Clang `-O2`) only. Follow the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#main).
+- Keep all targets in required ISO C++20 with extensions OFF. Current explicit Release policy: MSVC `/O2`, GCC/Clang `-O3`; non-Release configurations retain optimized O2. Do not insert O0. Follow the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#main).
 - Use the latest stable locally installed PowerShell Core and `Set-StrictMode -Version 2.0` for verification scripts. Follow the [PowerShell beginners reference](https://www.reddit.com/r/PowerShell/wiki/beginners/).
 - **Do not add GitHub Actions workflows, GitHub-hosted or self-hosted runner jobs, VM/OCI/container images, Node/npm-based actions, runtime downloads, MCP client/server dependencies, remote build services, or CI API calls.** This rule applies to new proposed work and does not silently delete historical source or records.
 - Local Git commands used to inspect already checked-out source are permitted. No automated Git network fetch is performed by the native verifier. A code and binary dependency review is still required before certifying network isolation.
 - Use `CXX_STANDARD 20` (numeric language level), `CXX_STANDARD_REQUIRED ON` (boolean strictness), and `CXX_EXTENSIONS OFF` (ISO mode). The parity-core object may satisfy a machine-CALL-free gate only when its disassembly is actually inspected; CLI and test harness calls have separate contracts.
 - Do not substitute an unverified PowerShell version as 'latest'. The operator must independently confirm the release and pass the version and matching official release link; the local script fails closed if the installed version differs.
+
+## STD-free source and binary boundaries
+
+- The new throughput engine must use **no C/C++ standard-library includes, `std::` APIs, compiler builtins or implicit heap allocation** in `include/pxor_memory.hpp`, `include/pentagonal_xor.hpp`, `src/main.cpp` and `tests/pentagonal_xor_throughput_test.cpp`. Use C++20 core-language features with native Win32/POSIX APIs where operating-system interaction is unavoidable.
+- Run `sh ci/t-cross-posix.sh gate-no-std-throughput` for the new module. Run `gate-no-std-repository` for strict whole-repository inventory and `gate-no-std-binary` for direct runtime imports of the new CLI. These are distinct tests; a pass in one does not make another pass.
+- Do not label system libraries such as POSIX libc, Windows UCRT, or compiler-provided runtime support as absent without a compiled binary import/dependency audit. No assumption of heap secrecy, guaranteed NUMA locality, zero machine calls or full zero-CRT operation follows from header-free source.
+- The existing parity and historical modules are preserved pending staged, independent migration and regression evidence. See [STD-free T-CROSS](docs/STD_FREE_NATIVE_T_CROSS.md).
 
 ## Review workflow
 
