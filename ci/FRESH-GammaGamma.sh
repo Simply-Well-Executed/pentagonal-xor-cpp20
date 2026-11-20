@@ -54,5 +54,5 @@ echo 'q3 O(T)A(.) MINUS'
 echo 'q4 T(A)O(.) PLUS'
 echo 'FRESH|HOLD|LEGACY EXECUTION RETIRED'
 echo 'FRESH|TERMINAL|EXACT WITNESS'
-echo 'X_~D~o~o~m~M~a~i~n(=)'
+echo 'ItWasOnlyOnceILookedInTheirEye'
 exit 79

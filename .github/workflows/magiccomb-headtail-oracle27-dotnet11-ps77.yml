@@ -165,7 +165,7 @@ jobs:
           $commands = @([IO.File]::ReadAllLines($gammaPath,$utf8) | Where-Object {
             $_.Length -gt 0 -and -not $_.StartsWith('#')
           })
-          if ($commands.Count -lt 25 -or $commands[$commands.Count-2] -cne "echo 'X_~D~o~o~m~M~a~i~n(=)'" -or
+          if ($commands.Count -lt 25 -or $commands[$commands.Count-2] -cne "echo 'ItWasOnlyOnceILookedInTheirEye'" -or
               $commands[$commands.Count-1] -cne 'exit 79') { throw 'FRESH|HOLD|exact_terminal_drift' }
           foreach ($line in $commands[0..($commands.Count-2)]) {
             if ($line -cnotmatch '^echo ''[^'']*''$') { throw 'FRESH|HOLD|nonliteral_gamma_action' }
