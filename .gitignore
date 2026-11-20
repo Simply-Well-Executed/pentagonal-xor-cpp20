@@ -16,3 +16,4 @@ Testing/
 # Local-only audit records, not source files
 .iron-native-evidence.json
 .magic-comb-audit.json
+.iron-t-cross-diff.yml
