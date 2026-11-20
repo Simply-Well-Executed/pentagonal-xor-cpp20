@@ -27,6 +27,8 @@ tasks:
       - task: gate-no-remote-git
       - task: gate-no-github-workflows
       - task: gate-no-live-rest
+      - task: gate-no-std-throughput
+      - task: gate-no-std-repository
       - task: gate-no-residual-surfaces
       - task: gate-pinned-versions
       - task: build-cpp20
@@ -48,6 +50,16 @@ tasks:
     desc: 'Reject network API/download candidates in CI, tools and CMake'
     cmds:
       - sh ci/t-cross-posix.sh gate-no-live-rest
+
+  gate-no-std-throughput:
+    desc: 'Require no standard-library headers or std names in four native engine files'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-std-throughput
+
+  gate-no-std-repository:
+    desc: 'Strict red gate until all legacy C/C++ tracked sources are STD-free'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-std-repository
 
   gate-no-residual-surfaces:
     desc: 'Reject retained Java, Docker and Android manual-use directories'
