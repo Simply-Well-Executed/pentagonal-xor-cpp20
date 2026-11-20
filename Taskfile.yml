@@ -24,6 +24,7 @@ tasks:
     desc: 'Run all strict, ordered, local T-CROSS gates without hosted runners'
     cmds:
       - task: emit-diff-yaml
+      - task: emit-std-inventory-yaml
       - task: gate-no-remote-git
       - task: gate-no-github-workflows
       - task: gate-no-live-rest
@@ -54,7 +55,7 @@ tasks:
       - sh ci/t-cross-posix.sh gate-no-live-rest
 
   gate-no-std-throughput:
-    desc: 'Require no standard-library headers or std names in seven native engine and suite files'
+    desc: 'Require no standard-library headers or std names in ten native parity, engine, suite and portable probe source files'
     cmds:
       - sh ci/t-cross-posix.sh gate-no-std-throughput
 
@@ -102,6 +103,11 @@ tasks:
     desc: 'Run parity, SWAR, suite operations and native CLI CTests locally'
     cmds:
       - sh ci/t-cross-posix.sh test-ctest
+
+  emit-std-inventory-yaml:
+    desc: 'Derive non-mutating per-file STD reference inventory from tracked Git source'
+    cmds:
+      - sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml
 
   emit-diff-yaml:
     desc: 'Derive a fresh +/-DIFF YAML audit from frozen base SHA and local Git HEAD'
