@@ -3,9 +3,12 @@
 # Public 'source' stage: SDK-free, Gradle-free Android source-study.
 # Project source is 0BSD; third-party image layers retain their own licenses.
 # Private 'validation' stage: SDK is present only in disposable CI.
-FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS source
+ARG DOTNET_SDK_BASE=mcr.microsoft.com/dotnet/sdk:10.0-noble
+FROM ${DOTNET_SDK_BASE} AS source
+ARG SOURCE_REVISION=unverified-source
 
 LABEL org.opencontainers.image.title="Android source study v1 (SDK-free)" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
       org.opencontainers.image.description="0BSD offline acoustic source and Java17/PowerShell build harness" \
       org.opencontainers.image.source="https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20"
 
