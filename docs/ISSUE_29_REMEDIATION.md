@@ -98,3 +98,8 @@ The proposed `ci/OPENBSD_80_SOURCE_LOCK.tsv` records five OpenBSD 8.0 release-so
 ## OpenBSD 8→7→6→5→4→3→4→2 YIN→2 YANG→COREAO(OpenBSD2) serial compatibility preflight
 
 A dedicated single-job Windows-hosted GitHub workflow now runs an exact ten-stage **sequential source-contract ledger** plus a portable native C++20 core smoke build. The two 4.9 passes and the separate 2.9 YIN and YANG witnesses are preserved; COREAO reconciles them without discarding **CORE=OpenBSD2**. Stage ledger uses chained SHA-256, MagicComb HEAD+TAIL equality, a negative tamper test, `PRESERVE_SOURCE_PRECISION`, and an explicit build/runtime HOLD. Windows-compiled test binaries are not labeled OpenBSD. Native OpenBSD 2–8 binary compilation, most legacy source pins, ABI testing, OpenBSD -stable patches and GNU/POSIX legal approvals are still unavailable. See `docs/OPENBSD_SERIAL_COREAO.md`.
+
+
+## Serial OpenBSD Windows smoke diagnostic: helper-name collision
+
+Initial CI run `44837615298` passed the ten-step serial source ledger and MagicComb HEAD+TAIL, then failed the **Windows** C++20 STD-free core smoke build. Its DecaSigma `near` helper was incompatible with MSVC's existing `near` name handling, cascading into TriPi static assertions. The neutral rename to `within_tolerance` is a source compatibility adjustment, not an algorithmic or precision change. The original code remains in Git history, and release HOLD remains. Check a fresh native build run before any PASS claim.

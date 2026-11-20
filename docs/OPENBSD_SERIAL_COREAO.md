@@ -35,3 +35,7 @@ Only the OpenBSD 8.0 fixed release source metadata is pinned in `ci/OPENBSD_80_S
 To reach a genuine multi-release build pipeline, a future explicitly reviewed protocol needs real pinned source snapshots, matching architecture-specific native OpenBSD hosts or independently attested cross-toolchains, support for the code's language level, per-target `-O2` functional tests, complete source/binary licensing and security records, and approval for any newly required tools. This is deliberately a **fail-closed preflight**, not a fabricated OpenBSD build.
 
 **Chosen, never assumed. Failure never becomes policy.**
+
+## Windows MSVC native portability diagnostic (2026-11-20)
+
+The serial compatibility ledger and MagicComb HEAD+TAIL passed, but the first dedicated Windows C++20 core smoke compile failed in `shared/deca_sigma.hpp` and `shared/tri_pi.hpp` because the helper identifier `near` conflicts with Windows compiler/header conventions. The source-only remediation renames the exact helper to `within_tolerance` across its declaration and all nine TriPi call sites, retaining the mathematical expression and numerical threshold unchanged. Existing repository usage was searched before renaming; old v1 source remains retrievable through Git history. This does not silently lower precision, add platform feature flags, or certify legacy OpenBSD builds. Validation requires a fresh native CI run; failure remains evidence, not policy.
