@@ -2,7 +2,7 @@
 
 namespace q = swe::quantum_operands;
 
-static_assert(q::record_count == 22u);
+static_assert(q::record_count == 24u);
 static_assert(q::operand_count == 14u);
 static_assert(q::mode_count == 3u);
 static_assert(q::conceptual_mode_slots == 42u);
@@ -11,6 +11,19 @@ static_assert(!q::mode_slot(static_cast<q::Operand>(255u), q::Mode::Gain).applic
 static_assert(q::lookup_mode(static_cast<q::Operand>(255u), q::Mode::Gain) == nullptr);
 static_assert(q::unique_records());
 static_assert(q::unique_mode_spellings());
+static_assert(q::lookup_exact("+", 1u)->status == q::Status::Exploratory);
+static_assert(q::lookup_exact("+", 1u)->mode == q::Mode::Unassigned);
+static_assert(q::lookup_exact("+", 1u)->provenance == q::Provenance::UserPlusLiteralNovember2026);
+static_assert(q::lookup_exact("+=", 2u)->status == q::Status::Exploratory);
+static_assert(q::lookup_exact("+=", 2u)->provenance == q::Provenance::UserPlusLiteralNovember2026);
+static_assert(q::lookup_exact("+=", 2u)->mode == q::Mode::Gain);
+static_assert(q::lookup_mode(q::Operand::Equality, q::Mode::Gain) == q::lookup_exact("+=", 2u));
+static_assert(q::lookup_mode(q::Operand::Plus, q::Mode::Gain) == q::lookup_exact("++", 2u));
+static_assert(q::lookup_exact("+", 1u) != q::lookup_exact("++", 2u));
+static_assert(q::lookup_exact("+;", 2u) != q::lookup_exact("+'", 2u));
+static_assert(q::lookup_exact("+'", 2u) != q::lookup_exact("+-", 2u));
+static_assert(!q::evaluable(*q::lookup_exact("+=", 2u)));
+static_assert(!q::evaluable(*q::lookup_exact("+", 1u)));
 static_assert(q::lookup_exact("+\\", 2u)->operand == q::Operand::ShiftDown);
 static_assert(q::lookup_exact("+/", 2u)->operand == q::Operand::ShiftUp);
 static_assert(q::lookup_exact("+\\", 2u)->mode == q::Mode::Gain);
@@ -87,7 +100,7 @@ int main() {
         return 8;
 
     constexpr char unrecognized[][3] = {
-        "+=", "+?", "==", "=;", ";", "[", "]", "+",
+        "+?", "==", "=;", ";", "[", "]",
         "p+", "P+", "=]", "=[", ";+", "-=", "-?", "P="
     };
     for (const auto& spelling : unrecognized) {
@@ -100,6 +113,9 @@ int main() {
     if (q::lookup_exact(fullwidth_equals_utf8, 3u) != nullptr) return 10;
     if (q::lookup_exact(nullptr, 0u) != nullptr) return 11;
     if (q::lookup_exact(";", 1u) != nullptr) return 12;
+    if (q::lookup_exact("+", 1u) == nullptr || q::lookup_exact("+=", 2u) == nullptr) return 25;
+    if (q::lookup_exact("+", 1u) == q::lookup_exact("++", 2u)) return 26;
+    if (q::lookup_exact("+=", 2u) == q::lookup_exact("=", 1u)) return 27;
     if (q::lookup_exact("+p", 2u) == q::lookup_exact("+P", 2u)) return 13;
     if (q::lookup_exact("-p", 2u) == q::lookup_exact("-P", 2u)) return 14;
     if (q::lookup_exact("=p", 2u) == q::lookup_exact("=P", 2u)) return 15;
