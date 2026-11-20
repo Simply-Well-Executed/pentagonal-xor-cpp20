@@ -1,7 +1,8 @@
-name: MagicComb HEAD/TAIL GNU-EPL licensing + zero-CVE and Oracle toolchain hold
+name: MagicComb HEAD/TAIL LGPL permitted; GPL/EUPL/EPL and CVE release HOLD
 
 # Investigational only, explicit owner requirement. NEVER pushes an image.
-# GitHub-hosted Ubuntu only; no Node, Python, Go, marketplace actions or local compute.
+# GitHub-hosted Ubuntu only; no authored Node, Python or Go build actions.
+# Vendor-built infrastructure is separately inventoried; it is not claimed Go-free.
 on:
   push:
     branches:
@@ -23,7 +24,7 @@ concurrency:
 
 jobs:
   preflight-current-image:
-    name: Audit current Docker Hub digest and GPL/EPL/CVE exceptions
+    name: Audit Docker Hub digest; LGPL allowed, GPL/AGPL/EUPL/EPL HOLD
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     permissions:
@@ -67,7 +68,7 @@ jobs:
         run: |
           set -euo pipefail
           case "$RESULT" in
-            success) state=success; desc='Existing image GNU/EPL and CVE MagicComb cleared' ;;
+            success) state=success; desc='Existing image licensing and CVE MagicComb cleared' ;;
             *) state=failure; desc='License/CVE gate held: see GitHub run for named exception evidence' ;;
           esac
           jq -nc --arg state "$state" --arg url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg desc "$desc" --arg ctx 'swe/magiccomb-current-image-license-cve' '{state:$state,target_url:$url,description:$desc,context:$ctx}' > "$RUNNER_TEMP/audit-status.json"
