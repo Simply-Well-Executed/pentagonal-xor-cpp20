@@ -64,7 +64,12 @@ target_link_libraries(pentagonal_xor_cli PRIVATE swe_pentagonal_xor_throughput)
 set_target_properties(pentagonal_xor_cli PROPERTIES
   CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 install(TARGETS pentagonal_xor_cli RUNTIME DESTINATION bin)
-install(FILES include/pentagonal_xor.hpp DESTINATION include/swe)
+# Both headers form the self-contained STD-free API; installing only
+# pentagonal_xor.hpp would break downstream include resolution.
+install(FILES
+  include/pentagonal_xor.hpp
+  include/pxor_memory.hpp
+  DESTINATION include/swe)
 
 include(CTest)
 if(BUILD_TESTING)
