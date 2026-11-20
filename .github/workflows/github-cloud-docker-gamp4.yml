@@ -1,0 +1,54 @@
+name: GitHub-hosted isolated Docker GAMP4 (manual-source branch)
+
+# Explicit exception requested by repository owner: this job is run on GitHub.com,
+# never on their local or self-hosted compute. No marketplace actions/Node.
+# Push to the dedicated branch is the trigger; workflow_dispatch not required.
+on:
+  push:
+    branches:
+      - feat/cloud-gamp4-docker-on-github-20261120
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-cloud-gamp4-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux-amd64-gamp4:
+    name: Native hosted Linux amd64 Docker full CTest + URS-11..22
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    permissions:
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify the compute is GitHub-hosted
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          test "$(uname -m)" = x86_64
+          docker info
+      - name: Fetch the event commit using Git only (no Node checkout action)
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/gamp4-exact-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+          /bin/sh "$src/ci/Run-GitHubCloud-Gamp4.sh"
+      - name: Final release-boundary notice
+        if: always()
+        shell: bash
+        run: |
+          echo 'GitHub cloud Docker validation only; no Docker Hub push.'
+          echo 'Only Linux amd64 tested in this job; other 12 profiles remain unverified.'
+          echo 'QA, PQ, external registry publication and GitHub release remain on HOLD.'
