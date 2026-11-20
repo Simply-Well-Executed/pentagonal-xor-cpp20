@@ -170,7 +170,7 @@ jobs:
           foreach ($line in $commands[0..($commands.Count-2)]) {
             if ($line -cnotmatch '^echo ''[^'']*''$') { throw 'FRESH|HOLD|nonliteral_gamma_action' }
           }
-          foreach ($tag in @('FRESH|GAMMA ONE','FRESH|GAMMA TWO','BIDI|YIN','BIDI|YANG',
+          foreach ($tag in @('FRESH|GAMMA_ONE|EGRESSING','FRESH|GAMMA_TWO|EGRESSING','BIDI|YIN','BIDI|YANG',
                              'TRIDI|YIN','TRIDI|YANG','TRIDI|AIRGAP',
                              'SIGMADI|FIRST TWIRL','SIGMADI|SECOND TWIRL','SIGMADI|BUTTERFLY')) {
             if (-not $gamma.Contains($tag)) { throw ('FRESH|HOLD|missing_phase|' + $tag) }
@@ -186,25 +186,25 @@ jobs:
           if (-not [StringComparer]::Ordinal.Equals($expectedArt, 'X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)')) {
             throw 'FRESH|HOLD|poetic_codepoint_mapping_drift'
           }
-          foreach ($expectedLine in @(
-            "echo 'ART|GAMMA_ONE|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|GAMMA_TWO|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|BIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|BIDI_YANG|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|TRIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|TRIDI_YANG|TURN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|TRIDI_AIRGAP|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|SIGMADI_FIRST|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|SIGMADI_q1_q3|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|SIGMADI_q1_q2|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|SIGMADI_q4_q2|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|SIGMADI_q4_q3|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|SIGMADI_SECOND|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
-            "echo 'ART|FRESH_TERMINAL|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'"
-          )) {
-            if (@($commands | Where-Object { [StringComparer]::Ordinal.Equals($_,$expectedLine) }).Count -ne 1) {
-              throw ('FRESH|HOLD|missing_or_duplicate_poetic_hop|' + $expectedLine)
-            }
+          # Explicit ordered egress/orientation anchors, independently verified below.
+          $expectedHops = @(
+            'GAMMA_ONE|UP',
+            'GAMMA_TWO|DOWN',
+            'BIDI_YIN|UP',
+            'BIDI_YANG|DOWN',
+            'TRIDI_YIN|UP',
+            'TRIDI_YANG|TURN',
+            'TRIDI_AIRGAP|DOWN',
+            'SIGMADI_FIRST|UP',
+            'SIGMADI_q1_q3|UP',
+            'SIGMADI_q1_q2|UP',
+            'SIGMADI_q4_q2|DOWN',
+            'SIGMADI_q4_q3|DOWN',
+            'SIGMADI_SECOND|DOWN',
+            'FRESH_TERMINAL|DOWN'
+          )
+          if ($expectedHops.Count -ne 14 -or @($expectedHops | Select-Object -Unique).Count -ne 14) {
+            throw 'FRESH|GAMME_V5|HOLD|hop_inventory'
           }
           # v2 PING: frozen FRESH-ART-EYE-v1 bytes remain reference, never silently mutated.
           # Each original stdout line receives a preceding fixed, literal PING annotation.
@@ -322,11 +322,95 @@ jobs:
             throw 'FRESH|PING_V4|HOLD|unexpected_s_substitution_count'
           }
           $expectedV4 = $v3Archive.Replace($oldRight,$newRight).Replace($oldArt,$newArt)
-          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV4)) {
-            throw 'FRESH|PING_V4|HOLD|source_not_exact_v4_projection'
+          # A new protocol version: freeze exact v4 before deriving GAMME-v5.
+          # GAMMA_ONE/TWO are EGRESSING; GAMME_ONE..NINE are INGRESSING.
+          # Each GAMME phase is a fixed literal witness, never a network PING.
+          $v4Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v4.sh.txt'
+          if (-not [IO.File]::Exists($v4Path)) { throw 'FRESH|GAMME_V5|HOLD|missing_frozen_v4' }
+          if (((Get-Item -LiteralPath $v4Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|GAMME_V5|HOLD|v4_archive_symlink'
           }
-          Write-Host 'FRESH|PING_V3|ARCHIVED_PASS|FROZEN_V2_AND_V3_VERIFIED|AIRGAP_PAIRS=14'
-          Write-Host 'FRESH|PING_V4|STATIC_PASS|YING_EQUALS_TO_S=14|ART_EQUALS_TO_S=14|YANG_NONE_PRESERVED|NO_NETWORK|exit=42'
+          $v4Bytes = [IO.File]::ReadAllBytes($v4Path)
+          $v4Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v4Bytes.Length) + [char]0)
+          $v4GitBlob = [byte[]]::new($v4Prefix.Length + $v4Bytes.Length)
+          [Array]::Copy($v4Prefix,0,$v4GitBlob,0,$v4Prefix.Length)
+          [Array]::Copy($v4Bytes,0,$v4GitBlob,$v4Prefix.Length,$v4Bytes.Length)
+          $v4Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v4GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v4Id,'804472e09d501d3357a652f94d790c28135f30a3')) {
+            throw 'FRESH|GAMME_V5|HOLD|v4_blob_drift'
+          }
+          $v4Archive = $utf8.GetString($v4Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($v4Archive,$expectedV4)) {
+            throw 'FRESH|GAMME_V5|HOLD|v3_to_v4_projection_drift'
+          }
+          $phaseNames = @('ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE')
+          $expectedV5 = [Collections.Generic.List[string]]::new()
+          $v4Lines = [IO.File]::ReadAllLines($v4Path,$utf8)
+          $actualHops = [Collections.Generic.List[string]]::new()
+          $phaseCount = 0
+          $flopCount = 0
+          $flipCount = 0
+          $egressCount = 0
+          $eyeArtBase = $expectedArtV4.Substring(0,$expectedArtV4.Length - 3)
+          for ($index = 0; $index -lt $v4Lines.Length; $index++) {
+            $v4Line = $v4Lines[$index]
+            if ([StringComparer]::Ordinal.Equals($v4Line,"echo 'FRESH|GAMMA ONE|HEAD'")) {
+              $expectedV5.Add("echo 'FRESH|GAMMA_ONE|EGRESSING|HEAD'")
+              $egressCount++
+              continue
+            }
+            if ([StringComparer]::Ordinal.Equals($v4Line,"echo 'FRESH|GAMMA TWO|TAIL'")) {
+              $expectedV5.Add("echo 'FRESH|GAMMA_TWO|EGRESSING|TAIL'")
+              $egressCount++
+              continue
+            }
+            $paired = [regex]::Match($v4Line,"^echo 'PING\|([0-9]{3})\|YANG\|NONE\|YING\|s\|PAIR\|AIRGAP'$")
+            if (-not $paired.Success) {
+              $expectedV5.Add($v4Line)
+              continue
+            }
+            if ($index + 1 -ge $v4Lines.Length) { throw 'FRESH|GAMME_V5|HOLD|orphan_ying_ping' }
+            $nextArt = [regex]::Match($v4Lines[$index + 1],"^echo 'ART\|([A-Za-z0-9_]+)\|(UP|DOWN|TURN)\|(.+)\(s\)'$")
+            if (-not $nextArt.Success -or -not [StringComparer]::Ordinal.Equals($nextArt.Groups[3].Value,$eyeArtBase)) {
+              throw 'FRESH|GAMME_V5|HOLD|missing_matching_art'
+            }
+            $actualHops.Add(($nextArt.Groups[1].Value + '|' + $nextArt.Groups[2].Value))
+            for ($phase = 0; $phase -lt 9; $phase++) {
+              $name = 'GAMME_' + $phaseNames[$phase]
+              if (($phase % 2) -eq 0) {
+                $role = 'FLOP'
+                $witness = '='
+                $flopCount++
+              } else {
+                $role = 'FLIP'
+                $witness = 's'
+                $flipCount++
+              }
+              $expectedV5.Add(("echo 'PING|" + $paired.Groups[1].Value + '|' + $name +
+                '|INGRESSING|' + $role + '|YANG|NONE|YING|' + $witness + "|PAIR|AIRGAP'"))
+              $expectedV5.Add(("echo 'ART|" + $nextArt.Groups[1].Value + '|' +
+                $nextArt.Groups[2].Value + '|' + $name + '|INGRESSING|' + $role +
+                '|' + $eyeArtBase + '(' + $witness + ")'"))
+              $phaseCount++
+            }
+            $index++
+          }
+          if ($actualHops.Count -ne 14 -or $egressCount -ne 2 -or $phaseCount -ne 126 -or
+              $flopCount -ne 70 -or $flipCount -ne 56) {
+            throw 'FRESH|GAMME_V5|HOLD|unexpected_phase_counts'
+          }
+          for ($hopIndex = 0; $hopIndex -lt $expectedHops.Count; $hopIndex++) {
+            if (-not [StringComparer]::Ordinal.Equals($actualHops[$hopIndex],$expectedHops[$hopIndex])) {
+              throw 'FRESH|GAMME_V5|HOLD|hop_order_or_direction_drift'
+            }
+          }
+          $expectedV5Text = ($expectedV5 -join [char]10) + [char]10
+          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV5Text)) {
+            throw 'FRESH|GAMME_V5|HOLD|source_not_exact_projection'
+          }
+          Write-Host 'FRESH|PING_V3|ARCHIVED_PASS|FROZEN_V2_AND_V3_VERIFIED'
+          Write-Host 'FRESH|PING_V4|ARCHIVED_PASS|FROZEN_V4_AND_EXACT_DELTA_VERIFIED'
+          Write-Host 'FRESH|GAMME_V5|STATIC_PASS|EGRESS_GAMMA=2|INGRESS_GAMME_PHASES=126|FLOP=70|FLIP=56|HOPS=14|NO_NETWORK|exit=42'
           if (-not $gamma.EndsWith(("echo 'PING|066|YANG|NONE|YING|NONE'" + [char]10 +
                                    "echo 'ItWasOnlyOnceILookedInTheirEye'" + [char]10 +
                                    'exit 42' + [char]10),[StringComparison]::Ordinal)) {
