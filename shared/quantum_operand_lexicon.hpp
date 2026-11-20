@@ -160,9 +160,13 @@ lookup_exact(const char* spelling, unsigned length) noexcept {
            mode == Mode::Stability;
 }
 
+[[nodiscard]] constexpr bool valid_operand(Operand operand) noexcept {
+    return static_cast<unsigned>(operand) < operand_count;
+}
+
 [[nodiscard]] constexpr const Record*
 lookup_mode(Operand operand, Mode mode) noexcept {
-    if (!valid_mode(mode)) return nullptr;
+    if (!valid_mode(mode) || !valid_operand(operand)) return nullptr;
     for (const auto& record : records) {
         if (record.operand == operand && record.mode == mode)
             return &record;
@@ -179,7 +183,8 @@ struct ModeSlot {
 
 [[nodiscard]] constexpr ModeSlot
 mode_slot(Operand operand, Mode mode) noexcept {
-    return {operand, mode, lookup_mode(operand, mode), valid_mode(mode)};
+    return {operand, mode, lookup_mode(operand, mode),
+            valid_operand(operand) && valid_mode(mode)};
 }
 
 // Every source operand has all three semantic slots.
@@ -240,6 +245,8 @@ constexpr bool unique_mode_spellings() noexcept {
 }
 
 static_assert(record_count == 22u);
+static_assert(!valid_operand(static_cast<Operand>(255u)));
+static_assert(!mode_slot(static_cast<Operand>(255u), Mode::Gain).applicable);
 static_assert(conceptual_mode_slots == 42u);
 static_assert(unique_records());
 static_assert(unique_mode_spellings());
