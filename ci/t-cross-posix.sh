@@ -181,7 +181,7 @@ gate_zero_network_imports() {
     need grep
     need awk
     test -d "$BUILD_DIR" || fail 'build missing; run build-cpp20 first'
-    for binary_name in pentagonal_xor pentagonal_xor_cli pentagonal_suite_cli; do
+    for binary_name in pentagonal_xor pentagonal_xor_std_free pentagonal_xor_cli pentagonal_suite_cli; do
         binaries=$(find "$BUILD_DIR" -type f \
             \( -name "$binary_name" -o -name "$binary_name.exe" \) -print) ||
             fail "cannot enumerate $binary_name binaries"
@@ -214,7 +214,7 @@ gate_no_std_binary() {
     need grep
     need awk
     test -d "$BUILD_DIR" || fail 'build missing for STD runtime import audit'
-    for binary_name in pentagonal_xor_cli pentagonal_suite_cli; do
+    for binary_name in pentagonal_xor_std_free pentagonal_xor_cli pentagonal_suite_cli; do
         binaries=$(find "$BUILD_DIR" -type f \
             \( -name "$binary_name" -o -name "$binary_name.exe" \) -print) ||
             fail "could not locate $binary_name"
