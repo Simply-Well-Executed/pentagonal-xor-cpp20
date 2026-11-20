@@ -1,0 +1,103 @@
+name: Canonical LICENSES custody and zero-POSIX/GNU policy hold (PowerShell)
+
+# CURRENT: native PowerShell on GitHub-hosted Windows; no authored POSIX shell.
+# Prior Linux/Docker/GNU jobs are retired from active workflow source.
+# The previous pipeline is preserved in the commit history for forensic review.
+# An unapproved dependency is a HOLD, not a build-only exception.
+on:
+  push:
+    branches:
+      - feat/magiccomb-license-oracle27-dotnet11-ps77-20261120
+    paths:
+      - .github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml
+      - LICENSE
+      - LICENSES/**
+      - ci/Assert-LocalLicenseRegistry.ps1
+      - ci/**
+      - docker/**
+      - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
+      - docs/LOCALITY_FIRST_SOURCE_CUSTODY.md
+      - README.md
+      - .gitattributes
+
+permissions:
+  contents: read
+
+jobs:
+  native-pwsh-license-custody:
+    name: Exact local LICENSES verification and legacy-script quarantine
+    runs-on: windows-2025
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Retrieve exact commit snapshot using PowerShell (no checkout action)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
+            throw 'LOCAL_LICENSE|HOLD|unexpected_runner'
+          }
+          if (-not [StringComparer]::Ordinal.Equals($env:GITHUB_REPOSITORY,'Simply-Well-Executed/pentagonal-xor-cpp20')) {
+            throw 'LOCAL_LICENSE|HOLD|unexpected_repository'
+          }
+          if ($env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'LOCAL_LICENSE|HOLD|invalid_commit'
+          }
+          $zip = Join-Path $env:RUNNER_TEMP 'source-at-exact-commit.zip'
+          $dest = Join-Path $env:RUNNER_TEMP 'source-at-exact-commit'
+          $uri = 'https://api.github.com/repos/' + $env:GITHUB_REPOSITORY + '/zipball/' + $env:GITHUB_SHA
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization = 'Bearer ' + $env:GH_TOKEN
+            Accept = 'application/vnd.github+json'
+            'User-Agent' = 'swe-pwsh-license-custody'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $dest
+          $dirs = @(Get-ChildItem -LiteralPath $dest -Directory)
+          if ($dirs.Count -ne 1 -or -not [IO.File]::Exists((Join-Path $dirs[0].FullName 'LICENSES/LOCK.tsv'))) {
+            throw 'LOCAL_LICENSE|HOLD|untrusted_archive_layout'
+          }
+          $sourceRoot = $dirs[0].FullName
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'),$sourceRoot)
+          Write-Host 'LOCAL_LICENSE|HEAD|PINNED_COMMIT|RETRIEVED'
+      - name: Verify complete SPDX/Oracle registry and root 0BSD at HEAD and TAIL
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $gate = Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1'
+          if (-not [IO.File]::Exists($gate)) { throw 'LOCAL_LICENSE|HOLD|missing_gate' }
+          $head = Join-Path $env:RUNNER_TEMP 'license-head.jsonl'
+          $tail = Join-Path $env:RUNNER_TEMP 'license-tail.jsonl'
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $head
+          if ($LASTEXITCODE -ne 0) { throw 'LOCAL_LICENSE|HOLD|HEAD_failed' }
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $tail
+          if ($LASTEXITCODE -ne 0) { throw 'LOCAL_LICENSE|HOLD|TAIL_failed' }
+          if (-not [StringComparer]::Ordinal.Equals([IO.File]::ReadAllText($head),[IO.File]::ReadAllText($tail))) {
+            throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_changed'
+          }
+          Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|exact_legal_reference_bytes'
+      - name: Block project-authored POSIX scripts and unapproved GNU build inputs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $scripts = @(Get-ChildItem -LiteralPath (Join-Path $src 'ci') -Filter '*.sh' -File -Recurse)
+          foreach ($item in $scripts) {
+            Write-Host ('POLICY|POSIX|UNAPPROVED|' + $item.FullName.Substring($src.Length + 1))
+          }
+          $docker = Join-Path $src 'docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile'
+          $gnuTooling = $false
+          if ([IO.File]::Exists($docker)) {
+            $line = [IO.File]::ReadAllText($docker)
+            $gnuTooling = [regex]::IsMatch($line,'\b(g\+\+|gcc|gawk|make|grep|findutils)\b')
+            if ($gnuTooling) { Write-Host 'POLICY|GNU|UNAPPROVED|experimental_Dockerfile_toolchain' }
+          }
+          if ($scripts.Count -ne 0 -or $gnuTooling) {
+            throw "POLICY|HOLD|posix_scripts=$($scripts.Count)|unapproved_gnu_probe=$gnuTooling|migration_required"
+          }
+          Write-Host 'POLICY|SOURCE_CHECK|PASS|no_known_unapproved_ci_shell_or_probe'
+          Write-Host 'POLICY|LIMIT|source_scan_only|third_party_and_organization_inventory_still_required'
