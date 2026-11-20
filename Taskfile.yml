@@ -90,12 +90,12 @@ tasks:
       - sh ci/t-cross-posix.sh gate-zero-function-calls
 
   gate-zero-network-imports:
-    desc: 'Inspect parity, throughput and suite CLI imports; not runtime isolation proof'
+    desc: 'Inspect canonical parity and three native CLIs for known network imports'
     cmds:
       - sh ci/t-cross-posix.sh gate-zero-network-imports
 
   gate-no-std-binary:
-    desc: 'Fail closed if throughput or suite binary directly imports C/C++ standard runtimes'
+    desc: 'Inspect STD-free parity, throughput and Suite CLI C/C++ runtime imports'
     cmds:
       - sh ci/t-cross-posix.sh gate-no-std-binary
 
