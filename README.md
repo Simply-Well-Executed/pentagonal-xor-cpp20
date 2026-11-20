@@ -4,13 +4,13 @@
 
 ### Native C++20 parity engine with canonical UTF-8 source.
 
-**Simply Well Executed** · **0BSD** · **No external runtime dependencies**
+**Simply Well Executed** · **0BSD** · **Native runtime imports under audit**
 
 **Local native verification:** [PowerShell + MSVC + CTest](ci/Invoke-NativeCore.ps1) (no hosted runner)
 [![Releases](https://img.shields.io/github/v/release/Simply-Well-Executed/pentagonal-xor-cpp20?include_prereleases&label=release)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus)](CMakeLists.txt)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
-[![Platforms](https://img.shields.io/badge/native-C%2B%2B20%20Windows-violet)](ci/Invoke-NativeCore.ps1)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android-blue)](docs/NATIVE_PLATFORM_MATRIX.md)
 
 **[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
 
@@ -18,9 +18,19 @@
 
 ---
 
+## Offline STD-free core and native multi-OS matrix
+
+[Native platform matrix](ci/native-platform-matrix.yml) now declares locally buildable C++20 static-archive profiles for **macOS arm64 / x86_64 / universal**, **Windows x86 / x64 (AMD64) / ARM64**, **Linux x86 / x86_64 / ARM64**, and **Android arm64-v8a / armeabi-v7a / x86 / x86_64**. The macOS 32-bit Intel profile is explicitly unsupported on modern macOS, not silently marked green. See [OS/ABI setup and operator commands](docs/NATIVE_PLATFORM_MATRIX.md).
+
+The opt-in `-DSWE_STD_FREE_CORE_ONLY=ON` CMake path compiles the [STD-free portable core probe](tests/std_free_portable_probe.cpp) into a static archive and installs the three public headers. It skips unrelated legacy projects **only for this explicitly scoped build**; the normal full build remains available. The local [POSIX builder](ci/Build-PlatformMatrix.sh) and [Windows PowerShell builder](ci/Build-PlatformMatrix.ps1) perform no network fetch, package installation, hosted runner execution or container launch. Their local YAML reports say `ARCHIVE_BUILT_NOT_RUNTIME_TESTED`, not a claimed application pass.
+
+The independent [STD-free parity CLI](src/parity_std_free_main.cpp) reuses the original five-feature probability function and has six comparison CTests. It is not yet promoted over the [original parity CLI](pentagonal_xor_cpp20.cpp); its strict ASCII decimal parser does not claim full `std::stod` grammar/locale equivalence. The existing legacy headers, tools and tests still contain standard-library dependencies, so **the entire repository is not yet STD-free**.
+
+Generate the current complete source inventory using `sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml`. The POSIX T-CROSS default also writes this inventory and a Git-derived `+/-DIFF` YAML before enforcing strict gates. No source deletion or replacement of mathematical definitions is performed to manufacture a green result.
+
 ## PENTAGONAL SUITE: nine native C++20 operations
 
-The additional [Pentagonal Suite header](include/pentagonal_suite.hpp) supplies **XOR, OR, AND, NAND, NOP, NIL, NAN, COR and VISTA** as an independent operation family. It reuses the original pentagonal numeric source and bytewise XOR implementation rather than duplicating either. The suite includes [an independent Windows/Linux CLI](src/suite_main.cpp) and [compile-time plus runtime regression cases](tests/pentagonal_suite_test.cpp); it does **not** replace the established five-feature parity CLI or the original throughput benchmark.
+The additional [Pentagonal Suite header](include/pentagonal_suite.hpp) supplies **XOR, OR, AND, NAND, NOP, NIL, NAN, COR and VISTA** as an independent operation family. It reuses the original pentagonal numeric source and bytewise XOR implementation rather than duplicating either. The suite includes [an independent Windows/Linux/macOS CLI](src/suite_main.cpp) and [compile-time plus runtime regression cases](tests/pentagonal_suite_test.cpp); it does **not** replace the established five-feature parity CLI or the original throughput benchmark.
 
 These three new suite C++ files use **zero C/C++ standard-library headers, zero `std::` references and zero code comments**. See [operation mapping and overflow/NAN contracts](docs/PENTAGONAL_SUITE.md). A new local T-CROSS gate checks comment-free source, and the existing STD-free source and binary-import gates now include the suite. Exact-seeded transforms and 256-byte-periodic LUT transforms remain distinct; NIL zero-fill is not a guarantee of secure memory erasure; NAN boxing stores integer bit patterns rather than floating-point secrets.
 
@@ -30,7 +40,7 @@ The newly added suite target and its tests have not been independently built or 
 
 The optional [byte-stream XOR header](include/pentagonal_xor.hpp), [fixed-buffer and borrowed-view header](include/pxor_memory.hpp), [native benchmark CLI](src/main.cpp), and [throughput regression](tests/pentagonal_xor_throughput_test.cpp) have been refactored to **zero C/C++ standard-library headers and zero `std::` calls in those four sources**. They use C++20 language features and explicit Win32/POSIX APIs. `fast_xor_buffer` now uses `constexpr` little-endian byte packing and unpacking instead of `std::memcpy`; scoped decrypted literals use runtime volatile cleanup without `std::is_constant_evaluated`. Native OS page allocation replaces C++ `new` for optional buffers over the default 16 MiB.
 
-The original five-feature [parity CLI](pentagonal_xor_cpp20.cpp), other historical libraries and existing tests **are not yet STD-free**. A whole-repository T-CROSS gate is present and must remain blocking until those files are independently migrated and regression-tested. Runtime linkage to libc/UCRT or standard C++ libraries has **not been inspected on a compiled PR binary**. Source-level absence of `std::` does not imply freestanding operation, zero imports, or absence of system calls. The new CLI's native I/O backend supports Windows and Linux; other hosts retain the public header without the benchmark executable.
+The original five-feature [parity CLI](pentagonal_xor_cpp20.cpp), other historical libraries and existing tests **are not yet STD-free**. A whole-repository T-CROSS gate is present and must remain blocking until those files are independently migrated and regression-tested. Runtime linkage to libc/UCRT or standard C++ libraries has **not been inspected on a compiled PR binary**. Source-level absence of `std::` does not imply freestanding operation, zero imports, or absence of system calls. The new CLI's native I/O backend now targets Windows, Linux and supported macOS; Android uses the cross-compiled archive-only core without pretending to run a desktop CLI.
 
 See [STD-free native T-CROSS audit](docs/STD_FREE_NATIVE_T_CROSS.md) and [POSIX/YAML gates](Taskfile.yml). No new full-build or linker result is asserted by this source change. The periodic 256-byte stream remains distinct from the exact seeded sequence.
 
