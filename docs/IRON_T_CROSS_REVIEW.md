@@ -372,3 +372,33 @@ Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [pl
 **Current observations:** No Docker daemon available in assistant environment, no approved preloaded builder image digests, no native Windows/macOS target run, no 12-URS runtime report for this candidate, no 13-profile release artifact, no registry push and no published GitHub release. This is a deliberate HOLD, not a passing release.
 
 **Canonical protocol:** [GAMP4 Docker release custody](GAMP4_DOCKER_RELEASE.md), [13-profile YAML](../ci/gamp4-docker-release.yml), [local Docker Compose](../docker/compose.release.yml), [release assembler](../ci/Assemble-Gamp4-Release.sh).
+
+## T-CROSS follow-up: sanitized local Docker source isolation
+
+**FROZEN SECURITY SUB-DELTA, SOURCE ONLY.** This record is separate from the preceding +1130/-2 Docker implementation snapshot. It does not erase or merge its provenance.
+
+- Baseline Git SHA: `18e52a3739e27721ee790c645a3a47a451be83ff`.
+- Candidate Git SHA: `23553ce0065bec6cdd34f29f6407c13ecf06553f`.
+- Authoritative comparison: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/18e52a3739e27721ee790c645a3a47a451be83ff...23553ce0065bec6cdd34f29f6407c13ecf06553f
+- **16 commits, 11 files, +131 / -25 lines, net +106**. Figures represent actual source lines only; no test, Docker run or release outcome implied.
+
+| Changed path | Added | Removed |
+| --- | ---: | ---: |
+| `README.md` | +1 | -1 |
+| `ci/Assemble-Gamp4-Release.sh` | +1 | -1 |
+| `ci/Invoke-LocalDocker-Gamp4.sh` | +44 | -3 |
+| `ci/Run-Native-Macos-Gamp4.sh` | +2 | -2 |
+| `ci/Run-Native-Windows-Gamp4.ps1` | +4 | -0 |
+| `ci/docker/Build-Android-NDK.sh` | +4 | -6 |
+| `ci/docker/Run-Gamp4-Container.sh` | +5 | -7 |
+| `ci/gamp4-docker-release.yml` | +4 | -1 |
+| `docker/compose.release.yml` | +2 | -2 |
+| `docs/GAMP4_DOCKER_RELEASE.md` | +10 | -2 |
+| `docs/IRON_T_CROSS_REVIEW.md` | +54 | -0 |
+| **TOTAL** | **+131** | **-25** |
+
+**Security correction:** the initial Compose proposal bound the entire checkout read-only. The candidate instead exports committed source using local `git archive HEAD`, excludes `.git` and untracked source, records `.swe-source-commit`, performs host SHA256 inventory verification and symlink/extra-file checks, and mounts that sanitized snapshot read-only. Docker's writable bind mount is restricted to ignored `build/gamp4-release/`, *separate* from the host snapshot under `build/gamp4-source-snapshots/`; consequently, a container cannot simply mutate its read-only source via the writable output alias. The local builder image must already be digest-pinned and cached; neither downloading an image nor remotely publishing a release is authorized.
+
+**Additional gate refinements:** native macOS and Windows GAMP4 scripts now require a **single terminal** twelve-URS PASS summary. The Android validation stage reads only the sanitized source marker. The release packager uses portable `find` rather than `-maxdepth` where possible.
+
+**Residual risks:** operator workstation, local Docker daemon and builder image remain trusted; a compromised daemon can defeat bind-mount protections. Git source snapshots and unsigned local YAML receipts are *not* independently authenticated supply-chain attestations. Actual full native CTest/URS, Docker builds, NDK device OQ, native hardware testing, third-party license review and human QA remain NOT TESTED / HOLD. Any new changes after the frozen candidate must generate a new diff.
