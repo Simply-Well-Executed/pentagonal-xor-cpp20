@@ -43,7 +43,7 @@ endif()
 # compile one ISO C++20 object and create a native static archive, without any
 # STL source includes, C++ runtime link step, network fetch or executable tests.
 option(SWE_STD_FREE_CORE_ONLY
-  "Build and package only the native STD-free bytewise Suite core" OFF)
+  "Build native STD-free Suite plus canonical DecaSigma/TriPi/COREAO/stability headers" OFF)
 if(SWE_STD_FREE_CORE_ONLY)
   add_library(swe_std_free_portable_core STATIC
     tests/std_free_portable_probe.cpp)
@@ -58,8 +58,15 @@ if(SWE_STD_FREE_CORE_ONLY)
     include/pxor_memory.hpp
     include/pentagonal_xor.hpp
     include/pentagonal_suite.hpp
+    shared/pentagonal_xor_std_free.h
+    shared/deca_sigma.hpp
+    shared/tri_pi.hpp
+    shared/coreao.hpp
+    shared/coreao_gain.hpp
+    shared/coreo_stereo.hpp
+    shared/stability10d.hpp
     DESTINATION include/swe)
-  message(STATUS "IRON native STD-free core-only: archive build, no legacy targets")
+  message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
   return()
 endif()
 
