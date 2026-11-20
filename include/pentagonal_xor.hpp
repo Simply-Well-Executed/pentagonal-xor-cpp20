@@ -22,8 +22,13 @@
 #    define VC_EXTRALEAN
 #  endif
 #  include <windows.h>
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__)
 #  include <sched.h>
+#  include <sys/mman.h>
+#  include <sys/resource.h>
+#  include <time.h>
+#  include <unistd.h>
+#elif defined(__APPLE__)
 #  include <sys/mman.h>
 #  include <sys/resource.h>
 #  include <time.h>
@@ -69,7 +74,7 @@ struct CorePinResult {
         return {};
     }
     return {static_cast<unsigned int>(active.Group) * 64u + active.Number, true};
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__)
     const int core = sched_getcpu();
     if (core < 0 || core >= CPU_SETSIZE) return {};
     cpu_set_t allowed{};
@@ -90,7 +95,7 @@ struct CorePinResult {
     const bool thread = SetThreadPriority(
         GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) != 0;
     return process && thread;
-#elif defined(__linux__)
+#elif (defined(__linux__) && !defined(__ANDROID__)) || defined(__APPLE__)
     return setpriority(PRIO_PROCESS, 0, -1) == 0;
 #else
     return false;
@@ -258,7 +263,7 @@ inline void write_raw(const char* bytes, usize length,
         bytes += written;
         length -= written;
     }
-#elif defined(__linux__)
+#elif (defined(__linux__) && !defined(__ANDROID__)) || defined(__APPLE__)
     const int fd = error ? 2 : 1;
     while (length) {
         const auto written = write(fd, bytes, length);
@@ -325,7 +330,7 @@ inline void write_hex_byte(u8 value) noexcept {
     return (t / f) * 1000000u +
         static_cast<u64>(
             static_cast<double>(t % f) * 1000000.0 / static_cast<double>(f));
-#elif defined(__linux__)
+#elif (defined(__linux__) && !defined(__ANDROID__)) || defined(__APPLE__)
     struct timespec t{};
     if (clock_gettime(CLOCK_MONOTONIC, &t) != 0 ||
         t.tv_sec < 0 || t.tv_nsec < 0) return 0;
@@ -344,7 +349,7 @@ inline void write_hex_byte(u8 value) noexcept {
 #if defined(_WIN32)
     return static_cast<u8*>(
         VirtualAlloc(nullptr, length, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
-#elif defined(__linux__)
+#elif (defined(__linux__) && !defined(__ANDROID__)) || defined(__APPLE__)
     void* memory = mmap(nullptr, length, PROT_READ | PROT_WRITE,
                         MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     return memory == MAP_FAILED ? nullptr : static_cast<u8*>(memory);
@@ -357,7 +362,7 @@ inline void release_pages(u8* memory, usize length) noexcept {
 #if defined(_WIN32)
     (void)length;
     VirtualFree(memory, 0, MEM_RELEASE);
-#elif defined(__linux__)
+#elif (defined(__linux__) && !defined(__ANDROID__)) || defined(__APPLE__)
     (void)munmap(memory, length);
 #else
     (void)length;
