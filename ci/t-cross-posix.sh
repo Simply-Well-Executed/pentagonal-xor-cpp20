@@ -205,33 +205,32 @@ gate_zero_network_imports() {
 gate_no_std_binary() {
     need find
     need grep
-    test -d "$BUILD_DIR" || fail 'build missing for binary STD library audit'
-    binaries=$(find "$BUILD_DIR" -type f \
-        \( -name 'pentagonal_xor_cli' -o -name 'pentagonal_xor_cli.exe' \) -print) ||
-        fail 'cannot enumerate native throughput CLI binary'
-    test -n "$binaries" || fail 'native throughput CLI binary missing'
-    count=$(printf '%s\n' "$binaries" | awk 'END {print NR}')
-    test "$count" -eq 1 || fail "ambiguous throughput CLI binaries: $count"
-    if command -v llvm-objdump >/dev/null 2>&1; then
-        imports=$(llvm-objdump -p "$binaries") || fail 'llvm import scan failed'
-    elif command -v objdump >/dev/null 2>&1; then
-        imports=$(objdump -p "$binaries") || fail 'objdump import scan failed'
-    elif command -v dumpbin >/dev/null 2>&1; then
-        imports=$(dumpbin /IMPORTS "$binaries") || fail 'dumpbin import scan failed'
-    elif command -v otool >/dev/null 2>&1; then
-        imports=$(otool -L "$binaries") || fail 'otool scan failed'
-    else
-        fail 'no native tool can inspect binary runtime imports'
-    fi
-    # The OS API calls can still require libc/UCRT. Do not quietly label
-    # source-only freedom as dependency-free binary status.
-    hits=$(printf '%s\n' "$imports" |
-        grep -Ei 'libstdc\+\+|libc\+\+|libc\+\+abi|libsupc\+\+|msvcp|vcruntime|ucrtbase|libc[.]so|libSystem[.]' || :)
-    if test -n "$hits"; then
-        printf 'T-CROSS|STD-RUNTIME-IMPORTS\n%s\n' "$hits" >&2
-        fail 'direct C/C++ standard-runtime imports still present in CLI'
-    fi
-    pass 'gate-no-std-binary|direct-import-table-only|not-full-provenance'
+    need awk
+    test -d "$BUILD_DIR" || fail 'build missing for STD runtime import audit'
+    for binary_name in pentagonal_xor_cli pentagonal_suite_cli; do
+        binaries=$(find "$BUILD_DIR" -type f \
+            \( -name "$binary_name" -o -name "$binary_name.exe" \) -print) ||
+            fail "could not locate $binary_name"
+        test -n "$binaries" || fail "native executable missing: $binary_name"
+        count=$(printf '%s\n' "$binaries" | awk 'END {print NR}')
+        test "$count" -eq 1 || fail "ambiguous executable: $binary_name"
+        if command -v llvm-objdump >/dev/null 2>&1; then
+            imports=$(llvm-objdump -p "$binaries") || fail 'llvm import scan failed'
+        elif command -v objdump >/dev/null 2>&1; then
+            imports=$(objdump -p "$binaries") || fail 'objdump import scan failed'
+        elif command -v dumpbin >/dev/null 2>&1; then
+            imports=$(dumpbin /IMPORTS "$binaries") || fail 'dumpbin import scan failed'
+        else
+            fail 'cannot inspect executable runtime imports'
+        fi
+        hits=$(printf '%s\n' "$imports" |
+            grep -Ei 'libstdc\+\+|libc\+\+|libc\+\+abi|libsupc\+\+|msvcp|vcruntime|ucrtbase|libc[.]so|libSystem[.]' || :)
+        if test -n "$hits"; then
+            printf 'T-CROSS|STD-RUNTIME-IMPORTS|%s\n%s\n' "$binary_name" "$hits" >&2
+            fail "runtime standard-library import in $binary_name"
+        fi
+        pass "gate-no-std-binary|binary=$binary_name|direct-imports-only"
+    done
 }
 
 test_ctest() {
