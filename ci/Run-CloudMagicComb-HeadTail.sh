@@ -88,7 +88,7 @@ if test "$mode" = audit; then
   test "$revision" = ed28e0544042ad700afb6e611796912294f172db ||
     fail 'candidate container source revision changed'
 else
-  base=mcr.microsoft.com/dotnet/sdk:11.0-noble
+  base=mcr.microsoft.com/dotnet/sdk:11.0
   base_json=$(docker buildx imagetools inspect "$base" --format '{{json .Manifest}}') ||
     fail 'latest stable Microsoft .NET 11 image not found'
   base_digest=$(printf '%s\n' "$base_json" | jq -er '.digest // empty') ||
