@@ -7,7 +7,10 @@ policy:
   daemon_endpoint: local-unix-or-npipe-only
   docker_compose: docker/compose.release.yml
   guest_user: host-nonroot-uid-gid
-  source_mount: read-only
+  source_mount: read-only-Git-archive-snapshot
+  source_archive_has_git_metadata: false
+  source_archive_includes_untracked_files: false
+  source_integrity: host_SHA256_manifest_verified_before_each_container_run
   container_root_filesystem: read-only
   capabilities: none
   runner: none
