@@ -41,7 +41,7 @@ The host wrapper exports **only committed source bytes** using local `git archiv
 
 The Docker container never receives `.git`, developer untracked files or the host's full checkout as a bind mount. The source snapshot is mounted read-only at `/src`, while only the separate package/evidence directory is mounted read-write at `/out`. This prevents an ordinary container process from changing its mounted source via a writable `/out` alias. The snapshot is *not* a signed attestation, and an independently compromised Docker daemon or host can still undermine these controls.
 
-Do not set `SWE_RELEASE_OUTPUT` to a parent of the source snapshot location. The host wrapper explicitly rejects overlapping output directories.
+The Docker wrapper accepts writable output only inside the ignored repository `build/gamp4-release/` directory and additionally rejects overlap with its separate source snapshot. Operators can transfer completed reports and archives to a separately reviewed consolidation location, rather than giving a container an arbitrary write-mount outside the build tree.
 
 ## Offline, pinned and least-privilege Docker preflight
 
