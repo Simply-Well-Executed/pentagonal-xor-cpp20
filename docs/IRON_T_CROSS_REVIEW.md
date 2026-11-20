@@ -159,3 +159,42 @@ The `-` lines are extracted from the deleted `.github/workflows/native-core.yml`
 
 **Decision:** Retire runner-image execution on the PR branch (**SOURCE DIFF ACCEPTED**). Keep the whole-project IRON seal **HOLD** until local execution, toolchain provenance, negative controls, call-path inventory and explicit maintainer promotion.
 
+## ISO C++20 + POSIX T-CROSS YAML continuation
+
+Status: **SOURCE CHANGE COMMITTED / NEW LOCAL RUNTIME NOT TESTED**. This continuation does not rewrite the frozen historical `+198/-104` diff snapshot above. A new snapshot must be derived from Git before/current SHAs and preserved as a distinct record.
+
+### CMake language-level correction
+
+- `CMAKE_CXX_STANDARD 20` is the numeric language level; setting it to `TRUE` is not a valid way to request C++20.
+- `CMAKE_CXX_STANDARD_REQUIRED ON` is the boolean that prevents silent fallback to older C++ modes.
+- `CMAKE_CXX_EXTENSIONS OFF` requests ISO C++20 rather than compiler-specific dialect extensions. All 11 prior target-level `CXX_EXTENSIONS YES` overrides were changed to `NO`, and the dedicated parity-core object explicitly uses standard C++20.
+- Optimization remains MSVC `/O2` or GCC/Clang `-O2`. Compiler-extension selection is not a performance optimization setting. This source change still needs full CMake configure/build and regression testing.
+
+### Derived audit YAML and execution source
+
+- [Taskfile.yml](../Taskfile.yml) contains the nine ordered T-CROSS gates and `emit-diff-yaml` task in YAML v3 format, **not** in `.github/workflows`. Running `task` is optional and does not install third-party tools.
+- [ci/t-cross-posix.sh](../ci/t-cross-posix.sh) is the primary POSIX `sh` implementation. `sh ci/t-cross-posix.sh` automatically derives `.iron-t-cross-diff.yml` from the locally available frozen baseline and committed `HEAD` before attempting gates.
+- `sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml` produces the audit without attempting build gates. The output is a derived Git ledger (`before`, `after`, per-file added/removed, totals, binary-line caveat); no hand-authored numbers override Git.
+- The example offline operator assertions in Taskfile are PowerShell 7.7.0 and CMake 3.30.0. A static assertion is **not proof** that these are forever the latest versions or that the local host has them. The script fails closed when versions differ or tools are unavailable.
+- The default policy is deliberately strict: configured Git remotes, any workflow YAML, source REST/download candidates, and remaining `java/`, `docker/`, `android/` directories each have separate gates. Existence of historical source is factual, not automatically evidence of active execution. Retiring it requires separate provenance and acceptance review.
+
+### Canonical parity zero-CALL strategy
+
+- The production CLI remains unchanged: input parsing (`std::stod`), validation and formatting still require routines outside the pure mathematical kernel. No claim is made that a functioning CLI has zero function calls.
+- [tests/zero_call_core_probe.cpp](../tests/zero_call_core_probe.cpp) builds a **separate object file** from the canonical inline five-factor parity function in [shared/pentagonal_xor_std_free.h](../shared/pentagonal_xor_std_free.h), at the existing O2 optimization level. This avoids adding a second algorithm definition.
+- The POSIX disassembly gate fails if this probe object is absent, ambiguous, cannot be disassembled, lacks its expected symbol, or contains any detected CALL instructions. It scopes evidence to the optimized parity object, not the CLI, CTest, static/shared library ecosystem or runtime transport.
+- The historical fifth-root routine has been changed from recursive sign-handling to an iterative sign/magnitude result without changing the finite-input formula. Its signed outputs still require regression comparison.
+- Direct CLI import scanning for known network libraries is a narrower gate than runtime network isolation. Dynamic loading, operating-system interactions and transitive imports still need investigation.
+
+### T-CROSS source-before/candidate summary
+
+| Subject | - Prior | + Candidate | Observed status |
+| --- | --- | --- | --- |
+| Language mode | C++20, vendor extensions ON | `CXX_STANDARD 20`, required ON, extensions OFF | Source diff verified; runtime NOT TESTED |
+| Optimization | O2 (MSVC/GCC/Clang) | O2 unchanged | Source diff verified; runtime NOT TESTED |
+| Source recursion | Fifth-root called itself for negative finite input | Local sign flag, same magnitude iterations | Source diff verified; behavioral test NOT TESTED |
+| Zero-CALL scope | Whole executable assumption not credible with CLI I/O | Isolated canonical parity object plus disassembly gate | Test implemented; machine-code outcome NOT TESTED |
+| Audit format | Hand-authored Markdown historical table | Git-derived `+/-DIFF` YAML on demand / default | Exporter committed; runtime NOT TESTED |
+| Residual Java/Docker/Android directories | Present | Still present, strict gate reports a blocker | Source existence confirmed; retirement NOT DONE |
+
+**Current IRON verdict:** no runner images in the draft branch; ISO C++20 policy and POSIX T-CROSS source changes committed. New local tests and disassembly are unobserved, residual-surface and REST reviews remain open, and PR #19 remains draft/unmerged. This section is a methodology/source-change record, **not** certification of passing gates.
