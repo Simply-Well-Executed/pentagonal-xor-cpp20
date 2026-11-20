@@ -6,16 +6,14 @@ need() { command -v "$1" >/dev/null 2>&1 || fail "missing local tool: $1"; }
 test "$#" -eq 1 || fail 'usage: Build-Android-NDK.sh ABI'
 abi=$1
 case "$abi" in arm64-v8a|armeabi-v7a|x86|x86_64) : ;; *) fail 'unknown Android ABI' ;; esac
-test -d /src/.git || fail 'source Git mount missing'
+test -f /src/.swe-source-commit || fail 'sanitized source archive marker missing'
+test ! -d /src/.git || fail 'Docker build cannot mount .git metadata'
 test -d /out || fail 'artifact mount missing'
 test -f /ndk/build/cmake/android.toolchain.cmake || fail 'read-only installed NDK mount missing'
 test -n "${SWE_EXPECTED_SHA:-}" || fail 'expected source SHA missing'
-for tool in cmake git grep sha256sum awk find sort; do need "$tool"; done
-head=$(git -C /src rev-parse --verify HEAD) || fail 'Git HEAD missing'
+for tool in cmake grep sha256sum awk find sort cat; do need "$tool"; done
+head=$(cat /src/.swe-source-commit) || fail 'source archive SHA unreadable'
 test "$head" = "$SWE_EXPECTED_SHA" || fail 'source commit mismatch'
-git -C /src diff --quiet --exit-code HEAD -- || fail 'source changed'
-test -z "$(git -C /src status --porcelain --untracked-files=all)" ||
-    fail 'dirty tracked or untracked source'
 source_gate=/out/evidence/linux-amd64/gamp4-gate.yml
 test -f "$source_gate" || fail 'validated Linux AMD64 source evidence required first'
 grep -Fxq "source_commit: '$head'" "$source_gate" || fail 'GAMP4 source commit differs'
