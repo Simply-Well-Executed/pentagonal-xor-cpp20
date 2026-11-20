@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
-// Optional high-throughput BYTEWISE XOR engine, separate from parity scores.
-// The 256-byte repeating LUT stream is NOT the exact seeded pentagonal stream.
+// Independent C++20 byte-stream XOR engine; not the parity probability API.
+// Public/private/shared below are C++ access/borrow scopes, not OS memory maps.
 #pragma once
 
 #if defined(__linux__) && !defined(_GNU_SOURCE)
@@ -13,9 +13,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <optional>
 #include <ranges>
 #include <span>
+#include <type_traits>
 
 #if defined(_WIN32)
 #  ifndef WIN32_LEAN_AND_MEAN
@@ -35,66 +35,132 @@
 
 namespace pxor {
 
-using fixed_t = std::int32_t;
-inline constexpr int FRACBITS = 16;
+using u8 = unsigned char;
+using i32 = std::int32_t;
+using i64 = std::int64_t;
+using u64 = std::uint64_t;
+using usize = std::size_t;
+using fixed_t = i32;
+inline constexpr i32 FRACBITS = 16;
 inline constexpr fixed_t FRACUNIT = 1 << FRACBITS;
 
-// Truncation toward zero for negative products is intentional and portable.
-// Input products outside signed 32-bit representability are not supported.
+// Preserve signed fixed-point arithmetic with defined negative rounding.
+// Like the established API, the result must be representable in fixed_t.
 [[nodiscard]] constexpr fixed_t fixed_mul(fixed_t a, fixed_t b) noexcept {
-    return static_cast<fixed_t>(
-        (static_cast<std::int64_t>(a) * static_cast<std::int64_t>(b)) / FRACUNIT);
+    return static_cast<fixed_t>((static_cast<i64>(a) * b) / FRACUNIT);
 }
 
-template <std::size_t PowerOfTwoSize>
-[[nodiscard]] constexpr std::size_t fast_wrap(std::size_t index) noexcept {
+template <usize PowerOfTwoSize>
+[[nodiscard]] constexpr usize fast_wrap(usize index) noexcept {
     static_assert(PowerOfTwoSize > 0 &&
                   (PowerOfTwoSize & (PowerOfTwoSize - 1)) == 0,
-                  "Size must be a nonzero power of two");
+                  "Buffer modulus must be a nonzero power of two");
     return index & (PowerOfTwoSize - 1);
 }
 
-// A best-effort scheduling hint, NOT a guarantee of L1 or NUMA residency.
-// No affinity request is made on unsupported platforms.
-[[nodiscard]] inline std::optional<unsigned int> pin_to_active_core() noexcept {
+// Public fixed-capacity, allocation-free storage. A view never owns this data.
+template <typename T, usize N>
+struct FixedBuffer {
+    static_assert(N > 0, "FixedBuffer requires a positive capacity");
+    T items[N]{};
+
+    [[nodiscard]] constexpr T& operator[](usize i) noexcept { return items[i]; }
+    [[nodiscard]] constexpr const T& operator[](usize i) const noexcept {
+        return items[i];
+    }
+    [[nodiscard]] constexpr T* data() noexcept { return items; }
+    [[nodiscard]] constexpr const T* data() const noexcept { return items; }
+    [[nodiscard]] static constexpr usize size() noexcept { return N; }
+
+    constexpr void fill(const T& value) noexcept {
+        for (usize i = 0; i < N; ++i) items[i] = value;
+    }
+};
+
+struct ByteSlice {
+    u8* ptr{nullptr};
+    usize len{0};
+
+    constexpr ByteSlice() noexcept = default;
+    constexpr ByteSlice(u8* p, usize n) noexcept : ptr(p), len(n) {}
+    template <usize N>
+    constexpr ByteSlice(FixedBuffer<u8, N>& buf) noexcept
+        : ptr(buf.data()), len(N) {}
+
+    [[nodiscard]] constexpr u8& operator[](usize i) const noexcept {
+        return ptr[i];
+    }
+    [[nodiscard]] constexpr u8* data() const noexcept { return ptr; }
+    [[nodiscard]] constexpr usize size() const noexcept { return len; }
+};
+
+struct ConstByteSlice {
+    const u8* ptr{nullptr};
+    usize len{0};
+
+    constexpr ConstByteSlice() noexcept = default;
+    constexpr ConstByteSlice(const u8* p, usize n) noexcept : ptr(p), len(n) {}
+    template <usize N>
+    constexpr ConstByteSlice(const FixedBuffer<u8, N>& buf) noexcept
+        : ptr(buf.data()), len(N) {}
+
+    [[nodiscard]] constexpr const u8& operator[](usize i) const noexcept {
+        return ptr[i];
+    }
+    [[nodiscard]] constexpr const u8* data() const noexcept { return ptr; }
+    [[nodiscard]] constexpr usize size() const noexcept { return len; }
+};
+
+struct StringSlice {
+    const char* ptr{nullptr};
+    usize len{0};
+
+    constexpr StringSlice() noexcept = default;
+    constexpr StringSlice(const char* p, usize n) noexcept : ptr(p), len(n) {}
+    [[nodiscard]] constexpr const char* data() const noexcept { return ptr; }
+    [[nodiscard]] constexpr usize size() const noexcept { return len; }
+};
+
+// Borrowed views do NOT extend ownership or lifetime, protect memory from the
+// operating system, or impose thread synchronization. Never retain beyond owner.
+struct CorePinResult {
+    unsigned int core_id{0};
+    bool pinned{false};
+};
+
+// Scheduling hint, not L1 residency, page locality or CPU-frequency guarantee.
+[[nodiscard]] inline CorePinResult pin_to_active_core() noexcept {
 #if defined(_WIN32)
     PROCESSOR_NUMBER active{};
     GetCurrentProcessorNumberEx(&active);
-    if (active.Number >= sizeof(KAFFINITY) * 8u) {
-        return std::nullopt;
-    }
+    if (active.Number >= sizeof(KAFFINITY) * 8u) return {};
     GROUP_AFFINITY affinity{};
     affinity.Group = active.Group;
     affinity.Mask = static_cast<KAFFINITY>(1) << active.Number;
     if (SetThreadGroupAffinity(GetCurrentThread(), &affinity, nullptr) == 0) {
-        return std::nullopt;
+        return {};
     }
-    return static_cast<unsigned int>(active.Group) * 64u + active.Number;
+    return {static_cast<unsigned int>(active.Group) * 64u + active.Number, true};
 #elif defined(__linux__)
     const int core = sched_getcpu();
-    if (core < 0 || core >= CPU_SETSIZE) {
-        return std::nullopt;
-    }
+    if (core < 0 || core >= CPU_SETSIZE) return {};
     cpu_set_t allowed{};
     CPU_ZERO(&allowed);
     CPU_SET(core, &allowed);
-    if (sched_setaffinity(0, sizeof(allowed), &allowed) != 0) {
-        return std::nullopt;
-    }
-    return static_cast<unsigned int>(core);
+    if (sched_setaffinity(0, sizeof(allowed), &allowed) != 0) return {};
+    return {static_cast<unsigned int>(core), true};
 #else
-    return std::nullopt;
+    return {};
 #endif
 }
 
-// Use only moderate priority, never Windows TIME_CRITICAL.
-// Privileges or policy may reject this request, which is reported by the CLI.
+// Time-critical scheduling is deliberately excluded.
 [[nodiscard]] inline bool request_moderate_priority() noexcept {
 #if defined(_WIN32)
-    const bool process = SetPriorityClass(GetCurrentProcess(),
-                                           ABOVE_NORMAL_PRIORITY_CLASS) != 0;
-    const bool thread = SetThreadPriority(GetCurrentThread(),
-                                          THREAD_PRIORITY_ABOVE_NORMAL) != 0;
+    const bool process = SetPriorityClass(
+        GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS) != 0;
+    const bool thread = SetThreadPriority(
+        GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL) != 0;
     return process && thread;
 #elif defined(__linux__)
     return setpriority(PRIO_PROCESS, 0, -1) == 0;
@@ -103,9 +169,8 @@ template <std::size_t PowerOfTwoSize>
 #endif
 }
 
-// For values beyond the representable result type, unsigned arithmetic wraps.
-// Do not confuse this modular result with an arbitrary-precision pentagonal number.
-template <std::unsigned_integral T = std::uint64_t>
+// Unsigned modular arithmetic after overflow, NOT arbitrary precision.
+template <std::unsigned_integral T = u64>
 [[nodiscard]] constexpr T pentagonal(T n) noexcept {
     const T other = static_cast<T>(static_cast<T>(3) * n - static_cast<T>(1));
     if ((n & static_cast<T>(1)) == 0) {
@@ -115,78 +180,147 @@ template <std::unsigned_integral T = std::uint64_t>
 }
 
 [[nodiscard]] constexpr auto pentagonal_numbers() noexcept {
-    return std::views::iota(std::uint64_t{1})
-         | std::views::transform([](std::uint64_t n) noexcept {
+    return std::views::iota(u64{1})
+         | std::views::transform([](u64 n) noexcept {
                return pentagonal(n);
            });
 }
 
-// LUT[i] represents the key for P_(i+1), i=0..255.
-// It is repeated every 256 bytes in fast_xor_buffer, BY DESIGN.
+// Private construction of the keystream at compile time, publicly readable.
+// Index is repeated every 256 bytes; NOT equal to exact seeded stream at >255.
 inline constexpr auto PENTAGONAL_LUT = []() consteval {
-    std::array<std::byte, 256> lut{};
-    for (std::size_t i = 0; i < lut.size(); ++i) {
-        const auto p = pentagonal(static_cast<std::uint64_t>(i + 1));
-        lut[i] = static_cast<std::byte>((p ^ (p >> 8) ^ (p >> 16)) & 0xFFu);
+    FixedBuffer<u8, 256> lut{};
+    for (usize i = 0; i < lut.size(); ++i) {
+        const u64 p = pentagonal(static_cast<u64>(i + 1));
+        lut[i] = static_cast<u8>((p ^ (p >> 8) ^ (p >> 16)) & 0xFFu);
     }
     return lut;
 }();
 
-// Exact seeded stream (within representable pentagonal-number range).
-// This method and the 256-byte periodic LUT method are distinct APIs.
-constexpr void apply_pentagonal_xor(std::span<std::byte> buffer,
-                                    std::uint64_t seed = 1) noexcept {
-    for (std::size_t i = 0; i < buffer.size(); ++i) {
-        const std::uint64_t p =
-            pentagonal(seed + static_cast<std::uint64_t>(i));
-        const auto key = static_cast<std::byte>((p ^ (p >> 8) ^ (p >> 16)) & 0xFFu);
-        buffer[i] ^= key;
+// Exact seeded byte stream over the finite representable integer range.
+// ByteSlice is non-owning, so passing invalid pointers is a caller error.
+constexpr void apply_pentagonal_xor(ByteSlice buffer, u64 seed = 1) noexcept {
+    for (usize i = 0; i < buffer.size(); ++i) {
+        const u64 p = pentagonal(seed + static_cast<u64>(i));
+        buffer[i] ^= static_cast<u8>(
+            (p ^ (p >> 8) ^ (p >> 16)) & 0xFFu);
     }
 }
 
-// Bytewise identical to XOR with the repeated LUT, regardless of endianness.
-// memcpy permits unaligned access without violating strict aliasing.
-inline void fast_xor_buffer(std::span<std::byte> buffer) noexcept {
-    std::size_t i = 0;
-    const std::size_t n = buffer.size();
+// Backward-compatible C++20 span facade for existing callers.
+constexpr void apply_pentagonal_xor(std::span<std::byte> buffer,
+                                    u64 seed = 1) noexcept {
+    for (usize i = 0; i < buffer.size(); ++i) {
+        const u64 p = pentagonal(seed + static_cast<u64>(i));
+        buffer[i] ^= static_cast<std::byte>(
+            (p ^ (p >> 8) ^ (p >> 16)) & 0xFFu);
+    }
+}
 
-    for (; n - i >= 8; i += 8) {
-        std::uint64_t payload = 0;
-        std::uint64_t key = 0;
-        std::memcpy(&payload, buffer.data() + i, sizeof(payload));
-        std::memcpy(&key, PENTAGONAL_LUT.data() + fast_wrap<256>(i), sizeof(key));
-        payload ^= key;
-        std::memcpy(buffer.data() + i, &payload, sizeof(payload));
+// memcpy is ISO C++ and safe for unaligned byte slices on MSVC/GCC/Clang.
+// A compiler may optimize these operations to register instructions.
+inline void fast_xor_buffer(ByteSlice buffer) noexcept {
+    usize i = 0;
+    const usize n = buffer.size();
+    u8* const dst = buffer.data();
+    const u8* const lut = PENTAGONAL_LUT.data();
+
+    for (; n - i >= sizeof(u64); i += sizeof(u64)) {
+        u64 data = 0;
+        u64 key = 0;
+        std::memcpy(&data, dst + i, sizeof(data));
+        std::memcpy(&key, lut + fast_wrap<256>(i), sizeof(key));
+        data ^= key;
+        std::memcpy(dst + i, &data, sizeof(data));
     }
     for (; i < n; ++i) {
-        buffer[i] ^= PENTAGONAL_LUT[fast_wrap<256>(i)];
+        dst[i] ^= lut[fast_wrap<256>(i)];
     }
 }
 
-// Deterministic obfuscation for illustrative literals, NOT cryptography.
-// The key/seed remains discoverable in the compiled binary.
-template <std::size_t N>
-struct ObfuscatedData {
-    std::array<std::byte, N> data{};
+// Thin compatibility adapter for pre-existing std::byte clients.
+inline void fast_xor_buffer(std::span<std::byte> buffer) noexcept {
+    fast_xor_buffer(ByteSlice{
+        reinterpret_cast<u8*>(buffer.data()), buffer.size()});
+}
 
-    consteval explicit ObfuscatedData(const char (&source)[N],
-                                      std::uint64_t seed = 1) noexcept {
-        for (std::size_t i = 0; i < N; ++i) {
-            data[i] = static_cast<std::byte>(
-                static_cast<unsigned char>(source[i]));
+// An access token models a private C++ API, NOT an OS memory permission.
+class EngineKey {
+    friend class EngineAuditor;
+    constexpr EngineKey() noexcept = default;
+};
+
+template <usize N>
+class ObfuscatedData {
+    static_assert(N > 0, "A literal requires a terminator");
+    FixedBuffer<u8, N> cipher_{};
+    u64 seed_{1};
+
+    template <typename T>
+    static constexpr void wipe_buffer(FixedBuffer<T, N>& buf) noexcept {
+        if (std::is_constant_evaluated()) {
+            buf.fill(T{});
+        } else {
+            // Volatile stores are compiler-observable, but cannot guarantee
+            // removal of all register copies, spills or callback-held aliases.
+            for (usize i = 0; i < N; ++i) {
+                volatile T* item = &buf[i];
+                *item = T{};
+            }
         }
-        apply_pentagonal_xor(data, seed);
     }
 
-    [[nodiscard]] constexpr std::array<char, N>
-    decrypt(std::uint64_t seed = 1) const noexcept {
-        auto copy = data;
-        apply_pentagonal_xor(copy, seed);
-        std::array<char, N> plain{};
-        for (std::size_t i = 0; i < N; ++i) {
-            plain[i] = static_cast<char>(std::to_integer<unsigned char>(copy[i]));
+public:
+    consteval explicit ObfuscatedData(const char (&source)[N],
+                                      u64 seed = 1) noexcept : seed_(seed) {
+        for (usize i = 0; i < N; ++i) {
+            cipher_[i] = static_cast<u8>(
+                static_cast<unsigned char>(source[i]));
         }
-        return plain;
+        apply_pentagonal_xor(ByteSlice{cipher_}, seed_);
+    }
+
+    // Restricted shared read-only cipher view, callable only with EngineKey.
+    // Public EngineAuditor intentionally reveals a limited first-byte witness.
+    [[nodiscard]] constexpr ConstByteSlice shared_cipher(EngineKey) const noexcept {
+        return ConstByteSlice{cipher_};
+    }
+
+    // Scoped plaintext borrow: callback must return void. C++ access rules do
+    // not prevent a malicious callback from saving its pointer, so never claim
+    // hardware-backed secrecy or cryptographic protection.
+    template <typename Func>
+    constexpr void with_decrypted(Func&& fn) const {
+        FixedBuffer<u8, N> decoded = cipher_;
+        apply_pentagonal_xor(ByteSlice{decoded}, seed_);
+        FixedBuffer<char, N> plain{};
+        for (usize i = 0; i < N; ++i) {
+            plain[i] = static_cast<char>(decoded[i]);
+        }
+
+        struct ScopedWipe {
+            FixedBuffer<u8, N>& decoded;
+            FixedBuffer<char, N>& plaintext;
+            constexpr ~ScopedWipe() noexcept {
+                ObfuscatedData::wipe_buffer(decoded);
+                ObfuscatedData::wipe_buffer(plaintext);
+            }
+        } wipe{decoded, plain};
+
+        constexpr usize length = N - 1;
+        static_assert(std::is_void_v<decltype(
+            static_cast<Func&&>(fn)(StringSlice{plain.data(), length}))>,
+            "with_decrypted callbacks must return void");
+        static_cast<Func&&>(fn)(StringSlice{plain.data(), length});
+    }
+};
+
+class EngineAuditor {
+public:
+    template <usize N>
+    [[nodiscard]] static constexpr u8 first_cipher_byte(
+        const ObfuscatedData<N>& source) noexcept {
+        return source.shared_cipher(EngineKey{})[0];
     }
 };
 
