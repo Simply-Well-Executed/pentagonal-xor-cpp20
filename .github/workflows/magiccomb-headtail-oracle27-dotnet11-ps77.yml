@@ -105,6 +105,15 @@ jobs:
             throw 'OPENBSD|HOLD|HEAD_TAIL_drift'
           }
           Write-Host 'OPENBSD|8.0|HEAD_TAIL_SOURCE_LOCK_PASS|NO_NETWORK|SOURCE_BUILD_UNVERIFIED|STABLE_PATCH_PIN_PENDING|HOLD'
+      - name: Verify serial OpenBSD COREAO stage ledger at MagicComb HEAD and TAIL
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $dir=Join-Path $env:RUNNER_TEMP 'openbsd-serial-headtail'
+          & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Test-OpenBSDSerialCoreao.ps1') -RepositoryRoot $src -TemporaryDirectory $dir
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|magiccomb_head_tail_or_negative_test_failed'}
+          Write-Host 'OPENBSD|COREAO|HEAD_TAIL_PASS|CORE=OPENBSD2|YIN_YANG_DISTINCT|NATIVE_LEGACY_HOLD'
       - name: Verify FRESH source custody and variable-free terminal without shell execution
         shell: pwsh
         run: |
