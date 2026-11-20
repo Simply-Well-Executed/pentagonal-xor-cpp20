@@ -17,7 +17,7 @@ if test "$mode" = source; then
   files='ci/Build-Android.ps1 ci/Build-AndroidUnsigned.ps1 ci/Initialize-AndroidRuntime.ps1 ci/Initialize-AndroidSdk.ps1 ci/Invoke-AndroidDockerValidation.ps1 ci/Invoke-LinuxDockerValidation.ps1 ci/docker/Build-Android-NDK.sh'
   for file in $files; do
     test -f "$file" || fail "missing required Android/Linux entrypoint: $file"
-    if grep -niE '(^|[[:space:];|&(])((/usr/bin/env[[:space:]]+)?python([0-9.]+)?|pip([0-9.]+)?|pypy[0-9.]*|conda|poetry|pytest)([[:space:];|&)]|$)' "$file"; then
+    if grep -niE '^[[:space:]]*(&[[:space:]]*)?([./[:alnum:]_-]+/)?(python([0-9.]+)?|pip([0-9.]+)?|pypy[0-9.]*|conda|poetry|pytest)([[:space:];|&)]|$)' "$file"; then
       fail "Python interpreter or package-manager invocation found: $file"
     fi
   done
