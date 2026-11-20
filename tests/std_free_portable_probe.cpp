@@ -5,12 +5,18 @@
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
 #include "../shared/stability10d.hpp"
+#include "../shared/quantum_operand_lexicon.hpp"
 
 static_assert(swe::deca_sigma::witnesses_return(swe::deca_sigma::run(2.0)));
 static_assert(swe::tri_pi::inspect(swe::deca_sigma::run(2.0)).passed());
 static_assert(swe::coreao::inspect(swe::deca_sigma::run(2.0)).passed());
 static_assert(swe::coreao::rf_gain::apply(1.0).passed());
 static_assert(swe::stability10d::clamp01(-1.0) == 0.0);
+static_assert(swe::quantum_operands::record_count == 14u);
+static_assert(swe::quantum_operands::lookup_exact(";=", 2u)->status ==
+              swe::quantum_operands::Status::Exploratory);
+static_assert(swe::quantum_operands::lookup_exact("++", 2u)->status ==
+              swe::quantum_operands::Status::InterpretedNoncanonical);
 static_assert(sizeof(pxor::u8) == 1);
 static_assert(sizeof(pxor::u64) == 8);
 static_assert(pxor::pentagonal(1) == 1);
