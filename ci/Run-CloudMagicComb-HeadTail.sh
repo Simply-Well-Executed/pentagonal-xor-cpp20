@@ -183,6 +183,16 @@ else
   printf 'IRON|MAGICCOMB|SCOUT|HOLD|scanner could not complete, cannot claim zero CVEs\n'
   tail -n 50 "$work/scout.md" || :
 fi
+if test "$mode" = probe; then
+  printf 'IRON|MAGICCOMB|SCOUT|REMAINING_MEDIUM_LOCATION|CVE-2026-97054\n'
+  if docker scout cves --details --locations --only-cve-id CVE-2026-97054 "$image" \
+      > "$work/scout-remaining-medium.log" 2>&1; then
+    tail -n 85 "$work/scout-remaining-medium.log"
+  else
+    printf 'IRON|MAGICCOMB|SCOUT|MEDIUM_LOCATION_UNAVAILABLE|do_not_claim_remediated\n'
+    tail -n 35 "$work/scout-remaining-medium.log" || :
+  fi
+fi
 sha256sum "$work/scout.md" |
   awk '{printf "IRON|MAGICCOMB|SCOUT|REPORT_SHA256|%s\n",$1}'
 
