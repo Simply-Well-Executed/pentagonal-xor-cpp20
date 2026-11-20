@@ -2,27 +2,35 @@
 
 # ⬟ PENTAGONAL XOR
 
-### A tiny cross-platform C++20 parity engine with a mighty build matrix.
+### Native C++20 parity engine with canonical UTF-8 source.
 
 **Simply Well Executed** · **0BSD** · **No external runtime dependencies**
 
-[![Build • Test • Release](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/ship.yml/badge.svg)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/ship.yml)
+[![Native C++20 Source Test](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/native-core.yml/badge.svg)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/native-core.yml)
 [![Releases](https://img.shields.io/github/v/release/Simply-Well-Executed/pentagonal-xor-cpp20?include_prereleases&label=release)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus)](CMakeLists.txt)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20macOS-violet)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions)
+[![Platforms](https://img.shields.io/badge/native-C%2B%2B20%20Windows-violet)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions)
 
-**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[⚙️ Watch live build matrix](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/ship.yml)**  ·  **[🛡️ Security policy](SECURITY.md)**
+**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[⚙️ Watch native C++20 CI](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/native-core.yml)**  ·  **[🛡️ Security policy](SECURITY.md)**
 
 </div>
 
 ---
 
+## Current source and CI (Draft PR #19)
+
+**Normalize** every Git-tracked text input at rest through strict UTF-8 → NFKC → remove U+200B-U+200D and U+FEFF → UTF-8. The [PowerShell Core Magic Comb](ci/Invoke-MagicComb.ps1) applies or verifies the committed bytes with `Set-StrictMode -Version 2.0` and audit depth 9. The single [native C++20 workflow](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/601b4352bc38f146def4642a917ef38a0b37b2d9/.github/workflows/native-core.yml) has no Node-backed action, no Linux container, and no Java/Android build lane; it uses C++20 with extensions ON and MSVC /O2.
+
+**Tested evidence:** the 2026-11-20 native run [44654134670](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44654134670) verified **163 cleaned files and 34/34 native C++20 tests**. The overall run remains **FAILED** because hosted PowerShell Core 7.6.9 is older than the required latest stable 7.7.0. That requirement is not bypassed.
+
+**Source custody:** Prior Java/Android, Docker, PGO, native platform-matrix, release and Node-backed workflow definitions were **retired from the active PR branch** and remain in Git history. Older sections below describe historical experiments, not currently enabled CI or available releases. Do not mistake the older `main` branch for the unmerged PR state.
+
 ## ⬟ toolong: exact C++20 arbitrary-precision integers (draft PR #17)
 
 The optional [`swe::toolong`](shared/toolong.hpp) class provides exact signed integers with dynamically sized decimal digits, including addition, subtraction, multiplication, division, modulo, powers, factorials, GCD, and explicit-width bitwise views. [Exact reduced fractions](shared/toolong_ratio.hpp) and a separate [synthetic photon-count gain/dispersion example](shared/toolong_photon_model.hpp) use integer arithmetic rather than floating-point approximations. See [the operator and evidence contract](docs/TOOLONG.md).
 
-The π-derived [16-significant-digit display policy](shared/pi_precision.hpp) applies to floating-point presentations, **not** to exact integer source records or numeric results. The additions remain under review in [draft PR #17](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/17).
+The π-derived [16-significant-digit display policy](shared/pi_precision.hpp) applies to floating-point presentations, **not** to exact integer source records or numeric results. The additions were integrated through [merged PR #17](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/17).
 
 ## 📡 COREAO RF: input → +9 dBi → EIRP output
 
@@ -46,7 +54,7 @@ a physical antenna measurement. [RF COREAO protocol](docs/COREAO_GAIN.md).
 
 The [`shared/coreo_stereo.hpp`](shared/coreo_stereo.hpp) operator extracts PR #17's reversible stereo-to-four-channel projection with read-only Z-fold verification. Both are C++20 header-only APIs installed with the existing CMake package. Independent tests check parity against 16-minterm references, exact hex golden vectors, original source preservation, domain guards, and forward/reverse/Z-fold inversion. Provenance: [source PR #17](https://github.com/pcheek1991/faster-whisper-4d-abandonedware-uniunlicensd/pull/17) at commit `432a228f`. See [the operator protocol](docs/STABILITY10D.md).
 
-**Android:** the [experimental offline Java app](docs/ANDROID.md) is built by the release workflow as a clearly named **debug APK**. It requests no Internet or microphone permissions and reads user-selected raw stereo float32-le files. Android, Windows, macOS and Linux outputs are released with SHA-256 evidence, subject to successful CI.
+**Historical Android research:** the [experimental offline Java app](docs/ANDROID.md) is no longer built or released by current CI. Earlier experiment records and sources remain for provenance; no new APK or multi-platform release is promised.
 
 **Critical scope:** this is **model-free audio feature analysis**, not an AI speech-to-text engine. No trained Whisper weights or tokenizer are present; the six-byte Stability signature cannot recognize spoken words. The separate original Whisper/CTranslate2 legacy code is *not* being silently presented as this library. A production-signed Android release requires an additional release-signing process.
 
@@ -90,13 +98,14 @@ equivalent mathematical result is retained for valid inputs.
 
 ## 🧩 Include-free compatibility API
 
-The [std-free C header](shared/pentagonal_xor_std_free.h) exposes the five-feature AND, OR, odd-parity XOR probability, partial, and fifth-root scores without standard headers, C++ standard-library dependencies, allocation, or platform APIs. It is compiled as strict C11 in the cross-platform shared-guard workflow.
+The [std-free C header](shared/pentagonal_xor_std_free.h) exposes the five-feature AND, OR, odd-parity XOR probability, partial, and fifth-root scores without standard headers, C++ standard-library dependencies, allocation, or platform APIs. It was previously verified as C11 in the now-retired cross-platform guard. Current CI compiles and tests the C++20 project; the C11 compatibility API remains a separately identified historical interface.
 
 On Windows, `SWE_PXOR_WINDOWS_LEGACY_TARGET` and `SWE_PXOR_USE_STDFREE_BACKEND` are selected from `_WIN32` and `_WIN32_WINNT`. This detects the **configured compiler target**, not the actual Windows version at runtime. The std-free header is portable and can be used on any supported platform.
 
-PowerShell 7 build of the compatibility component:
+PowerShell Core (latest stable version), with StrictMode 2.0, historical compatibility example:
 
 ```powershell
+Set-StrictMode -Version 2.0
 cmake -S .\\shared -B .\\shared\\build
 cmake --build .\\shared\\build --config Release
 ctest --test-dir .\\shared\\build -C Release --output-on-failure
@@ -332,7 +341,7 @@ HotSpot JIT compilation of the replacement is recorded separately from
 the application-level JavaCompiler operation.
 
 See [the SUPERTAOISM-GAMP4 technical guide](docs/SUPERTAOISM_GAMP4_JAVA_JAR.md)
-and [the dedicated Java → JAR workflow](.github/workflows/supertaoism-gamp4-java-jar.yml).
+and [the dedicated Java → JAR workflow](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/601b4352bc38f146def4642a917ef38a0b37b2d9/.github/workflows/supertaoism-gamp4-java-jar.yml).
 Original Pentagonal XOR source and source-history identity are preserved.
 GAMP4-style supplier tests do not constitute regulated-use validation.
 
@@ -371,7 +380,7 @@ unprotected replay/clock signals, duplicated ligand views, and external
 attestation requirements. A clean COR comparison **does not** prove
 authenticated provenance.
 
-The [parallel LIGAZE benchmark workflow](.github/workflows/ligaze-cor-threat-benchmark.yml)
+The [parallel LIGAZE benchmark workflow](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/601b4352bc38f146def4642a917ef38a0b37b2d9/.github/workflows/ligaze-cor-threat-benchmark.yml)
 compares native C++20 against Java 17 on Windows Server, macOS and
 an openSUSE Tumbleweed userspace container. It verifies an identical
 COR input stream, output checksum and local negative fixtures

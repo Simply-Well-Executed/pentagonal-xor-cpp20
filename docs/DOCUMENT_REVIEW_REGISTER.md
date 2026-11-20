@@ -97,21 +97,22 @@
 
 ## Maintainer-directed restrictions: policy conflicts requiring actual implementation review
 
-**Current document state: POLICY PROPOSED / IMPLEMENTATION NOT VERIFIED.** The maintainer directs the highest-priority repository drafting and future engineering requirements: ISO **C++20 only**, optimization **`-O2` only** (MSVC **`/O2`**), **PowerShell Core latest stable + `Set-StrictMode -Version 2.0`**, and no Python, Lua, Go, Rust, Node.js, npm or Gradle. Java must originate **directly from Oracle** and requires explicit authorization and license review. Third-party binaries are untrusted until source/provenance review; compile from inspected source in-house wherever possible. Open-source libraries are preferred, but licensing, patent, attribution and redistribution conditions must each be confirmed. Changing an attribution notice cannot retroactively confer unowned intellectual-property rights.
+**Current document state: NATIVE POLICY PARTIALLY IMPLEMENTED / LATEST RUNTIME BLOCKED.** The maintainer directs the highest-priority repository drafting and future engineering requirements: ISO **C++20 only**, optimization **`-O2` only** (MSVC **`/O2`**), **PowerShell Core latest stable + `Set-StrictMode -Version 2.0`**, and no Python, Lua, Go, Rust, Node.js, npm or Gradle. Java must originate **directly from Oracle** and requires explicit authorization and license review. Third-party binaries are untrusted until source/provenance review; compile from inspected source in-house wherever possible. Open-source libraries are preferred, but licensing, patent, attribution and redistribution conditions must each be confirmed. Changing an attribution notice cannot retroactively confer unowned intellectual-property rights.
 
 This is a **maintainer policy**, not an Air Force instruction or a finding that any past contributor violated the law. Label conflicting current build behavior and legacy experiments honestly; do not erase historical output or claim the new rule has already been enforced.
 
-| Finding | Recorded source | Required disposition |
+| Finding | Current source / historical witness | Disposition |
 | --- | --- | --- |
-| Non-Oracle JDK/Java setup, including Temurin | `.github/workflows/ship.yml`, `android-standalone.yml`, `ligaze-v2-yin-yang.yml`, `ligaze-windows-header-optimizer-ab.yml` | POLICY CONFLICT / NEEDS REVIEW: remove, replace through explicitly approved Oracle-only provenance, or disable affected lanes; inspect transitive tools and rights |
-| Java 17 JAR and Android execution | `.github/workflows/supertaoism-gamp4-java-jar.yml`, `docs/ANDROID.md` and Android SDK workflows | POLICY CONFLICT / NEEDS REVIEW: Oracle compiler provenance alone does not establish Android runtime compliance; decide source-preserving migration before enforcement |
-| Two-phase MSVC PGO and architecture-tuned optimizer | `.github/workflows/ligaze-v2-yin-yang.yml` / CORE YIN experiment | HISTORICAL LAB / POLICY CONFLICT: retain old test records at the original SHA, but do not use PGO, LTO or additional speed flags in the new normative `-O2`/`/O2` profile |
-| Include-free strict C11 public parity API | `shared/pentagonal_xor_std_free.h`, `shared/README.md` | SCOPE DECISION NEEDED: it is C11, not C++20; maintain honest existing compatibility evidence until the maintainer approves an exception or migration |
-| Current CMake native shipping optimization and dialect settings | `CMakeLists.txt`: Unix Release `-O3` default; MSVC `INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE` and selected benchmark IPO; missing per-target `CXX_EXTENSIONS ON` | POLICY CONFLICT / NEEDS REVIEW: review exact compiled command lines and migrate the normative release profile separately; historical AB/PGO results remain at original SHA |
-| Existing CI infrastructure and downloaded build tools | GitHub hosted runner environment, action dependencies, SDK/toolchain installers, Docker layers | SUPPLY-CHAIN REVIEW REQUIRED: record sources, version, signatures/hashes, licensing and exact build methods; do not assert every executable has been built in-house |
-| Any unverified imported code, asset or license claim | `docs/LICENSE_AND_MARKS.md`, third-party build inputs | INTELLECTUAL-PROPERTY REVIEW: verify each upstream license and ownership; retain mandatory notices, secure permissions or replace incompatible material |
+| Earlier non-Oracle Java, Node-backed actions and container workflows | Retired workflow definitions at commit `601b4352bc38f146def4642a917ef38a0b37b2d9`; current branch has only `.github/workflows/native-core.yml` | RETIRED FROM CURRENT CI; preserve original Git history, no claim of a compliant external runner image |
+| Java/Android source and historical JAR/APK evidence | `java/`, `android/`, `docs/ANDROID.md` | SOURCE REMAINS / NOT EXECUTED in active CI; separate explicit removal or migration decision required |
+| Two-phase MSVC PGO and architecture-tuned optimizers | Historical CORE YIN experiment at earlier commit and run IDs | RETIRED LAB; current CMake has IPO OFF and uses the requested O2 optimizer |
+| Include-free C11 compatibility API | `shared/pentagonal_xor_std_free.h`, `shared/README.md` | SCOPE NEEDS REVIEW; current native job builds C++20, the distinct C11 interface is not relabeled as C++20 |
+| Current native C++20 dialect and optimizer | `CMakeLists.txt`, `shared/CMakeLists.txt`, `tests/consumer/CMakeLists.txt` | IMPLEMENTED: CXX_STANDARD 20, CXX_EXTENSIONS ON, O2-only, IPO disabled; **34/34** CTests passed in run `44654134670` |
+| Latest PowerShell Core requirement | Hosted runner had 7.6.9; stable release endpoint reported 7.7.0 | BLOCKED / NEEDS REVIEW: preserve failing CI status until trusted runner meets latest-version rule |
+| External runner and dependency provenance | GitHub-hosted Windows VM, installed MSVC/PowerShell/Git/CMake | SUPPLY-CHAIN REVIEW REQUIRED; do not claim source-compiled, fully private or Node-free host simply because workflow runs no Node actions |
+| Third-party rights and licenses | `docs/LICENSE_AND_MARKS.md`, original imported content and assets | INTELLECTUAL-PROPERTY REVIEW; verify each actual license and permitted use |
 
-**No silent policy pass:** A documentation rewrite can establish these requirements, but cannot prove that every existing workflow obeys them. Do not change CI execution, historical experiments, executable releases or dependency versions merely to make the register appear green. Only a separate implementation change, reproducible evidence and explicit reviewer approval can close a conflict.
+**No silent policy pass:** The current implementation has actually changed and the previous CI workflows have been retired, with Git history preserved. A green source check or 34/34 CTest cannot override the **failed latest PowerShell Core requirement**. The PR remains draft until the required runtime and supply-chain evidence pass independent review.
 
 ## TriDi v1 review adoption and historical continuity
 
@@ -146,9 +147,9 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 **Completion:** Only explicitly scoped, source-backed four-link reports, underlying TriDi evidence and named reviewer approval make a claim eligible for verification. All 46 original documentation assets remain in the review queue; only the SOP and COLLISION12 cross-reference received partial edits. The maintainer's C++20, `-O2`/`/O2`-only, PowerShell Core latest stable `Set-StrictMode -Version 2.0`, and license/source provenance requirements remain unchanged.
 
-## PowerShell Core Magic Comb and source-at-rest canonicalization
+## PowerShell Core Magic Comb and verified source-at-rest canonicalization
 
-**Normalize** all Git-tracked text to strict UTF-8 and NFKC, then remove U+200B–U+200D and U+FEFF. **Commit** the cleaned source instead of substituting an ephemeral CI-only view. **Verify** the result in one Windows-native C++20 workflow before compiling, with PowerShell Core StrictMode 2.0 and audit depth 9. No extra job fan-out, Node-backed actions or container is authorized.
+**Normalize** all 163 tracked text files to strict UTF-8 and NFKC, then remove U+200B–U+200D and U+FEFF. The exact PR head source scan reported zero remaining differences; Windows C++20 CTest passed 34/34. **Commit** the cleaned source instead of substituting an ephemeral CI-only view. **Verify** the result in one Windows-native C++20 workflow before compiling, with PowerShell Core StrictMode 2.0 and audit depth 9. The one Windows-native workflow contains no `uses:` actions, extra job fan-out or Linux container.
 
 **Keep** source history: the cleanup is an intentional new revision, not deletion of the original versions in Git history. Audit NFKC symbol collisions and actual build results; normalization is not proof of runtime memory safety. Legacy cross-platform and Java CI records remain in their original revisions and are not represented as currently enabled.
 
@@ -160,7 +161,7 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 **Preserve named mathematical operations:** BiPi integer squaring, TriPi DecaSigma route checking, and SigmaPi GammaGamma prefix remain in their separate original namespaces. Both existing SigmaDi protocols remain independently identified. The former working system label `zzzDi` is retained in source history, not treated as a deleted record.
 
-**Complete the sole publication rule:** State actual completed work in active present tense, revise all sections until they support the statement, and disclose each outstanding test as PROPOSED, NOT RUN or NEEDS REVIEW. This action updates the operating procedure, HANDI, this register and the SigmaDi COLLISION12 description; it does not change the C++20 binary or claim enforcement of unmodified CI.
+**Complete the sole publication rule:** State actual completed work in active present tense, revise all sections until they support the statement, and disclose each outstanding test as PROPOSED, NOT RUN or NEEDS REVIEW. The subsequent authorized source-at-rest transform changed tracked text and the active C++20 CI configuration. The prior record and experimental results remain in Git history; do not claim full compliance until the latest-runtime failure is resolved.
 
 ## Review handoff record
 
