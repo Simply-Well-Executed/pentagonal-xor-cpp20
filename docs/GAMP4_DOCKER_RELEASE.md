@@ -104,6 +104,47 @@ pwsh -NoLogo -NoProfile -File .\ci\Build-Windows-ReleaseContainer.ps1 -BaseImage
 
 Windows container compatibility and Docker BuildKit WCOW support remain host/version dependent. If unsupported, the optional image remains **NOT TESTED**, never a substitute for native Windows GAMP4 evidence.
 
+## Requested Docker Hub destination and historic immutable image
+
+The explicitly authorized publication **destination** is `paulcheek/android-source-study-v1:latest`. The intended immutable **source** is `paulcheek/android-source-study-v1:sha-07eb2a4561f0`; the complete Git source commit is `07eb2a4561f0f5e82db4668d2b4fa453e2a4d733`, the same commit targeted by GitHub preview release `preview-319-07eb2a4`. The operator supplied expected registry manifest digest:
+
+```text
+sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30
+```
+
+**The supplied digest has not been independently confirmed against Docker Hub in this editing session.** An image config ID and Docker registry manifest digest are distinct identifiers; a matching Git tag alone is not proof of the contents of a Docker image. `latest` is mutable, while the digest is content addressed. The publisher must look up the immutable tag in the actual Docker registry and match its manifest digest **before** attempting to move `latest`. It must also verify the newly published `latest` registry digest **after** a push.
+
+The source commit `07eb2a4...` is **historical and differs from the current draft PR #20 source**. Do not claim that new PR #20 CTest/URS runs validate this older source image. To promote this existing image, collect genuine GAMP4-style supplier OQ evidence and a complete CTest log **from the exact historical source commit**, and independently approve the provenance relationship between that source and the digest-qualified image. The only authorized publisher for this target is [`ci/Publish-AndroidSourceStudy.ps1`](../ci/Publish-AndroidSourceStudy.ps1). The historical `ci/Run-DockerValidation.ps1 -Mode Publish` entrypoint now fails closed: its previous code is retained for Git audit, not as a supported shortcut.
+
+The new publisher will not download images, build software, install SDKs, trigger hosted runners, or log in using embedded secrets. A separately authorized Docker Hub login is performed by the operator; `DOCKERHUB_USERNAME` must equal `paulcheek`. A local Unix or Windows named-pipe Docker daemon is required. Docker Buildx `imagetools inspect` queries the live Docker Hub registry **only when the operator directly invokes the inspection/publish script**; this explicit release operation is distinct from offline builds.
+
+The normal release matrix in `ci/gamp4-docker-release.yml` still requires 13 platform receipts for the proposed **new** multi-OS bundle. Its condition does not silently validate the old `07eb2a4` source-study image. The Docker Hub promotion is a **separate historic-image publication decision** with an exact digest pin and its own source-matched evidence.
+
+### Operator-controlled inspection and promotion
+
+Run from an appropriately prepared local host with PowerShell 7, Docker CLI, Buildx, and a Docker daemon. To inspect the source and current `latest` without modifying either tag:
+
+```powershell
+pwsh -NoLogo -NoProfile -File .\ci\Publish-AndroidSourceStudy.ps1
+```
+
+If the immutable source is a multi-platform manifest index, the publisher **rejects `docker tag` + `docker push`** because that sequence may discard platforms. Use a separately reviewed manifest-preserving promotion instead. The script also blocks if the actual source tag's registry digest differs from the operator-supplied value or if the current `latest` manifest cannot be read.
+
+After actual GAMP4 results and independent release review, make a local copy of [`ci/dockerhub-source-study-promotion-approval.example.json`](../ci/dockerhub-source-study-promotion-approval.example.json), then fill its two SHA256 evidence hashes and change its five review booleans to `true` **only after those checks genuinely pass**. The template intentionally defaults every approval to `false`.
+
+```powershell
+$env:DOCKERHUB_USERNAME = 'paulcheek'
+# Authenticate with the Docker CLI under an authorized account.
+# Use a secure credential mechanism; never place tokens in repository files.
+pwsh -NoLogo -NoProfile -File .\ci\Publish-AndroidSourceStudy.ps1 -Publish -Gamp4EvidenceJson '.\evidence\historical-gamp4.json' -CtestLog '.\evidence\historical-ctest.log' -ReleaseApprovalJson '.\evidence\source-study-promotion-approved.json' -AcknowledgeLatestReplacement 'paulcheek/android-source-study-v1:latest@sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30'
+```
+
+The historical GAMP4 JSON must match the existing `SWE-PENTAGONAL-GAMP4-SUPPLIER-VALIDATION-v1` schema, report 12 unique URS-11..22 results, pass and exit zero. The reviewed CTest text must show a nonzero test count and zero failed tests. The approval JSON binds the exact source commit, immutable source tag, mutable target, digest, and SHA256 hashes of both evidence files, plus separate source-origin, SBOM, licensing, operator and QA review.
+
+When `-Publish` is supplied and `latest` currently points elsewhere, the script verifies that the local preloaded immutable source image has the matching `RepoDigest`, rechecks the remote `latest` pointer for concurrent changes, executes the literal `docker tag` and **`docker push paulcheek/android-source-study-v1:latest`**, then checks the *remote* registry manifest. A mismatch after pushing is a **RELEASE DEVIATION**, not success; a push is inherently non-atomic with the registry readback. Preserve terminal output as an audit log.
+
+**Current evidence classification: TARGET CONFIGURED / DIGEST NOT VERIFIED / RELEASE HOLD / PUSH NOT PERFORMED.** Do not update a release post, push a registry tag or mark GAMP4 acceptance complete until actual independent validation and registry evidence exist.
+
 ## Validation protocol and release custody
 
 For each executable Linux/macOS/Windows target, the gate requires a successful Release CMake configuration, full CTest, a separately executed `pentagonal_gamp4_validation_test` with exactly one `PASS|URS-NN|` record for each URS-11 through URS-22, no `FAIL|` records, and exactly one `GAMP4_STYLE_SUMMARY|PASS|cases=12|failures=0`. No skipped, failed, duplicate or missing result is accepted. Each stage writes a unique per-profile report, output logs, binary digest and package SHA256 manifest to `build/gamp4-release/<SHA>/evidence/<profile>/`.
