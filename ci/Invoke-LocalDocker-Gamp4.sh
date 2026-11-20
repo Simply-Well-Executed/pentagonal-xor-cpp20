@@ -7,7 +7,7 @@ test "$#" -eq 1 || fail 'usage: sh ci/Invoke-LocalDocker-Gamp4.sh linux-amd64|li
 profile=$1
 root=$(CDPATH='' cd "$(dirname "$0")/.." && pwd -P) || fail 'invalid repo path'
 cd "$root" || fail 'unable to enter source root'
-for tool in git docker grep id tar sha256sum find sort awk; do need "$tool"; done
+for tool in git docker grep id tar sha256sum find sort awk cat; do need "$tool"; done
 case "${DOCKER_HOST:-}" in ''|unix://*|npipe://*) : ;; *) fail 'remote Docker daemon transport not permitted' ;; esac
 endpoint=$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null) ||
   fail 'cannot inspect Docker daemon context'
@@ -26,8 +26,12 @@ export SWE_EXPECTED_SHA
 SWE_RELEASE_OUTPUT="${SWE_RELEASE_OUTPUT:-$root/build/gamp4-release/$SWE_EXPECTED_SHA}"
 case "$SWE_RELEASE_OUTPUT" in /*) : ;; *) fail 'SWE_RELEASE_OUTPUT must be an absolute path' ;; esac
 mkdir -p "$SWE_RELEASE_OUTPUT" || fail 'cannot create local artifact root'
-SWE_SOURCE_STAGING_DIR="$SWE_RELEASE_OUTPUT/_source/$SWE_EXPECTED_SHA"
-snapshot_root="$SWE_RELEASE_OUTPUT/_source"
+SWE_SOURCE_STAGING_DIR="$root/build/gamp4-source-snapshots/$SWE_EXPECTED_SHA"
+snapshot_root="$root/build/gamp4-source-snapshots"
+case "$SWE_SOURCE_STAGING_DIR/" in "$SWE_RELEASE_OUTPUT/"*)
+  fail 'release output must not contain the read-only source staging root'
+  ;;
+esac
 snapshot_manifest="$snapshot_root/$SWE_EXPECTED_SHA.sha256"
 snapshot_tar="$snapshot_root/$SWE_EXPECTED_SHA.tar"
 mkdir -p "$snapshot_root" || fail 'cannot create source snapshot directory'
@@ -78,7 +82,7 @@ if test "$service" = linux-gamp4; then
   image="${SWE_LINUX_BUILDER_IMAGE:-}"
   test -n "$image" || fail 'SWE_LINUX_BUILDER_IMAGE must name a preloaded digest'
   SWE_ANDROID_BUILDER_IMAGE="${SWE_ANDROID_BUILDER_IMAGE:-$image}"
-  SWE_ANDROID_NDK_DIR="${SWE_ANDROID_NDK_DIR:-$root}"
+  SWE_ANDROID_NDK_DIR="${SWE_ANDROID_NDK_DIR:-$SWE_SOURCE_STAGING_DIR}"
 else
   image="${SWE_ANDROID_BUILDER_IMAGE:-}"
   test -n "$image" || fail 'SWE_ANDROID_BUILDER_IMAGE must name a preloaded digest'
