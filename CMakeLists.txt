@@ -41,6 +41,13 @@ endif()
 
 include(CTest)
 if(BUILD_TESTING)
+    # Isolated canonical parity object for machine-level zero-CALL disassembly.
+    # Does not alter the production CLI or create an alternate algorithm.
+    add_library(swe_zero_call_core_probe OBJECT tests/zero_call_core_probe.cpp)
+    target_compile_features(swe_zero_call_core_probe PRIVATE cxx_std_20)
+    set_target_properties(swe_zero_call_core_probe PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+
     add_test(NAME parity_example
         COMMAND pentagonal_xor 0.80 0.70 0.90 0.60 0.95)
     set_tests_properties(parity_example PROPERTIES
