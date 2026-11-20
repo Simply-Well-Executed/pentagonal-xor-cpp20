@@ -84,6 +84,16 @@ target_include_directories(swe_pentagonal_xor_throughput INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 target_compile_features(swe_pentagonal_xor_throughput INTERFACE cxx_std_20)
+# Independent STD-free five-feature CLI, using the canonical original
+# parity function. The legacy STL-backed CLI remains for T-CROSS comparison.
+if(WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_executable(pentagonal_xor_std_free src/parity_std_free_main.cpp)
+  target_link_libraries(pentagonal_xor_std_free
+    PRIVATE swe_pentagonal_xor_throughput)
+  set_target_properties(pentagonal_xor_std_free PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS pentagonal_xor_std_free RUNTIME DESTINATION bin)
+endif()
 # Native OS-backed stdout, monotonic time and memory mapping are
 # implemented for Windows, Linux and supported macOS. Android uses the core-only archive.
 if(WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
@@ -110,6 +120,29 @@ install(FILES
 
 include(CTest)
 if(BUILD_TESTING)
+    if(TARGET pentagonal_xor_std_free)
+      add_test(NAME parity_std_free_example COMMAND
+        pentagonal_xor_std_free 0.80 0.70 0.90 0.60 0.95)
+      set_tests_properties(parity_std_free_example PROPERTIES
+        PASS_REGULAR_EXPRESSION "Pentagonal XOR: 51\\.72800000%")
+      add_test(NAME parity_std_free_all_zero COMMAND
+        pentagonal_xor_std_free 0 0 0 0 0)
+      set_tests_properties(parity_std_free_all_zero PROPERTIES
+        PASS_REGULAR_EXPRESSION "Pentagonal XOR: 0\\.00000000%")
+      add_test(NAME parity_std_free_odd COMMAND
+        pentagonal_xor_std_free 1 1 1 0 0)
+      set_tests_properties(parity_std_free_odd PROPERTIES
+        PASS_REGULAR_EXPRESSION "Pentagonal XOR: 100\\.00000000%")
+      add_test(NAME parity_std_free_invalid_range COMMAND
+        pentagonal_xor_std_free 0.8 0.7 1.2 0.6 0.95)
+      set_tests_properties(parity_std_free_invalid_range PROPERTIES WILL_FAIL TRUE)
+      add_test(NAME parity_std_free_invalid_nan COMMAND
+        pentagonal_xor_std_free 0.8 0.7 nan 0.6 0.95)
+      set_tests_properties(parity_std_free_invalid_nan PROPERTIES WILL_FAIL TRUE)
+      add_test(NAME parity_std_free_invalid_arity COMMAND
+        pentagonal_xor_std_free 0.8 0.7 0.9 0.6)
+      set_tests_properties(parity_std_free_invalid_arity PROPERTIES WILL_FAIL TRUE)
+    endif()
     add_executable(pentagonal_suite_test
         tests/pentagonal_suite_test.cpp)
     target_link_libraries(pentagonal_suite_test
