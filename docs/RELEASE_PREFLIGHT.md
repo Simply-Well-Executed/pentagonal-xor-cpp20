@@ -44,7 +44,7 @@ failures without pausing the released executable. These remain permitted.
 
 ## The shipped, callable audit APIs
 
-Before this review, the Triℼ and COREAO algorithms were compile-tested
+Before this review, the Triπ and COREAO algorithms were compile-tested
 but their public headers were missing from the installed release package.
 That was a **distribution gap**, not a runtime debugger breakpoint.
 
@@ -64,7 +64,7 @@ parity CLI mode or needing a separately built audit runtime binary.
 Every root build matrix job stages its package, compiles an independent
 consumer in `tests/consumer` **against the installed target and
 headers**, then executes the example. The consumer checks the original
-DecaSigma return witnesses, the three Triℼ route inspections, COREAO's
+DecaSigma return witnesses, the three Triπ route inspections, COREAO's
 single scalar, and the public parity API.
 
 ## Local reproduction in PowerShell 7
@@ -87,7 +87,7 @@ On other platforms, CMake's native generator is used.
 
 - The production Pentagonal XOR executable has **one closed-form
   calculation**, not a switchable parity engine or debug-only branch.
-- DecaSigma, Triℼ, and COREAO are shipped as usable header-only APIs
+- DecaSigma, Triπ, and COREAO are shipped as usable header-only APIs
   and keep their own domain checks.
 - CORE remains the original source. Derived routes are read-only audits,
   not a new source of identity, authority, or cryptographic assurance.

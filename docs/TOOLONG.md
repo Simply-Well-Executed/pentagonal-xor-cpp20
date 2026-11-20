@@ -28,7 +28,7 @@
 
 **Scope notes:** \`toolong\` performs integer division, not fractional division; use \`toolong_ratio\` when a rational result is needed. \`/0\` throws. Negative-input bitwise operations are rejected rather than inventing unspecified infinite two's-complement widths. The \`^!\` notation of the user's exploratory Pi family is not silently substituted for C++ bitwise XOR or logical NOT.
 
-For enormous powers such as \`ℼ^ℼ\`, exact mathematical integer results exist but materializing them would require astronomical resources. This version retains such expressions **symbolically** rather than pretending they were calculated. \`BiPi = ℼ²\` is directly calculated with \`toolong\` and equals \`98696044010893585656621344341538329\`. \`PiDi = ℼ % 4\` evaluates to 3; the symbolic identity \`I=3\` remains Needs Review.
+For enormous powers such as \`π^π\`, exact mathematical integer results exist but materializing them would require astronomical resources. This version retains such expressions **symbolically** rather than pretending they were calculated. \`BiPi = π2\` is directly calculated with \`toolong\` and equals \`98696044010893585656621344341538329\`. \`PiDi = π % 4\` evaluates to 3; the symbolic identity \`I=3\` remains Needs Review.
 
 ## GammaGamma integration
 
@@ -58,7 +58,7 @@ For \`I=100\` and synthetic counts \`105,120,135\`:
 | Dispersion (variance) | 150 |
 | Fano ratio | 5/4 |
 
-No floating-point digits are lost in these calculations. If plotting the ratios as floating-point, use the ℼ-derived \`std::setprecision(16)\` presentation policy, not as a substitute for the preserved exact fractions.
+No floating-point digits are lost in these calculations. If plotting the ratios as floating-point, use the π-derived \`std::setprecision(16)\` presentation policy, not as a substitute for the preserved exact fractions.
 
 ## Evidence and testing
 
