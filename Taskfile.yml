@@ -222,3 +222,8 @@ tasks:
     cmds:
       - pwsh -NoLogo -NoProfile -File ci/Publish-AndroidSourceStudy.ps1
 
+  dockerhub-source-study-policy-negative-tests:
+    desc: 'Mock-only negative controls for legacy publishing, digest mismatch, absent approval and multi-platform image index'
+    cmds:
+      - pwsh -NoLogo -NoProfile -File ci/Test-DockerPublishPolicy.ps1
+
