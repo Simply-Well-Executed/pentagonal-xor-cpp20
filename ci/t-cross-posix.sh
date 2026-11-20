@@ -50,6 +50,39 @@ gate_no_live_rest() {
     pass 'gate-no-live-rest|strict-source-pattern-scan'
 }
 
+gate_no_std_throughput() {
+    need grep
+    # Four isolated native C++20 sources must have no C/C++ std includes,
+    # std:: names, CRT functions, new/delete or compiler-specific intrinsics.
+    for file in include/pxor_memory.hpp include/pentagonal_xor.hpp \
+                src/main.cpp tests/pentagonal_xor_throughput_test.cpp; do
+        test -f "$file" || fail "missing STD-free source: $file"
+        if grep -nE 'std::|#[[:space:]]*include[[:space:]]*<(array|vector|span|ranges|type_traits|cstddef|cstdint|cstdio|cstring|memory|new|chrono|charconv|concepts|stdio[.]h|stdlib[.]h|string[.]h|stdint[.]h)>|__builtin_' "$file"; then
+            fail "standard-library or compiler-builtin candidate in $file"
+        fi
+    done
+    pass 'gate-no-std-throughput|four-sources|source-only'
+}
+
+gate_no_std_repository() {
+    need git
+    # Explicit repository-wide gate: pre-existing APIs are not grandfathered.
+    # Record path names only to prevent enormous logging; leave original code.
+    pattern='std::|#[[:space:]]*include[[:space:]]*<(array|vector|string|span|ranges|type_traits|iostream|sstream|fstream|memory|new|chrono|charconv|concepts|algorithm|optional|variant|utility|map|set|unordered_map|unordered_set|cstdio|cstdlib|cstring|cmath|cstddef|cstdint|stdio[.]h|stdlib[.]h|string[.]h|stdint[.]h)>'
+    set +e
+    offenders=$(git grep -lE "$pattern" -- '*.c' '*.cc' '*.cpp' '*.h' '*.hpp' 2>&1)
+    status=$?
+    set -e
+    if test "$status" -gt 1; then
+        fail "repository STD inventory command failed: $offenders"
+    fi
+    if test "$status" -eq 0; then
+        printf 'T-CROSS|STD-RESIDUAL-FILES\n%s\n' "$offenders" >&2
+        fail 'whole repository is NOT yet standard-library-free'
+    fi
+    pass 'gate-no-std-repository|tracked-C-CXX-sources'
+}
+
 gate_no_residual_surfaces() {
     for dir in java docker android; do
         test ! -d "$dir" || fail "unreviewed residual source remains: $dir/"
@@ -201,6 +234,7 @@ default() {
     gate_no_remote_git
     gate_no_github_workflows
     gate_no_live_rest
+    gate_no_std_throughput
     gate_no_residual_surfaces
     gate_pinned_versions
     build_cpp20
@@ -215,6 +249,8 @@ case "${1:-default}" in
   gate-no-remote-git) gate_no_remote_git ;;
   gate-no-github-workflows) gate_no_github_workflows ;;
   gate-no-live-rest) gate_no_live_rest ;;
+  gate-no-std-throughput) gate_no_std_throughput ;;
+  gate-no-std-repository) gate_no_std_repository ;;
   gate-no-residual-surfaces) gate_no_residual_surfaces ;;
   gate-pinned-versions) gate_pinned_versions ;;
   build-cpp20) build_cpp20 ;;
