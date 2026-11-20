@@ -7,9 +7,11 @@ Describe the exact native C++20 / PowerShell code or documentation change, affec
 - [ ] Official latest stable PowerShell version was independently verified before local execution.
 - [ ] `ci/Invoke-NativeCore.ps1` was run on a locally controlled Windows machine.
 - [ ] StrictMode 2.0 and Magic Comb SelfTest / Verify passed.
-- [ ] CMake C++20 extensions ON and MSVC `/O2` were retained.
+- [ ] CMake `CXX_STANDARD 20`, `CXX_STANDARD_REQUIRED ON`, and `CXX_EXTENSIONS OFF` verified; MSVC `/O2` or GCC/Clang `-O2` unchanged.
 - [ ] CTest checks passed, with actual test count, commit SHA and local evidence identified.
+- [ ] POSIX T-CROSS produced a current Git-derived `.iron-t-cross-diff.yml` (base/head SHAs, +/- source lines) or exporter failure was recorded.
 - [ ] Baseline versus candidate comparison includes negative controls, limitations and NOT TESTED results.
+- [ ] Machine-code CALL gate examines the isolated parity probe object, with CLI and other code explicitly out of that narrow scope.
 - [ ] C++ Core Guidelines and PowerShell beginners reference were considered for changed code.
 
 ## Native-only dependency and transport policy
