@@ -12,7 +12,12 @@ static_assert(swe::tri_pi::inspect(swe::deca_sigma::run(2.0)).passed());
 static_assert(swe::coreao::inspect(swe::deca_sigma::run(2.0)).passed());
 static_assert(swe::coreao::rf_gain::apply(1.0).passed());
 static_assert(swe::stability10d::clamp01(-1.0) == 0.0);
-static_assert(swe::quantum_operands::record_count == 22u);
+static_assert(swe::quantum_operands::record_count == 24u);
+static_assert(swe::quantum_operands::lookup_exact("+", 1u) != nullptr);
+static_assert(swe::quantum_operands::lookup_exact("+=", 2u)->mode ==
+              swe::quantum_operands::Mode::Gain);
+static_assert(!swe::quantum_operands::evaluable(
+              *swe::quantum_operands::lookup_exact("+=", 2u)));
 static_assert(swe::quantum_operands::conceptual_mode_slots == 42u);
 static_assert(swe::quantum_operands::lookup_mode(
                   swe::quantum_operands::Operand::ShiftUp,

@@ -29,15 +29,23 @@ The four shift variants `-/`, `=/`, `-\`, and `=\` are **inferred example spelli
 
 An inverse-square law normally has a quantity varying inversely with the square of a distance, such as `k/r²` when its domain and constants are specified. That familiar physical model is **not** automatically assigned as `+/`'s implementation. The words "root of square theorem" also do not specify whether the intended relationship is the principal square root of a square (`sqrt(x²)=|x|` for real `x`) or another construction. No evaluation function is introduced by guessing.
 
+## Recovered plus-family punctuation and explicit new literals
+
+The accessible November 9 COREAO PlusStar conversation and its historical validation record already preserve `+;`, `+'`, and `+-` as distinct exact spellings. The original record classifies `+;` as **UNDEFINED**, `+'` as **AMBIGUOUS** (only conditionally derivative-related), and `+-` as **INTERPRETED, not canonical**. Their past meanings are not overwritten by the current spelling inventory.
+
+The latest user statement explicitly adds two previously unregistered **exact spellings**, standalone `+` and `+=`. The earlier accessible conversations do **not** establish their custom numerical semantics. The header therefore registers both with direct-current-user provenance and `Status::Exploratory`, distinct from historical validation artifacts. Standalone `+` is stored as the base Plus operand with `Mode::Unassigned`, not conflated with `++`. The `+=` token is placed in the *syntactic* gain-prefix slot of the Equality operand, not interpreted as an assignment operator, a theorem, or an instruction to calculate. This classification follows the user-established leading-plus mode convention, **not** a recovered numeric definition.
+
+The five spellings `+`, `+;`, `+'`, `+-`, `+=` are kept as five unique byte sequences. Their literal provenance and mathematical status are tracked independently. The new tokens do not introduce a new operand identity or change the 42-slot conceptual matrix.
+
 ## All existing operand identities, not just shifts
 
 The original exact-source spellings and scope are retained:
 
 | Source | Operand identity | Current gain/dispersion/stability knowledge |
 | --- | --- | --- |
-| `=`, `;=`, `[=`, `]=` | Four distinct equals-family operands | Three applicable modes each; no mode-specific punctuation supplied |
-| `++`, `+-` | Two distinct historical PlusStar operands | Historical leading-plus gain spelling; two other mode spellings unassigned |
-| `+;`, `+'` | Semicolon and apostrophe PlusStar operands | Historical leading-plus gain spelling; other spellings unassigned |
+| `=`, `;=`, `[=`, `]=`, `+=` | Four existing equals-family operand identities and the new gain-prefixed spelling `+=` | `+=` directly user-listed; syntactic gain classification only, no numerical definition |
+| `+`, `++`, `+-` | Standalone Plus and two historical gain-prefixed PlusStar spellings | Base `+` is unassigned-mode; `++` and `+-` retain historical conditional interpretations |
+| `+;`, `+'` | Semicolon and apostrophe PlusStar operands | Earlier `+;` undefined, `+'` ambiguous; both literal spellings confirmed |
 | `+[`, `+]` | Opening versus closing grouping operands | Historical leading-plus gain spelling; other spellings unassigned; no invented bracket balance |
 | `+p`, `+P` | Case-distinct coefficient operands | Gain, dispersion, stability all supplied |
 | `+/`, `+\` | Shift-up and shift-down operands | Three modes exist; four shift-mode spellings inferred, not established |
@@ -46,7 +54,7 @@ This preserves the original `++` / `+-` conditional interpretations, `+;` undefi
 
 ## Exact byte-level T-CROSS and safety
 
-The implementation is header-only ISO C++20 and intentionally imports no C++ standard-library header and no `std::` call. `records[]` preserves the original fourteen spellings plus eight additional mode spellings (four explicitly supplied `-p`, `-P`, `=p`, `=P`, and four clearly labeled inferred shift spellings). The registry has **22 exact spelling records** and 42 semantic mode slots. The record count and uniqueness of exact tokens and mode slots are compile-time assertions.
+The implementation is header-only ISO C++20 and intentionally imports no C++ standard-library header and no `std::` call. `records[]` preserves the original fourteen spellings plus eight previously added mode spellings (four directly supplied `-p`, `-P`, `=p`, `=P`, and four clearly labeled inferred shift spellings), plus the directly listed standalone `+` and `+=`. The registry now has **24 exact spelling records** and 42 semantic mode slots. The record count and uniqueness of exact tokens and mode slots are compile-time assertions.
 
 The `quantum_operand_exact_symbol_registry` CTest checks every registered spelling against its literal byte sequence, its mode, and its operand identity. Negative controls reject unregistered alternatives and Unicode full-width equals `＝` rather than folding it to ASCII `=`. `p` and `P` remain distinct. The CMake core-only archive also statically compiles the lexicon. The strict POSIX STD-free source gate scans both the new header and its test.
 
