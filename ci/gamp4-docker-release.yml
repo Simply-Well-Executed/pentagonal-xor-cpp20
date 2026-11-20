@@ -16,7 +16,16 @@ policy:
   runner: none
   node: none
   auto_install: none
-  registry_push: forbidden
+  registry_push: only-explicit-operator-approved-DockerHub-source-study-latest
+  registry_push_default: disabled
+  dockerhub_target: paulcheek/android-source-study-v1:latest
+  dockerhub_immutable_source_tag: paulcheek/android-source-study-v1:sha-07eb2a4561f0
+  dockerhub_expected_manifest_digest_operator_claim: 'sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30'
+  dockerhub_expected_source_commit: '07eb2a4561f0f5e82db4668d2b4fa453e2a4d733'
+  dockerhub_manifest_registry_verified: NOT_TESTED
+  dockerhub_historical_preview_evidence: separate-from-PR20
+  dockerhub_publication_script: ci/Publish-AndroidSourceStudy.ps1
+  dockerhub_release_state: HOLD_PENDING_EVIDENCE_AND_EXPLICIT_APPROVAL
   github_release_publication: manual-after-validation-and-review
   original_repository_std_free: not-certified
   gamp4: supplier-style-not-regulatory-certification
