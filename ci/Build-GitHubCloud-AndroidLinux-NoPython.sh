@@ -60,7 +60,9 @@ printf 'IRON|ANDROID_LINUX_NO_PYTHON|BUILD_IMAGE_CONFIG|%s\n' "$image_id"
 docker run --rm --platform linux/amd64 \
   --network none --read-only --cap-drop ALL \
   --security-opt no-new-privileges --pids-limit 512 --memory 6g --cpus 2 \
-  --tmpfs /tmp:rw,nosuid,nodev,size=1024m \
+  --tmpfs /tmp:rw,exec,nosuid,nodev,size=1024m,mode=1777 \
+  --env HOME=/tmp --env XDG_CACHE_HOME=/tmp/.cache \
+  --env DOTNET_CLI_HOME=/tmp \
   --entrypoint /bin/sh "$local_image" -c '
     set -eu
     cd /study
