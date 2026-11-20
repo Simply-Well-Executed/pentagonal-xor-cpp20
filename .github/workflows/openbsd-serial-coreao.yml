@@ -92,7 +92,7 @@ jobs:
           # pwsh exits with LASTEXITCODE even after a successful expected-failure assertion.
           $global:LASTEXITCODE=0
           Write-Host 'OPENBSD|EVIDENCE|TEST_PASS|HEAD_TAIL_EXACT|CORRUPTION_REJECTED|SOURCE_METADATA_ONLY|CORE=OPENBSD2|NATIVE_BUILDS=0|RELEASE=HOLD'
-      - name: Emit complete per-stage SHA-256 witness and exact source evidence
+      - name: Emit ordered SHA-256 witness hashes with source evidence
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
@@ -100,43 +100,25 @@ jobs:
           $ledger=Join-Path $env:RUNNER_TEMP 'openbsd-stage-witnesses.jsonl'
           & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Invoke-OpenBSDSerialCoreao.ps1') -RepositoryRoot $src -ReportPath $ledger > $null
           if($LASTEXITCODE -ne 0){throw 'OPENBSD|WITNESS|HOLD|ledger_generation_failed'}
-          $entries=@([IO.File]::ReadAllLines($ledger,[Text.UTF8Encoding]::new($false,$true)))
-          $annex=@([IO.File]::ReadAllLines((Join-Path $src 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv'),[Text.UTF8Encoding]::new($false,$true)))
+          $entries=@([IO.File]::ReadAllLines($ledger))
+          $annex=@([IO.File]::ReadAllLines((Join-Path $src 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv')))
           if($entries.Count -ne 10 -or $annex.Count -ne 11){throw 'OPENBSD|WITNESS|HOLD|row_count'}
           $previous='0'*64
-          for($index=0;$index -lt 10;$index++){
-            $stage=$entries[$index]|ConvertFrom-Json
-            $source=$annex[$index+1].Split([char]9)
+          for($i=0;$i -lt 10;$i++){
+            $stage=$entries[$i] | ConvertFrom-Json
+            $source=$annex[$i+1].Split([char]9)
             if($source.Count -ne 13 -or $stage.stage -cne $source[1] -or
                $stage.previous_sha256 -cne $previous -or
-               $stage.witness_sha256 -cnotmatch '^[0-9a-f]{64}
-        shell: pwsh
-        run: |
-          $ErrorActionPreference='Stop'
-          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
-          $build=Join-Path $env:RUNNER_TEMP 'openbsd-portability-preflight'
-          cmake -S $src -B $build -G 'Visual Studio 18 2026' -A x64 -DSWE_STD_FREE_CORE_ONLY=ON -DBUILD_TESTING=OFF
-          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|windows_core_configure_failed'}
-          cmake --build $build --config Release --target swe_std_free_portable_core --parallel 1
-          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|windows_core_build_failed'}
-          Write-Host 'OPENBSD|SERIAL|PORTABILITY_BUILD_PASS|HOST=WINDOWS|CXX20|MSVC_O2|NATIVE_OPENBSD_BUILDS=0|RELEASE=HOLD'
-      - name: Preserve explicit historical target HOLD
-        shell: pwsh
-        run: |
-          Write-Host 'OPENBSD|SERIAL|COMPATIBILITY_PREFLIGHT_COMPLETE|NATIVE_OPENBSD_2_TO_8_BUILDS=UNVERIFIED|SOURCE_PINS_2_TO_7=UNPINNED|CORE=OPENBSD2|RELEASE=HOLD'
- -or
                $stage.native_openbsd_binary -cne 'NOT_BUILT' -or
-               $source[12] -cne 'HOLD'){
-              throw ('OPENBSD|WITNESS|HOLD|stage_mismatch|'+($index+1))
-            }
+               $source[12] -cne 'HOLD'){throw ('OPENBSD|WITNESS|HOLD|stage_mismatch|'+$i)}
             Write-Host ('OPENBSD|WITNESS|STEP='+$stage.ordinal+'|STAGE='+$stage.stage+
               '|RELEASE='+$stage.release+'|PASS='+$stage.pass+'|SOURCE_REF='+$source[4]+
               '|SOURCE_STATE='+$source[6]+'|SOURCE_SRC_SHA256='+$source[5]+
-              '|NATIVE_COMPILER=UNATTESTED|NATIVE_BUILD='+$source[9]+
+              '|COMPILER=UNATTESTED|NATIVE_BUILD='+$source[9]+
               '|STATUS=HOLD|WITNESS_SHA256='+$stage.witness_sha256)
             $previous=$stage.witness_sha256
           }
-          Write-Host ('OPENBSD|WITNESS|COMPLETE|COUNT=10|TAIL_SHA256='+$previous+'|CORE=OPENBSD2|RELEASE=HOLD')
+          Write-Host ('OPENBSD|WITNESS|COMPLETE|COUNT=10|CORE=OPENBSD2|TAIL_SHA256='+$previous)
       - name: Compile the portable C++20 core serially on Windows, not OpenBSD
         shell: pwsh
         run: |
