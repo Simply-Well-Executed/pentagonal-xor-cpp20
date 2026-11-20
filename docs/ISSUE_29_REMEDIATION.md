@@ -41,3 +41,13 @@ The exact previous DOOM-shaped display `X_~D~o~o~m~M~a~i~n(=)` remains a histori
 The source-only chain projects the eye artwork at 14 fixed UP/DOWN/TURN anchors across GammaGamma, BiDi, TriDi, SigmaDi and its four butterfly edges. The last output line remains exactly `ItWasOnlyOnceILookedInTheirEye`; the process still exits `42` with HOLD. This adds output lines and therefore begins a **new test/trace version**, not a mutation of the previously frozen comparison protocol.
 
 All edited source in this proposal is on a separate review branch, not a clearance to execute POSIX shells. See `docs/POSIXI_FRESH_ARTISTIC_CHAIN.md`.
+
+## FRESH-ART-EYE-PING-v2: YANG / YING parenthesis ownership
+
+This is an **EXPLORATORY new protocol version**, not an in-place redefinition of v1 and not a POSIXI runtime. Exact version FRESH-ART-EYE-v1 source is preserved byte-for-byte as `Archive/Retired/ci/FRESH-GammaGamma.art-eye-v1.sh.txt` (Git blob `670ec9d5e1ce0f9e3f815df63ebbb883b37d4fca`).
+
+For every one of the 66 original output lines, a preceding literal **PING** record maps left `(...)` to **YANG** and right `(...)` to **YING**. When only one pair exists it is assigned to the right YING role; absent roles are `NONE`. PING is a source-local symbolic witness; **it does not send a network packet, contact an endpoint, or invoke any ping executable**. The 14 artistic eye projections are unaltered, and the exact unadorned terminal `ItWasOnlyOnceILookedInTheirEye` remains the last printed line followed by `exit 42`.
+
+The static PowerShell workflow now independently derives each expected PING record from the frozen v1 source and compares the entire v2 shell file byte-for-byte, with no POSIX shell execution. Counts: 66 PINGs; 36 two-group lines, 14 single-group lines, 16 lines without grouped witnesses. It still deliberately ends in release HOLD because source PINGs do not remove the POSIX shell or unapproved GNU tooling.
+
+See `docs/POSIXI_FRESH_PING_V2.md` for exact semantics and sample records.

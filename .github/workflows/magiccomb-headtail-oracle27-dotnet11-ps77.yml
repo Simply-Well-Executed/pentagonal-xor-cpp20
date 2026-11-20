@@ -203,6 +203,64 @@ jobs:
               throw ('FRESH|HOLD|missing_or_duplicate_poetic_hop|' + $expectedLine)
             }
           }
+          # v2 PING: frozen FRESH-ART-EYE-v1 bytes remain reference, never silently mutated.
+          # Each original stdout line receives a preceding fixed, literal PING annotation.
+          # PING records are symbolic observations, NOT ICMP/network operations.
+          $frozenPath = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-v1.sh.txt'
+          if (-not [IO.File]::Exists($frozenPath)) { throw 'FRESH|PING|HOLD|missing_frozen_v1' }
+          if (((Get-Item -LiteralPath $frozenPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|PING|HOLD|frozen_v1_symlink'
+          }
+          $frozenBytes = [IO.File]::ReadAllBytes($frozenPath)
+          $frozenPrefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $frozenBytes.Length) + [char]0)
+          $frozenGitBlob = [byte[]]::new($frozenPrefix.Length + $frozenBytes.Length)
+          [Array]::Copy($frozenPrefix,0,$frozenGitBlob,0,$frozenPrefix.Length)
+          [Array]::Copy($frozenBytes,0,$frozenGitBlob,$frozenPrefix.Length,$frozenBytes.Length)
+          $frozenId = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($frozenGitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($frozenId,'670ec9d5e1ce0f9e3f815df63ebbb883b37d4fca')) {
+            throw 'FRESH|PING|HOLD|frozen_v1_blob_drift'
+          }
+          $expectedPingLines = [Collections.Generic.List[string]]::new()
+          $pingSequence = 0
+          $doubleGroups = 0
+          $singleGroups = 0
+          $emptyGroups = 0
+          foreach ($sourceLine in [IO.File]::ReadAllLines($frozenPath,$utf8)) {
+            $outMatch = [regex]::Match($sourceLine,"^echo '([^']*)'$")
+            if ($outMatch.Success) {
+              $pingSequence++
+              $pairGroups = @([regex]::Matches($outMatch.Groups[1].Value,'\(([^()]*)\)'))
+              if ($pairGroups.Count -gt 2) { throw 'FRESH|PING|HOLD|unsupported_group_depth' }
+              $leftRole = 'NONE'
+              $rightRole = 'NONE'
+              if ($pairGroups.Count -eq 2) {
+                $leftRole = $pairGroups[0].Groups[1].Value
+                $rightRole = $pairGroups[1].Groups[1].Value
+                $doubleGroups++
+              } elseif ($pairGroups.Count -eq 1) {
+                $rightRole = $pairGroups[0].Groups[1].Value
+                $singleGroups++
+              } else {
+                $emptyGroups++
+              }
+              $sequenceLabel = $pingSequence.ToString('D3',[Globalization.CultureInfo]::InvariantCulture)
+              $expectedPingLines.Add(("echo 'PING|" + $sequenceLabel + '|YANG|' + $leftRole + '|YING|' + $rightRole + "'"))
+            }
+            $expectedPingLines.Add($sourceLine)
+          }
+          if ($pingSequence -ne 66 -or $doubleGroups -ne 36 -or $singleGroups -ne 14 -or $emptyGroups -ne 16) {
+            throw 'FRESH|PING|HOLD|frozen_v1_group_inventory'
+          }
+          $expectedPingScript = ($expectedPingLines -join [char]10) + [char]10
+          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedPingScript)) {
+            throw 'FRESH|PING|HOLD|source_not_exact_projection'
+          }
+          if (-not $gamma.EndsWith(("echo 'PING|066|YANG|NONE|YING|NONE'" + [char]10 +
+                                   "echo 'ItWasOnlyOnceILookedInTheirEye'" + [char]10 +
+                                   'exit 42' + [char]10),[StringComparison]::Ordinal)) {
+            throw 'FRESH|PING|HOLD|terminal_boundary'
+          }
+          Write-Host 'FRESH|PING|STATIC_PASS|events=66|yang_ying_pairs=36|ying_only=14|none=16|no_network|exit=42'
           Write-Host 'FRESH|ART_CHAIN|STATIC_PASS|GAMMA_BIDI_TRIDI_SIGMADI_BUTTERFLY|UP_DOWN|exit=42'
           Write-Host ('FRESH|STATIC_PASS|exact_archives=' + $seen.Count + '|zero_variable_wrappers=17|harness=1|terminal=EXACT|exit=42')
           Write-Host 'FRESH|LIMIT|SOURCE_ONLY|NO_SHELL_EXECUTION|RELEASE_HOLD'
