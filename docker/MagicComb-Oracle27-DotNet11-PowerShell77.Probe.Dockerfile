@@ -26,6 +26,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl tar gzip xz-utils make cmake g++ git grep gawk findutils \
     && rm -rf /var/lib/apt/lists/*
 
+# Targeted CVE-2026-97054 repair for the UNPUBLISHED experiment only.
+# GitHub-hosted audit proved this exact 10,584,224-byte Pebble binary is
+# inherited, NOT owned by dpkg, and built with affected Go stdlib 1.27.3.
+# Never silently delete by filename: require exact input SHA and no package
+# owner. If upstream changes anything, stop and demand a new review.
+# Does not alter Microsoft registry source digest or historical Docker Hub.
+RUN set -eu; \
+    test -f /usr/bin/pebble; \
+    test ! -L /usr/bin/pebble; \
+    if dpkg-query -S /usr/bin/pebble >/dev/null 2>&1; then \
+      echo 'IRON|MAGICCOMB|PEBBLE|HOLD|file_now_package_owned' >&2; exit 41; \
+    fi; \
+    printf '%s  %s\n' '5e9859b77a7ed5c4421f5c43435cc3822d5090d0f4ced422adade068e3b974e3' '/usr/bin/pebble' | sha256sum -c -; \
+    rm -- /usr/bin/pebble; \
+    test ! -e /usr/bin/pebble; \
+    echo 'IRON|MAGICCOMB|PEBBLE|REMOVED|verified_unowned_hash|CVE-2026-97054'
+
 # MagicComb HEAD: fetch Microsoft-signed release asset URL, verify frozen
 # official SHA256 BEFORE tar inspection and extraction. No pipe to shell.
 RUN set -eux; \
