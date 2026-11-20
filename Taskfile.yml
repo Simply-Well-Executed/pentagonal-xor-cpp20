@@ -34,6 +34,7 @@ tasks:
       - task: build-cpp20
       - task: gate-zero-function-calls
       - task: gate-zero-network-imports
+      - task: gate-no-std-binary
       - task: test-ctest
 
   gate-no-remote-git:
@@ -85,6 +86,11 @@ tasks:
     desc: 'Inspect both parity and throughput CLI imports; not runtime isolation proof'
     cmds:
       - sh ci/t-cross-posix.sh gate-zero-network-imports
+
+  gate-no-std-binary:
+    desc: 'Fail closed if throughput binary directly imports C/C++ standard runtimes'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-std-binary
 
   test-ctest:
     desc: 'Run parity, SWAR roundtrip and throughput CLI CTest suites locally'
