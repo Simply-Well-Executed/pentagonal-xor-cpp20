@@ -1,0 +1,55 @@
+name: swe-gamp4-local
+services:
+  linux-gamp4:
+    image: ${SWE_LINUX_BUILDER_IMAGE:?set_a_preloaded_SHA256_pinned_builder}
+    pull_policy: never
+    platform: ${SWE_LINUX_PLATFORM:-linux/amd64}
+    user: "${SWE_HOST_UID:?operator_uid}:${SWE_HOST_GID:?operator_gid}"
+    working_dir: /src
+    entrypoint: ["/bin/sh", "/src/ci/docker/Run-Gamp4-Container.sh"]
+    command: ["${SWE_LINUX_PROFILE:-linux-amd64}"]
+    environment:
+      SWE_EXPECTED_SHA: ${SWE_EXPECTED_SHA:?operator_verified_git_sha}
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 512
+    tmpfs: ["/tmp:rw,nosuid,nodev,size=256m"]
+    volumes:
+      - type: bind
+        source: ..
+        target: /src
+        read_only: true
+      - type: bind
+        source: ${SWE_RELEASE_OUTPUT:?local_output_directory}
+        target: /out
+
+  android-ndk:
+    image: ${SWE_ANDROID_BUILDER_IMAGE:?set_a_preloaded_SHA256_pinned_NDK_builder}
+    pull_policy: never
+    platform: linux/amd64
+    user: "${SWE_HOST_UID:?operator_uid}:${SWE_HOST_GID:?operator_gid}"
+    working_dir: /src
+    entrypoint: ["/bin/sh", "/src/ci/docker/Build-Android-NDK.sh"]
+    command: ["${SWE_ANDROID_ABI:-arm64-v8a}"]
+    environment:
+      SWE_EXPECTED_SHA: ${SWE_EXPECTED_SHA:?operator_verified_git_sha}
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 512
+    tmpfs: ["/tmp:rw,nosuid,nodev,size=256m"]
+    volumes:
+      - type: bind
+        source: ..
+        target: /src
+        read_only: true
+      - type: bind
+        source: ${SWE_RELEASE_OUTPUT:?local_output_directory}
+        target: /out
+      - type: bind
+        source: ${SWE_ANDROID_NDK_DIR:?operator_installed_NDK_host_directory}
+        target: /ndk
+        read_only: true
