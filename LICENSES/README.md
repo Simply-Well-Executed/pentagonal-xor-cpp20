@@ -33,3 +33,9 @@ The previous `LGPL-2.1-only` Preferred classification and `LGPL-2.1-or-later` re
 ## MPL / CDDL / NPL version-family survey (2026-11-20)
 
 Pinned SPDX v3.29.0 has `MPL-1.0`, `MPL-1.1`, `MPL-2.0`, `MPL-2.0-no-copyleft-exception`, `CDDL-1.0`, `CDDL-1.1`, `NPL-1.0`, and `NPL-1.1`. **Only the exact `MPL-2.0` and `CDDL-1.0` identifiers are PREFERRED**; the other six require separate REVIEW. The pinned SPDX source tree does not list `MPL-0.0`, `MPL-0.1`, `MPL-2.3` or `CDDL-2.0`; this is not proof no custom/historical unindexed documents exist. Distinct terms, provenance, notices and the actual grant control each decision.
+
+## Complete pinned SPDX discovery index (826 text records)
+
+[SPDX-V3.29.0-CATALOG.tsv](SPDX-V3.29.0-CATALOG.tsv) records **all 826 text entries** in the exact upstream SPDX v3.29.0 `text/` Git tree, with each upstream blob SHA, source commit, identifier, byte count, current admission classification, and explicit `VENDORED_EXACT` or `INDEX_ONLY_NOT_VENDORED` custody status. At this revision, **32 SPDX texts plus one Oracle NFTC reference are copied verbatim into this repository**. The other **794 SPDX texts are indexed but not yet copied**, and must not be presented as locally preserved license text. The index includes license exceptions and deprecated IDs, and is not a claim to know every privately authored license that ever existed. Names not explicitly approved are REVIEW/HOLD or FORBIDDEN by current operator family policy, never silently permitted.
+
+Some GNU- or BSD-related identifiers are flagged as FORBIDDEN through a **conservative identifier-family policy filter**, not by interpreting copyright grants. Component-specific evidence and actual license notices remain authoritative. An identifier is not a complete dependency license analysis.
