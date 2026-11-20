@@ -35,6 +35,14 @@ Canonical mathematics and source identity remain in the existing parity implemen
 
 **Windows x86-64 and AMD64 are aliases of the single windows-x64 architecture.** Do not create three conflicting x64 binaries. The 13 required release profiles are 3 Linux + 3 modern macOS + 3 Windows + 4 Android. Any missing profile keeps the release staging gate red.
 
+## Source-to-container isolation
+
+The host wrapper exports **only committed source bytes** using local `git archive HEAD`. The snapshot directory is located under `build/gamp4-source-snapshots/<GitSHA>`, separate from the writable `build/gamp4-release/<GitSHA>` artifact mount. The wrapper generates and rechecks the snapshot's SHA256 file manifest, rejects symlinks, refuses any unexpected additions, and writes `.swe-source-commit` for the container to cross-check against its declared source SHA.
+
+The Docker container never receives `.git`, developer untracked files or the host's full checkout as a bind mount. The source snapshot is mounted read-only at `/src`, while only the separate package/evidence directory is mounted read-write at `/out`. This prevents an ordinary container process from changing its mounted source via a writable `/out` alias. The snapshot is *not* a signed attestation, and an independently compromised Docker daemon or host can still undermine these controls.
+
+Do not set `SWE_RELEASE_OUTPUT` to a parent of the source snapshot location. The host wrapper explicitly rejects overlapping output directories.
+
 ## Offline, pinned and least-privilege Docker preflight
 
 The operator must independently review and preload image manifests by digest in the *local* Docker store and verify third-party base and SDK licenses. No `latest` tag can substitute for a digest. The POSIX wrapper refuses remote Docker endpoints and uncached images. Docker Compose uses `pull_policy: never`, `network_mode: none`, non-root host UID:GID, read-only root filesystem, read-only committed source snapshot and NDK mounts, dropped capabilities and no-new-privileges.
