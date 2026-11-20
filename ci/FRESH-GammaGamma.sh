@@ -52,7 +52,7 @@ echo 'q1 O(A)T(.) MINUS'
 echo 'q2 A(T)O(.) PLUS'
 echo 'q3 O(T)A(.) MINUS'
 echo 'q4 T(A)O(.) PLUS'
+echo 'FRESH|HOLD|LEGACY EXECUTION RETIRED'
 echo 'FRESH|TERMINAL|EXACT WITNESS'
 echo 'X_~D~o~o~m~M~a~i~n(=)'
-echo 'FRESH|HOLD|LEGACY EXECUTION RETIRED'
 exit 79

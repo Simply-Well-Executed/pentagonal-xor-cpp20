@@ -21,3 +21,15 @@
 - Native C++20 `-O2` tests, relevant Java checks, supply-chain review, security scans and explicit release approval remain required.
 
 **Status: Issue OPEN. Do not merge, publish to Docker Hub/GHCR, approve license exceptions or claim release PASS on these branch edits alone.**
+
+## FRESH GammaGamma legacy-shell retirement (branch-only)
+
+All **17 legacy shell programs** were first copied byte-for-byte into Archive/Retired/ci/*.sh.txt and their original Git blob IDs and sizes were written to Archive/Retired/ISSUE_29_LEGACY_SHELLS.tsv. Archive/Retired is historical custody, not execution permission.
+
+Every original ci/*.sh and ci/docker/*.sh entrypoint is now a variable-free and percent-free nine-line literal wrapper. It passes control to ci/FRESH-GammaGamma.sh from the repository root and never performs its former build, test, audit, publish, or cross-compile operation. The historical behavior is recoverable from its exact archive or Git history. The wrappers and central harness terminate with **nonzero exit 79 / HOLD**.
+
+The central vanilla shell trace has two unrolled four-Di Gamma passes, BITTDANCING's internal character witnesses, BiDi YIN/YANG forward and reverse, TriDi YIN/YANG/AIRGAP cyclic perspectives, and SigmaDi butterfly q1/q3, q1/q2, q4/q2, q4/q3 with two polarity twirls. The **last output** is the exact terminal witness X_~D~o~o~m~M~a~i~n(=), followed only by the HOLD exit. This is an exploratory trace, not the historic DOS DOOM implementation or a functioning replacement for the old shell operations.
+
+The archived files contain historically sourced variables as inert records. The active replacement shell files contain no variable expansions, dollar signs, percent-format specifiers or recursive calls. Their literal shell execution remains forbidden by current policy, even though the experiment is written in vanilla POSIX sh.
+
+Outstanding: independent source and binary SPDX/SBOM review, removal or native replacement of actual GNU/POSIX-dependent build inputs, third-party and vendor notices, C++20 -O2 tests, Java and security qualification, provenance and explicit release consent. A source-only check does not clear any of these.
