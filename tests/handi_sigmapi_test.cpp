@@ -65,5 +65,14 @@ int main() {
        yin.text[2]!=ying.text[2] || ying.discarded_suffix!=1u) return 13;
     if(display("SE",2u).valid || display("S=E",3u).valid ||
        display(nullptr,0u).valid) return 14;
+    // Reduced shifts remain equivalent to any number of complete turns.
+    using swe::handi::rot_triad::rotate;
+    using swe::handi::rot_triad::outer_shift;
+    using swe::handi::rot_triad::center_shift;
+    if(outer_shift!=16u || center_shift!=10u ||
+       rotate('S',outer_shift)!='I' || rotate('E',center_shift)!='O' ||
+       rotate('X',outer_shift)!='N' || rotate('z',center_shift)!='j' ||
+       rotate('A',26u+outer_shift)!=rotate('A',outer_shift) ||
+       rotate('A',26u+center_shift)!=rotate('A',center_shift)) return 15;
     return 0;
 }

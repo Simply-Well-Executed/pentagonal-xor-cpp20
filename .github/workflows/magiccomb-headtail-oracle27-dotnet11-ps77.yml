@@ -565,14 +565,32 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          # Scan all non-archived active code for wasteful unnormalized
+          # alphabetic ROT42/ROT36 spellings. Historical docs are not mutated.
+          $scanned = 0
+          $sourceExtensions = @('.cpp','.c','.h','.hpp','.ps1','.cs','.java','.js','.ts','.xhtml')
+          foreach ($f in (Get-ChildItem -LiteralPath $src -File -Recurse -Force)) {
+            $relative = [IO.Path]::GetRelativePath($src,$f.FullName).Replace('\','/')
+            if ($relative.StartsWith('Archive/',[StringComparison]::OrdinalIgnoreCase) -or
+                $relative.StartsWith('LICENSES/text/',[StringComparison]::OrdinalIgnoreCase) -or
+                -not ($sourceExtensions -contains $f.Extension)) { continue }
+            $body = [IO.File]::ReadAllText($f.FullName)
+            $scanned++
+            if ([regex]::IsMatch($body,'(?i)\bROT(?:42|36)\b') -or
+                [regex]::IsMatch($body,'(?i)\brotate\s*\([^\r\n,]+,\s*(?:42|36)u?\s*\)')) {
+              throw ('HANDI|ROT|HOLD|noncanonical_alphabetic_turn|' + $relative)
+            }
+          }
+          if ($scanned -lt 40) { throw 'HANDI|ROT|HOLD|incomplete_repository_scan' }
+          Write-Host ('HANDI|ROT|SOURCE_AUDIT_PASS|files=' + $scanned + '|reduced_shift=16_10_16|historical_docs_untouched')
           $build = Join-Path $env:RUNNER_TEMP 'swe-sigmapi-native'
-          cmake -S $src -B $build -G 'Visual Studio 17 2022' -A x64 -DBUILD_TESTING=ON
+          cmake -S $src -B $build -G 'Visual Studio 18 2026' -A x64 -DBUILD_TESTING=ON
           if ($LASTEXITCODE -ne 0) { throw 'HANDI|SIGMAPI|HOLD|cmake_configure' }
           cmake --build $build --config Release --target handi_sigmapi_test
           if ($LASTEXITCODE -ne 0) { throw 'HANDI|SIGMAPI|HOLD|native_build' }
           ctest --test-dir $build -C Release -R '^handi_sigmapi_observation_not_automatic_pass$' --output-on-failure
           if ($LASTEXITCODE -ne 0) { throw 'HANDI|SIGMAPI|HOLD|native_test' }
-          Write-Host 'HANDI|SIGMAPI|NATIVE_PASS|CXX20|MSVC_O2|READ_ONLY|NO_AUTO_APPROVAL|ROT42_36_42'
+          Write-Host 'HANDI|SIGMAPI|NATIVE_PASS|CXX20|MSVC_O2|READ_ONLY|NO_AUTO_APPROVAL|ROT16_10_16'
       - name: Block project-authored POSIX scripts and unapproved GNU build inputs
         shell: pwsh
         run: |
