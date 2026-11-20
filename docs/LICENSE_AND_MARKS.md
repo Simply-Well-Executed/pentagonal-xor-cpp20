@@ -2,7 +2,7 @@
 
 > **First-party 0BSD standardized (2026-11-20); third-party rights still need review.** Verify rights, third-party
 > content and source attribution before claiming ownership or registrations.
-> **First-party copyright notice:** Copyright (C) 2026 by PAUL ALLEN CHEEK mail@pcheek.com.
+> **First-party copyright notice:** Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
 > SPDX-License-Identifier: 0BSD where the project holds the applicable rights.
 
 ## What the license grants

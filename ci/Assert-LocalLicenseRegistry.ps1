@@ -75,7 +75,7 @@ if (((Get-Item -LiteralPath $projectPath -Force).Attributes -band [IO.FileAttrib
 }
 $standard = $utf8.GetString([IO.File]::ReadAllBytes($canonicalPath))
 $placeholder = 'Copyright (C) YEAR by AUTHOR EMAIL'
-$notice = 'Copyright (C) 2026 by PAUL ALLEN CHEEK mail@pcheek.com'
+$notice = 'Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824'
 if (-not $standard.StartsWith($placeholder + "`n`n",[StringComparison]::Ordinal)) {
     throw 'LOCAL_LICENSE|HOLD|SPDX_0BSD_placeholder_changed'
 }
