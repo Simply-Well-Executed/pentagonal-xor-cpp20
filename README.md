@@ -18,6 +18,12 @@
 
 ---
 
+## Docker Hub source-study publication target (on HOLD)
+
+The requested destination is `paulcheek/android-source-study-v1:latest`, sourced from immutable alias `sha-07eb2a4561f0` (Git commit `07eb2a4561f0f5e82db4668d2b4fa453e2a4d733`). Operator-supplied digest: `sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30`; **registry identity remains unverified**, and the historic image is not automatically validated by this PR's new tests.
+
+[`ci/Publish-AndroidSourceStudy.ps1`](ci/Publish-AndroidSourceStudy.ps1) provides dry-run registry inspection by default and an explicitly authorized `docker push paulcheek/android-source-study-v1:latest` path only after historic-source GAMP4/CTest evidence, matched source image digest, independent QA/licensing/SBOM approval, local Docker provenance, and a literal mutable-tag replacement acknowledgement. The old `Run-DockerValidation.ps1 -Mode Publish` shortcut is blocked. No push has been performed. See [release procedure and approval template](docs/GAMP4_DOCKER_RELEASE.md).
+
 ## GAMP4-gated local Docker release staging (candidate)
 
 An explicit, operator-requested [GAMP4 Docker release protocol](docs/GAMP4_DOCKER_RELEASE.md) now provides a **local-only, SHA256-digest-pinned Docker Compose** path for full Linux CMake/CTest and all twelve GAMP4-style URS checks, plus offline Android NDK archive builds dependent on the validated source SHA. Native **macOS Intel/Apple Silicon** and **Windows Win32/x64/ARM64** validation scripts produce separate platform-specific GAMP4/CTest evidence. Docker cannot provide a genuine macOS runtime, and Windows container images require matching Windows infrastructure.
