@@ -106,8 +106,8 @@ struct DecimalToken { std::string_view text; };
     return evaluate(token.text);
 }
 
-// Keep the author's ℼ integer digits fixed; caller chooses the decimal point.
-// This cannot silently turn ℼ into ordinary irrational pi or guess a split.
+// Keep the author's π integer digits fixed; caller chooses the decimal point.
+// This cannot silently turn π into ordinary irrational pi or guess a split.
 inline constexpr std::string_view pi_digits="314159265358979323";
 inline constexpr std::uint64_t pi_integer=314159265358979323ULL;
 inline constexpr std::string_view bipi_square=
@@ -117,7 +117,7 @@ inline constexpr std::string_view bipi_square=
     return pi*pi;
 }
 // PiPi stays symbolic: roughly 5e18 output decimal digits for this huge exponent.
-inline constexpr std::string_view pipi_symbolic="ℼ^ℼ";
+inline constexpr std::string_view pipi_symbolic="π^π";
 inline constexpr std::uint64_t pidi_mod4=pi_integer%4u; // 3; label "I" unresolved
 
 [[nodiscard]] inline Result sigma_pi(std::string_view decimal_token) {

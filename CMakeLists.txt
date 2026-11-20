@@ -1,5 +1,33 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.23)
 project(PentagonalXOR VERSION 0.2.0 LANGUAGES CXX)
+
+# ISO C++20 and user-specified release optimization policy.
+# MSVC /O2 in Release, GCC/Clang -O3 in Release; non-Release stays O2.
+# Historical O2 evidence is not silently relabeled as O3 evidence.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+  if(MSVC)
+    set(CMAKE_CXX_FLAGS_${_config} "/MD /O2 /DNDEBUG" CACHE STRING "MSVC optimized O2" FORCE)
+  elseif(_config STREQUAL "RELEASE" AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    set(CMAKE_CXX_FLAGS_${_config} "-O3 -DNDEBUG" CACHE STRING "GCC/Clang Release O3" FORCE)
+  else()
+    set(CMAKE_CXX_FLAGS_${_config} "-O2 -DNDEBUG" CACHE STRING "Non-Release or other compiler O2" FORCE)
+  endif()
+endforeach()
+
+# Apply actionable diagnostics across ALL configurations and C++ targets.
+if(MSVC)
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/W4>
+                      $<$<COMPILE_LANGUAGE:CXX>:/permissive->)
+else()
+  add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wall>
+                      $<$<COMPILE_LANGUAGE:CXX>:-Wextra>
+                      $<$<COMPILE_LANGUAGE:CXX>:-Wpedantic>)
+endif()
+
 
 # Produce usable debug symbols even in optimized Release builds.
 # MSVC PDBs are distributable outputs of this project, not the compiler itself.
@@ -8,6 +36,38 @@ if(MSVC)
     add_link_options(/DEBUG:FULL)
 else()
     add_compile_options(-g)
+endif()
+
+# Cross-platform STD-free core packaging. The legacy application and
+# experiments remain available with the explicit OFF setting. Core-only builds
+# compile one ISO C++20 object and create a native static archive, without any
+# STL source includes, C++ runtime link step, network fetch or executable tests.
+option(SWE_STD_FREE_CORE_ONLY
+  "Build native STD-free Suite plus canonical DecaSigma/TriPi/COREAO/stability headers" OFF)
+if(SWE_STD_FREE_CORE_ONLY)
+  add_library(swe_std_free_portable_core STATIC
+    tests/std_free_portable_probe.cpp)
+  target_include_directories(swe_std_free_portable_core PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/swe>)
+  target_compile_features(swe_std_free_portable_core PUBLIC cxx_std_20)
+  set_target_properties(swe_std_free_portable_core PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS swe_std_free_portable_core ARCHIVE DESTINATION lib)
+  install(FILES
+    include/pxor_memory.hpp
+    include/pentagonal_xor.hpp
+    include/pentagonal_suite.hpp
+    shared/pentagonal_xor_std_free.h
+    shared/deca_sigma.hpp
+    shared/tri_pi.hpp
+    shared/coreao.hpp
+    shared/coreao_gain.hpp
+    shared/coreo_stereo.hpp
+    shared/stability10d.hpp
+    DESTINATION include/swe)
+  message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
+  return()
 endif()
 
 add_executable(pentagonal_xor pentagonal_xor_cpp20.cpp)
@@ -24,8 +84,109 @@ else()
     target_compile_options(pentagonal_xor PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+# Optional throughput library and separate benchmark: the established
+# five-feature parity executable remains unmodified and retains its test contract.
+add_library(swe_pentagonal_xor_throughput INTERFACE)
+target_include_directories(swe_pentagonal_xor_throughput INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_compile_features(swe_pentagonal_xor_throughput INTERFACE cxx_std_20)
+# Independent STD-free five-feature CLI, using the canonical original
+# parity function. The legacy STL-backed CLI remains for T-CROSS comparison.
+if(WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_executable(pentagonal_xor_std_free src/parity_std_free_main.cpp)
+  target_link_libraries(pentagonal_xor_std_free
+    PRIVATE swe_pentagonal_xor_throughput)
+  set_target_properties(pentagonal_xor_std_free PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS pentagonal_xor_std_free RUNTIME DESTINATION bin)
+endif()
+# Native OS-backed stdout, monotonic time and memory mapping are
+# implemented for Windows, Linux and supported macOS. Android uses the core-only archive.
+if(WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  add_executable(pentagonal_xor_cli src/main.cpp)
+  target_link_libraries(pentagonal_xor_cli PRIVATE swe_pentagonal_xor_throughput)
+  set_target_properties(pentagonal_xor_cli PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS pentagonal_xor_cli RUNTIME DESTINATION bin)
+  add_executable(pentagonal_suite_cli src/suite_main.cpp)
+  target_link_libraries(pentagonal_suite_cli PRIVATE swe_pentagonal_xor_throughput)
+  set_target_properties(pentagonal_suite_cli PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS pentagonal_suite_cli RUNTIME DESTINATION bin)
+else()
+  message(STATUS "STD-free throughput CLI: native I/O backend unsupported on this host")
+endif()
+# Both headers form the self-contained STD-free API; installing only
+# pentagonal_xor.hpp would break downstream include resolution.
+install(FILES
+  include/pentagonal_xor.hpp
+  include/pxor_memory.hpp
+  include/pentagonal_suite.hpp
+  DESTINATION include/swe)
+
 include(CTest)
 if(BUILD_TESTING)
+    if(TARGET pentagonal_xor_std_free)
+      add_test(NAME parity_std_free_example COMMAND
+        pentagonal_xor_std_free 0.80 0.70 0.90 0.60 0.95)
+      set_tests_properties(parity_std_free_example PROPERTIES
+        PASS_REGULAR_EXPRESSION "Pentagonal XOR: 51\\.72800000%")
+      add_test(NAME parity_std_free_all_zero COMMAND
+        pentagonal_xor_std_free 0 0 0 0 0)
+      set_tests_properties(parity_std_free_all_zero PROPERTIES
+        PASS_REGULAR_EXPRESSION "Pentagonal XOR: 0\\.00000000%")
+      add_test(NAME parity_std_free_odd COMMAND
+        pentagonal_xor_std_free 1 1 1 0 0)
+      set_tests_properties(parity_std_free_odd PROPERTIES
+        PASS_REGULAR_EXPRESSION "Pentagonal XOR: 100\\.00000000%")
+      add_test(NAME parity_std_free_invalid_range COMMAND
+        pentagonal_xor_std_free 0.8 0.7 1.2 0.6 0.95)
+      set_tests_properties(parity_std_free_invalid_range PROPERTIES WILL_FAIL TRUE)
+      add_test(NAME parity_std_free_invalid_nan COMMAND
+        pentagonal_xor_std_free 0.8 0.7 nan 0.6 0.95)
+      set_tests_properties(parity_std_free_invalid_nan PROPERTIES WILL_FAIL TRUE)
+      add_test(NAME parity_std_free_invalid_arity COMMAND
+        pentagonal_xor_std_free 0.8 0.7 0.9 0.6)
+      set_tests_properties(parity_std_free_invalid_arity PROPERTIES WILL_FAIL TRUE)
+    endif()
+    add_executable(pentagonal_suite_test
+        tests/pentagonal_suite_test.cpp)
+    target_link_libraries(pentagonal_suite_test
+        PRIVATE swe_pentagonal_xor_throughput)
+    set_target_properties(pentagonal_suite_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME pentagonal_suite_operations
+        COMMAND pentagonal_suite_test)
+    if(TARGET pentagonal_suite_cli)
+      add_test(NAME pentagonal_suite_cli_smoke
+          COMMAND pentagonal_suite_cli)
+      set_tests_properties(pentagonal_suite_cli_smoke PROPERTIES
+          PASS_REGULAR_EXPRESSION "Suite pipeline processed in")
+    endif()
+
+    add_executable(pentagonal_xor_throughput_test
+        tests/pentagonal_xor_throughput_test.cpp)
+    target_link_libraries(pentagonal_xor_throughput_test
+        PRIVATE swe_pentagonal_xor_throughput)
+    set_target_properties(pentagonal_xor_throughput_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME pentagonal_xor_swar_roundtrip
+        COMMAND pentagonal_xor_throughput_test)
+    if(TARGET pentagonal_xor_cli)
+      add_test(NAME pentagonal_xor_throughput_cli_smoke
+          COMMAND pentagonal_xor_cli --bytes 65536)
+      set_tests_properties(pentagonal_xor_throughput_cli_smoke PROPERTIES
+          PASS_REGULAR_EXPRESSION "periodic 256-byte LUT")
+    endif()
+
+    # Isolated canonical parity object for machine-level zero-CALL disassembly.
+    # Does not alter the production CLI or create an alternate algorithm.
+    add_library(swe_zero_call_core_probe OBJECT tests/zero_call_core_probe.cpp)
+    target_compile_features(swe_zero_call_core_probe PRIVATE cxx_std_20)
+    set_target_properties(swe_zero_call_core_probe PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+
     add_test(NAME parity_example
         COMMAND pentagonal_xor 0.80 0.70 0.90 0.60 0.95)
     set_tests_properties(parity_example PROPERTIES
@@ -129,8 +290,8 @@ if(BUILD_TESTING)
         target_compile_options(counterarccosine_secondwave_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(stability10d_test PRIVATE -Wall -Wextra -Wpedantic)
         target_compile_options(coreo_stereo_test PRIVATE -Wall -Wextra -Wpedantic)
-        target_compile_options(gammagamma_pi_precision_test PRIVATE -O2 -Wall -Wextra -Wpedantic)
-        target_compile_options(toolong_arithmetic_test PRIVATE -O2 -Wall -Wextra -Wpedantic)
+        target_compile_options(gammagamma_pi_precision_test PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(toolong_arithmetic_test PRIVATE -Wall -Wextra -Wpedantic)
     endif()
 endif()
 
@@ -244,7 +405,7 @@ if(MSVC)
   # Actual measured optimization: /GL + /LTCG, enabled in Release only.
   # The default benchmark is promoted; explicit baseline stays unoptimized
   # so later AB runs remain comparable against a real pre-promotion control.
-  set_property(TARGET pentagonal_ligaze PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+  set_property(TARGET pentagonal_ligaze PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE)
   if(SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "safe_header" OR
      SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "safe_header_ltcg")
     target_compile_definitions(pentagonal_ligaze_benchmark PRIVATE
@@ -269,7 +430,7 @@ if(MSVC)
      SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "safe_header_ltcg" OR
      SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "platform_v2_ltcg")
     # MSVC Release already enables /O2; test additional /GL and /LTCG.
-    set_property(TARGET pentagonal_ligaze_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    set_property(TARGET pentagonal_ligaze_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
   endif()
 else()
   if(NOT SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "baseline" AND
@@ -391,6 +552,13 @@ if(BUILD_TESTING)
   set_tests_properties(vista9x9_separate_terminal_route PROPERTIES
     PASS_REGULAR_EXPRESSION "terminal_flops=5.*terminal_flips=4.*final_reversed=0")
 endif()
+
+# Ship all public documentation in the same flat directory as the register,
+# including HANDI, the writing procedure and other sibling-linked pages.
+# The original files remain in docs/ with their Git history unchanged.
+install(DIRECTORY docs/
+  DESTINATION share/doc/pentagonal-xor
+  FILES_MATCHING PATTERN "*.md" PATTERN "*.svg")
 
 # Ship the copyright/0BSD/marks boundary and the outstanding review audit.
 install(FILES

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
-// Canonical C++20 OUTPUT precision contract, derived from the owner's ℼ digit string.
+// Canonical C++20 OUTPUT precision contract, derived from the owner's π digit string.
 // This is a display-formatting policy, not a change to computational precision.
 #ifndef SWE_PI_PRECISION_HPP
 #define SWE_PI_PRECISION_HPP

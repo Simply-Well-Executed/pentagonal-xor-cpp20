@@ -9,6 +9,7 @@ param(
     [string] $VsArch = ''
 )
 
+Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 $prefix = [IO.Path]::GetFullPath($Stage).Replace('\', '/')
 $required = @(
@@ -23,6 +24,32 @@ foreach ($path in $required) {
         throw "Release stage is missing public API: $path"
     }
 }
+
+
+# Verify packaged documentation from the installed root rather than checkout.
+$docsRoot = Join-Path $prefix 'share/doc/pentagonal-xor'
+foreach($doc in @(
+    'DOCUMENT_REVIEW_REGISTER.md',
+    'WRITING_OPERATING_PROCEDURE.md',
+    'HANDI.md',
+    'SIGMADI_COLLISION12.md'
+)) {
+    if(!(Test-Path -LiteralPath (Join-Path $docsRoot $doc) -PathType Leaf)) {
+        throw "Installed documentation missing: $doc"
+    }
+}
+$register = Get-Content -LiteralPath (Join-Path $docsRoot 'DOCUMENT_REVIEW_REGISTER.md') -Raw
+$links = [regex]::Matches($register,'\]\(([^)\s]+)\)')
+foreach($match in $links) {
+    $dest = [string]$match.Groups[1].Value
+    if($dest -match '^https?://') { continue }
+    $destPath = ($dest -split '#',2)[0]
+    $docPath = Join-Path $docsRoot $destPath
+    if(!(Test-Path -LiteralPath $docPath -PathType Leaf)) {
+        throw "Installed register link does not resolve: $dest"
+    }
+}
+Write-Host ('PASS: installed documentation register links=' + $links.Count)
 
 $args = @('-S', 'tests/consumer', '-B', $BuildDir,
           "-DSWE_AUDIT_PREFIX=$prefix")

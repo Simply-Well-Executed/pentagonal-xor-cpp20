@@ -36,7 +36,7 @@ automatically to those embedded media bytes.
 The project uses **Simply Well Executed**, **PENTAGONAL XOR**,
 **MINZA**, **MINZA Pinwheel Atlas**, and **Hanzeye** as identifying
 names. If the respective rights holder elects, those names can be
-presented with an unregistered `™` symbol; this document does
+presented with an unregistered `TM` symbol; this document does
 **not** assert a trademark registration, cite an unverified registry,
 or use the registered `®` symbol. A 0BSD copyright license does not
 resolve trademark ownership or automatically license another party's

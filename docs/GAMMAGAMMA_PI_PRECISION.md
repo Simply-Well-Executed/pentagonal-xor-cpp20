@@ -1,20 +1,20 @@
-# COREAO ℼ operators, tGamma, GammaGamma, and display precision
+# COREAO π operators, tGamma, GammaGamma, and display precision
 
 > **EXPLORATORY** · `COREAO-GAMMAGAMMA-PI-PRECISION-v1` · C++20 · 0BSD · Copyright (c) 2026 Paul Allen Cheek
 
-This addition preserves the original DecaSigma, Triℼ, and COREAO algorithms and their historical tests. It introduces a **separate** integer-component GammaGamma operator and project output-formatting contract. These should not be silently merged with existing mathematics or treated as nuclear-physics models.
+This addition preserves the original DecaSigma, Triπ, and COREAO algorithms and their historical tests. It introduces a **separate** integer-component GammaGamma operator and project output-formatting contract. These should not be silently merged with existing mathematics or treated as nuclear-physics models.
 
 ## Source notation and definedness
 
-The owner's ℼ has the **exact integer digits** `314159265358979323` (18 digits). Its ordinary decimal formatting requires the source author to choose a decimal point. This implementation never guesses the location.
+The owner's π has the **exact integer digits** `314159265358979323` (18 digits). Its ordinary decimal formatting requires the source author to choose a decimal point. This implementation never guesses the location.
 
 | Label | Owner's expression | Implemented meaning | Outcome |
 | --- | --- | --- | --- |
-| Triℼ | implements ℼ | Existing three-route forward/reverse/Z-fold DecaSigma inspector | Existing `shared/tri_pi.hpp`, unmodified |
-| BiPi | `ℼ^2` | Mathematical integer exponentiation | Exact `98696044010893585656621344341538329` |
-| PiPi | `ℼ^ℼ` | Exact symbolic expression, not representable in native fixed-width integers | Symbolic only |
-| PiDi | `ℼ % 4 = I` | Euclidean integer modulo four | **3**; the proposed label `I` needs a user-defined mapping before asserting equality |
-| SigmaPi | `!ℼ` | New **prefix GammaGamma** on an explicitly decimal-pointed input string | Exact when factorial components are bounded; symbolic otherwise |
+| Triπ | implements π | Existing three-route forward/reverse/Z-fold DecaSigma inspector | Existing `shared/tri_pi.hpp`, unmodified |
+| BiPi | `π^2` | Mathematical integer exponentiation | Exact `98696044010893585656621344341538329` |
+| PiPi | `π^π` | Exact symbolic expression, not representable in native fixed-width integers | Symbolic only |
+| PiDi | `π % 4 = I` | Euclidean integer modulo four | **3**; the proposed label `I` needs a user-defined mapping before asserting equality |
+| SigmaPi | `!π` | New **prefix GammaGamma** on an explicitly decimal-pointed input string | Exact when factorial components are bounded; symbolic otherwise |
 
 **Critical C++20 distinctions:** `^` denotes XOR in C++, not exponentiation. `!` denotes logical NOT in C++ for built-in integers, but the new overload `!swe::gammagamma::DecimalToken{...}` is deliberately a new operation on the tagged decimal string. Ordinary `!integer` retains its normal C++ meaning. The special notation does not retroactively change built-in operators.
 
@@ -24,14 +24,14 @@ The owner's ℼ has the **exact integer digits** `314159265358979323` (18 digits
 - **GammaGamma**, newly specified prefix operator: `!3.14 = abs(3! - 14!) = 87178291194`; the comparison direction is **NEGATIVE** and is saved in a **separate field**. The magnitude is nonnegative.
 - Input is a string containing **one period and decimal digits on each side**. Keep `3.014` distinct from `3.14` in the source ledger even when both parse to identical component integers. No floating-point parsing or normalization changes the original token.
 - Integer factorials up to **2048!** can be calculated exactly by the bundled base-1,000,000,000 arbitrary-precision implementation. Larger component arguments receive `symbolic_only` with their original integers and direction retained; **no guessed numeric result**.
-- Inputs such as `!3.14159265358979323` contain the correct concatenated ℼ digits and an explicit user-chosen decimal point, but the factorial of 14159265358979323 is beyond the declared resource bound. The result is symbolic, not a failed identity.
+- Inputs such as `!3.14159265358979323` contain the correct concatenated π digits and an explicit user-chosen decimal point, but the factorial of 14159265358979323 is beyond the declared resource bound. The result is symbolic, not a failed identity.
 - The words *gain* and *dispersion* are exploratory interpretations. Neither this operator nor `std::tgamma` by itself establishes quantum interactions or physical radiation dynamics.
 
-## ℼ-derived presentation precision
+## π-derived presentation precision
 
 Per the owner's output-conformance instruction:
 
-`n = digit_count(ℼ) − 2 = 18 − 2 = 16`
+`n = digit_count(π) − 2 = 18 − 2 = 16`
 
 Use **`std::setprecision(swe::pi_precision::display_digits)`** for new iostream floating-point output. The constant is defined once in `shared/pi_precision.hpp`. The author identifies the two reserved positions as one whole-number and one decimal-place position.
 
@@ -52,4 +52,4 @@ Compile with **C++20 `-O2`** on GCC/Clang. The CI workflow compiles the test and
 
 **Custody:** Source digits → explicit decimal placement → parsed integer components → exactly computed factorials or symbolic state → direction + magnitude → optional `std::setprecision(16)` presentation for floating data → evidence. No media/codec tracks are inferred by this arithmetic.
 
-See [COREAO](COREAO.md), [Triℼ](TRI_PI.md), and [MINZA audiovisual audit](MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md).
+See [COREAO](COREAO.md), [Triπ](TRI_PI.md), and [MINZA audiovisual audit](MINZA_DUAL_RENDITION_MP4_AUDIT_2026-11-19.md).

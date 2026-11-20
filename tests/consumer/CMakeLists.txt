@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(SWEAuditReleaseConsumer LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT DEFINED SWE_AUDIT_PREFIX)
     message(FATAL_ERROR "Set SWE_AUDIT_PREFIX to the installed release stage directory")

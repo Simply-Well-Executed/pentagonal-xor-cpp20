@@ -104,7 +104,9 @@ static inline double swe_pxor_fifth_root(double a)
     int i;
 
     if (a == 0.0) return 0.0;
-    if (a < 0.0) return -swe_pxor_fifth_root(-a);
+    /* Preserve the signed result without a recursive function call. */
+    const int negative = (a < 0.0);
+    if (negative) a = -a;
 
     while (a < 1.0) {
         a *= 33554432.0; /* 2^25 */
@@ -125,7 +127,8 @@ static inline double swe_pxor_fifth_root(double a)
         x = next;
     }
 
-    return scale_up ? x * factor : x / factor;
+    const double magnitude = scale_up ? x * factor : x / factor;
+    return negative ? -magnitude : magnitude;
 }
 
 /* Closed-form odd-parity probability for five inputs in [0,1]. */

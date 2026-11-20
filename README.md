@@ -2,27 +2,76 @@
 
 # ⬟ PENTAGONAL XOR
 
-### A tiny cross-platform C++20 parity engine with a mighty build matrix.
+### Native C++20 parity engine with canonical UTF-8 source.
 
-**Simply Well Executed** · **0BSD** · **No external runtime dependencies**
+**Simply Well Executed** · **0BSD** · **Native runtime imports under audit**
 
-[![Build • Test • Release](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/ship.yml/badge.svg)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/ship.yml)
+**Local native verification:** [PowerShell + MSVC + CTest](ci/Invoke-NativeCore.ps1) (no hosted runner)
 [![Releases](https://img.shields.io/github/v/release/Simply-Well-Executed/pentagonal-xor-cpp20?include_prereleases&label=release)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus)](CMakeLists.txt)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
-[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20Windows%20%7C%20macOS-violet)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions)
+[![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android-blue)](docs/NATIVE_PLATFORM_MATRIX.md)
 
-**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[⚙️ Watch live build matrix](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/workflows/ship.yml)**  ·  **[🛡️ Security policy](SECURITY.md)**
+**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
 
 </div>
 
 ---
 
+## Offline STD-free core and native multi-OS matrix
+
+[Native platform matrix](ci/native-platform-matrix.yml) now declares locally buildable C++20 static-archive profiles for **macOS arm64 / x86_64 / universal**, **Windows x86 / x64 (AMD64) / ARM64**, **Linux x86 / x86_64 / ARM64**, and **Android arm64-v8a / armeabi-v7a / x86 / x86_64**. The macOS 32-bit Intel profile is explicitly unsupported on modern macOS, not silently marked green. See [OS/ABI setup and operator commands](docs/NATIVE_PLATFORM_MATRIX.md).
+
+The opt-in `-DSWE_STD_FREE_CORE_ONLY=ON` CMake path compiles the [STD-free portable core probe](tests/std_free_portable_probe.cpp) into a static archive and installs ten native STD-free public headers, including the existing DecaSigma/TriPi/COREAO/gain/stereo/Stability10D math contracts. It skips unrelated legacy projects **only for this explicitly scoped build**; the normal full build remains available. The local [POSIX builder](ci/Build-PlatformMatrix.sh) and [Windows PowerShell builder](ci/Build-PlatformMatrix.ps1) perform no network fetch, package installation, hosted runner execution or container launch. Their local YAML reports say `ARCHIVE_BUILT_NOT_RUNTIME_TESTED`, not a claimed application pass.
+
+The independent [STD-free parity CLI](src/parity_std_free_main.cpp) reuses the original five-feature probability function and has six comparison CTests. It is not yet promoted over the [original parity CLI](pentagonal_xor_cpp20.cpp); its strict ASCII decimal parser does not claim full `std::stod` grammar/locale equivalence. The existing legacy headers, tools and tests still contain standard-library dependencies, so **the entire repository is not yet STD-free**.
+
+Generate the current complete source inventory using `sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml`. The POSIX T-CROSS default also writes this inventory and a Git-derived `+/-DIFF` YAML before enforcing strict gates. No source deletion or replacement of mathematical definitions is performed to manufacture a green result.
+
+## PENTAGONAL SUITE: nine native C++20 operations
+
+The additional [Pentagonal Suite header](include/pentagonal_suite.hpp) supplies **XOR, OR, AND, NAND, NOP, NIL, NAN, COR and VISTA** as an independent operation family. It reuses the original pentagonal numeric source and bytewise XOR implementation rather than duplicating either. The suite includes [an independent Windows/Linux/macOS CLI](src/suite_main.cpp) and [compile-time plus runtime regression cases](tests/pentagonal_suite_test.cpp); it does **not** replace the established five-feature parity CLI or the original throughput benchmark.
+
+These three new suite C++ files use **zero C/C++ standard-library headers, zero `std::` references and zero code comments**. See [operation mapping and overflow/NAN contracts](docs/PENTAGONAL_SUITE.md). A new local T-CROSS gate checks comment-free source, and the existing STD-free source and binary-import gates now include the suite. Exact-seeded transforms and 256-byte-periodic LUT transforms remain distinct; NIL zero-fill is not a guarantee of secure memory erasure; NAN boxing stores integer bit patterns rather than floating-point secrets.
+
+The newly added suite target and its tests have not been independently built or executed in the actual PR checkout. The strict whole-repository STD-free and residual historical-source gates remain blocking. The PR remains draft and unmerged.
+
+## STD-free throughput engine (exploratory PR #19)
+
+The optional [byte-stream XOR header](include/pentagonal_xor.hpp), [fixed-buffer and borrowed-view header](include/pxor_memory.hpp), [native benchmark CLI](src/main.cpp), and [throughput regression](tests/pentagonal_xor_throughput_test.cpp) have been refactored to **zero C/C++ standard-library headers and zero `std::` calls in those four sources**. They use C++20 language features and explicit Win32/POSIX APIs. `fast_xor_buffer` now uses `constexpr` little-endian byte packing and unpacking instead of `std::memcpy`; scoped decrypted literals use runtime volatile cleanup without `std::is_constant_evaluated`. Native OS page allocation replaces C++ `new` for optional buffers over the default 16 MiB.
+
+The original five-feature [parity CLI](pentagonal_xor_cpp20.cpp), other historical libraries and existing tests **are not yet STD-free**. A whole-repository T-CROSS gate is present and must remain blocking until those files are independently migrated and regression-tested. Runtime linkage to libc/UCRT or standard C++ libraries has **not been inspected on a compiled PR binary**. Source-level absence of `std::` does not imply freestanding operation, zero imports, or absence of system calls. The new CLI's native I/O backend now targets Windows, Linux and supported macOS; Android uses the cross-compiled archive-only core without pretending to run a desktop CLI.
+
+See [STD-free native T-CROSS audit](docs/STD_FREE_NATIVE_T_CROSS.md) and [POSIX/YAML gates](Taskfile.yml). No new full-build or linker result is asserted by this source change. The periodic 256-byte stream remains distinct from the exact seeded sequence.
+
+## Local native verification (Draft PR #19)
+
+**No GitHub Actions runner, VM image or self-hosted runner.** The PR branch removes the remaining `.github/workflows/native-core.yml` and runs verification only when the maintainer invokes [`ci/Invoke-NativeCore.ps1`](ci/Invoke-NativeCore.ps1) on a locally controlled Windows machine. It uses installed PowerShell, Git (local inspection only), MSVC, CMake and CTest. It does not install dependencies, fetch source, query a REST API, invoke Node, or call Docker. Historical workflow files remain in Git history; `main` is unchanged until the PR is merged.
+
+**Current operator command (review the official latest-stable release first):**
+
+```powershell
+Set-StrictMode -Version 2.0
+pwsh -NoLogo -NoProfile -File .\ci\Invoke-NativeCore.ps1 -LatestStableVersion 7.7.0 -ReleaseEvidenceUri 'https://github.com/PowerShell/PowerShell/releases/tag/v7.7.0'
+```
+
+The `-LatestStableVersion` argument is **not a repository pin**. The operator must independently check the official [PowerShell releases](https://github.com/PowerShell/PowerShell/releases/latest) and supply the latest stable version at the time of execution, updating the command when newer versions are released. The script requires an exact installed-version match **before** verifying any source or running a build. Its offline evidence record states explicitly that the provided release URL is operator-asserted rather than verified over a network. Native hosting eliminates image drift, but the local machine, toolchain provenance and actual network isolation still require review.
+
+**Source integrity:** The local entrypoint runs the existing [Magic Comb](ci/Invoke-MagicComb.ps1) in SelfTest and Verify modes (strict UTF-8, Unicode NFKC, remove U+200B..U+200D and U+FEFF, nesting depth 9), then requires ISO C++20 (`CXX_STANDARD 20`, `CXX_STANDARD_REQUIRED ON`, `CXX_EXTENSIONS OFF`) with MSVC `/O2`, builds, and invokes CTest. It writes `.iron-native-evidence.json` locally. It does **not** download or execute an automated installer.
+
+**POSIX T-CROSS +/−DIFF gate runner:** [Taskfile.yml](Taskfile.yml) is the declarative, version-3 YAML manifest; [ci/t-cross-posix.sh](ci/t-cross-posix.sh) is the actual executable implementation. The Task CLI is optional and never installed automatically. Run `sh ci/t-cross-posix.sh` in a locally controlled, already-checked-out source tree to generate a fresh `.iron-t-cross-diff.yml` from Git and attempt the nine ordered gates. To export only the derived audit YAML: `sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml`. The generated file is local and ignored by Git; exact baseline/current SHAs and counts derive from Git, never from display prose.
+
+**Zero-CALL scope:** [tests/zero_call_core_probe.cpp](tests/zero_call_core_probe.cpp) compiles a separate object using the *canonical shared five-input parity function* under the existing /O2 or -O2 policy. The POSIX disassembly gate requires no CALL instructions in that **isolated mathematical core**. The CLI still performs input parsing, validation, and output; those are not covertly certified as call-free. The historical fifth-root helper has been made non-recursive. Current `java/`, `docker/`, and `android/` directories remain tracked, so a strict whole-tree residual-surface gate will fail until a separately audited retirement. The native tests and nine-gate bundle have not yet been executed under the new ISO mode.
+
+**Historical comparison evidence, not a new local test:** [Hosted run 44661958832](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44661958832) passed 164 tracked-source checks and 34/34 CTests but failed the PowerShell 7.6.9 versus 7.7.0 version gate. No completed run of the new local entrypoint has yet been independently observed. See [IRON / T-CROSS audit](docs/IRON_T_CROSS_REVIEW.md). Do not claim native IRON certification from historical hosted checks.
+
+**Source custody:** Historical Java/Android, Docker, PGO, cross-platform, release and Node-backed workflow definitions remain in earlier Git commits. Manually callable historical scripts and source directories also remain tracked pending separate review, but are not part of the local native entrypoint.
+
 ## ⬟ toolong: exact C++20 arbitrary-precision integers (draft PR #17)
 
 The optional [`swe::toolong`](shared/toolong.hpp) class provides exact signed integers with dynamically sized decimal digits, including addition, subtraction, multiplication, division, modulo, powers, factorials, GCD, and explicit-width bitwise views. [Exact reduced fractions](shared/toolong_ratio.hpp) and a separate [synthetic photon-count gain/dispersion example](shared/toolong_photon_model.hpp) use integer arithmetic rather than floating-point approximations. See [the operator and evidence contract](docs/TOOLONG.md).
 
-The ℼ-derived [16-significant-digit display policy](shared/pi_precision.hpp) applies to floating-point presentations, **not** to exact integer source records or numeric results. The additions remain under review in [draft PR #17](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/17).
+The π-derived [16-significant-digit display policy](shared/pi_precision.hpp) applies to floating-point presentations, **not** to exact integer source records or numeric results. The additions were integrated through [merged PR #17](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/17).
 
 ## 📡 COREAO RF: input → +9 dBi → EIRP output
 
@@ -46,13 +95,13 @@ a physical antenna measurement. [RF COREAO protocol](docs/COREAO_GAIN.md).
 
 The [`shared/coreo_stereo.hpp`](shared/coreo_stereo.hpp) operator extracts PR #17's reversible stereo-to-four-channel projection with read-only Z-fold verification. Both are C++20 header-only APIs installed with the existing CMake package. Independent tests check parity against 16-minterm references, exact hex golden vectors, original source preservation, domain guards, and forward/reverse/Z-fold inversion. Provenance: [source PR #17](https://github.com/pcheek1991/faster-whisper-4d-abandonedware-uniunlicensd/pull/17) at commit `432a228f`. See [the operator protocol](docs/STABILITY10D.md).
 
-**Android:** the [experimental offline Java app](docs/ANDROID.md) is built by the release workflow as a clearly named **debug APK**. It requests no Internet or microphone permissions and reads user-selected raw stereo float32-le files. Android, Windows, macOS and Linux outputs are released with SHA-256 evidence, subject to successful CI.
+**Historical Android research:** the [experimental offline Java app](docs/ANDROID.md) is not built or released by the local native verifier. Earlier experiment records and sources remain for provenance; no new APK or multi-platform release is promised.
 
 **Critical scope:** this is **model-free audio feature analysis**, not an AI speech-to-text engine. No trained Whisper weights or tokenizer are present; the six-byte Stability signature cannot recognize spoken words. The separate original Whisper/CTranslate2 legacy code is *not* being silently presented as this library. A production-signed Android release requires an additional release-signing process.
 
 ## ∞ The mathematics
 
-Five independent feature probabilities `h₁...h₅ ∈ [0,1]` produce a single
+Five independent feature probabilities `h1...h5 ∈ [0,1]` produce a single
 odd-parity probability by a direct closed-form calculation:
 
 ```text
@@ -90,13 +139,14 @@ equivalent mathematical result is retained for valid inputs.
 
 ## 🧩 Include-free compatibility API
 
-The [std-free C header](shared/pentagonal_xor_std_free.h) exposes the five-feature AND, OR, odd-parity XOR probability, partial, and fifth-root scores without standard headers, C++ standard-library dependencies, allocation, or platform APIs. It is compiled as strict C11 in the cross-platform shared-guard workflow.
+The [std-free C header](shared/pentagonal_xor_std_free.h) exposes the five-feature AND, OR, odd-parity XOR probability, partial, and fifth-root scores without standard headers, C++ standard-library dependencies, allocation, or platform APIs. It was previously verified as C11 in the now-retired cross-platform guard. The local native verifier builds and tests the C++20 project; the C11 compatibility API remains a separately identified historical interface.
 
 On Windows, `SWE_PXOR_WINDOWS_LEGACY_TARGET` and `SWE_PXOR_USE_STDFREE_BACKEND` are selected from `_WIN32` and `_WIN32_WINNT`. This detects the **configured compiler target**, not the actual Windows version at runtime. The std-free header is portable and can be used on any supported platform.
 
-PowerShell 7 build of the compatibility component:
+PowerShell Core (latest stable version), with StrictMode 2.0, historical compatibility example:
 
 ```powershell
+Set-StrictMode -Version 2.0
 cmake -S .\\shared -B .\\shared\\build
 cmake --build .\\shared\\build --config Release
 ctest --test-dir .\\shared\\build -C Release --output-on-failure
@@ -146,9 +196,9 @@ ctest --test-dir build -C Release --output-on-failure
 
 ---
 
-## 🔎 Triℼ · Three inspection routes
+## 🔎 Triπ · Three inspection routes
 
-[Triℼ inspection](docs/TRI_PI.md) adds three **read-only** C++20 checks
+[Triπ inspection](docs/TRI_PI.md) adds three **read-only** C++20 checks
 to the DecaSigma trace, checking **forward transitions**,
 **reverse reconstruction**, and **Z-fold cross-stage witnesses**.
 No special route names are assigned. All three must
@@ -164,7 +214,7 @@ or optional production branches have been added.
 
 ## 🌀 COREAO · one unified scalar
 
-[COREAO](docs/COREAO.md) composes the three Triℼ inspection routes as
+[COREAO](docs/COREAO.md) composes the three Triπ inspection routes as
 **forward → reverse → Z-fold**, without assigning special names to the
 routes. The read-only [include-free implementation](shared/coreao.hpp)
 derives the forward trace from CORE, fills the reverse path using the
@@ -174,7 +224,7 @@ smaller means better consistency. Source-domain validity is retained as
 a separate guard.
 
 The DecaSigma operation sequence is defined **once** in
-`shared/deca_sigma.hpp` and reused by both Triℼ and COREAO.
+`shared/deca_sigma.hpp` and reused by both Triπ and COREAO.
 This is a bounded, constant-space audit, not encryption, authentication,
 or a way to recover five Pentagonal XOR inputs from one score. The
 production XOR calculation still has a single fast path with no extra
@@ -206,13 +256,13 @@ compiler executables under this project's 0BSD license.
 ## 🏁 Release pre-flight · no paused code
 
 The [release audit and consumer contract](docs/RELEASE_PREFLIGHT.md)
-documents the full source/workflow inspection. Both CI workflows now
-run a PowerShell 7 pre-flight check for debugger traps, interactive
+documents the historical source/workflow inspection. Former CI workflows
+ran a PowerShell 7 pre-flight check for debugger traps, interactive
 pauses, debug-only branches, disabled source blocks, and obsolete
 terminology. Compile-time invariants and PDB symbols are preserved
 because they do **not** stop execution.
 
-**DecaSigma, Triℼ, and COREAO are now shipped as public header-only APIs**
+**DecaSigma, Triπ, and COREAO are now shipped as public header-only APIs**
 in `include/swe/`, alongside the C11 parity header. The exported
 `swe::swe_audit_headers` CMake target lets downstream C++20 consumers
 compile the APIs. Each release platform must compile and execute a
@@ -283,7 +333,7 @@ flowchart LR
 - **Commits to `main`** make a uniquely tagged **preview prerelease** when all non-experimental platforms pass.
 - **Tags beginning with `v`** make versioned release assets.
 - **`SHA256SUMS`** provides SHA-256 checksums for each downloadable archive.
-- **Dependabot** checks GitHub Actions dependencies weekly. Issue forms and pull request templates help contributors.
+- **Historical only:** Dependabot and GitHub Actions updater configuration was retired on the draft PR branch. Issue forms and pull request templates remain.
 
 ## ⚖️ License and scientific limits
 
@@ -332,7 +382,7 @@ HotSpot JIT compilation of the replacement is recorded separately from
 the application-level JavaCompiler operation.
 
 See [the SUPERTAOISM-GAMP4 technical guide](docs/SUPERTAOISM_GAMP4_JAVA_JAR.md)
-and [the dedicated Java → JAR workflow](.github/workflows/supertaoism-gamp4-java-jar.yml).
+and [the dedicated Java → JAR workflow](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/601b4352bc38f146def4642a917ef38a0b37b2d9/.github/workflows/supertaoism-gamp4-java-jar.yml).
 Original Pentagonal XOR source and source-history identity are preserved.
 GAMP4-style supplier tests do not constitute regulated-use validation.
 
@@ -347,7 +397,7 @@ conformance mask is `0x1f`. Six named COR five-bit blocks preserve
 the original and NOP-pass-through views without manufacturing six
 independent observations.
 
-The workflow explicitly verifies the YING expected unhandled **Java**
+The retired workflow historically verified the YING expected unhandled **Java**
 exception and associated hot-method JIT record. No operating-system
 kernel panic is produced. ZING separately tests inverse-square numeric
 input and output transformation, zero/NaN rejection, and the actual JIT
@@ -371,7 +421,7 @@ unprotected replay/clock signals, duplicated ligand views, and external
 attestation requirements. A clean COR comparison **does not** prove
 authenticated provenance.
 
-The [parallel LIGAZE benchmark workflow](.github/workflows/ligaze-cor-threat-benchmark.yml)
+The [parallel LIGAZE benchmark workflow](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/601b4352bc38f146def4642a917ef38a0b37b2d9/.github/workflows/ligaze-cor-threat-benchmark.yml)
 compares native C++20 against Java 17 on Windows Server, macOS and
 an openSUSE Tumbleweed userspace container. It verifies an identical
 COR input stream, output checksum and local negative fixtures

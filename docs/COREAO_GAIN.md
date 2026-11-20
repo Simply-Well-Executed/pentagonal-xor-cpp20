@@ -95,19 +95,19 @@ more radio power or better audio transcription.
 Take an integer sample index \`i\` running from \`0\` to \`N=16\`; the **horizontal axis is \`x=i\`**. The vertical coordinate is phase angle in radians, **marked in multiples of \`π\`** (\`0\`, \`π/2\`, \`π\`). Define the principal inverse cosine \`arccos : [-1,1] → [0,π]\` and the second harmonic phase:
 
 \`\`\`text
-Reference second wave: θ₂(i) = arccos(cos(4πi/N)).
-Counter second wave:   θ₂ᶜ(i) = π − θ₂(i).
+Reference second wave: θ2(i) = arccos(cos(4πi/N)).
+Counter second wave:   θ2c(i) = π − θ2(i).
 
-For every index i:      θ₂(i) + θ₂ᶜ(i) = π.
+For every index i:      θ2(i) + θ2c(i) = π.
 \`\`\`
 
 The cosine argument is \`4πi/N\`: precisely **two full periods** across the \`N\`-sample interval. \`arccos(cos(t))\` folds the angle into the principal interval and creates a **triangular phase trajectory**, rather than an ordinary sinusoid. The counter transformation reflects it about \`π/2\`.
 
 ![Counterarccosine second-wave graph; x is sample index i and y is phase measured in radians with π as the top tick](COUNTERARCCOSINE_2NDWAVE.svg)
 
-*Graph provenance:* generated deterministically from the expressions above using 257 points for each polyline over \`0≤i≤16\`. Green is \`θ₂ᶜ\`; dashed purple is \`θ₂\`. The plotted graph is conceptual and **not RF field-strength measurement data**.
+*Graph provenance:* generated deterministically from the expressions above using 257 points for each polyline over \`0≤i≤16\`. Green is \`θ2c\`; dashed purple is \`θ2\`. The plotted graph is conceptual and **not RF field-strength measurement data**.
 
-| i | θ₂(i) | θ₂ᶜ(i) |
+| i | θ2(i) | θ2c(i) |
 |---:|:---:|:---:|
 | 0 | 0 | π |
 | 4 | π | 0 |
@@ -132,17 +132,17 @@ where s = max(1, |P̂_in(i)|, |P_in(i)|).
 For an **optional, separately labeled mathematical experiment**, one may prescribe a nonnegative synthetic input envelope:
 
 \`\`\`text
-u(i) = sin²(θ₂ᶜ(i)/2)  ∈ [0,1]
-P_in,synthetic(i) = P₀ · u(i)
-P_EIRP,synthetic(i) = 10^(9/10) · P₀ · u(i)
+u(i) = sin2(θ2c(i)/2)  ∈ [0,1]
+P_in,synthetic(i) = P0 · u(i)
+P_EIRP,synthetic(i) = 10^(9/10) · P0 · u(i)
 \`\`\`
 
-This choice gives \`P_in,synthetic(0)=P₀\`, \`P_in,synthetic(N/4)=0\`, and \`P_in,synthetic(N/2)=P₀\` by design. It is a **constructed test waveform**, not an inferred antenna radiation pattern. This optional envelope is *not* part of the C++ gain API.
+This choice gives \`P_in,synthetic(0)=P0\`, \`P_in,synthetic(N/4)=0\`, and \`P_in,synthetic(N/2)=P0\` by design. It is a **constructed test waveform**, not an inferred antenna radiation pattern. This optional envelope is *not* part of the C++ gain API.
 
 ### 3. Falsifiability, limits, and reproducibility
 
 1. **Algebraic verification:** \`10^(9/10)\` must independently match the binary64 gain constant in \`shared/coreao_gain.hpp\` to numerical tolerance. Reverse reconstruction must agree with the unmodified input.
-2. **Graph witness:** for \`N=16\`, the five known phase checkpoints in the table are exact; in addition, \`θ₂+θ₂ᶜ=π\` for every sampled index. No arbitrary peak-fitting or post-hoc coordinate edits.
+2. **Graph witness:** for \`N=16\`, the five known phase checkpoints in the table are exact; in addition, \`θ2+θ2c=π\` for every sampled index. No arbitrary peak-fitting or post-hoc coordinate edits.
 3. **Physical validation not yet performed:** real gain requires a calibrated antenna-range measurement, frequency, polarization, matching, radiation direction, feeder losses, and uncertainty budget. The code currently takes no instrument samples. Neither its synthetic tests nor this chart establish physical +9 dBi realized gain.
 4. **Audio/ASR independence:** radians of plotted phase, logarithmic antenna gain and the Stability-10D acoustic scalar are different quantities. Do not use this wave to assert model-free speech recognition, new watts of transmitter power, or an RF-regulatory exemption.
 5. **Provenance:** keep original phase inputs, sample count, gain reference, test protocol version, and derived graph distinct. A failed test remains a historical finding; changing the graph definition requires a new protocol version.

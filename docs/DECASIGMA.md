@@ -87,9 +87,9 @@ independent source of truth.
 
 There is no dependency from DecaSigma into the Pentagonal XOR engine.
 
-## Triℼ inspection routes
+## Triπ inspection routes
 
-Three read-only inspection routes are implemented in [Triℼ](TRI_PI.md):
+Three read-only inspection routes are implemented in [Triπ](TRI_PI.md):
 **forward** transition checks, **reverse** reconstruction, and **Z-fold**
 cross-stage comparisons. `shared/tri_pi.hpp` inspects a unchanged DecaSigma
 trace and reports each result separately. No special names are assigned to
