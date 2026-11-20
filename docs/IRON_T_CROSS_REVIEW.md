@@ -402,3 +402,50 @@ Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [pl
 **Additional gate refinements:** native macOS and Windows GAMP4 scripts now require a **single terminal** twelve-URS PASS summary. The Android validation stage reads only the sanitized source marker. The release packager uses portable `find` rather than `-maxdepth` where possible.
 
 **Residual risks:** operator workstation, local Docker daemon and builder image remain trusted; a compromised daemon can defeat bind-mount protections. Git source snapshots and unsigned local YAML receipts are *not* independently authenticated supply-chain attestations. Actual full native CTest/URS, Docker builds, NDK device OQ, native hardware testing, third-party license review and human QA remain NOT TESTED / HOLD. Any new changes after the frozen candidate must generate a new diff.
+
+## T-CROSS: Docker Hub historic source-study immutable-digest promotion target
+
+**State: GIT SOURCE TARGET RECORDED / DOCKER HUB MANIFEST NOT VERIFIED / PUBLICATION HOLD.** This independent +/-DIFF does not alter earlier frozen T-CROSS records.
+
+- Baseline: `c7647832fa076891a4f877619b922b6c2a4182d4`, PR #20 immediately before new Docker Hub target request.
+- Candidate: `d3fbc942e015de5a2ef2b031abb6f933b20aa1ae`, before this documentation-only audit append.
+- Authority: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/compare/c7647832fa076891a4f877619b922b6c2a4182d4...d3fbc942e015de5a2ef2b031abb6f933b20aa1ae
+- **10 commits, 9 files, +346 / -182 Git lines, net +164**. This is source change, not runtime proof.
+
+| Changed file | Status | Additions | Deletions |
+| --- | --- | ---: | ---: |
+| `README.md` | modified | +6 | -0 |
+| `Taskfile.yml` | modified | +10 | -0 |
+| `ci/Assemble-Gamp4-Release.sh` | modified | +8 | -0 |
+| `ci/Publish-AndroidSourceStudy.ps1` | added | +154 | -0 |
+| `ci/Run-DockerValidation.ps1` | modified | +3 | -0 |
+| `ci/Test-DockerPublishPolicy.ps1` | modified | +100 | -181 |
+| `ci/dockerhub-source-study-promotion-approval.example.json` | added | +14 | -0 |
+| `ci/gamp4-docker-release.yml` | modified | +10 | -1 |
+| `docs/GAMP4_DOCKER_RELEASE.md` | modified | +41 | -0 |
+| **TOTAL** | **9 files** | **+346** | **-182** |
+
+### Source identity and destination, never conflated
+
+- Requested mutable tag: `paulcheek/android-source-study-v1:latest`.
+- Requested immutable companion: `paulcheek/android-source-study-v1:sha-07eb2a4561f0`.
+- GitHub historic source SHA: `07eb2a4561f0f5e82db4668d2b4fa453e2a4d733` (Git commit lookup, corresponds to preview `preview-319-07eb2a4`).
+- **Operator-claimed** manifest digest: `sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30`.
+- Docker Hub current source-tag registry manifest, local `RepoDigest`, mutable `latest` state, publisher authentication, actual push and post-push digest: **NOT VERIFIED / NOT TESTED**.
+- PR #20 candidate source SHA differs from historical `07eb...`; new matrix GAMP4 results cannot retroactively certify this older image.
+
+### Changed gates and negative controls
+
+| Gate | Before | Candidate | Measurement |
+| --- | --- | --- | --- |
+| Docker target | Existing legacy script pushed mutable latest from runtime CI variables | New fixed source/target/digest in local GAMP4 release YAML and standalone PowerShell publisher | Source committed, registry NOT CHECKED |
+| Manifest | Image ID could be confused with registry manifest | Publisher uses Docker Buildx registry manifest inspection, exact digest, single-platform check and local matching RepoDigest | Source checked, Docker NOT RUN |
+| Validation | Old `-Mode Publish` could run after trusted-main environment assertions without new exact-source GAMP4 evidence | Retired old entrypoint; new path requires historical Git SHA, supplier 12-URS/CTest evidence hashes plus explicit QA/license/SBOM/source-origin/operator approvals | New gate source inspected; evidence NOT SUPPLIED |
+| Permission | Generic mutable tag update | Requires literal acknowledgement and `DOCKERHUB_USERNAME=paulcheek` before local `docker tag`/`docker push`, re-reads latest before mutation | Not executed |
+| Post-push | Old source only wrote image ID and claimed push | New script re-reads remote latest manifest and throws deviation if digest differs | NOT TESTED |
+| Negative controls | Legacy mock expected unaudited pushes | Replaced with mock-only tests: legacy blocked, read-only inspection, missing approval, source digest mismatch, multi-platform index rejection | Test file committed, test NOT EXECUTED |
+| Release notes | Generic 13-profile release listing only | Adds distinct historic Docker Hub target and unverified digest, no false publication | Source committed |
+
+**Release HOLD** pending verified Docker Hub manifest and accessible local Docker engine, actual historical source-matched GAMP4/CTest evidence, independent QA and licensing authorization, target image provenance, registry authentication, operator push decision and post-push digest readback. The historic image is not a Docker macOS/Windows/Android runtime. No repository tag, Docker Hub tag, release binary or source content was actually published during this update. PR #20 remains draft and unmerged.
+
+**Canonical entrypoints:** [publication script](../ci/Publish-AndroidSourceStudy.ps1), [unapproved release approval example](../ci/dockerhub-source-study-promotion-approval.example.json), [GAMP4 Docker release policy](GAMP4_DOCKER_RELEASE.md).
