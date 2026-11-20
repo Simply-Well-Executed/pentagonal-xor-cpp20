@@ -84,7 +84,7 @@ try {
     $stage = 'native-cxx20-o2'
     Push-Location -LiteralPath $root
     try {
-        & cmake -S . -B build -G $generator -A x64 -DBUILD_TESTING=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF '-DCMAKE_CXX_FLAGS_RELEASE=/O2 /DNDEBUG'
+        & cmake -S . -B build -G $generator -A x64 -DBUILD_TESTING=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF '-DCMAKE_CXX_FLAGS_RELEASE=/O2 /DNDEBUG'
         if ($LASTEXITCODE -ne 0) { throw 'Local CMake configure failed.' }
         & cmake --build build --config Release --parallel
         if ($LASTEXITCODE -ne 0) { throw 'Local C++20 /O2 build failed.' }
