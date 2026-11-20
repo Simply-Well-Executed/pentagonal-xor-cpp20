@@ -6,10 +6,22 @@ Thank you for improving the Pentagonal Recursive XOR Engine.
 
 - Keep all targets in required ISO C++20 with extensions OFF. Current explicit Release policy: MSVC `/O2`, GCC/Clang `-O3`; non-Release configurations retain optimized O2. Do not insert O0. Follow the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#main).
 - Use the latest stable locally installed PowerShell Core and `Set-StrictMode -Version 2.0` for verification scripts. Follow the [PowerShell beginners reference](https://www.reddit.com/r/PowerShell/wiki/beginners/).
-- **Do not add GitHub Actions workflows, GitHub-hosted or self-hosted runner jobs, VM/OCI/container images, Node/npm-based actions, runtime downloads, MCP client/server dependencies, remote build services, or CI API calls.** This rule applies to new proposed work and does not silently delete historical source or records.
+- **Do not add GitHub Actions workflows, GitHub-hosted or self-hosted runner jobs, remote VM builders, Node/npm-based actions, runtime downloads, MCP dependencies, remote build services, or CI API calls.** The separately requested Docker exception is *local-only, digest-pinned, already cached, network-disabled, non-root, source-read-only* and may run only through `docker/compose.release.yml` and its fail-closed GAMP4 wrappers. Docker is not a replacement for native macOS or Windows OS/ABI verification, and does not authorize remote image publishing.
 - Local Git commands used to inspect already checked-out source are permitted. No automated Git network fetch is performed by the native verifier. A code and binary dependency review is still required before certifying network isolation.
 - Use `CXX_STANDARD 20` (numeric language level), `CXX_STANDARD_REQUIRED ON` (boolean strictness), and `CXX_EXTENSIONS OFF` (ISO mode). The parity-core object may satisfy a machine-CALL-free gate only when its disassembly is actually inspected; CLI and test harness calls have separate contracts.
 - Do not substitute an unverified PowerShell version as 'latest'. The operator must independently confirm the release and pass the version and matching official release link; the local script fails closed if the installed version differs.
+
+## Explicit operator-requested Docker release exception (2026-11-19)
+
+This change **supersedes only the earlier absolute container prohibition** for the limited local release-validation workflow. No hosted runner, workflow YAML, remote builder, automatic Docker pull, registry push or release publication is enabled. Previously existing Docker scripts and images retain their historic source/provenance and cannot be silently relabeled as validated.
+
+- Use an operator-reviewed, SHA256 digest-qualified builder already present in the *local* Docker image store. The wrapper refuses remote daemon endpoints, unpinned images, and missing local bases.
+- Require full CMake/CTest plus **12 distinct GAMP4-style URS-11..22 PASS records** for each executable native Linux, macOS and Windows platform. Android NDK ABIs are **cross-compiled**, conditioned on exact-source Linux GAMP4 evidence; Android device OQ is not performed.
+- macOS builds run on actual Apple hosts and Windows builds run on compatible Windows hosts. A Linux Docker image cannot validate either operating-system kernel. An OCI image containing mixed-OS release archives is transport-only, not a runnable Windows/macOS/Android container.
+- `ci/Assemble-Gamp4-Release.sh` refuses missing profiles, source SHA mismatches and SHA256 changes. It creates a local **STAGED_NOT_PUBLISHED** release bundle. The separate scratch OCI payload creator neither pushes an image nor creates a GitHub release. Human release authorization, third-party licensing and final review remain explicit.
+- `gate-no-std-repository` and the historic residual-source gate retain their independent blocking status until legacy code is actually migrated/reviewed. A container cannot turn those failures into green claims.
+
+See [GAMP4 Docker release protocol](docs/GAMP4_DOCKER_RELEASE.md).
 
 ## STD-free source and binary boundaries
 
