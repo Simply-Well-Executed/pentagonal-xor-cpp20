@@ -189,6 +189,38 @@ gate_zero_network_imports() {
     done
 }
 
+gate_no_std_binary() {
+    need find
+    need grep
+    test -d "$BUILD_DIR" || fail 'build missing for binary STD library audit'
+    binaries=$(find "$BUILD_DIR" -type f \
+        \( -name 'pentagonal_xor_cli' -o -name 'pentagonal_xor_cli.exe' \) -print) ||
+        fail 'cannot enumerate native throughput CLI binary'
+    test -n "$binaries" || fail 'native throughput CLI binary missing'
+    count=$(printf '%s\n' "$binaries" | awk 'END {print NR}')
+    test "$count" -eq 1 || fail "ambiguous throughput CLI binaries: $count"
+    if command -v llvm-objdump >/dev/null 2>&1; then
+        imports=$(llvm-objdump -p "$binaries") || fail 'llvm import scan failed'
+    elif command -v objdump >/dev/null 2>&1; then
+        imports=$(objdump -p "$binaries") || fail 'objdump import scan failed'
+    elif command -v dumpbin >/dev/null 2>&1; then
+        imports=$(dumpbin /IMPORTS "$binaries") || fail 'dumpbin import scan failed'
+    elif command -v otool >/dev/null 2>&1; then
+        imports=$(otool -L "$binaries") || fail 'otool scan failed'
+    else
+        fail 'no native tool can inspect binary runtime imports'
+    fi
+    # The OS API calls can still require libc/UCRT. Do not quietly label
+    # source-only freedom as dependency-free binary status.
+    hits=$(printf '%s\n' "$imports" |
+        grep -Ei 'libstdc\+\+|libc\+\+|libc\+\+abi|libsupc\+\+|msvcp|vcruntime|ucrtbase|libc[.]so|libSystem[.]' || :)
+    if test -n "$hits"; then
+        printf 'T-CROSS|STD-RUNTIME-IMPORTS\n%s\n' "$hits" >&2
+        fail 'direct C/C++ standard-runtime imports still present in CLI'
+    fi
+    pass 'gate-no-std-binary|direct-import-table-only|not-full-provenance'
+}
+
 test_ctest() {
     need ctest
     ctest --test-dir "$BUILD_DIR" -C "$BUILD_TYPE" --output-on-failure ||
@@ -241,6 +273,7 @@ default() {
     build_cpp20
     gate_zero_function_calls
     gate_zero_network_imports
+    gate_no_std_binary
     test_ctest
     pass 'IRON|NATIVE|ALL-DEFINED-GATES-PASSED'
 }
@@ -257,6 +290,7 @@ case "${1:-default}" in
   build-cpp20) build_cpp20 ;;
   gate-zero-function-calls) gate_zero_function_calls ;;
   gate-zero-network-imports) gate_zero_network_imports ;;
+  gate-no-std-binary) gate_no_std_binary ;;
   test-ctest) test_ctest ;;
   emit-diff-yaml) emit_diff_yaml ;;
   *) fail "unknown T-CROSS task: $1" ;;
