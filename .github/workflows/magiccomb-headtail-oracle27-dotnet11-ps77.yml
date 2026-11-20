@@ -144,7 +144,7 @@ jobs:
               '# REQUIRES repository root as working directory; experimental only.'
               ("echo 'FRESH|ENTRY|" + $original + "|RETIRED|HOLD'")
               'exec sh ./ci/FRESH-GammaGamma.sh'
-              'exit 79'
+              'exit 42'
             )
             if (-not [StringComparer]::Ordinal.Equals($wrapper,(($expected -join [char]10) + [char]10)) -or
                 $wrapper.Contains([char]36) -or $wrapper.Contains([char]37)) {
@@ -166,7 +166,7 @@ jobs:
             $_.Length -gt 0 -and -not $_.StartsWith('#')
           })
           if ($commands.Count -lt 25 -or $commands[$commands.Count-2] -cne "echo 'ItWasOnlyOnceILookedInTheirEye'" -or
-              $commands[$commands.Count-1] -cne 'exit 79') { throw 'FRESH|HOLD|exact_terminal_drift' }
+              $commands[$commands.Count-1] -cne 'exit 42') { throw 'FRESH|HOLD|exact_terminal_drift' }
           foreach ($line in $commands[0..($commands.Count-2)]) {
             if ($line -cnotmatch '^echo ''[^'']*''$') { throw 'FRESH|HOLD|nonliteral_gamma_action' }
           }
@@ -175,7 +175,7 @@ jobs:
                              'SIGMADI|FIRST TWIRL','SIGMADI|SECOND TWIRL','SIGMADI|BUTTERFLY')) {
             if (-not $gamma.Contains($tag)) { throw ('FRESH|HOLD|missing_phase|' + $tag) }
           }
-          Write-Host ('FRESH|STATIC_PASS|exact_archives=' + $seen.Count + '|zero_variable_wrappers=17|harness=1|terminal=EXACT|exit=79')
+          Write-Host ('FRESH|STATIC_PASS|exact_archives=' + $seen.Count + '|zero_variable_wrappers=17|harness=1|terminal=EXACT|exit=42')
           Write-Host 'FRESH|LIMIT|SOURCE_ONLY|NO_SHELL_EXECUTION|RELEASE_HOLD'
       - name: Block project-authored POSIX scripts and unapproved GNU build inputs
         shell: pwsh

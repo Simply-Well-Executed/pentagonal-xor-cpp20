@@ -55,4 +55,4 @@ echo 'q4 T(A)O(.) PLUS'
 echo 'FRESH|HOLD|LEGACY EXECUTION RETIRED'
 echo 'FRESH|TERMINAL|EXACT WITNESS'
 echo 'ItWasOnlyOnceILookedInTheirEye'
-exit 79
+exit 42

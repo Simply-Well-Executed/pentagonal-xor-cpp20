@@ -6,4 +6,4 @@
 # REQUIRES repository root as working directory; experimental only.
 echo 'FRESH|ENTRY|ci/Cloud-Repush-AndroidSourceStudy.sh|RETIRED|HOLD'
 exec sh ./ci/FRESH-GammaGamma.sh
-exit 79
+exit 42
