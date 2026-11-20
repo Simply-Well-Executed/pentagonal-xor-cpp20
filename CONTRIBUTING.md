@@ -13,9 +13,10 @@ Thank you for improving the Pentagonal Recursive XOR Engine.
 
 ## STD-free source and binary boundaries
 
-- The new throughput engine must use **no C/C++ standard-library includes, `std::` APIs, compiler builtins or implicit heap allocation** in `include/pxor_memory.hpp`, `include/pentagonal_xor.hpp`, `src/main.cpp` and `tests/pentagonal_xor_throughput_test.cpp`. Use C++20 core-language features with native Win32/POSIX APIs where operating-system interaction is unavoidable.
+- The new throughput engine must use **no C/C++ standard-library includes, `std::` APIs, compiler builtins or implicit heap allocation** in the seven tracked native throughput/suite source files enumerated by `gate-no-std-throughput`. Use C++20 core-language features with native Win32/POSIX APIs where operating-system interaction is unavoidable.
 - Run `sh ci/t-cross-posix.sh gate-no-std-throughput` for the new module. Run `gate-no-std-repository` for strict whole-repository inventory and `gate-no-std-binary` for direct runtime imports of the new CLI. These are distinct tests; a pass in one does not make another pass.
 - Do not label system libraries such as POSIX libc, Windows UCRT, or compiler-provided runtime support as absent without a compiled binary import/dependency audit. No assumption of heap secrecy, guaranteed NUMA locality, zero machine calls or full zero-CRT operation follows from header-free source.
+- The Pentagonal Suite operation family is an additive source module: `include/pentagonal_suite.hpp`, `src/suite_main.cpp`, `tests/pentagonal_suite_test.cpp`. These three files must contain **zero code comments** and remain STD-free; run `sh ci/t-cross-posix.sh gate-suite-no-comments` and `gate-no-std-throughput` before review. Do not replace or silently rename the existing XOR formula, parity executable, or persisted stream identity. See [Pentagonal Suite protocol](docs/PENTAGONAL_SUITE.md).
 - The existing parity and historical modules are preserved pending staged, independent migration and regression evidence. See [STD-free T-CROSS](docs/STD_FREE_NATIVE_T_CROSS.md).
 
 ## Review workflow
