@@ -15,6 +15,7 @@ on:
       - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
       - docs/LOCALITY_FIRST_SOURCE_CUSTODY.md
       - docs/LICENSE_AND_MARKS.md
+      - LICENSE
       - LICENSES/**
       - ci/Assert-LocalLicenseRegistry.ps1
       - ci/Invoke-MagicComb.ps1
