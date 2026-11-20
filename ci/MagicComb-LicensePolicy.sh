@@ -1,7 +1,9 @@
 #!/bin/sh
 # SPDX-License-Identifier: 0BSD
 # MagicComb LICENSE gate: unapproved components must NOT be released.
-# Forbidden families include GNU GPL/LGPL/AGPL and Eclipse EPL/ECL.
+# Explicit operator rule 2026-11-20: LGPL is permitted (with obligations).
+# GPL/AGPL, EUPL, EPL and unapproved GNU-licensed components are not.
+# Do not infer that every copyleft component is forbidden; classify each license.
 # Unknown licensing is a review hold, not silent permission.
 set -eu
 export LC_ALL=C
@@ -17,7 +19,7 @@ allowed=0
 forbidden=0
 unknown=0
 packages=0
-printf 'IRON|MAGICCOMB|LICENSE|HEAD|policy=NO_GNU_NO_EPL|unapproved_requires_operator_exception\n'
+printf 'IRON|MAGICCOMB|LICENSE|HEAD|policy=LGPL_ALLOWED_GPL_AGPL_EUPL_EPL_REJECTED|other_GNU_and_unknown_review_hold\n'
 # Container package inventory comes from its OWN dpkg database. The
 # Linux kernel, files not owned by packages, JAR metadata, and bundled
 # PowerShell/.NET/Oracle assets require SEPARATE attribution.
@@ -33,9 +35,16 @@ dpkg-query -W -f='${binary:Package}\t${db:Status-Abbrev}\n' |
     if test ! -r "$copyright"; then
       printf 'IRON|MAGICCOMB|LICENSE|UNKNOWN|%s|missing_copyright_file\n' "$name"
       unknown=$((unknown + 1))
-    elif grep -iEq '(^|[^A-Za-z])(AGPL|LGPL|GPL|GNU[[:space:]]+(General|Lesser|Affero)|EPL[-0-9.]*|Eclipse[[:space:]]+Public[[:space:]]+License)([^A-Za-z]|$)' "$copyright"; then
-      printf 'IRON|MAGICCOMB|LICENSE|FORBIDDEN|%s|review_installed_package_metadata\n' "$name"
+    elif grep -iEq '(^|[^A-Za-z])(AGPL|GPL|EUPL|EPL)([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+(General|Affero[[:space:]]+General)[[:space:]]+Public[[:space:]]+License|Eclipse[[:space:]]+Public[[:space:]]+License|European[[:space:]]+Union[[:space:]]+Public[[:space:]]+License' "$copyright"; then
+      # GPL + LGPL together is mixed REVIEW, not automatic LGPL admission.
+      # A documented SPDX OR alternative can only be chosen in a scoped review.
+      printf 'IRON|MAGICCOMB|LICENSE|FORBIDDEN_OR_MIXED|%s|operator_review_required\n' "$name"
       forbidden=$((forbidden + 1))
+    elif grep -iEq '(^|[^A-Za-z])LGPL([-0-9.+]*([^A-Za-z]|$)|[^A-Za-z]|$)|GNU[[:space:]]+Lesser[[:space:]]+General[[:space:]]+Public[[:space:]]+License' "$copyright"; then
+      # User approved LGPL; obligations, file scope, and other bundled licenses
+      # still require independently verified attribution before distribution.
+      printf 'IRON|MAGICCOMB|LICENSE|LGPL_PERMITTED|%s|obligations_and_file_scope_review\n' "$name"
+      allowed=$((allowed + 1))
     elif grep -iqE '^License:[[:space:]]*[^[:space:]]+' "$copyright"; then
       printf 'IRON|MAGICCOMB|LICENSE|REVIEW|%s|non_GNU_not_equivalent_to_approved\n' "$name"
       unknown=$((unknown + 1))
