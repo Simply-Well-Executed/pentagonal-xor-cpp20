@@ -21,8 +21,20 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     useradd --uid 10001 --create-home --shell /usr/sbin/nologin swebuild
 
+# Python is forbidden in the Android/Linux source-study runtime, including
+# transitive base-image packages. Purge only package-manager-owned Python
+# packages; never silently delete arbitrary OS files or bypass a failed test.
+RUN set -eu; \
+    installed="$(dpkg-query -W -f='${binary:Package} ${db:Status-Abbrev}\n' | \
+      awk '$2 == "ii" && $1 ~ /^(python([0-9.]|-)|libpython[0-9.]|pypy|pipx)(:|$)/ {print $1}')"; \
+    if test -n "$installed"; then \
+      apt-get purge --yes --auto-remove $installed; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /study
 COPY --chown=10001:10001 . /study/
+RUN /bin/sh /study/ci/Assert-AndroidLinux-NoPython.sh image
 RUN chown -R 10001:10001 /study
 USER 10001:10001
 ENTRYPOINT ["pwsh", "-NoLogo", "-NoProfile"]
