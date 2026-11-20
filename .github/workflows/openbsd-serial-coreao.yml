@@ -13,6 +13,10 @@ on:
       - ci/Invoke-OpenBSDSerialCoreao.ps1
       - ci/Test-OpenBSDSerialCoreao.ps1
       - ci/OPENBSD_80_SOURCE_LOCK.tsv
+      - ci/OPENBSD_79_SOURCE_LOCK.tsv
+      - ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv
+      - ci/Test-OpenBSDNativeEvidence.ps1
+      - docs/OPENBSD_NATIVE_EVIDENCE_V1.md
       - CMakeLists.txt
       - include/**
       - shared/**
@@ -60,6 +64,31 @@ jobs:
           if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|ledger_test_failed'}
           & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-OpenBSD80SourceLock.ps1') -RepositoryRoot $src
           if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|source_lock_failed'}
+      - name: Check historical native evidence metadata twice and reject false promotion
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          $test=Join-Path $src 'ci/Test-OpenBSDNativeEvidence.ps1'
+          $first=@(& pwsh -NoLogo -NoProfile -File $test -RepositoryRoot $src)
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|EVIDENCE|HOLD|HEAD_failed'}
+          $second=@(& pwsh -NoLogo -NoProfile -File $test -RepositoryRoot $src)
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|EVIDENCE|HOLD|TAIL_failed'}
+          if(-not [StringComparer]::Ordinal.Equals(($first -join [char]10),($second -join [char]10))){
+            throw 'OPENBSD|EVIDENCE|HOLD|HEAD_TAIL_CHANGED'
+          }
+          foreach($line in $first){Write-Host $line}
+          $inputFile=Join-Path $src 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv'
+          $before=[IO.File]::ReadAllText($inputFile)
+          $after=$before.Replace('OPENBSD4_RETURN','OPENBSD4_FIRST')
+          if([StringComparer]::Ordinal.Equals($before,$after)){
+            throw 'OPENBSD|EVIDENCE|HOLD|corruption_test_not_applicable'
+          }
+          $tampered=Join-Path $env:RUNNER_TEMP 'openbsd-evidence-corrupted.tsv'
+          [IO.File]::WriteAllText($tampered,$after,[Text.UTF8Encoding]::new($false))
+          & pwsh -NoLogo -NoProfile -File $test -RepositoryRoot $src -EvidencePath $tampered *> $null
+          if($LASTEXITCODE -eq 0){throw 'OPENBSD|EVIDENCE|HOLD|false_stage_accepted'}
+          Write-Host 'OPENBSD|EVIDENCE|TEST_PASS|HEAD_TAIL_EXACT|CORRUPTION_REJECTED|SOURCE_METADATA_ONLY|CORE=OPENBSD2|NATIVE_BUILDS=0|RELEASE=HOLD'
       - name: Compile the portable C++20 core serially on Windows, not OpenBSD
         shell: pwsh
         run: |
