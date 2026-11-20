@@ -33,3 +33,11 @@ The central vanilla shell trace has two unrolled four-Di Gamma passes, BITTDANCI
 The archived files contain historically sourced variables as inert records. The active replacement shell files contain no variable expansions, dollar signs, percent-format specifiers or recursive calls. Their literal shell execution remains forbidden by current policy, even though the experiment is written in vanilla POSIX sh.
 
 Outstanding: independent source and binary SPDX/SBOM review, removal or native replacement of actual GNU/POSIX-dependent build inputs, third-party and vendor notices, C++20 -O2 tests, Java and security qualification, provenance and explicit release consent. A source-only check does not clear any of these.
+
+## FRESH artistic eye lineage proposal (FRESH-ART-EYE-v1)
+
+The exact previous DOOM-shaped display `X_~D~o~o~m~M~a~i~n(=)` remains a historical artistic witness. The current stylized projection is `X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)`, mapped explicitly, character by character, from the canonical final literal `ItWasOnlyOnceILookedInTheirEye`. The stylized form is not a byte-identical canonical identifier, and the old form is not silently rewritten.
+
+The source-only chain projects the eye artwork at 14 fixed UP/DOWN/TURN anchors across GammaGamma, BiDi, TriDi, SigmaDi and its four butterfly edges. The last output line remains exactly `ItWasOnlyOnceILookedInTheirEye`; the process still exits `42` with HOLD. This adds output lines and therefore begins a **new test/trace version**, not a mutation of the previously frozen comparison protocol.
+
+All edited source in this proposal is on a separate review branch, not a clearance to execute POSIX shells. See `docs/POSIXI_FRESH_ARTISTIC_CHAIN.md`.

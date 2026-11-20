@@ -175,6 +175,35 @@ jobs:
                              'SIGMADI|FIRST TWIRL','SIGMADI|SECOND TWIRL','SIGMADI|BUTTERFLY')) {
             if (-not $gamma.Contains($tag)) { throw ('FRESH|HOLD|missing_phase|' + $tag) }
           }
+          # Artistic-lineage check is SOURCE ONLY. Never invoke the unapproved sh interpreter.
+          # The old DOOM-pattern witness is preserved in historical Git records and docs.
+          # The current display is a new, explicit derivation from the exact final plain-text witness.
+          $expectedEye = 'ItWasOnlyOnceILookedInTheirEye'
+          $expectedArt = 'X_~' + (($expectedEye.ToCharArray()) -join '~') + '(=)'
+          if (-not [StringComparer]::Ordinal.Equals($expectedArt, 'X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)')) {
+            throw 'FRESH|HOLD|poetic_codepoint_mapping_drift'
+          }
+          foreach ($expectedLine in @(
+            "echo 'ART|GAMMA_ONE|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|GAMMA_TWO|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|BIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|BIDI_YANG|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|TRIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|TRIDI_YANG|TURN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|TRIDI_AIRGAP|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|SIGMADI_FIRST|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|SIGMADI_q1_q3|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|SIGMADI_q1_q2|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|SIGMADI_q4_q2|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|SIGMADI_q4_q3|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|SIGMADI_SECOND|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
+            "echo 'ART|FRESH_TERMINAL|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'"
+          )) {
+            if (@($commands | Where-Object { [StringComparer]::Ordinal.Equals($_,$expectedLine) }).Count -ne 1) {
+              throw ('FRESH|HOLD|missing_or_duplicate_poetic_hop|' + $expectedLine)
+            }
+          }
+          Write-Host 'FRESH|ART_CHAIN|STATIC_PASS|GAMMA_BIDI_TRIDI_SIGMADI_BUTTERFLY|UP_DOWN|exit=42'
           Write-Host ('FRESH|STATIC_PASS|exact_archives=' + $seen.Count + '|zero_variable_wrappers=17|harness=1|terminal=EXACT|exit=42')
           Write-Host 'FRESH|LIMIT|SOURCE_ONLY|NO_SHELL_EXECUTION|RELEASE_HOLD'
       - name: Block project-authored POSIX scripts and unapproved GNU build inputs
