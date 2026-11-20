@@ -1,0 +1,75 @@
+schema: SWE-IRON-GAMP4-DOCKER-RELEASE-v1
+policy:
+  activation: explicitly-requested-local-Docker
+  network_inside_container: none
+  image_pull: never
+  local_builder: SHA256-digest-qualified-and-preloaded
+  daemon_endpoint: local-unix-or-npipe-only
+  docker_compose: docker/compose.release.yml
+  guest_user: host-nonroot-uid-gid
+  source_mount: read-only
+  container_root_filesystem: read-only
+  capabilities: none
+  runner: none
+  node: none
+  auto_install: none
+  registry_push: forbidden
+  github_release_publication: manual-after-validation-and-review
+  original_repository_std_free: not-certified
+  gamp4: supplier-style-not-regulatory-certification
+  mandatory_urs: [11,12,13,14,15,16,17,18,19,20,21,22]
+  required_full_ctest: PASS
+  required_gamp4_summary: 'GAMP4_STYLE_SUMMARY|PASS|cases=12|failures=0'
+  success_evidence: exact-source-sha-and-SHA256
+  release_stage: STAGED_NOT_PUBLISHED
+  required_profile_count: 13
+  qa_status: NOT_APPROVED
+  pq_status: NOT_PERFORMED
+  legacy_suite_requires_std_library: true
+artifacts:
+  assembler: ci/Assemble-Gamp4-Release.sh
+  path: build/gamp4-release/SHA/release-ready/SHA
+  packaging: per-profile-tar-gz-with-SHA256SUMS
+  oci_payload_dockerfile: docker/ReleasePayload.Dockerfile
+  oci_payload_executable: false
+profiles:
+  linux-amd64:
+    validation: docker-full-CTest-and-12-URS
+    platform: linux/amd64
+  linux-arm64:
+    validation: docker-full-CTest-and-12-URS
+    platform: linux/arm64
+  linux-x86:
+    validation: docker-full-CTest-and-12-URS
+    platform: linux/386
+  macos-arm64:
+    validation: native-Xcode-full-CTest-and-12-URS
+    docker_runtime: unsupported
+  macos-x86_64:
+    validation: native-Xcode-full-CTest-and-12-URS
+    docker_runtime: unsupported
+  macos-universal:
+    validation: native-Xcode-full-CTest-and-two-arch-receipts
+    docker_runtime: unsupported
+  windows-x86:
+    validation: native-MSVC-full-CTest-and-12-URS
+  windows-x64:
+    validation: native-MSVC-full-CTest-and-12-URS
+    aliases: [windows-amd64,windows-x86-64]
+  windows-arm64:
+    validation: native-MSVC-full-CTest-and-12-URS
+    docker_runtime: not-proven
+  android-arm64-v8a:
+    validation: NDK-cross-after-Linux-GAMP4
+    device_oq: NOT_TESTED
+  android-armeabi-v7a:
+    validation: NDK-cross-after-Linux-GAMP4
+    device_oq: NOT_TESTED
+  android-x86:
+    validation: NDK-cross-after-Linux-GAMP4
+    device_oq: NOT_TESTED
+  android-x86_64:
+    validation: NDK-cross-after-Linux-GAMP4
+    device_oq: NOT_TESTED
+unsupported:
+  macos-i386: modern-macOS-no-32-bit-runtime
