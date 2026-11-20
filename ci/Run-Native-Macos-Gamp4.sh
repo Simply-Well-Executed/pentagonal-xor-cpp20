@@ -87,8 +87,8 @@ done
 count=$(grep -c '^PASS|URS-' "$dir/urs.log" || :)
 test "$count" -eq 12 || fail "unexpected URS PASS count: $count"
 if grep -q '^FAIL|' "$dir/urs.log"; then fail 'failed URS log'; fi
-grep -Fxq 'GAMP4_STYLE_SUMMARY|PASS|cases=12|failures=0' "$dir/urs.log" ||
-  fail 'GAMP4 summary absent'
+terminal_count=$(grep -Fxc 'GAMP4_STYLE_SUMMARY|PASS|cases=12|failures=0' "$dir/urs.log" || :)
+test "$terminal_count" -eq 1 || fail 'missing or duplicated terminal GAMP4 summary'
 summary='PASS|cases=12|failures=0'
 binary_sha=$(shasum -a 256 "$exe" | awk '{print $1}')
 stage=core-archive
