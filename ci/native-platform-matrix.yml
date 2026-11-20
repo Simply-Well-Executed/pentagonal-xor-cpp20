@@ -7,7 +7,12 @@ policy:
   network_fetch: forbidden
   hosted_runner: forbidden
   self_hosted_actions_runner: forbidden
-  container: forbidden
+  container: opt-in-local-digest-pinned-gamp4-gated
+  container_policy_document: docs/GAMP4_DOCKER_RELEASE.md
+  compose_definition: docker/compose.release.yml
+  docker_release_external_publication: forbidden_without_review
+  docker_native_macos_runtime: unsupported
+  windows_docker_native_abi_build: requires_matching_Windows_host
   node_and_package_managers: forbidden
   source_language: ISO-C++20
   cxx_extensions: OFF
