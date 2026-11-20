@@ -24,7 +24,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'git init failed' }
           & git remote add origin "https://github.com/$env:GITHUB_REPOSITORY.git"
           if ($LASTEXITCODE -ne 0) { throw 'git remote failed' }
-          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_SHA
           if ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }
           & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
           if ($LASTEXITCODE -ne 0) { throw 'git checkout failed' }

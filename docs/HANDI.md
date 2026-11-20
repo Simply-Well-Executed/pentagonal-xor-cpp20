@@ -18,7 +18,7 @@ These statements describe the documentation contract this page establishes, **no
 
 **Use the left column as expectations**, the second as observations of adherence, and the final two as source-preserving representation stages. The words *solid-state* and *degree* denote a named, recorded state and folding order in this protocol. They do not claim a material solid-state device, physical dimension, mathematical polynomial degree, network connectivity, cryptographic identity or empirical quantum validation.
 
-**Implementation boundaries:** [`shared/sigma_penta_ping.hpp`](../shared/sigma_penta_ping.hpp) defines nine lanes, three MINZA groups, NINZA arrays and the PING permutation. [`shared/minza_ninza_ping_unfold.hpp`](../shared/minza_ninza_ping_unfold.hpp) implements read-only NINZA difference and PING inverse checks. These compute byte arrangements, not yet a normative HANDI conformance verdict. Do not manufacture additional observations out of mirrored copies, virtual lenses, repeated passes or a successful local roundtrip.
+**Implementation boundaries:** [`shared/sigma_penta_ping.hpp`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/shared/sigma_penta_ping.hpp) defines nine lanes, three MINZA groups, NINZA arrays and the PING permutation. [`shared/minza_ninza_ping_unfold.hpp`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/main/shared/minza_ninza_ping_unfold.hpp) implements read-only NINZA difference and PING inverse checks. These compute byte arrangements, not yet a normative HANDI conformance verdict. Do not manufacture additional observations out of mirrored copies, virtual lenses, repeated passes or a successful local roundtrip.
 
 ## Directional orders, with no assumed winner
 

@@ -62,7 +62,8 @@ $scanned = 0
 $paths = $pathStream.Split([char]0)
 foreach ($rel in $paths) {
     if ([string]::IsNullOrEmpty($rel)) { continue }
-    $path = $rel.Replace('\','/')
+    if ($rel.IndexOf([char]0x5C) -ge 0) { throw "Tracked filename contains ambiguous literal backslash: $rel" }
+    $path = $rel
     $file = [IO.Path]::GetFullPath((Join-Path $root $path))
     if (-not $file.StartsWith($root.TrimEnd([IO.Path]::DirectorySeparatorChar)+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {
         throw "Tracked path escapes repository: $path"
