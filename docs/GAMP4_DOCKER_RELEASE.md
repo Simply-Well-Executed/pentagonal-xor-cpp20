@@ -9,7 +9,7 @@ This is an **explicitly requested exception** to the earlier absolute container-
 | Source | Purpose | May claim |
 | --- | --- | --- |
 | [ci/gamp4-docker-release.yml](../ci/gamp4-docker-release.yml) | Declarative, fixed 13-profile release policy | Required gates and unsupported targets |
-| [docker/compose.release.yml](../docker/compose.release.yml) | Offline non-root Linux build containers, read-only checked-out source, dropped capabilities | Explicit operator-invoked local container execution |
+| [docker/compose.release.yml](../docker/compose.release.yml) | Offline non-root Linux build containers, read-only exported Git-committed source snapshot (without .git or untracked files), dropped capabilities | Explicit operator-invoked local container execution |
 | [ci/Invoke-LocalDocker-Gamp4.sh](../ci/Invoke-LocalDocker-Gamp4.sh) | Verify local Unix/npipe Docker daemon, preloaded @sha256 image, clean source SHA; no pull | Docker preflight if actually run |
 | [ci/docker/Run-Gamp4-Container.sh](../ci/docker/Run-Gamp4-Container.sh) | Full Release CMake, CTest, independent exact 12-URS checks, archive and hash | Linux platform supplier test evidence after real execution |
 | [ci/docker/Build-Android-NDK.sh](../ci/docker/Build-Android-NDK.sh) | Four NDK ABI archive builds after identical-SHA Linux source validation | Cross-compiled core archive, **not** Android execution |
