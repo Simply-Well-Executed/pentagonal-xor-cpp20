@@ -9,6 +9,9 @@ param(
 )
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
+if ($Mode -eq 'Publish') {
+    throw 'Legacy environment-variable-controlled Docker publication is retired. Use ci/Publish-AndroidSourceStudy.ps1 with exact registry digest, source-matched GAMP4/CTest evidence and explicit release approval. Historical code below is retained as source provenance, not an authorized publishing entrypoint.'
+}
 $root = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $evidence = [IO.Path]::GetFullPath((Join-Path $root $EvidenceDir))
 [void][IO.Directory]::CreateDirectory($evidence)
