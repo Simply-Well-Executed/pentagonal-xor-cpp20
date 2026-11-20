@@ -67,7 +67,15 @@ int main() {
         if (!agree(h)) return 6;
     }
 
+    // Signed fifth-root regression: recursion was removed from the C11 header.
+    // Preserve odd symmetry and the previous finite-input numeric contract.
+    const double positive_root = swe_pxor_fifth_root(32.0);
+    const double negative_root = swe_pxor_fifth_root(-32.0);
+    if (!near(positive_root, 2.0) || !near(negative_root, -2.0) ||
+        !near(negative_root, -positive_root)) return 7;
+    if (!near(swe_pxor_fifth_root(-0.00000000000000000001), -0.0001)) return 8;
+
     std::cout << "PASS: 32 Boolean states + 4096 continuous fixtures; "
-                 "recursive/minterm references agree with production formula\n";
+                 "signed fifth-root regression and parity references agree\n";
     return 0;
 }
