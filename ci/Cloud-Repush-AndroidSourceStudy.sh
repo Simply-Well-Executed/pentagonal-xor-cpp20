@@ -74,8 +74,7 @@ unset DOCKERHUB_TOKEN
 # Download exactly the inspected registry digest to GitHub's runner only.
 docker pull --platform linux/amd64 "$repo@$expected" || fail 'digest-pinned cloud pull failed'
 digests=$(docker image inspect --format '{{json .RepoDigests}}' "$repo@$expected") || fail 'local source image missing'
-printf '%s\n' "$digests" | jq -e --arg expected "$repo@$expected"
-  'map(gsub("^(docker.io/|index.docker.io/)"; "")) | index($expected) != null' >/dev/null ||
+printf '%s\n' "$digests" | jq -e --arg expected "$repo@$expected" 'map(gsub("^(docker.io/|index.docker.io/)"; "")) | index($expected) != null' >/dev/null ||
   fail 'local source RepoDigest does not bind to expected registry manifest'
 
 # Recheck the mutable destination immediately before attempting the push.
