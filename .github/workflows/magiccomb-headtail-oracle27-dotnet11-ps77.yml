@@ -179,25 +179,28 @@ jobs:
           # The old DOOM-pattern witness is preserved in historical Git records and docs.
           # The current display is a new, explicit derivation from the exact final plain-text witness.
           $expectedEye = 'ItWasOnlyOnceILookedInTheirEye'
+          # v1 uses the frozen (=) artwork; v4 uses (s) without rewriting the v1 reference.
+          $expectedArtV4 = 'X_~' + (($expectedEye.ToCharArray()) -join '~') + '(s)'
+          if (-not [StringComparer]::Ordinal.Equals($expectedArtV4, 'X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)')) { throw 'FRESH|PING_V4|HOLD|poetic_s_mapping_drift' }
           $expectedArt = 'X_~' + (($expectedEye.ToCharArray()) -join '~') + '(=)'
           if (-not [StringComparer]::Ordinal.Equals($expectedArt, 'X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)')) {
             throw 'FRESH|HOLD|poetic_codepoint_mapping_drift'
           }
           foreach ($expectedLine in @(
-            "echo 'ART|GAMMA_ONE|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|GAMMA_TWO|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|BIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|BIDI_YANG|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|TRIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|TRIDI_YANG|TURN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|TRIDI_AIRGAP|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|SIGMADI_FIRST|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|SIGMADI_q1_q3|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|SIGMADI_q1_q2|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|SIGMADI_q4_q2|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|SIGMADI_q4_q3|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|SIGMADI_SECOND|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'",
-            "echo 'ART|FRESH_TERMINAL|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)'"
+            "echo 'ART|GAMMA_ONE|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|GAMMA_TWO|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|BIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|BIDI_YANG|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|TRIDI_YIN|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|TRIDI_YANG|TURN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|TRIDI_AIRGAP|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|SIGMADI_FIRST|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|SIGMADI_q1_q3|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|SIGMADI_q1_q2|UP|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|SIGMADI_q4_q2|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|SIGMADI_q4_q3|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|SIGMADI_SECOND|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'",
+            "echo 'ART|FRESH_TERMINAL|DOWN|X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)'"
           )) {
             if (@($commands | Where-Object { [StringComparer]::Ordinal.Equals($_,$expectedLine) }).Count -ne 1) {
               throw ('FRESH|HOLD|missing_or_duplicate_poetic_hop|' + $expectedLine)
@@ -287,10 +290,43 @@ jobs:
           }
           if ($airgapPairs -ne 14) { throw 'FRESH|PING_V3|HOLD|unexpected_ying_airgap_inventory' }
           $v3Source = ($expectedV3 -join [char]10) + [char]10
-          if (-not [StringComparer]::Ordinal.Equals($gamma,$v3Source)) {
-            throw 'FRESH|PING_V3|HOLD|source_not_exact_v3_projection'
+          # v3 is a frozen independent source artifact. Verify its exact Git bytes
+          # and the entire v2→v3 derivation before checking the deliberate v4 delta.
+          $v3Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v3.sh.txt'
+          if (-not [IO.File]::Exists($v3Path)) { throw 'FRESH|PING_V4|HOLD|missing_frozen_v3' }
+          if (((Get-Item -LiteralPath $v3Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|PING_V4|HOLD|frozen_v3_symlink'
           }
-          Write-Host 'FRESH|PING_V3|STATIC_PASS|YING_ONLY_AIRGAP_PAIRS=14|YANG_NONE_PRESERVED|FROZEN_V2_VERIFIED|NO_NETWORK'
+          $v3Bytes = [IO.File]::ReadAllBytes($v3Path)
+          $v3Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v3Bytes.Length) + [char]0)
+          $v3GitBlob = [byte[]]::new($v3Prefix.Length + $v3Bytes.Length)
+          [Array]::Copy($v3Prefix,0,$v3GitBlob,0,$v3Prefix.Length)
+          [Array]::Copy($v3Bytes,0,$v3GitBlob,$v3Prefix.Length,$v3Bytes.Length)
+          $v3Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v3GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v3Id,'0efd33eb495d951137e7181d44f659a447067110')) {
+            throw 'FRESH|PING_V4|HOLD|frozen_v3_git_blob_drift'
+          }
+          $v3Archive = $utf8.GetString($v3Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($v3Archive,$v3Source)) {
+            throw 'FRESH|PING_V4|HOLD|v2_to_v3_projection_drift'
+          }
+          # v4 replaces only the 14 paired right-hand '=' witnesses and their
+          # corresponding 14 eye-art '(=)' suffixes; all other bytes are frozen.
+          $oldRight = 'YING|=|PAIR|AIRGAP'
+          $newRight = 'YING|s|PAIR|AIRGAP'
+          $oldArt = $expectedArt
+          $newArt = $expectedArtV4
+          $pingReplacements = [regex]::Matches($v3Archive,[regex]::Escape($oldRight)).Count
+          $artReplacements = [regex]::Matches($v3Archive,[regex]::Escape($oldArt)).Count
+          if ($pingReplacements -ne 14 -or $artReplacements -ne 14) {
+            throw 'FRESH|PING_V4|HOLD|unexpected_s_substitution_count'
+          }
+          $expectedV4 = $v3Archive.Replace($oldRight,$newRight).Replace($oldArt,$newArt)
+          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV4)) {
+            throw 'FRESH|PING_V4|HOLD|source_not_exact_v4_projection'
+          }
+          Write-Host 'FRESH|PING_V3|ARCHIVED_PASS|FROZEN_V2_AND_V3_VERIFIED|AIRGAP_PAIRS=14'
+          Write-Host 'FRESH|PING_V4|STATIC_PASS|YING_EQUALS_TO_S=14|ART_EQUALS_TO_S=14|YANG_NONE_PRESERVED|NO_NETWORK|exit=42'
           if (-not $gamma.EndsWith(("echo 'PING|066|YANG|NONE|YING|NONE'" + [char]10 +
                                    "echo 'ItWasOnlyOnceILookedInTheirEye'" + [char]10 +
                                    'exit 42' + [char]10),[StringComparison]::Ordinal)) {

@@ -59,3 +59,9 @@ See `docs/POSIXI_FRESH_PING_V2.md` for exact semantics and sample records.
 Only the 14 YING-only records now append `|PAIR|AIRGAP`, for example `PING|002|YANG|NONE|YING|=|PAIR|AIRGAP`. AIRGAP denotes an explicit boundary/partner for the sole right-hand witness; it **does not turn missing YANG into YANG**, imply new parentheses, or create any network behavior. All 36 two-group and 16 zero-group PINGs, 66 original output lines, artistic display characters, canonical `ItWasOnlyOnceILookedInTheirEye`, and HOLD exit `42` are unchanged.
 
 The PowerShell source verifier checks exact v1 and v2 Git blobs, reconstructs v2 from v1, and reconstructs the complete v3 source from v2 before comparing v3 byte-for-byte. POSIX execution and GNU tooling remain unapproved; HOLD persists. See `docs/POSIXI_FRESH_PING_V3.md`.
+
+## FRESH-ART-EYE-PING-v4: symbolic equals-to-s substitution
+
+**NEW EXPERIMENTAL v4.** The frozen v3 source now resides byte-for-byte at `Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v3.sh.txt` (Git blob `0efd33eb495d951137e7181d44f659a447067110`). The current `ci/FRESH-GammaGamma.sh` changes only 14 YING-only `=→s` witnesses and 14 corresponding artistic `(=)→(s)` suffixes, across all GammaGamma/BiDi/TriDi/SigmaDi/FRESH checkpoints. Historical versions and the ancestral DOOM-shaped form remain unchanged; neither the 66 PING count nor the AIRGAP pairing is altered.
+
+The exact final stdout remains `ItWasOnlyOnceILookedInTheirEye`, the process remains `exit 42`, and a Windows PowerShell source-only gate verifies all 28 substitutions after validating the v1/v2/v3 historical chain. The v4 output protocol has a new ID and must not be treated as byte-equivalent to v3. No POSIX or GNU permission, executable POSIXI runtime, network PING, or release approval follows. See `docs/POSIXI_FRESH_PING_V4.md`.
