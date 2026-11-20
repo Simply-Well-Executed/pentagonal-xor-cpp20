@@ -405,12 +405,60 @@ jobs:
             }
           }
           $expectedV5Text = ($expectedV5 -join [char]10) + [char]10
-          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV5Text)) {
-            throw 'FRESH|GAMME_V5|HOLD|source_not_exact_projection'
+          # Freeze exact v5 source; v6 is a NEW version with corrected 9-phase
+          # parity: odd GAMMA=EGRESSING=REST=FLOP='='; even GAMME=INGRESSING=WORK=FLIP='s'.
+          # The separate two egress HEADER passes remain scoped as headers.
+          $v5Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-gamme-v5.sh.txt'
+          if (-not [IO.File]::Exists($v5Path)) { throw 'FRESH|ALTERNATION_V6|HOLD|missing_frozen_v5' }
+          if (((Get-Item -LiteralPath $v5Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|frozen_v5_symlink'
+          }
+          $v5Bytes = [IO.File]::ReadAllBytes($v5Path)
+          $v5Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v5Bytes.Length) + [char]0)
+          $v5GitBlob = [byte[]]::new($v5Prefix.Length + $v5Bytes.Length)
+          [Array]::Copy($v5Prefix,0,$v5GitBlob,0,$v5Prefix.Length)
+          [Array]::Copy($v5Bytes,0,$v5GitBlob,$v5Prefix.Length,$v5Bytes.Length)
+          $v5Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v5GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v5Id,'128eded7189fae4842e997b81686a33968f95035')) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|frozen_v5_blob_drift'
+          }
+          $frozenV5 = $utf8.GetString($v5Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($frozenV5,$expectedV5Text)) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|v4_to_v5_projection_drift'
+          }
+          $expectedV6 = $frozenV5
+          $restOccurrences = 0
+          $workOccurrences = 0
+          for ($phaseIndex = 0; $phaseIndex -lt $phaseNames.Count; $phaseIndex++) {
+            $phaseWord = $phaseNames[$phaseIndex]
+            if (($phaseIndex % 2) -eq 0) {
+              $before = '|GAMME_' + $phaseWord + '|INGRESSING|FLOP|'
+              $after = '|GAMMA_' + $phaseWord + '|EGRESSING|REST|FLOP|'
+              $restOccurrences += 28
+            } else {
+              $before = '|GAMME_' + $phaseWord + '|INGRESSING|FLIP|'
+              $after = '|GAMME_' + $phaseWord + '|INGRESSING|WORK|FLIP|'
+              $workOccurrences += 28
+            }
+            if ([regex]::Matches($expectedV6,[regex]::Escape($before)).Count -ne 28) {
+              throw ('FRESH|ALTERNATION_V6|HOLD|phase_source_count|' + $phaseWord)
+            }
+            $expectedV6 = $expectedV6.Replace($before,$after)
+          }
+          if ($restOccurrences -ne 140 -or $workOccurrences -ne 112) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|phase_parity_count'
+          }
+          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV6)) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|source_not_exact_projection'
+          }
+          if ([regex]::Matches($gamma,"(?m)^echo 'PING\|").Count -ne 178 -or
+              [regex]::Matches($gamma,"(?m)^echo 'ART\|").Count -ne 126) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|ping_or_art_count'
           }
           Write-Host 'FRESH|PING_V3|ARCHIVED_PASS|FROZEN_V2_AND_V3_VERIFIED'
           Write-Host 'FRESH|PING_V4|ARCHIVED_PASS|FROZEN_V4_AND_EXACT_DELTA_VERIFIED'
-          Write-Host 'FRESH|GAMME_V5|STATIC_PASS|EGRESS_GAMMA=2|INGRESS_GAMME_PHASES=126|FLOP=70|FLIP=56|HOPS=14|NO_NETWORK|exit=42'
+          Write-Host 'FRESH|GAMME_V5|ARCHIVED_PASS|FROZEN_V5_AND_EXACT_V4_TO_V5_VERIFIED'
+          Write-Host 'FRESH|ALTERNATION_V6|STATIC_PASS|GAMMA_REST_FLOP=70|GAMME_WORK_FLIP=56|HOPS=14|PHASES=126|NO_NETWORK|exit=42'
           if (-not $gamma.EndsWith(("echo 'PING|066|YANG|NONE|YING|NONE'" + [char]10 +
                                    "echo 'ItWasOnlyOnceILookedInTheirEye'" + [char]10 +
                                    'exit 42' + [char]10),[StringComparison]::Ordinal)) {
