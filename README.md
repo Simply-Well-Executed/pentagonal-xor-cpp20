@@ -6,23 +6,39 @@
 
 **Simply Well Executed** · **0BSD** · **Native runtime imports under audit**
 
-**Local native verification:** [PowerShell + MSVC + CTest](ci/Invoke-NativeCore.ps1) (no hosted runner)
+**Native verification:** [PowerShell + MSVC + CTest](ci/Invoke-NativeCore.ps1) or [explicit GitHub cloud GAMP4 workflow](.github/workflows/github-cloud-docker-gamp4.yml) (no user-local compute for cloud runs)
 [![Releases](https://img.shields.io/github/v/release/Simply-Well-Executed/pentagonal-xor-cpp20?include_prereleases&label=release)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus)](CMakeLists.txt)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android-blue)](docs/NATIVE_PLATFORM_MATRIX.md)
 
-**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
+**[📦 GitHub Packages: Android source-study image](https://github.com/orgs/Simply-Well-Executed/packages/container/package/android-source-study-v1)** · **[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
 
 </div>
 
 ---
 
-## Docker Hub source-study publication target (on HOLD)
+## Container images: Docker Hub and GitHub Packages
 
-The requested destination is `paulcheek/android-source-study-v1:latest`, sourced from immutable alias `sha-07eb2a4561f0` (Git commit `07eb2a4561f0f5e82db4668d2b4fa453e2a4d733`). Operator-supplied digest: `sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30`; **registry identity remains unverified**, and the historic image is not automatically validated by this PR's new tests.
+**Historical Docker Hub image, verified and published.** [Docker Hub source study](https://hub.docker.com/r/paulcheek/android-source-study-v1) is available as `paulcheek/android-source-study-v1:latest`; [GitHub Actions run #44746338664](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44746338664) performed the real authenticated same-digest push and verified the remote manifest:
 
-[`ci/Publish-AndroidSourceStudy.ps1`](ci/Publish-AndroidSourceStudy.ps1) provides dry-run registry inspection by default and an explicitly authorized `docker push paulcheek/android-source-study-v1:latest` path only after historic-source GAMP4/CTest evidence, matched source image digest, independent QA/licensing/SBOM approval, local Docker provenance, and a literal mutable-tag replacement acknowledgement. The old `Run-DockerValidation.ps1 -Mode Publish` shortcut is blocked. No push has been performed. See [release procedure and approval template](docs/GAMP4_DOCKER_RELEASE.md).
+```text
+sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30
+```
+
+**GitHub Container Registry mirror, identical bytes.** [GitHub Packages: android-source-study-v1](https://github.com/orgs/Simply-Well-Executed/packages/container/package/android-source-study-v1) contains `ghcr.io/simply-well-executed/android-source-study-v1:sha-07eb2a4561f0`. [GitHub cloud execution #44752703980](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44752703980) confirmed the copied GHCR manifest digest equals the Docker Hub digest above. **GitHub initially reports this package as private** even though the source repository is public; repository admins must select public visibility in its package settings before anonymous visitors can browse or pull it. The mirror is historical and is **not asserted Python-free**.
+
+**Python-free Android/Linux build requirement.** A separate [source/runtime no-Python protocol](docs/ANDROID_LINUX_NO_PYTHON.md) enforces removal of Python interpreters and package-manager-owned Python components from newly built source-study images, rejects Python dependency entrypoints, and requires source-matched GitHub-cloud C++20 `-O2` / full CTest / Java 17 validation. Successful images receive a **separate candidate** tag; the historical immutable image is never silently overwritten. Android device OQ, full 13-profile GAMP4 release, and independent QA remain separate gates.
+
+**Verified GitHub-hosted Python-free Android/Linux candidate.** [Run #44753219140](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44753219140) built the modified SDK-free source image from Git commit `ed28e0544042ad700afb6e611796912294f172db`, passed **45/45 native C++20 CTests** with explicit `-O2`, passed **26,654 independent Java 17 checks**, and confirmed absent Python executables and distribution packages during build, inside the offline test container, and after GHCR digest pull. Its independently named GHCR tag is:
+
+```text
+ghcr.io/simply-well-executed/android-source-study-v1:python-free-candidate-ed28e0544042
+sha256:cf8ea2216382fd030d36caeb8092d28506c1bd74128cfb0f8beedc303aa24b62
+```
+
+**This is a candidate, not a new approved production release.** The original historic Docker Hub digest remains unchanged; Android device acceptance, independent QA, and the remaining 12 GAMP4 platform profiles are not implied. GitHub package visibility is separately private until an authorized package administrator changes it.
+Repository source: [`docker/android-source-study-v1.Dockerfile`](docker/android-source-study-v1.Dockerfile), [`ci/Mirror-AndroidSourceStudy-GHCR.sh`](ci/Mirror-AndroidSourceStudy-GHCR.sh), and [GitHub cloud GHCR workflow](.github/workflows/cloud-ghcr-android-no-python.yml).
 
 ## GAMP4-gated local Docker release staging (candidate)
 
@@ -30,7 +46,7 @@ An explicit, operator-requested [GAMP4 Docker release protocol](docs/GAMP4_DOCKE
 
 The [13-profile release YAML](ci/gamp4-docker-release.yml) and [offline Docker Compose](docker/compose.release.yml) require cached toolchain images, local Docker daemon, disabled container networking, non-root execution, read-only Git-archived committed source without .git or untracked files and no automatic image/SDK downloads. The [release assembler](ci/Assemble-Gamp4-Release.sh) refuses incomplete source-matched evidence or failed package checksums; it stages bundles and release notes with status **STAGED_NOT_PUBLISHED**. The optional [OCI payload Dockerfile](docker/ReleasePayload.Dockerfile) transports multi-OS files but is **not a runnable macOS/Windows/Android container**.
 
-**Validation is NOT YET EXECUTED for this candidate.** No newly built container was pushed and no GitHub release was published. The existing full repository remains not STD-free; the independent core-only archive and the full historical GAMP4 suite retain separate scope. The previous no-container policy is superseded only for this specific operator-requested local release workflow; the ban on hosted/self-hosted GitHub Actions runners remains.
+**One scoped GitHub-hosted Linux amd64 GAMP4-style validation** passed 44/44 CTest and 12/12 URS on commit `3b4fef5f49d1d90029b88184a91a84d4598f4d48` ([run #44704209472](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44704209472)). Other 12 release profiles, QA and production qualification are not implied. The user explicitly authorized GitHub-hosted compute; self-hosted and user-local runners remain excluded from the cloud workflows. Full repository STD-free certification remains unclaimed.
 
 ## Exploratory calculus operator lexicon: three independent modes
 
