@@ -106,6 +106,23 @@ else
     --file "$root/docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile" \
     --tag "$image" "$root" ||
     fail 'new official Oracle Java/.NET/PowerShell toolchain build failed'
+  # MagicComb HEAD records ownership of the one remaining medium CVE.
+  # Never delete a binary based only on a scanner filename.
+  printf 'IRON|MAGICCOMB|HEAD|PEBBLE_PACKAGE_OWNER|BEGIN\n'
+  docker run --rm --platform linux/amd64 --network none --read-only \
+    --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 \
+    --entrypoint /bin/sh "$image" -c '
+      set -eu
+      if test ! -e /usr/bin/pebble; then
+        echo IRON\|MAGICCOMB\|HEAD\|PEBBLE_NOT_PRESENT
+      else
+        ls -l /usr/bin/pebble
+        dpkg-query -S /usr/bin/pebble || echo IRON\|MAGICCOMB\|HEAD\|PEBBLE_NOT_DPKG_OWNED
+        sha256sum /usr/bin/pebble
+        if command -v readlink >/dev/null 2>&1; then readlink -f /usr/bin/pebble; fi
+      fi
+    ' || fail 'cannot identify Go pebble binary provenance'
+  printf 'IRON|MAGICCOMB|HEAD|PEBBLE_PACKAGE_OWNER|END\n'
   docker run --rm --platform linux/amd64 --network none --read-only \
     --cap-drop ALL --security-opt no-new-privileges --pids-limit 512 \
     --memory 6g --cpus 2 \
