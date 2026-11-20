@@ -1,4 +1,4 @@
-name: MagicComb HEAD/TAIL LGPL permitted; GPL/EUPL/EPL and CVE release HOLD
+name: MagicComb HEAD/TAIL pinned local LICENSES; LGPL-2.1 preferred; LGPL-3 forbidden
 
 # Investigational only, explicit owner requirement. NEVER pushes an image.
 # GitHub-hosted Ubuntu only; no authored Node, Python or Go build actions.
@@ -13,6 +13,13 @@ on:
       - ci/MagicComb-LicensePolicy.sh
       - docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile
       - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
+      - docs/LOCALITY_FIRST_SOURCE_CUSTODY.md
+      - docs/LICENSE_AND_MARKS.md
+      - LICENSES/**
+      - ci/Assert-LocalLicenseRegistry.ps1
+      - ci/Invoke-MagicComb.ps1
+      - .gitattributes
+      - README.md
 
 permissions:
   contents: read
@@ -51,6 +58,11 @@ jobs:
           git -C "$src" checkout --detach FETCH_HEAD
           test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
           test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: Verify local LICENSES HEAD with PowerShell Core, no network
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
+          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath (Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl')
       - name: MagicComb HEAD/TAIL existing candidate, license and Docker Scout
         id: audit
         shell: bash
@@ -60,6 +72,17 @@ jobs:
         run: |
           set -euo pipefail
           /bin/sh "$RUNNER_TEMP/swe-magiccomb-source/ci/Run-CloudMagicComb-HeadTail.sh" audit
+      - name: Verify local LICENSES TAIL after audit, even on release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
+          $head = Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl'
+          $tail = Join-Path $env:RUNNER_TEMP 'license-local-tail.jsonl'
+          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath $tail
+          if (-not [IO.File]::Exists($head)) { throw 'LOCAL_LICENSE|HOLD|HEAD_report_missing' }
+          if ([IO.File]::ReadAllText($head) -cne [IO.File]::ReadAllText($tail)) { throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_mismatch' }
+          Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|unchanged_verbatim_text'
       - name: Record exact audit status without inventing a PASS
         if: always()
         shell: bash
@@ -104,6 +127,11 @@ jobs:
           git -C "$src" checkout --detach FETCH_HEAD
           test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
           test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: Verify local LICENSES HEAD with PowerShell Core, no network
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
+          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath (Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl')
       - name: MagicComb HEAD/TAIL official version rebase and CTest, HOLD on licensing
         id: rebase
         shell: bash
@@ -113,6 +141,17 @@ jobs:
         run: |
           set -euo pipefail
           /bin/sh "$RUNNER_TEMP/swe-magiccomb-source/ci/Run-CloudMagicComb-HeadTail.sh" probe
+      - name: Verify local LICENSES TAIL after audit, even on release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          $src = Join-Path $env:RUNNER_TEMP 'swe-magiccomb-source'
+          $head = Join-Path $env:RUNNER_TEMP 'license-local-head.jsonl'
+          $tail = Join-Path $env:RUNNER_TEMP 'license-local-tail.jsonl'
+          pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1') -RepositoryRoot $src -ReportPath $tail
+          if (-not [IO.File]::Exists($head)) { throw 'LOCAL_LICENSE|HOLD|HEAD_report_missing' }
+          if ([IO.File]::ReadAllText($head) -cne [IO.File]::ReadAllText($tail)) { throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_mismatch' }
+          Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|unchanged_verbatim_text'
       - name: Report source-matched toolchain/release HOLD
         if: always()
         shell: bash
