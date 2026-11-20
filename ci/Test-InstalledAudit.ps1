@@ -32,8 +32,7 @@ foreach($doc in @(
     'DOCUMENT_REVIEW_REGISTER.md',
     'WRITING_OPERATING_PROCEDURE.md',
     'HANDI.md',
-    'SIGMADI_COLLISION12.md',
-    'PONDAZ.md'
+    'SIGMADI_COLLISION12.md'
 )) {
     if(!(Test-Path -LiteralPath (Join-Path $docsRoot $doc) -PathType Leaf)) {
         throw "Installed documentation missing: $doc"

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(SWETrustBoundaryGuard LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
 
 # Produce usable debug symbols even in optimized Release builds.
 # MSVC PDBs are distributable outputs of this project, not the compiler itself.
@@ -12,7 +15,7 @@ endif()
 
 add_executable(swe_guard swe_guard.cpp)
 target_compile_features(swe_guard PRIVATE cxx_std_20)
-set_target_properties(swe_guard PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+set_target_properties(swe_guard PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS ON)
 
 # The std-free public header is also compiled as strict C11. This verifies
 # that it does not accidentally depend on C++ syntax or standard headers.

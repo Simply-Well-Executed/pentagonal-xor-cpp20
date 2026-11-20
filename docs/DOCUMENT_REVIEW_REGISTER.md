@@ -4,7 +4,7 @@
 
 ## Completed publication action
 
-**Track 48 Markdown and SVG documentation assets:** the original 46 entries plus `docs/HANDI.md` and `docs/PONDAZ.md`. Keep original baseline hashes and Git history; some source pages are now partially rewritten, but all original assets remain subject to independent verification and explicit decisions. The editorial procedure is now **REWRITTEN / VERIFY** with the newly documented, exploratory **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
+**Track 47 Markdown and SVG documentation assets:** the original 46 entries plus `docs/HANDI.md`. Keep original baseline hashes and Git history; some source pages are now partially rewritten, but all original assets remain subject to independent verification and explicit decisions. The editorial procedure is now **REWRITTEN / VERIFY** with the newly documented, exploratory **TriDi three-direction gate** and a separate **EXPLORATORY SigmaDi four-link butterfly overlay** (Σ0:+, Σ1:−, Σ2:+, Σ3:−), reconciled through YAN; the maintainer's toolchain and licensing policy is preserved. The writing procedure has been revised but not formally adopted or used to validate the complete repository. This supersedes the older 34-item register **without deleting its historical version**, which remains in Git revision history.
 
 **Apply** [WRITING_OPERATING_PROCEDURE.md](WRITING_OPERATING_PROCEDURE.md)'s single completed-action publication rule: express the performed action in active present tense and make the method, source, evidence, limitations and decision agree. **Publish** [HANDI.md](HANDI.md) as a working specification for BiDi/TriDi/SigmaDi standards, tagged BiPi/TriPi/SigmaPi adherence observations, and MINZA/NINZA/PING folding. **Retain** the TriDi and SigmaDi routes and YAN reconciliation without implying completed software validation. A new version is not validated merely because it was rewritten.
 
@@ -63,7 +63,6 @@
 | P1 | [`docs/PENTAGONAL_GATE_CASCADE.md`](PENTAGONAL_GATE_CASCADE.md) | Algorithm / operator | `c4bd4ee92e49` | DUE · substantive rewrite and verification |
 | P1 | [`docs/PENTAGONAL_LIGAZE_NATIVE.md`](PENTAGONAL_LIGAZE_NATIVE.md) | Algorithm / operator | `8285ee295e4e` | DUE · substantive rewrite and verification |
 | P2 | [`docs/PENTAGONAL_TEST_TILT_VALIDATE_RUN.md`](PENTAGONAL_TEST_TILT_VALIDATE_RUN.md) | Algorithm / operator | `b363d4195cf7` | DUE · substantive rewrite and verification |
-| P0 | [`docs/PONDAZ.md`](PONDAZ.md) | CI input security / normalization protocol | `BRANCH:837c008a4fe7` | NEW · REWRITTEN / VERIFY · native PowerShell Core gate, source-preserving Unicode audit; full CI validation pending |
 | P1 | [`docs/RELEASE_PREFLIGHT.md`](RELEASE_PREFLIGHT.md) | Build / verification | `b3e2a190064d` | DUE · substantive rewrite and verification |
 | P2 | [`docs/SIGMA_PENTA_HAN_PRESENTATION.md`](SIGMA_PENTA_HAN_PRESENTATION.md) | LAB / experiment | `1f304bb0d787` | DUE · substantive rewrite and verification |
 | P2 | [`docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg`](SIGMA_PENTA_HAN_VISTA_BOARD.svg) | Diagram / accessible media | `490554f0251f` | DUE · substantive rewrite and verification |
@@ -108,7 +107,7 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 | Java 17 JAR and Android execution | `.github/workflows/supertaoism-gamp4-java-jar.yml`, `docs/ANDROID.md` and Android SDK workflows | POLICY CONFLICT / NEEDS REVIEW: Oracle compiler provenance alone does not establish Android runtime compliance; decide source-preserving migration before enforcement |
 | Two-phase MSVC PGO and architecture-tuned optimizer | `.github/workflows/ligaze-v2-yin-yang.yml` / CORE YIN experiment | HISTORICAL LAB / POLICY CONFLICT: retain old test records at the original SHA, but do not use PGO, LTO or additional speed flags in the new normative `-O2`/`/O2` profile |
 | Include-free strict C11 public parity API | `shared/pentagonal_xor_std_free.h`, `shared/README.md` | SCOPE DECISION NEEDED: it is C11, not C++20; maintain honest existing compatibility evidence until the maintainer approves an exception or migration |
-| Current CMake native shipping optimization and dialect settings | `CMakeLists.txt`: Unix Release `-O3` default; MSVC `INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE` and selected benchmark IPO; missing per-target `CXX_EXTENSIONS OFF` | POLICY CONFLICT / NEEDS REVIEW: review exact compiled command lines and migrate the normative release profile separately; historical AB/PGO results remain at original SHA |
+| Current CMake native shipping optimization and dialect settings | `CMakeLists.txt`: Unix Release `-O3` default; MSVC `INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE` and selected benchmark IPO; missing per-target `CXX_EXTENSIONS ON` | POLICY CONFLICT / NEEDS REVIEW: review exact compiled command lines and migrate the normative release profile separately; historical AB/PGO results remain at original SHA |
 | Existing CI infrastructure and downloaded build tools | GitHub hosted runner environment, action dependencies, SDK/toolchain installers, Docker layers | SUPPLY-CHAIN REVIEW REQUIRED: record sources, version, signatures/hashes, licensing and exact build methods; do not assert every executable has been built in-house |
 | Any unverified imported code, asset or license claim | `docs/LICENSE_AND_MARKS.md`, third-party build inputs | INTELLECTUAL-PROPERTY REVIEW: verify each upstream license and ownership; retain mandatory notices, secure permissions or replace incompatible material |
 
@@ -147,11 +146,11 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 **Completion:** Only explicitly scoped, source-backed four-link reports, underlying TriDi evidence and named reviewer approval make a claim eligible for verification. All 46 original documentation assets remain in the review queue; only the SOP and COLLISION12 cross-reference received partial edits. The maintainer's C++20, `-O2`/`/O2`-only, PowerShell Core latest stable `Set-StrictMode -Version 2.0`, and license/source provenance requirements remain unchanged.
 
-## Pondaz source-intake security gate
+## PowerShell Core Magic Comb and source-at-rest canonicalization
 
-**Implement `PONDAZ-UNICODE-PREFLIGHT-v1` at CI origin.** The C++20 job queue now depends on an early native PowerShell Core (latest stable) scan of tracked text files and parsed GitHub event input. The `.NET` NFKC comparison is a nonmutating *shadow*, not a silent edit or identity replacement. Invalid UTF-8, U+200B–U+200D, U+FEFF and disallowed control codes block. A compatibility difference in ordinary research text is an audit finding; identity-sensitive workflow YAML must match its NFKC view.
+**Normalize** all Git-tracked text to strict UTF-8 and NFKC, then remove U+200B–U+200D and U+FEFF. **Commit** the cleaned source instead of substituting an ephemeral CI-only view. **Verify** the result in one Windows-native C++20 workflow before compiling, with PowerShell Core StrictMode 2.0 and audit depth 9. No extra job fan-out, Node-backed actions or container is authorized.
 
-**Coverage limitation:** This gate does not validate unknown downloaded binaries, arbitrary network traffic or runtime inputs created after job scheduling. It does not establish font bugs as memory corruption. The scan and its 11 fixture cases are documented in [PONDAZ.md](PONDAZ.md). Record an exact green run before a VERIFIED designation; source-policy conflicts in historical Java/PGO/CMake jobs remain separate.
+**Keep** source history: the cleanup is an intentional new revision, not deletion of the original versions in Git history. Audit NFKC symbol collisions and actual build results; normalization is not proof of runtime memory safety. Legacy cross-platform and Java CI records remain in their original revisions and are not represented as currently enabled.
 
 ## HANDI publication and source-practice separation
 
@@ -165,7 +164,6 @@ This is a **maintainer policy**, not an Air Force instruction or a finding that 
 
 ## Review handoff record
 
-> Pondaz is an additive CI security proposal, not a retroactive sanitizer of frozen experiments or a claim that previously accepted Unicode was illegal.
 
 
 | Date | Reviewer / actor | Change | Evidence | Decision |

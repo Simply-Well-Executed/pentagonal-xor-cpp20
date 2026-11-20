@@ -1,6 +1,21 @@
 cmake_minimum_required(VERSION 3.20)
 project(PentagonalXOR VERSION 0.2.0 LANGUAGES CXX)
 
+# Maintainer standard: ISO C++20, vendor extensions ON, and only O2.
+# All configurations use the same optimizer level; no LTO / whole-program IPO.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
+  if(MSVC)
+    set(CMAKE_CXX_FLAGS_${_config} "/MD /O2 /DNDEBUG" CACHE STRING "Only MSVC /O2 is permitted" FORCE)
+  else()
+    set(CMAKE_CXX_FLAGS_${_config} "-O2 -DNDEBUG" CACHE STRING "Only -O2 is permitted" FORCE)
+  endif()
+endforeach()
+
+
 # Produce usable debug symbols even in optimized Release builds.
 # MSVC PDBs are distributable outputs of this project, not the compiler itself.
 if(MSVC)
@@ -15,7 +30,7 @@ target_compile_features(pentagonal_xor PRIVATE cxx_std_20)
 set_target_properties(pentagonal_xor PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED YES
-    CXX_EXTENSIONS NO
+    CXX_EXTENSIONS YES
 )
 
 if(MSVC)
@@ -51,31 +66,31 @@ if(BUILD_TESTING)
     add_executable(parity_reference_test tests/parity_reference_test.cpp)
     target_compile_features(parity_reference_test PRIVATE cxx_std_20)
     set_target_properties(parity_reference_test PROPERTIES
-        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
     add_test(NAME parity_reference_exhaustive COMMAND parity_reference_test)
 
     add_executable(deca_sigma_test tests/deca_sigma_test.cpp)
     target_compile_features(deca_sigma_test PRIVATE cxx_std_20)
     set_target_properties(deca_sigma_test PROPERTIES
-        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
     add_test(NAME deca_sigma_roundtrip COMMAND deca_sigma_test)
 
     add_executable(tri_pi_test tests/tri_pi_test.cpp)
     target_compile_features(tri_pi_test PRIVATE cxx_std_20)
     set_target_properties(tri_pi_test PROPERTIES
-        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
     add_test(NAME tri_pi_three_routes COMMAND tri_pi_test)
 
     add_executable(coreao_test tests/coreao_test.cpp)
     target_compile_features(coreao_test PRIVATE cxx_std_20)
     set_target_properties(coreao_test PROPERTIES
-        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
     add_test(NAME coreao_unified_scalar COMMAND coreao_test)
 
     add_executable(coreao_gain_test tests/coreao_gain_test.cpp)
     target_compile_features(coreao_gain_test PRIVATE cxx_std_20)
     set_target_properties(coreao_gain_test PROPERTIES
-        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
     add_test(NAME coreao_rf_9dbi_eirp COMMAND coreao_gain_test)
 
     add_executable(counterarccosine_secondwave_test
@@ -98,14 +113,14 @@ if(BUILD_TESTING)
         tests/gammagamma_pi_precision_test.cpp)
     target_compile_features(gammagamma_pi_precision_test PRIVATE cxx_std_20)
     set_target_properties(gammagamma_pi_precision_test PROPERTIES
-        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
     add_test(NAME gammagamma_pi_precision_boundaries
         COMMAND gammagamma_pi_precision_test)
 
     add_executable(toolong_arithmetic_test tests/toolong_arithmetic_test.cpp)
     target_compile_features(toolong_arithmetic_test PRIVATE cxx_std_20)
     set_target_properties(toolong_arithmetic_test PROPERTIES
-        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
     add_test(NAME toolong_exact_arithmetic
         COMMAND toolong_arithmetic_test)
 
@@ -244,7 +259,7 @@ if(MSVC)
   # Actual measured optimization: /GL + /LTCG, enabled in Release only.
   # The default benchmark is promoted; explicit baseline stays unoptimized
   # so later AB runs remain comparable against a real pre-promotion control.
-  set_property(TARGET pentagonal_ligaze PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+  set_property(TARGET pentagonal_ligaze PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE FALSE)
   if(SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "safe_header" OR
      SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "safe_header_ltcg")
     target_compile_definitions(pentagonal_ligaze_benchmark PRIVATE
@@ -269,7 +284,7 @@ if(MSVC)
      SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "safe_header_ltcg" OR
      SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "platform_v2_ltcg")
     # MSVC Release already enables /O2; test additional /GL and /LTCG.
-    set_property(TARGET pentagonal_ligaze_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
+    set_property(TARGET pentagonal_ligaze_benchmark PROPERTY INTERPROCEDURAL_OPTIMIZATION FALSE)
   endif()
 else()
   if(NOT SWE_LIGAZE_WINDOWS_AB_VARIANT STREQUAL "baseline" AND
@@ -379,7 +394,7 @@ if(BUILD_TESTING)
   add_executable(minza_color_eyes_test tests/minza_color_eyes_test.cpp)
   target_compile_features(minza_color_eyes_test PRIVATE cxx_std_20)
   set_target_properties(minza_color_eyes_test PROPERTIES
-    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
   add_test(NAME minza_color_eyes_rgba64_temporal_integrity
            COMMAND minza_color_eyes_test)
 endif()
@@ -414,7 +429,7 @@ if(BUILD_TESTING)
   add_executable(minza_ninza_ping_unfold_test tests/minza_ninza_ping_unfold_test.cpp)
   target_compile_features(minza_ninza_ping_unfold_test PRIVATE cxx_std_20)
   set_target_properties(minza_ninza_ping_unfold_test PROPERTIES
-    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
   add_test(NAME minza_ninza_ping_54byte_inverse_and_mismatch
            COMMAND minza_ninza_ping_unfold_test)
 endif()
@@ -431,6 +446,6 @@ if(BUILD_TESTING)
   add_executable(minza_centrix_light_test tests/minza_centrix_light_test.cpp)
   target_compile_features(minza_centrix_light_test PRIVATE cxx_std_20)
   set_target_properties(minza_centrix_light_test PROPERTIES
-    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS YES)
   add_test(NAME minza_centrix_light_symmetry COMMAND minza_centrix_light_test)
 endif()
