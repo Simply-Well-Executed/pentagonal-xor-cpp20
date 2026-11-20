@@ -145,7 +145,8 @@ docker run --rm --platform linux/amd64 --network none --read-only \
 # ledger exists. Continue vulnerability discovery so both reasons are visible.
 if docker run --rm --platform linux/amd64 --network none --read-only \
   --cap-drop ALL --security-opt no-new-privileges --pids-limit 128 \
-  --entrypoint /bin/sh "$image" /study/ci/MagicComb-LicensePolicy.sh image \
+  --mount "type=bind,src=$root/ci/MagicComb-LicensePolicy.sh,dst=/magiccomb-license-policy.sh,readonly" \
+  --entrypoint /bin/sh "$image" /magiccomb-license-policy.sh image \
   > "$work/license-report.log" 2>&1; then
   license_result=PASS
 else
