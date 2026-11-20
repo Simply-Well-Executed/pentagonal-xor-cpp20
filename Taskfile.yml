@@ -217,3 +217,8 @@ tasks:
     cmds:
       - sh ci/Build-Release-OciPayload.sh
 
+  dockerhub-source-study-inspect:
+    desc: 'Operator-invoked registry read-only check of sha-07eb2a4561f0 versus pinned digest; no push'
+    cmds:
+      - pwsh -NoLogo -NoProfile -File ci/Publish-AndroidSourceStudy.ps1
+
