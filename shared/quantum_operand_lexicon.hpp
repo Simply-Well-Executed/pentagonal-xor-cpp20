@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: 0BSD
+// Copyright (c) 2026 Paul Allen Cheek
 // Exact exploratory syntax and three-mode operand slots, without math execution.
 // Original spellings and their provenance are retained, including superseded readings.
 #ifndef SWE_EXPLORATORY_QUANTUM_OPERAND_LEXICON_HPP
