@@ -60,8 +60,11 @@ RUN set -eux; \
     javac -version 2>&1 | grep -E '^javac 27\.0\.1'
 
 WORKDIR /study
-COPY . /study/
+COPY --chown=65534:65534 . /study/
 RUN /bin/sh /study/ci/Assert-AndroidLinux-NoPython.sh image
+# Disposable toolchain still contains copyleft system packages: do not publish.
+# Its test runtime is non-root, with all build/test writes confined to tmpfs.
+USER 65534:65534
 # Tail tests and license inventory run in the GitHub Actions cloud job; this
 # Dockerfile NEVER declares a publication tag or a production release.
 CMD ["/bin/sh", "-c", "dotnet --version && pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()' && java -version"]
