@@ -6,15 +6,13 @@ need() { command -v "$1" >/dev/null 2>&1 || fail "missing preinstalled tool: $1"
 test "$#" -eq 1 || fail 'usage: Run-Gamp4-Container.sh linux-amd64|linux-arm64|linux-x86'
 profile=$1
 case "$profile" in linux-amd64|linux-arm64|linux-x86) : ;; *) fail 'non-Linux profile or invalid name' ;; esac
-test -d /src/.git || fail 'read-only Git checkout must be mounted at /src'
+test -f /src/.swe-source-commit || fail 'sanitized Git archive source marker missing'
+test ! -d /src/.git || fail 'Docker source must not expose .git metadata'
 test -d /out || fail 'writable artifact directory must be mounted at /out'
 test -n "${SWE_EXPECTED_SHA:-}" || fail 'SWE_EXPECTED_SHA missing'
-for tool in cmake ctest git sha256sum grep awk find sort cp; do need "$tool"; done
-head=$(git -C /src rev-parse --verify HEAD) || fail 'invalid source revision'
-test "$head" = "$SWE_EXPECTED_SHA" || fail 'mounted checkout differs from operator SHA'
-git -C /src diff --quiet --exit-code HEAD -- || fail 'uncommitted source changes'
-test -z "$(git -C /src status --porcelain --untracked-files=all)" ||
-    fail 'untracked or modified source in container checkout'
+for tool in cmake ctest sha256sum grep awk find sort cp cat; do need "$tool"; done
+head=$(cat /src/.swe-source-commit) || fail 'source archive marker unreadable'
+test "$head" = "$SWE_EXPECTED_SHA" || fail 'sanitized snapshot SHA differs from host'
 output="/out/evidence/$profile"
 mkdir -p "$output"
 report="$output/gamp4-gate.yml"
