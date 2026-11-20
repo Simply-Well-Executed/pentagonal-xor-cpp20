@@ -26,7 +26,10 @@ dpkg-query -W -f='${binary:Package}\t${db:Status-Abbrev}\n' |
   sort | while IFS= read -r name; do
     test -n "$name" || continue
     packages=$((packages + 1))
-    copyright="/usr/share/doc/$name/copyright"
+    base_name=${name%%:*}
+    copyright="/usr/share/doc/$base_name/copyright"
+    # Debian multiarch names carry :amd64 while /usr/share/doc usually does not.
+    if test ! -r "$copyright"; then copyright="/usr/share/doc/$name/copyright"; fi
     if test ! -r "$copyright"; then
       printf 'IRON|MAGICCOMB|LICENSE|UNKNOWN|%s|missing_copyright_file\n' "$name"
       unknown=$((unknown + 1))
