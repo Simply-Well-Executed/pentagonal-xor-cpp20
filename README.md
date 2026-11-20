@@ -12,7 +12,7 @@
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux%20%7C%20Android-blue)](docs/NATIVE_PLATFORM_MATRIX.md)
 
-**[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
+**[📦 GitHub Packages: Android source-study image](https://github.com/orgs/Simply-Well-Executed/packages/container/package/android-source-study-v1)** · **[⬇️ Browse downloadable releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)**  ·  **[Run local native C++20 verification](ci/Invoke-NativeCore.ps1)**  ·  **[🛡️ Security policy](SECURITY.md)**
 
 </div>
 
@@ -30,6 +30,14 @@ sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30
 
 **Python-free Android/Linux build requirement.** A separate [source/runtime no-Python protocol](docs/ANDROID_LINUX_NO_PYTHON.md) enforces removal of Python interpreters and package-manager-owned Python components from newly built source-study images, rejects Python dependency entrypoints, and requires source-matched GitHub-cloud C++20 `-O2` / full CTest / Java 17 validation. Successful images receive a **separate candidate** tag; the historical immutable image is never silently overwritten. Android device OQ, full 13-profile GAMP4 release, and independent QA remain separate gates.
 
+**Verified GitHub-hosted Python-free Android/Linux candidate.** [Run #44753219140](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44753219140) built the modified SDK-free source image from Git commit `ed28e0544042ad700afb6e611796912294f172db`, passed **45/45 native C++20 CTests** with explicit `-O2`, passed **26,654 independent Java 17 checks**, and confirmed absent Python executables and distribution packages during build, inside the offline test container, and after GHCR digest pull. Its independently named GHCR tag is:
+
+```text
+ghcr.io/simply-well-executed/android-source-study-v1:python-free-candidate-ed28e0544042
+sha256:cf8ea2216382fd030d36caeb8092d28506c1bd74128cfb0f8beedc303aa24b62
+```
+
+**This is a candidate, not a new approved production release.** The original historic Docker Hub digest remains unchanged; Android device acceptance, independent QA, and the remaining 12 GAMP4 platform profiles are not implied. GitHub package visibility is separately private until an authorized package administrator changes it.
 Repository source: [`docker/android-source-study-v1.Dockerfile`](docker/android-source-study-v1.Dockerfile), [`ci/Mirror-AndroidSourceStudy-GHCR.sh`](ci/Mirror-AndroidSourceStudy-GHCR.sh), and [GitHub cloud GHCR workflow](.github/workflows/cloud-ghcr-android-no-python.yml).
 
 ## GAMP4-gated local Docker release staging (candidate)
