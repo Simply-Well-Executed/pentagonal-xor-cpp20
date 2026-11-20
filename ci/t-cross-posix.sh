@@ -11,7 +11,7 @@ cd "$root" || exit 1
 : "${BUILD_TYPE:=Release}"
 : "${EXPECTED_PWSH_VERSION:=7.7.0}"
 : "${EXPECTED_CMAKE_VERSION:=3.30.0}"
-: "${T_CROSS_BASE_SHA:=3570a7512bc0cd66b39df0fa26133a584b7a35fe}"
+: "${T_CROSS_BASE_SHA:=313e25251243b85fb79f10c04236eb355beca1ce}"
 
 fail() { printf 'T-CROSS|FAIL|%s\n' "$*" >&2; exit 1; }
 pass() { printf 'T-CROSS|PASS|%s\n' "$*"; }
@@ -37,7 +37,7 @@ gate_no_live_rest() {
     need find
     need grep
     pattern='Invoke-RestMethod|Invoke-WebRequest|HttpClient|DownloadFile|DownloadString|WebClient|Start-BitsTransfer|curl[[:space:]]|wget[[:space:]]|https?://api[.]github[.]com'
-    hits=$(find ci tools -type f ! -name 't-cross-posix.sh' \
+    hits=$(find ci tools include src -type f ! -name 't-cross-posix.sh' \
         \( -name '*.ps1' -o -name '*.sh' -o -name '*.cpp' -o -name '*.c' \
            -o -name '*.h' -o -name '*.hpp' -o -name '*.cmake' \
            -o -name '*.Dockerfile' \) \
@@ -59,18 +59,20 @@ gate_no_residual_surfaces() {
 
 gate_pinned_versions() {
     need cmake
-    need pwsh
     need awk
     need tr
     cmake_reply=$(cmake --version) || fail 'CMake version query failed'
     cmake_version=$(printf '%s\n' "$cmake_reply" | awk 'NR==1 {print $3}')
     test "$cmake_version" = "$EXPECTED_CMAKE_VERSION" ||
         fail "CMake $cmake_version != operator expected $EXPECTED_CMAKE_VERSION"
-    pwsh_version=$(pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()') ||
-        fail 'PowerShell version query failed'
-    pwsh_version=$(printf '%s' "$pwsh_version" | tr -d '\r')
-    test "$pwsh_version" = "$EXPECTED_PWSH_VERSION" ||
-        fail "PowerShell $pwsh_version != operator expected $EXPECTED_PWSH_VERSION"
+    pwsh_version='not-installed-POSIX-only'
+    if command -v pwsh >/dev/null 2>&1; then
+        pwsh_version=$(pwsh -NoLogo -NoProfile -Command '$PSVersionTable.PSVersion.ToString()') ||
+            fail 'PowerShell version query failed'
+        pwsh_version=$(printf '%s' "$pwsh_version" | tr -d '\r')
+        test "$pwsh_version" = "$EXPECTED_PWSH_VERSION" ||
+            fail "PowerShell $pwsh_version != operator expected $EXPECTED_PWSH_VERSION"
+    fi
     pass "gate-pinned-versions|cmake=$cmake_version|pwsh=$pwsh_version|operator-asserted"
 }
 
@@ -126,30 +128,32 @@ gate_zero_network_imports() {
     need grep
     need awk
     test -d "$BUILD_DIR" || fail 'build missing; run build-cpp20 first'
-    binaries=$(find "$BUILD_DIR" -type f \
-        \( -name 'pentagonal_xor' -o -name 'pentagonal_xor.exe' \) -print) ||
-        fail 'cannot enumerate CLI binaries'
-    test -n "$binaries" || fail 'pentagonal_xor CLI missing'
-    count=$(printf '%s\n' "$binaries" | awk 'END {print NR}')
-    test "$count" -eq 1 || fail "ambiguous CLI binaries: $count"
-    if command -v llvm-objdump >/dev/null 2>&1; then
-        imports=$(llvm-objdump -p "$binaries") || fail 'llvm-objdump import scan failed'
-    elif command -v objdump >/dev/null 2>&1; then
-        imports=$(objdump -p "$binaries") || fail 'objdump import scan failed'
-    elif command -v dumpbin >/dev/null 2>&1; then
-        imports=$(dumpbin /IMPORTS "$binaries") || fail 'dumpbin import scan failed'
-    elif command -v otool >/dev/null 2>&1; then
-        imports=$(otool -L "$binaries") || fail 'otool import scan failed'
-    else
-        fail 'binary import inspection tool missing'
-    fi
-    hits=$(printf '%s\n' "$imports" |
-        grep -Ei 'ws2_32|winhttp|wininet|urlmon|mswsock|libcurl|libssl|libcrypto|libsocket|CFNetwork' || :)
-    if test -n "$hits"; then
-        printf '%s\n' "$hits" >&2
-        fail 'known networking-capable direct library import detected'
-    fi
-    pass 'gate-zero-network-imports|scope=direct-CLI-imports-only'
+    for binary_name in pentagonal_xor pentagonal_xor_cli; do
+        binaries=$(find "$BUILD_DIR" -type f \
+            \( -name "$binary_name" -o -name "$binary_name.exe" \) -print) ||
+            fail "cannot enumerate $binary_name binaries"
+        test -n "$binaries" || fail "$binary_name binary missing"
+        count=$(printf '%s\n' "$binaries" | awk 'END {print NR}')
+        test "$count" -eq 1 || fail "ambiguous $binary_name binaries: $count"
+        if command -v llvm-objdump >/dev/null 2>&1; then
+            imports=$(llvm-objdump -p "$binaries") || fail 'llvm-objdump import scan failed'
+        elif command -v objdump >/dev/null 2>&1; then
+            imports=$(objdump -p "$binaries") || fail 'objdump import scan failed'
+        elif command -v dumpbin >/dev/null 2>&1; then
+            imports=$(dumpbin /IMPORTS "$binaries") || fail 'dumpbin import scan failed'
+        elif command -v otool >/dev/null 2>&1; then
+            imports=$(otool -L "$binaries") || fail 'otool import scan failed'
+        else
+            fail 'binary import inspection tool missing'
+        fi
+        hits=$(printf '%s\n' "$imports" |
+            grep -Ei 'ws2_32|winhttp|wininet|urlmon|mswsock|libcurl|libssl|libcrypto|libsocket|CFNetwork' || :)
+        if test -n "$hits"; then
+            printf '%s\n' "$hits" >&2
+            fail "known networking-capable direct import in $binary_name"
+        fi
+        pass "gate-zero-network-imports|binary=$binary_name|direct-imports-only"
+    done
 }
 
 test_ctest() {
