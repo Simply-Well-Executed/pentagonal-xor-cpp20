@@ -116,7 +116,7 @@ else
        cd /study
        /bin/sh ci/Assert-AndroidLinux-NoPython.sh image
        dotnet --version
-       pwsh -NoLogo -NoProfile -Command "$PSVersionTable.PSVersion.ToString()"
+       pwsh -NoLogo -NoProfile -Command "\$PSVersionTable.PSVersion.ToString()"
        java -version
        javac -version
        cmake -S . -B /tmp/verify -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON \
