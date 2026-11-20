@@ -65,6 +65,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/coreao_gain.hpp
     shared/coreo_stereo.hpp
     shared/stability10d.hpp
+    shared/quantum_operand_lexicon.hpp
     DESTINATION include/swe)
   message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
   return()
@@ -124,6 +125,7 @@ install(FILES
   include/pxor_memory.hpp
   include/pentagonal_suite.hpp
   DESTINATION include/swe)
+install(FILES shared/quantum_operand_lexicon.hpp DESTINATION include/swe)
 
 include(CTest)
 if(BUILD_TESTING)
@@ -226,6 +228,16 @@ if(BUILD_TESTING)
     set_target_properties(tri_pi_test PROPERTIES
         CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
     add_test(NAME tri_pi_three_routes COMMAND tri_pi_test)
+
+    # Exploratory punctuation lexicon: exact byte identity, no mathematical
+    # execution of unresolved operators. Independent of production parity.
+    add_executable(quantum_operand_lexicon_test
+        tests/quantum_operand_lexicon_test.cpp)
+    target_compile_features(quantum_operand_lexicon_test PRIVATE cxx_std_20)
+    set_target_properties(quantum_operand_lexicon_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME quantum_operand_exact_symbol_registry
+        COMMAND quantum_operand_lexicon_test)
 
     add_executable(coreao_test tests/coreao_test.cpp)
     target_compile_features(coreao_test PRIVATE cxx_std_20)

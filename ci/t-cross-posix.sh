@@ -57,7 +57,9 @@ gate_no_std_throughput() {
                 src/main.cpp src/suite_main.cpp src/parity_std_free_main.cpp \
                 tests/pentagonal_xor_throughput_test.cpp \
                 tests/pentagonal_suite_test.cpp \
-                tests/std_free_portable_probe.cpp; do
+                tests/std_free_portable_probe.cpp \
+                shared/quantum_operand_lexicon.hpp \
+                tests/quantum_operand_lexicon_test.cpp; do
         test -f "$file" || fail "missing STD-free source: $file"
         if grep -nE 'std::|__builtin_' "$file"; then
             fail "standard-library namespace or compiler-specific builtin in $file"
@@ -69,7 +71,7 @@ gate_no_std_throughput() {
             fail "unreviewed C/C++ header include in STD-free source: $file"
         fi
     done
-    pass 'gate-no-std-throughput|ten-sources|native-platform-headers-whitelisted'
+    pass 'gate-no-std-throughput|twelve-sources|native-platform-headers-whitelisted'
 }
 
 gate_suite_no_comments() {

@@ -55,7 +55,7 @@ tasks:
       - sh ci/t-cross-posix.sh gate-no-live-rest
 
   gate-no-std-throughput:
-    desc: 'Require no standard-library headers or std names in ten native parity, engine, suite and portable probe source files'
+    desc: 'Require no STD headers or namespaces in twelve native sources including experimental exact-symbol lexicon and tests'
     cmds:
       - sh ci/t-cross-posix.sh gate-no-std-throughput
 
