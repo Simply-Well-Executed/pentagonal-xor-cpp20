@@ -240,4 +240,127 @@ public:
     }
 };
 
+// Native operating-system output and allocation. No C/C++ standard APIs.
+// These OS interfaces can still link platform runtime libraries.
+inline void write_raw(const char* bytes, usize length,
+                      bool error = false) noexcept {
+#if defined(_WIN32)
+    HANDLE handle = GetStdHandle(error ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE);
+    if (!handle || handle == INVALID_HANDLE_VALUE) return;
+    while (length) {
+        const DWORD chunk = length > 0xffffffffu ?
+            0xffffffffu : static_cast<DWORD>(length);
+        DWORD written = 0;
+        if (!WriteFile(handle, bytes, chunk, &written, nullptr) || !written) {
+            return;
+        }
+        bytes += written;
+        length -= written;
+    }
+#elif defined(__linux__)
+    const int fd = error ? 2 : 1;
+    while (length) {
+        const auto written = write(fd, bytes, length);
+        if (written <= 0) return;
+        bytes += written;
+        length -= static_cast<usize>(written);
+    }
+#else
+    (void)bytes; (void)length; (void)error;
+#endif
+}
+
+template <usize N>
+inline void write_literal(const char (&text)[N],
+                          bool error = false) noexcept {
+    write_raw(text, N - 1, error);
+}
+inline void write_u64(u64 value) noexcept {
+    char digits[32]{};
+    usize i = sizeof(digits);
+    do {
+        digits[--i] = static_cast<char>('0' + (value % 10u));
+        value /= 10u;
+    } while (value);
+    write_raw(digits + i, sizeof(digits) - i);
+}
+inline void write_hex_byte(u8 value) noexcept {
+    constexpr char table[] = "0123456789ABCDEF";
+    const char out[2]{table[value >> 4u], table[value & 15u]};
+    write_raw(out, 2);
+}
+[[nodiscard]] inline bool equals_cstr(const char* a, const char* b) noexcept {
+    if (!a || !b) return false;
+    while (*a && *b) {
+        if (*a++ != *b++) return false;
+    }
+    return *a == *b;
+}
+
+[[nodiscard]] inline bool parse_decimal_limit(
+    const char* value, usize limit, usize& parsed) noexcept {
+    if (!value || !*value) return false;
+    usize result = 0;
+    for (const char* p = value; *p; ++p) {
+        if (*p < '0' || *p > '9') return false;
+        const usize digit = static_cast<usize>(*p - '0');
+        if (digit > limit || result > (limit - digit) / 10u) return false;
+        result = result * 10u + digit;
+    }
+    parsed = result;
+    return true;
+}
+
+// Monotonic microseconds from a native OS clock; 0 means unavailable.
+[[nodiscard]] inline u64 now_us() noexcept {
+#if defined(_WIN32)
+    LARGE_INTEGER frequency{};
+    LARGE_INTEGER ticks{};
+    if (!QueryPerformanceFrequency(&frequency) ||
+        frequency.QuadPart <= 0 ||
+        !QueryPerformanceCounter(&ticks) || ticks.QuadPart < 0) return 0;
+    const u64 f = static_cast<u64>(frequency.QuadPart);
+    const u64 t = static_cast<u64>(ticks.QuadPart);
+    return (t / f) * 1000000u +
+        static_cast<u64>(
+            static_cast<double>(t % f) * 1000000.0 / static_cast<double>(f));
+#elif defined(__linux__)
+    struct timespec t{};
+    if (clock_gettime(CLOCK_MONOTONIC, &t) != 0 ||
+        t.tv_sec < 0 || t.tv_nsec < 0) return 0;
+    return static_cast<u64>(t.tv_sec) * 1000000u +
+           static_cast<u64>(t.tv_nsec) / 1000u;
+#else
+    return 0;
+#endif
+}
+
+// Only for explicit buffers larger than the fixed 16 MiB default.
+// Linux uses private anonymous maps; neither this nor CPU affinity
+// guarantees NUMA locality, exclusion of other processes, or encryption.
+[[nodiscard]] inline u8* allocate_pages(usize length) noexcept {
+    if (length == 0) return nullptr;
+#if defined(_WIN32)
+    return static_cast<u8*>(
+        VirtualAlloc(nullptr, length, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE));
+#elif defined(__linux__)
+    void* memory = mmap(nullptr, length, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    return memory == MAP_FAILED ? nullptr : static_cast<u8*>(memory);
+#else
+    return nullptr;
+#endif
+}
+inline void release_pages(u8* memory, usize length) noexcept {
+    if (!memory) return;
+#if defined(_WIN32)
+    (void)length;
+    VirtualFree(memory, 0, MEM_RELEASE);
+#elif defined(__linux__)
+    (void)munmap(memory, length);
+#else
+    (void)length;
+#endif
+}
+
 } // namespace pxor
