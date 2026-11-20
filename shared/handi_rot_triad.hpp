@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: 0BSD
 // HANDI-ROT16-CENTER10-TRIAD-v2: minimal mod-26 ASCII display projection.
-// Prior v1 (ROT42/ROT36) is archived unchanged; no canonical identity changes.
+// Prior v1 is archived unchanged; no canonical identity changes.
 #ifndef SWE_HANDI_ROT_TRIAD_HPP
 #define SWE_HANDI_ROT_TRIAD_HPP
 namespace swe::handi::rot_triad {
