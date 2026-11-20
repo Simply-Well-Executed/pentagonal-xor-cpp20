@@ -90,7 +90,7 @@ done
 } > "$stage/RELEASE_GATE.yml"
 (
   cd "$stage"
-  find . -maxdepth 1 -type f ! -name SHA256SUMS -exec sha256sum '{}' ';' |
+  find . -type f ! -name SHA256SUMS -exec sha256sum '{}' ';' |
     sort > SHA256SUMS
   sha256sum -c SHA256SUMS >/dev/null
 ) || fail 'release checksums failed'
