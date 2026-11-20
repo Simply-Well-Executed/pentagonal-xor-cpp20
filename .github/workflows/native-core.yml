@@ -1,0 +1,61 @@
+name: 'Native C++20 and Magic Comb'
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    name: 'Windows native PowerShell Core · C++20 extensions ON'
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - name: 'Checkout exact GitHub source commit without Node actions'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          & git init .
+          if ($LASTEXITCODE -ne 0) { throw 'git init failed' }
+          & git remote add origin "https://github.com/$env:GITHUB_REPOSITORY.git"
+          if ($LASTEXITCODE -ne 0) { throw 'git remote failed' }
+          & git -c advice.detachedHead=false fetch --no-tags --depth 1 origin $env:GITHUB_REF
+          if ($LASTEXITCODE -ne 0) { throw 'git fetch failed' }
+          & git -c advice.detachedHead=false checkout --detach FETCH_HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'git checkout failed' }
+          $sha = (& git rev-parse HEAD).Trim()
+          if ($sha -cne $env:GITHUB_SHA) { throw 'GitHub source SHA mismatch' }
+      - name: 'Require latest stable PowerShell Core version'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $release=Invoke-RestMethod -Uri 'https://api.github.com/repos/PowerShell/PowerShell/releases/latest' -Headers @{'User-Agent'='PENTAGONAL-XOR-native-ci'} -TimeoutSec 30
+          $tag=[string]$release.tag_name
+          $latest=[version]($tag -replace '^v','')
+          $present=[version]$PSVersionTable.PSVersion
+          if ($present -lt $latest) { throw "PowerShell Core runner $present is older than required latest stable $latest" }
+          Write-Host "PowerShell Core $present; latest stable $latest"
+      - name: 'Magic Comb: verify UTF-8 NFKC-cleaned source at rest'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          & ./ci/Invoke-MagicComb.ps1 -Mode SelfTest -NestingDepth 9
+          if (-not $?) { throw 'Magic Comb self-test failed' }
+          & ./ci/Invoke-MagicComb.ps1 -Mode Verify -NestingDepth 9
+          if (-not $?) { throw 'Magic Comb source verification failed' }
+      - name: 'Compile and test native C++20 with extensions enabled'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          & cmake -S . -B build -G 'Visual Studio 17 2022' -A x64 -DBUILD_TESTING=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF '-DCMAKE_CXX_FLAGS_RELEASE=/O2 /DNDEBUG'
+          if ($LASTEXITCODE -ne 0) { throw 'CMake configuration failed' }
+          & cmake --build build --config Release --parallel
+          if ($LASTEXITCODE -ne 0) { throw 'Native C++20 build failed' }
+          & ctest --test-dir build -C Release --output-on-failure
+          if ($LASTEXITCODE -ne 0) { throw 'Native CTest failed' }
