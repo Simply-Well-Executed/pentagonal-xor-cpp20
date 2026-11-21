@@ -35,7 +35,7 @@ $required=@(
  'pull_remote_manifest','--network','none','--read-only',
  'baseline_head','baseline_tail','zero_composition','odd_composition',
  'hostile_out_of_range','hostile_not_a_number','hostile_missing_arguments',
- 'control_json','WITNESS'
+ 'control_json','original_evidence'
 )
 # The original evidence identity is checked using the actual per-profile
 # manifest labels instead of a mutable name or an untyped score.
