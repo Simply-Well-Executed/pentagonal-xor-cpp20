@@ -33,7 +33,7 @@ try{
  $actual=@(Get-ChildItem -LiteralPath $dst -File -Recurse -Force)
  $expectedPaths=@{}
  foreach($item in $expected){
-  $relative=[IO.Path]::GetRelativePath($root,$item.FullName).Replace('\\','/')
+  $relative=[IO.Path]::GetRelativePath($root,$item.FullName).Replace([char]92,'/')
   # Only explicitly private material is excluded by .dockerignore. If an
   # ordinary tracked file is absent, fail closed instead of calling it complete.
   if($relative -match '^(?:\.git/|build(?:-[^/]*)?/|dist/|stage/|evidence(?:-[^/]*)?/|android/app/build/)' -or
@@ -43,7 +43,7 @@ try{
  }
  $actualPaths=@{}
  foreach($item in $actual){
-  $relative=[IO.Path]::GetRelativePath($dst,$item.FullName).Replace('\\','/')
+  $relative=[IO.Path]::GetRelativePath($dst,$item.FullName).Replace([char]92,'/')
   $actualPaths[$relative]=(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash
  }
  if($actualPaths.Count -ne $expectedPaths.Count){
