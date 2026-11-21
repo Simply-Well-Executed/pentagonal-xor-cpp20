@@ -53,6 +53,9 @@ foreach($entry in $rows){
     throw 'ALONZ|OCI|HOLD|false_native_claim'
   }
 }
+# Independently require the existing THAILONGA HEAD+TAIL and tamper rejection gate.
+& pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-OpenBSDThailongaPostflightV1.ps1') -RepositoryRoot $root -TemporaryDirectory (Join-Path $temp 'thailonga-negative-test')
+if($LASTEXITCODE -ne 0){throw 'ALONZ|THAILONGA|HOLD|independent_test_failed'}
 # THAILONGA CORE is a postflight projection from immutable later stages.
 # Reuse the already frozen stage07 THAILONGA gate and include its witness in OCI.
 $thailongaReport=Join-Path $temp 'thailonga-stage07-postflight.jsonl'
