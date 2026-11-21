@@ -13,7 +13,7 @@ if([IO.Directory]::Exists($dir)){throw 'THAILONGA|TEST|HOLD|preexisting_temp_dir
 [IO.Directory]::CreateDirectory($dir)|Out-Null
 $manifest=Join-Path $root 'ci/OPENBSD_SERIAL_COREAO.tsv'
 $annex=Join-Path $root 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv'
-$ledger=Join-Path $dir 'frozen-canonical-ten-stage.jsonl'
+$ledger=Join-Path $dir 'locked-canonical-ten-stage.jsonl'
 $head=Join-Path $dir 'thailonga-head-v1.jsonl'
 $tail=Join-Path $dir 'thailonga-tail-v1.jsonl'
 $gate=Join-Path $root 'ci/Invoke-OpenBSDThailongaPostflightV1.ps1'
