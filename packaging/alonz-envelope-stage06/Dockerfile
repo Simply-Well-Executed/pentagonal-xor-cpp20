@@ -8,14 +8,14 @@ LABEL org.opencontainers.image.description="C++20 Linux/amd64 offline diagnostic
 LABEL org.opencontainers.image.source="https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20"
 LABEL org.opencontainers.image.vendor="Simply Well Executed"
 LABEL org.opencontainers.image.licenses="0BSD"
-LABEL org.opencontainers.image.version="alonz-envelope-stage06-v1"
-LABEL org.opencontainers.image.ref.name="STAGE=06;IDENTITY=OPENBSD3;OPENBSD_RELEASE=3.9;CORE=NONE"
+LABEL org.opencontainers.image.version="alonz-envelope-stage06-thailonga-v2"
+LABEL org.opencontainers.image.ref.name="STAGE=06;IDENTITY=OPENBSD3;OPENBSD_RELEASE=3.9;CORE=OPENBSD2;CORE_MODE=THAILONGA_POSTFLIGHT;CANONICAL_CORE=NONE"\nLABEL com.simplywellexecuted.core-provenance="THAILONGA_POSTFLIGHT_V1,AFTER_STAGE10,NOT_STAGE06_INPUT"
 LABEL com.simplywellexecuted.image-alias="openbsd4"
 LABEL com.simplywellexecuted.native-openbsd-builds="0"
 LABEL com.simplywellexecuted.release-status="HOLD"
 COPY --chmod=0555 stage06 /alonz
 COPY --chmod=0444 serial-witnesses.jsonl /evidence/serial-witnesses.jsonl
-COPY --chmod=0444 native-evidence.tsv /evidence/native-evidence.tsv
+COPY --chmod=0444 native-evidence.tsv /evidence/native-evidence.tsv\nCOPY --chmod=0444 thailonga-stage07-postflight.jsonl /evidence/thailonga-stage07-postflight.jsonl
 COPY --chmod=0444 LICENSE /LICENSE
 USER 65534:65534
 ENTRYPOINT ["/alonz"]
