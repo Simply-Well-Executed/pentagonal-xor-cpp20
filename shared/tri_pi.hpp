@@ -61,7 +61,7 @@ constexpr bool inspect_forward(const deca_sigma::Trace& trace,
             if (before == 0.0 || before == 1.0) return false;
             expected = before / (before - 1.0);
         }
-        if (!deca_sigma::near(expected, after, tolerance)) return false;
+        if (!deca_sigma::within_tolerance(expected, after, tolerance)) return false;
     }
     return true;
 }
@@ -88,7 +88,7 @@ constexpr bool inspect_reverse(const deca_sigma::Trace& trace,
                 before == 0.0 || before == 1.0) return false;
             reconstructed = after / (after - 1.0);
         }
-        if (!deca_sigma::near(reconstructed, before, tolerance)) return false;
+        if (!deca_sigma::within_tolerance(reconstructed, before, tolerance)) return false;
     }
     return true;
 }
@@ -108,13 +108,13 @@ constexpr bool inspect_zfold(const deca_sigma::Trace& trace,
     }
     for (bool visited : seen) if (!visited) return false;
 
-    return deca_sigma::near(s[0], s[4], tolerance) &&
-           deca_sigma::near(s[4], s[8], tolerance) &&
-           deca_sigma::near(s[8], s[10], tolerance) &&
-           deca_sigma::near(s[1], s[5], tolerance) &&
-           deca_sigma::near(s[5], s[9], tolerance) &&
-           deca_sigma::near(s[2], s[6], tolerance) &&
-           deca_sigma::near(s[3], s[7], tolerance);
+    return deca_sigma::within_tolerance(s[0], s[4], tolerance) &&
+           deca_sigma::within_tolerance(s[4], s[8], tolerance) &&
+           deca_sigma::within_tolerance(s[8], s[10], tolerance) &&
+           deca_sigma::within_tolerance(s[1], s[5], tolerance) &&
+           deca_sigma::within_tolerance(s[5], s[9], tolerance) &&
+           deca_sigma::within_tolerance(s[2], s[6], tolerance) &&
+           deca_sigma::within_tolerance(s[3], s[7], tolerance);
 }
 
 constexpr Report inspect(const deca_sigma::Trace& trace,
