@@ -8,7 +8,7 @@
 #endif
 
 // Generated only after canonical serial evidence and postflight THAILONGA v1 validation.
-// The header is created in a temporary CI build directory; never mutates frozen source.
+// The header is created in a temporary CI build directory; never mutates locked source.
 #include "thailonga_build_digest.hpp"
 #ifndef THAILONGA_POSTFLIGHT_SHA256
 #error "THAILONGA postflight SHA256 witness was not generated"
