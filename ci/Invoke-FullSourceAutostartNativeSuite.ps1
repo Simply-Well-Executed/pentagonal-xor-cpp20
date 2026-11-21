@@ -31,9 +31,9 @@ foreach($relative in $needed){
   if(-not [IO.File]::Exists($path)){throw ('AUTOSTART|HOLD|missing_source_or_license|'+$relative)}
 }
 $license=(Get-Content -LiteralPath (Join-Path $root 'LICENSE') -Raw)
-if(-not $license.Contains('0BSD',[StringComparison]::OrdinalIgnoreCase) -and
-   -not $license.Contains('Zero-Clause',[StringComparison]::OrdinalIgnoreCase)){
-  throw 'AUTOSTART|HOLD|root_license_unrecognized'
+if(-not $license.Contains('Permission to use, copy, modify, and/or distribute this software',[StringComparison]::Ordinal) -or
+   -not $license.Contains('THE SOFTWARE IS PROVIDED "AS IS"',[StringComparison]::Ordinal)){
+  throw 'AUTOSTART|HOLD|root_zero_clause_license_text_unrecognized'
 }
 $expectedCanonical='2c33d3cb2a4b42df5abf4868c370943feeeff274207f241aa3289e6c9487a308'
 $observedCanonical=(Get-FileHash -LiteralPath (Join-Path $root 'ci/OPENBSD_SERIAL_COREAO.tsv') -Algorithm SHA256).Hash.ToLowerInvariant()
