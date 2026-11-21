@@ -52,7 +52,9 @@ switch($Profile){
 }
 $ghcr='ghcr.io/simply-well-executed/'+$Profile+'-autostart:sha-'+$env:GITHUB_SHA
 $ghcrAlias='ghcr.io/simply-well-executed/autostart:'+$Profile+'-sha-'+$env:GITHUB_SHA
+$ghcrTrial='ghcr.io/simply-well-executed/'+$Profile+'-autostart:trial-sha-'+$env:GITHUB_SHA
 $hub='paulcheek/autostart:'+$Profile+'-sha-'+$env:GITHUB_SHA
+$hubTrial='paulcheek/autostart:'+$Profile+'-trial-sha-'+$env:GITHUB_SHA
 foreach($image in @($env:TOOLCHAIN_IMAGE,$env:RUNTIME_IMAGE)){
  & docker pull $image
  if($LASTEXITCODE -ne 0){throw 'AUTOSTART|OCI|HOLD|approved_base_unavailable'}
@@ -79,21 +81,49 @@ function Push-Exact([string]$image){
 if([string]::IsNullOrWhiteSpace($env:GH_TOKEN)){throw 'AUTOSTART|GHCR|HOLD|token_missing'}
 $env:GH_TOKEN | docker login ghcr.io --username $env:GITHUB_ACTOR --password-stdin
 if($LASTEXITCODE -ne 0){throw 'AUTOSTART|GHCR|HOLD|login_failed'}
-$canonicalDigest=Push-Exact $ghcr
+# PEEK V1: select a profile, spawn independent fresh-container arenas,
+# assert exact game-like fixture composition/hostile controls, and require
+# typed outputs. This test design is inspired by WTii's Warcraft III unit
+# tester, but runs only the project's native CLI, not the Warcraft engine.
+$peek=Join-Path $root 'ci/Test-PeekVirginOciV1.ps1'
+$ghcrTrialReport=Join-Path $env:RUNNER_TEMP ('peek-'+$Profile+'-ghcr-trial-v1.json')
+& docker tag $ghcr $ghcrTrial
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|GHCR|HOLD|candidate_tag_failed'}
+$canonicalDigest=Push-Exact $ghcrTrial
+& pwsh -NoLogo -NoProfile -File $peek -Image $ghcrTrial -Digest $canonicalDigest -Profile $Profile -Phase GHCR_TRIAL -ReportPath $ghcrTrialReport
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|PEEK|HOLD|ghcr_virgin_trial_failed_no_final_tags'}
+# Only after a successful remote-digest PEEK trial may descriptive/short
+# GHCR validated tags be created. Reuse the exact same manifest bytes.
+if((Push-Exact $ghcr) -cne $canonicalDigest){
+ throw 'AUTOSTART|GHCR|HOLD|approved_candidate_manifest_mismatch'
+}
 & docker tag $ghcr $ghcrAlias
 if($LASTEXITCODE -ne 0){throw 'AUTOSTART|GHCR|HOLD|alias_tag_failed'}
-if((Push-Exact $ghcrAlias) -cne $canonicalDigest){throw 'AUTOSTART|GHCR|HOLD|digest_mismatch'}
+if((Push-Exact $ghcrAlias) -cne $canonicalDigest){throw 'AUTOSTART|GHCR|HOLD|alias_digest_mismatch'}
 & docker logout ghcr.io | Out-Null
 if($env:DOCKERHUB_USERNAME -cne 'paulcheek' -or
    [string]::IsNullOrWhiteSpace($env:DOCKERHUB_TOKEN)){
  throw 'AUTOSTART|DOCKERHUB|HOLD|credentials_unavailable'
 }
-& docker tag $ghcr $hub
-if($LASTEXITCODE -ne 0){throw 'AUTOSTART|DOCKERHUB|HOLD|tag_failed'}
 $env:DOCKERHUB_TOKEN | docker login --username $env:DOCKERHUB_USERNAME --password-stdin
 if($LASTEXITCODE -ne 0){throw 'AUTOSTART|DOCKERHUB|HOLD|login_failed'}
-if((Push-Exact $hub) -cne $canonicalDigest){throw 'AUTOSTART|DOCKERHUB|HOLD|digest_mismatch'}
+# New Docker Hub candidate tag: test after remote push, before validated tag.
+& docker tag $ghcr $hubTrial
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|DOCKERHUB|HOLD|candidate_tag_failed'}
+if((Push-Exact $hubTrial) -cne $canonicalDigest){
+ throw 'AUTOSTART|DOCKERHUB|HOLD|candidate_digest_mismatch'
+}
+$hubTrialReport=Join-Path $env:RUNNER_TEMP ('peek-'+$Profile+'-dockerhub-trial-v1.json')
+& pwsh -NoLogo -NoProfile -File $peek -Image $hubTrial -Digest $canonicalDigest -Profile $Profile -Phase DOCKERHUB_TRIAL -ReportPath $hubTrialReport
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|PEEK|HOLD|hub_virgin_trial_failed_no_final_tag'}
+& docker tag $ghcr $hub
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|DOCKERHUB|HOLD|final_tag_failed'}
+if((Push-Exact $hub) -cne $canonicalDigest){throw 'AUTOSTART|DOCKERHUB|HOLD|final_digest_mismatch'}
+$finalReport=Join-Path $env:RUNNER_TEMP ('peek-'+$Profile+'-dockerhub-final-v1.json')
+& pwsh -NoLogo -NoProfile -File $peek -Image $hub -Digest $canonicalDigest -Profile $Profile -Phase DOCKERHUB_FINAL -ReportPath $finalReport
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|PEEK|HOLD|hub_final_repeat_trial_failed'}
 & docker logout | Out-Null
 Write-Host ('AUTOSTART|PINNED_PUBLICATION_PASS|PROFILE='+$Profile+
  '|DIGEST='+$canonicalDigest+'|SOURCE_SHA='+$env:GITHUB_SHA+
- '|FULL_NATIVE_CTEST_AND_NORMAL_START|ORIGINAL_EVIDENCE_IMAGES_UNTOUCHED|NO_LATEST_TAG')
+ '|PEEK_GHCR_TRIAL_PASS|PEEK_DOCKERHUB_TRIAL_PASS|PEEK_DOCKERHUB_FINAL_PASS'+
+ '|TYPED_OUTPUTS|ORIGINAL_EVIDENCE_IMAGES_UNTOUCHED|NO_LATEST_TAG')
