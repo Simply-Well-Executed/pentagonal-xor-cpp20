@@ -53,8 +53,40 @@ foreach($entry in $rows){
     throw 'ALONZ|OCI|HOLD|false_native_claim'
   }
 }
+# THAILONGA CORE is a postflight projection from immutable later stages.
+# Reuse the already frozen stage07 THAILONGA gate and include its witness in OCI.
+$thailongaReport=Join-Path $temp 'thailonga-stage07-postflight.jsonl'
+& pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Invoke-OpenBSDThailongaPostflightV1.ps1') -RepositoryRoot $root -LedgerPath $ledger -ReportPath $thailongaReport
+if($LASTEXITCODE -ne 0){throw 'ALONZ|THAILONGA|HOLD|generation_failed'}
+$thailongaLines=@([IO.File]::ReadAllLines($thailongaReport,[Text.UTF8Encoding]::new($false,$true)))
+if($thailongaLines.Count -ne 1){throw 'ALONZ|THAILONGA|HOLD|line_count'}
+$projection=$thailongaLines[0]|ConvertFrom-Json
+if($projection.protocol -cne 'THAILONGA_POSTFLIGHT_V1' -or
+   $projection.subject_stage -cne 'OPENBSD4_RETURN' -or
+   $projection.subject_ordinal -cne '07' -or
+   $projection.canonical_core -cne 'NONE' -or
+   $projection.projection_core -cne 'OPENBSD2' -or
+   $projection.projection_mode -cne 'POSTFLIGHT_ONLY' -or
+   $projection.first_witness_sha256 -cne $rows[4].witness_sha256 -or
+   $projection.predecessor_witness_sha256 -cne $rows[5].witness_sha256 -or
+   $projection.return_witness_sha256 -cne $rows[6].witness_sha256 -or
+   $projection.yin_witness_sha256 -cne $rows[7].witness_sha256 -or
+   $projection.yang_witness_sha256 -cne $rows[8].witness_sha256 -or
+   $projection.coreao_witness_sha256 -cne $rows[9].witness_sha256 -or
+   $projection.thailonga_sha256 -cnotmatch '^[a-f0-9]{64}$' -or
+   $projection.native_openbsd_binary -cne 'NOT_BUILT' -or
+   $projection.release_status -cne 'HOLD' -or
+   $projection.approved -ne $false){
+  throw 'ALONZ|THAILONGA|HOLD|provenance_mismatch'
+}
+Write-Host ('ALONZ|THAILONGA|VERIFIED|CORE=OPENBSD2|CANONICAL_CORE=NONE|MODE=POSTFLIGHT_ONLY|SHA256='+$projection.thailonga_sha256)
 $source=Join-Path $root 'packaging/alonz-envelope-stage06/stage06_linux_amd64.cpp'
 $sourceText=[IO.File]::ReadAllText($source,[Text.UTF8Encoding]::new($false,$true))
+if(-not $sourceText.Contains('CORE=OPENBSD2|CORE_MODE=THAILONGA_POSTFLIGHT|CANONICAL_CORE=NONE',[StringComparison]::Ordinal) -or
+   -not $sourceText.Contains('ALONZ|THAILONGA|CORE=OPENBSD2|CANONICAL_CORE=NONE|PROJECTION=POSTFLIGHT_ONLY',[StringComparison]::Ordinal)){
+  throw 'ALONZ|THAILONGA|HOLD|runtime_text_not_derived'
+}
+
 foreach($digest in @($rows[4].witness_sha256,$rows[5].witness_sha256,$rows[6].witness_sha256,
                      $rows[7].witness_sha256,$rows[8].witness_sha256)){
   if(-not $sourceText.Contains($digest,[StringComparison]::Ordinal)){
@@ -86,6 +118,7 @@ $context=Join-Path $temp 'image-context'
 [IO.Directory]::CreateDirectory($context)|Out-Null
 [IO.File]::Copy($head,(Join-Path $context 'stage06'),$true)
 [IO.File]::Copy($ledger,(Join-Path $context 'serial-witnesses.jsonl'),$true)
+[IO.File]::Copy($thailongaReport,(Join-Path $context 'thailonga-stage07-postflight.jsonl'),$true)
 [IO.File]::Copy((Join-Path $root 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv'),(Join-Path $context 'native-evidence.tsv'),$true)
 [IO.File]::Copy((Join-Path $root 'LICENSE'),(Join-Path $context 'LICENSE'),$true)
 [IO.File]::Copy((Join-Path $root 'packaging/alonz-envelope-stage06/Dockerfile'),(Join-Path $context 'Dockerfile'),$true)
@@ -93,12 +126,12 @@ Write-Host ('ALONZ|OCI|SOURCE_BINARY_HEAD_TAIL_PASS|SHA256='+$headSha)
 & docker build --network=none --pull=false --no-cache --platform linux/amd64 -f (Join-Path $context 'Dockerfile') -t $ImageTag $context
 if($LASTEXITCODE -ne 0){throw 'ALONZ|OCI|HOLD|docker_build_failed'}
 $expected=@(
-  'ALONZ|STAGE=06|IDENTITY=OPENBSD3|RELEASE=3.9|PASS=NONE|CORE=NONE|HOST=LINUX_AMD64',
+  'ALONZ|STAGE=06|IDENTITY=OPENBSD3|RELEASE=3.9|PASS=NONE|CORE=OPENBSD2|CORE_MODE=THAILONGA_POSTFLIGHT|CANONICAL_CORE=NONE|HOST=LINUX_AMD64',
   'ALONZ|ADDRESSING|NAME_DISTINCT_FROM_ADDRESS|ADDRESS_DISTINCT_FROM_ROUTE|NO_IMPLIED_AUTHORITY',
   ('ALONZ|PREDECESSOR=OPENBSD4_FIRST|SHA256='+$rows[4].witness_sha256),
   ('ALONZ|STAGE06_WITNESS=OPENBSD3|SHA256='+$rows[5].witness_sha256),
   ('ALONZ|SUCCESSOR=OPENBSD4_RETURN|SHA256='+$rows[6].witness_sha256),
-  ('ALONZ|POSTFLIGHT_REFERENCE_ONLY|LATER_COREAO=OPENBSD2|NOT_STAGE06_INPUT=1|YIN='+$rows[7].witness_sha256+'|YANG='+$rows[8].witness_sha256),
+  ('ALONZ|THAILONGA|CORE=OPENBSD2|CANONICAL_CORE=NONE|PROJECTION=POSTFLIGHT_ONLY|NOT_STAGE06_INPUT=1|YIN='+$rows[7].witness_sha256+'|YANG='+$rows[8].witness_sha256),
   'ALONZ|NATIVE_OPENBSD_BUILDS=0|LICENSE_REVIEW=HOLD|RELEASE_STATUS=HOLD|NETWORK_RUNTIME=NONE'
 )
 $runFlags=@('run','--rm','--network','none','--read-only','--cap-drop','ALL',
@@ -117,4 +150,4 @@ for($i=0;$i -lt $expected.Count;$i++){
   }
 }
 foreach($line in $actualHead){Write-Host $line}
-Write-Host ('ALONZ|OCI|HEAD_TAIL_RUNTIME_PASS|BINARY_SHA256='+$headSha+'|STAGE=06|ALIAS=openbsd4|NATIVE_OPENBSD_BUILDS=0|RELEASE=HOLD')
+Write-Host ('ALONZ|OCI|HEAD_TAIL_RUNTIME_PASS|BINARY_SHA256='+$headSha+'|STAGE=06|ALIAS=openbsd4|CORE=OPENBSD2|CANONICAL_CORE=NONE|THAILONGA=POSTFLIGHT_ONLY|NATIVE_OPENBSD_BUILDS=0|RELEASE=HOLD')
