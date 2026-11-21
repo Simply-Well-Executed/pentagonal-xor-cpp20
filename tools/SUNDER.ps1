@@ -1,6 +1,6 @@
 #requires -Version 7.0
 # SPDX-License-Identifier: 0BSD
-# Ping: audited local PiPi admission. The 66 degree projection is metadata.
+# SUNDER: audited local admission for Ping. The 66 degree projection is metadata.
 [CmdletBinding()]
 param(
  [Parameter(Mandatory)][string]$ManifestPath,
@@ -64,7 +64,7 @@ if ([IO.Directory]::Exists($root) -or [IO.File]::Exists($root)) {throw 'Run dire
 $stage=Join-Path $root 'stage'
 [void][IO.Directory]::CreateDirectory($stage)
 $pins=[ordered]@{}
-foreach ($name in @('Invoke-NinzaPiPi.ps1','NinzaPiPiHelper.ps1','Ping.ps1')) {
+foreach ($name in @('Invoke-NinzaPiPi.ps1','NinzaPiPiHelper.ps1','SUNDER.ps1')) {
  $from=Join-Path $PSScriptRoot $name;$to=Join-Path $stage $name
  $pins[$name]=Digest $from
  [IO.File]::Copy($from,$to,$false)
@@ -144,6 +144,6 @@ try {
  } else {$result.reason='SUPERVISOR_HOLD_OR_INCOMPLETE'}
 } catch {$result.reason=$_.Exception.Message}
 finally {Write-Json (Join-Path $root 'Ping-result.json') $result}
-Write-Host "Ping: $($result.state) | $root"
+Write-Host "SUNDER: $($result.state) | $root"
 if ($result.state -ceq 'COMPLETE') {exit 42}
 exit 1
