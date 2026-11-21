@@ -15,7 +15,8 @@ LABEL com.simplywellexecuted.native-openbsd-builds="0"
 LABEL com.simplywellexecuted.release-status="HOLD"
 COPY --chmod=0555 stage06 /alonz
 COPY --chmod=0444 serial-witnesses.jsonl /evidence/serial-witnesses.jsonl
-COPY --chmod=0444 native-evidence.tsv /evidence/native-evidence.tsv\nCOPY --chmod=0444 thailonga-stage07-postflight.jsonl /evidence/thailonga-stage07-postflight.jsonl
+COPY --chmod=0444 native-evidence.tsv /evidence/native-evidence.tsv
+COPY --chmod=0444 thailonga-stage07-postflight.jsonl /evidence/thailonga-stage07-postflight.jsonl
 COPY --chmod=0444 LICENSE /LICENSE
 USER 65534:65534
 ENTRYPOINT ["/alonz"]
