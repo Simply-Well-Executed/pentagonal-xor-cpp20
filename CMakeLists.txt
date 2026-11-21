@@ -667,3 +667,14 @@ if(SWE_NINZA_PING_EXECUTOR)
     set_tests_properties(ninza_ping_scheduler_explicit_order PROPERTIES TIMEOUT 20)
   endif()
 endif()
+
+# FIFONFU subprocess recovery is an opt-in host-side PowerShell fixture.
+if(SWE_NINZA_PING_EXECUTOR AND BUILD_TESTING)
+  find_program(SWE_NINZA_PWSH NAMES pwsh)
+  if(SWE_NINZA_PWSH)
+    add_test(NAME ninza_fifonfu_parent_supervision
+      COMMAND "${SWE_NINZA_PWSH}" -NoLogo -NoProfile -NonInteractive
+        -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/Test-NinzaFifonfu.ps1")
+    set_tests_properties(ninza_fifonfu_parent_supervision PROPERTIES TIMEOUT 90)
+  endif()
+endif()
