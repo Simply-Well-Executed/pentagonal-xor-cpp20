@@ -1,8 +1,12 @@
 name: OpenBSD 8-to-2 serial COREAO compatibility preflight
 
 # Serial source-contract validation and a Windows C++20 smoke build.
-# Not an OpenBSD binary build; all historical target stages retain HOLD.
+# Runs after every commit to the protected feature branch; historical target stages retain HOLD.
+# Not an OpenBSD binary build or automatic image release.
 on:
+  push:
+    branches:
+      - feat/fresh-artistic-eye-chain-20261120
   workflow_dispatch:
   pull_request:
     branches:
@@ -119,6 +123,14 @@ jobs:
             $previous=$stage.witness_sha256
           }
           Write-Host ('OPENBSD|WITNESS|COMPLETE|COUNT=10|CORE=OPENBSD2|TAIL_SHA256='+$previous)
+      - name: Verify THAILONGA V1 after the frozen ten stages (HEAD TAIL negative)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Test-OpenBSDThailongaPostflightV1.ps1') -RepositoryRoot $src -TemporaryDirectory (Join-Path $env:RUNNER_TEMP 'thailonga-postflight-v1')
+          if($LASTEXITCODE -ne 0){throw 'THAILONGA|V1|HOLD|postflight_custody_check_failed'}
+          Write-Host 'THAILONGA|AUTO_BRANCH_PREFLIGHT_PASS|POSTFLIGHT_ONLY|YIN_YANG_SEPARATE|HISTORICAL_DIGESTS_UNCHANGED'
       - name: Compile the portable C++20 core serially on Windows, not OpenBSD
         shell: pwsh
         run: |
