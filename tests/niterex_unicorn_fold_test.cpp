@@ -29,7 +29,7 @@ bool contains(const char* text,const char* pattern) noexcept {
 }
 unsigned count_occurrences(const char* text,const char* pattern) noexcept {
     unsigned n=0;
-    for(;*text;++text) if(contains(text,pattern)) {
+    for(;*text;++text) {
         const char* a=text;
         const char* b=pattern;
         while(*a&&*b&&*a==*b){++a;++b;}
