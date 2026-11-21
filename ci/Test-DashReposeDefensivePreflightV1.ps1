@@ -40,7 +40,7 @@ foreach($rel in $required){
 $manifest=(Get-FileHash -LiteralPath (Join-Path $root 'ci/OPENBSD_SERIAL_COREAO.tsv') -Algorithm SHA256).Hash.ToLowerInvariant()
 $annex=(Get-FileHash -LiteralPath (Join-Path $root 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv') -Algorithm SHA256).Hash.ToLowerInvariant()
 if($manifest -cne '2c33d3cb2a4b42df5abf4868c370943feeeff274207f241aa3289e6c9487a308' -or
-   $annex -cnotmatch '^[a-f0-9]{64}){
+   $annex -cnotmatch '^[a-f0-9]{64}$'){
  throw 'DASH-REPOSE|DEFENSE_HOLD|canonical_source_hash_mismatch'
 }
 $df=[IO.File]::ReadAllText((Join-Path $root 'packaging/coreao-airgap-v1/Dockerfile'))
