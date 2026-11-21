@@ -88,6 +88,12 @@ Write-Host ('AUTOSTART|NORMAL_STARTUP_PASS|PLATFORM='+$Platform+'|PROGRAM='+$app
 & pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-FullSourceOutputContractsV1.ps1') -RepositoryRoot $root -InstalledBinDirectory (Join-Path $stage 'bin') -Platform $Platform
 if($LASTEXITCODE -ne 0){throw 'AUTOSTART|HOLD|typed_stdout_json_xml_contract_failed'}
 
+# New native NiteRex/Web9.X XHTML renderer is separate from the legacy CLI.
+# Windows-only source projection; unsigned, no browser or CA conformance claim.
+if($Platform -ceq 'Windows'){
+ & pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-NiteRexWeb9XOutputV1.ps1') -InstalledBinDirectory (Join-Path $stage 'bin')
+ if($LASTEXITCODE -ne 0){throw 'AUTOSTART|HOLD|NiteRex_Web9X_XHTML_native_contract_failed'}
+}
 $tests=@(
  'ci/Test-ReleaseSafety.ps1',
  'ci/Test-ReleaseSafetyPolicy.ps1',
