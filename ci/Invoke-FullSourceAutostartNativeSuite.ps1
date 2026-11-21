@@ -85,6 +85,9 @@ if($LASTEXITCODE -ne 0 -or $run.Count -ne 1 -or
   throw ('AUTOSTART|HOLD|normal_application_output_mismatch|'+($run -join ';'))
 }
 Write-Host ('AUTOSTART|NORMAL_STARTUP_PASS|PLATFORM='+$Platform+'|PROGRAM='+$app+'|OUTPUT='+$run[0])
+& pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-FullSourceOutputContractsV1.ps1') -RepositoryRoot $root -InstalledBinDirectory (Join-Path $stage 'bin') -Platform $Platform
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|HOLD|typed_stdout_json_xml_contract_failed'}
+
 $tests=@(
  'ci/Test-ReleaseSafety.ps1',
  'ci/Test-ReleaseSafetyPolicy.ps1',
@@ -92,6 +95,7 @@ $tests=@(
  'ci/Test-OpenBSDNativeEvidence.ps1',
  'ci/Test-OpenBSDThailongaPostflightV1.ps1'
 )
+$failedGates=[Collections.Generic.List[string]]::new()
 foreach($relative in $tests){
   $argv=@('-NoLogo','-NoProfile','-File',(Join-Path $root $relative))
   switch($relative){
@@ -99,7 +103,18 @@ foreach($relative in $tests){
     'ci/Test-OpenBSDNativeEvidence.ps1' {$argv+=@('-RepositoryRoot',$root)}
     'ci/Test-OpenBSDThailongaPostflightV1.ps1' {$argv+=@('-RepositoryRoot',$root,'-TemporaryDirectory',(Join-Path $output 'thailonga-head-tail'))}
   }
-  Invoke-Checked 'pwsh' $argv ('powershell_'+([IO.Path]::GetFileNameWithoutExtension($relative)))
+  try{
+    & pwsh @argv
+    if($LASTEXITCODE -ne 0){
+      $failedGates.Add($relative+'|EXIT='+$LASTEXITCODE)
+    }else{Write-Host ('AUTOSTART|INDEPENDENT_GATE_PASS|'+$relative)}
+  }catch{
+    $failedGates.Add($relative+'|ERROR='+$_.Exception.GetType().Name)
+  }
 }
-Write-Host 'AUTOSTART|NATIVE_SUITE_PASS|ROOT_CTEST|SHARED_CTEST|CONSUMER_CTEST|NORMAL_APP_EXECUTION|POWERSHELL_SECURITY_TESTS'
+if($failedGates.Count -ne 0){
+  foreach($failure in $failedGates){Write-Host ('AUTOSTART|INDEPENDENT_GATE_HOLD|'+$failure)}
+  throw ('AUTOSTART|HOLD|independent_security_gates_failed|'+$failedGates.Count)
+}
+Write-Host 'AUTOSTART|NATIVE_SUITE_PASS|ROOT_CTEST|SHARED_CTEST|CONSUMER_CTEST|NORMAL_APP_EXECUTION|TYPED_OUTPUT_CONTRACTS|POWERSHELL_SECURITY_TESTS'
 Write-Host 'AUTOSTART|COVERAGE_LIMIT|ANDROID_SDK_JAVA_DEVICE_TESTS_NOT_INCLUDED|DO_NOT_CLAIM_ALL_PROJECT_TESTS'
