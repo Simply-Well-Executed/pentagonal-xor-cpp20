@@ -13,7 +13,7 @@ $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath($RepositoryRoot)
 $bin=[IO.Path]::GetFullPath($InstalledBinDirectory)
 if(-not [IO.Directory]::Exists($bin)){throw 'OUTPUT_CONTRACT_V1|HOLD|missing_install_dir'}
-function Run-Native([string]$File,[string[]]$Args,[int]$ExpectedExit,[string]$Contract){
+function Run-Native([string]$File,[string[]]$Arguments,[int]$ExpectedExit,[string]$Contract){
  if(-not [IO.File]::Exists($File)){throw ('OUTPUT_CONTRACT_V1|HOLD|binary_missing|'+$Contract)}
  $info=[Diagnostics.ProcessStartInfo]::new($File)
  $info.UseShellExecute=$false
@@ -22,7 +22,7 @@ function Run-Native([string]$File,[string[]]$Args,[int]$ExpectedExit,[string]$Co
  $info.CreateNoWindow=$true
  $info.StandardOutputEncoding=[Text.UTF8Encoding]::new($false,$true)
  $info.StandardErrorEncoding=[Text.UTF8Encoding]::new($false,$true)
- foreach($arg in $Args){[void]$info.ArgumentList.Add($arg)}
+ foreach($arg in $Arguments){[void]$info.ArgumentList.Add($arg)}
  $p=[Diagnostics.Process]::new()
  $p.StartInfo=$info
  if(-not $p.Start()){throw ('OUTPUT_CONTRACT_V1|HOLD|start_failed|'+$Contract)}
@@ -41,7 +41,7 @@ function Run-Native([string]$File,[string[]]$Args,[int]$ExpectedExit,[string]$Co
 }
 $extension=if($Platform -ceq 'Windows'){'.exe'}else{''}
 $main=Join-Path $bin ('pentagonal_xor'+$extension)
-$ok=Run-Native -File $main -Args @('0.80','0.70','0.90','0.60','0.95') -ExpectedExit 0 -Contract 'normal_parity'
+$ok=Run-Native -File $main -Arguments @('0.80','0.70','0.90','0.60','0.95') -ExpectedExit 0 -Contract 'normal_parity'
 $line=$ok.Output.TrimEnd([char[]]@([char]13,[char]10))
 if($line -cne 'Pentagonal XOR: 51.72800000%' -or
    $line -cnotmatch '^Pentagonal XOR: (?:100|[0-9]{1,2})[.][0-9]{8}%$' -or
@@ -55,7 +55,7 @@ foreach($composition in @(
  @{label='zero';args=@('0','0','0','0','0');text='Pentagonal XOR: 0.00000000%'},
  @{label='odd';args=@('1','1','1','0','0');text='Pentagonal XOR: 100.00000000%'}
 )){
- $unit=Run-Native -File $main -Args $composition.args -ExpectedExit 0 -Contract ('PEEK_'+$composition.label)
+ $unit=Run-Native -File $main -Arguments $composition.args -ExpectedExit 0 -Contract ('PEEK_'+$composition.label)
  if($unit.Output.TrimEnd([char[]]@([char]13,[char]10)) -cne $composition.text -or
     -not [string]::IsNullOrEmpty($unit.Error)){
   throw ('OUTPUT_CONTRACT_V1|HOLD|PEEK_composition|'+$composition.label)
@@ -66,14 +66,14 @@ foreach($case in @(
  @('0.8','0.7','nan','0.6','0.95'),
  @('0.8','0.7','0.9','0.6')
 )){
- $bad=Run-Native -File $main -Args $case -ExpectedExit 2 -Contract 'parity_negative'
+ $bad=Run-Native -File $main -Arguments $case -ExpectedExit 2 -Contract 'parity_negative'
  if($bad.Output.Trim().Length -ne 0 -or
     $bad.Error -cnotmatch 'Error:|Usage:'){
   throw 'OUTPUT_CONTRACT_V1|HOLD|negative_test_unexpected_output'
  }
 }
 $control=Join-Path $bin ('pentagonal_control'+$extension)
-$json=Run-Native -File $control -Args @('0x3fffffff','0x3fffffff','or') -ExpectedExit 0 -Contract 'control_json'
+$json=Run-Native -File $control -Arguments @('0x3fffffff','0x3fffffff','or') -ExpectedExit 0 -Contract 'control_json'
 if(-not [string]::IsNullOrEmpty($json.Error)){throw 'OUTPUT_CONTRACT_V1|HOLD|control_stderr'}
 try{$object=ConvertFrom-Json -InputObject $json.Output -AsHashtable -Depth 30}catch{
  throw 'OUTPUT_CONTRACT_V1|HOLD|control_json_invalid'
