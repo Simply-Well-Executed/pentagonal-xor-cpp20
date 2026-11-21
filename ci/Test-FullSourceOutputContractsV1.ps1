@@ -51,6 +51,16 @@ if($line -cne 'Pentagonal XOR: 51.72800000%' -or
 $number=$line.Substring('Pentagonal XOR: '.Length).TrimEnd('%')
 $score=[decimal]::Parse($number,[Globalization.CultureInfo]::InvariantCulture)
 if($score -lt 0 -or $score -gt 100){throw 'OUTPUT_CONTRACT_V1|HOLD|parity_unit_range'}
+foreach($composition in @(
+ @{label='zero';args=@('0','0','0','0','0');text='Pentagonal XOR: 0.00000000%'},
+ @{label='odd';args=@('1','1','1','0','0');text='Pentagonal XOR: 100.00000000%'}
+)){
+ $unit=Run-Native $main $composition.args 0 ('PEEK_'+$composition.label)
+ if($unit.Output.TrimEnd([char[]]@([char]13,[char]10)) -cne $composition.text -or
+    -not [string]::IsNullOrEmpty($unit.Error)){
+  throw ('OUTPUT_CONTRACT_V1|HOLD|PEEK_composition|'+$composition.label)
+ }
+}
 foreach($case in @(
  @('0.8','0.7','1.2','0.6','0.95'),
  @('0.8','0.7','nan','0.6','0.95'),
@@ -107,6 +117,6 @@ foreach($file in $svgFiles){
   }finally{$reader.Dispose()}
  }catch{throw ('OUTPUT_CONTRACT_V1|HOLD|W3C_SVG_XML_WELL_FORMEDNESS|'+$file.Name+'|'+$_.Exception.Message)}
 }
-Write-Host ('OUTPUT_CONTRACT_V1|PASS|NORMAL_PARITY_DECIMAL_TYPE|3_NEGATIVE_CASES|CONTROL_JSON_TYPED_STAGES=6'+
+Write-Host ('OUTPUT_CONTRACT_V1|PASS|NORMAL_PARITY_DECIMAL_TYPE|2_PEEK_COMPOSITIONS|3_NEGATIVE_CASES|CONTROL_JSON_TYPED_STAGES=6'+
  '|W3C_SVG_XML_WELL_FORMEDNESS_AND_ROOT_NAMESPACE='+$svgFiles.Count+
  '|PLATFORM='+$Platform+'|NO_BROWSER_RENDER_CERTIFICATION')
