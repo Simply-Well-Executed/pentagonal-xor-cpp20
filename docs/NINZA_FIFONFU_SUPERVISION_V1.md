@@ -2,12 +2,24 @@
 
 EXPLORATORY. Adds subprocess supervision to the independent C++20 PING
 executor introduced in bc84f84e50a4785087ac47e654b1c59b33c9b127.
-The user specified a parent-readable JSONLedger, recovery on non-42 exits,
-and periodic TTL checks. The old FIFODFU/FIFONFU acronym expansion and
-full queue policy remain unverified; do not infer frequency, eviction or
-priority rules. This version explicitly uses the supplied ready order and
-appends eligible retries to the ready queue tail. This is a versioned
-recovery choice, not a claim to reconstruct the historical policy.
+The operator clarified the military-inspired project terminology on
+2026-11-20:
+
+- FIFODFU = First In, First Out, Don't Fuck Up (the earlier discipline).
+- FIFONFU = First In, First Out, Never Fuck Up (the matured discipline).
+- The method of improvement is keeping notes.
+
+FIFO governs admission and dispatch claims, not parallel start/finish order.
+NFU is an aspiration to prevent repeated and undocumented mistakes, not
+an assertion that software cannot fail; it is not a frequency-based
+eviction algorithm. The parent-readable JSONLedger is the operational
+notebook: failures remain recorded, progress is monitored, and retries
+are informed by explicit evidence. Initial ready order comes from the
+caller manifest; eligible retries are new admissions at the queue tail.
+Tail placement is this version's explicit recovery choice. The code does
+not independently verify arrival timestamps or implement dynamic admissions.
+Never silently discard a failed attempt, assume success, or treat a
+successful retry as erasure of the original failure.
 
 ## Parent/child contract
 
