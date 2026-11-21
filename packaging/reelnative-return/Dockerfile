@@ -3,7 +3,7 @@
 # The runtime is Linux/amd64. There is NO native OpenBSD binary here.
 # No libc, shell, Python, Node, Go runtime, package manager or base image.
 FROM scratch
-LABEL org.opencontainers.image.title="REELNATIVE-RETURN | OpenBSD2 stage 07 evidence"
+LABEL org.opencontainers.image.title="REELNATIVE-RETURN | OpenBSD 4.9 RETURN stage 07 evidence"
 LABEL org.opencontainers.image.description="Pinned OpenBSD4_RETURN witness, separate OpenBSD4_FIRST and OpenBSD3 predecessor; Linux diagnostic, not OpenBSD OS"
 LABEL org.opencontainers.image.licenses="0BSD"
 LABEL org.opencontainers.image.source="https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20"
