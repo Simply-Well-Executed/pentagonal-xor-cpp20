@@ -41,7 +41,7 @@ function Run-Native([string]$File,[string[]]$Args,[int]$ExpectedExit,[string]$Co
 }
 $extension=if($Platform -ceq 'Windows'){'.exe'}else{''}
 $main=Join-Path $bin ('pentagonal_xor'+$extension)
-$ok=Run-Native $main @('0.80','0.70','0.90','0.60','0.95') 0 'normal_parity'
+$ok=Run-Native -File $main -Args @('0.80','0.70','0.90','0.60','0.95') -ExpectedExit 0 -Contract 'normal_parity'
 $line=$ok.Output.TrimEnd([char[]]@([char]13,[char]10))
 if($line -cne 'Pentagonal XOR: 51.72800000%' -or
    $line -cnotmatch '^Pentagonal XOR: (?:100|[0-9]{1,2})[.][0-9]{8}%$' -or
@@ -55,7 +55,7 @@ foreach($composition in @(
  @{label='zero';args=@('0','0','0','0','0');text='Pentagonal XOR: 0.00000000%'},
  @{label='odd';args=@('1','1','1','0','0');text='Pentagonal XOR: 100.00000000%'}
 )){
- $unit=Run-Native $main $composition.args 0 ('PEEK_'+$composition.label)
+ $unit=Run-Native -File $main -Args $composition.args -ExpectedExit 0 -Contract ('PEEK_'+$composition.label)
  if($unit.Output.TrimEnd([char[]]@([char]13,[char]10)) -cne $composition.text -or
     -not [string]::IsNullOrEmpty($unit.Error)){
   throw ('OUTPUT_CONTRACT_V1|HOLD|PEEK_composition|'+$composition.label)
@@ -66,14 +66,14 @@ foreach($case in @(
  @('0.8','0.7','nan','0.6','0.95'),
  @('0.8','0.7','0.9','0.6')
 )){
- $bad=Run-Native $main $case 2 'parity_negative'
+ $bad=Run-Native -File $main -Args $case -ExpectedExit 2 -Contract 'parity_negative'
  if($bad.Output.Trim().Length -ne 0 -or
     $bad.Error -cnotmatch 'Error:|Usage:'){
   throw 'OUTPUT_CONTRACT_V1|HOLD|negative_test_unexpected_output'
  }
 }
 $control=Join-Path $bin ('pentagonal_control'+$extension)
-$json=Run-Native $control @('0x3fffffff','0x3fffffff','or') 0 'control_json'
+$json=Run-Native -File $control -Args @('0x3fffffff','0x3fffffff','or') -ExpectedExit 0 -Contract 'control_json'
 if(-not [string]::IsNullOrEmpty($json.Error)){throw 'OUTPUT_CONTRACT_V1|HOLD|control_stderr'}
 try{$object=ConvertFrom-Json -InputObject $json.Output -AsHashtable -Depth 30}catch{
  throw 'OUTPUT_CONTRACT_V1|HOLD|control_json_invalid'
