@@ -49,6 +49,13 @@ jobs:
             throw 'AUTOSTART|HOLD|incomplete_repository_archive'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'autostart-root.txt'),$found[0].FullName)
+      - name: PEEK Warcraft III-inspired arena harness syntax and negative preflight
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'autostart-root.txt'))
+          & pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-PeekGateStaticV1.ps1') -RepositoryRoot $root
+          if($LASTEXITCODE -ne 0){throw 'PEEK|HOLD|invalid_trial_harness_cannot_publish'}
       - name: Build complete native targets, execute root/shared/consumer CTest and normal CLI
         shell: pwsh
         run: |
