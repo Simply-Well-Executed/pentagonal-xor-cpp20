@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: 0BSD
-# THAILONGA v1: append-only derived projection AFTER the frozen ten-stage sequence.
+# THAILONGA v1: append-only derived projection AFTER the locked ten-stage sequence.
 # Do not insert future stages 08/09 as causal inputs to the earlier stage 07.
 [CmdletBinding()]
 param(
@@ -25,7 +25,7 @@ function Sha256Bytes([byte[]]$bytes){
 }
 $manifestSha=Sha256Bytes ([IO.File]::ReadAllBytes($manifest))
 $evidenceSha=Sha256Bytes ([IO.File]::ReadAllBytes($evidence))
-# Frozen source/provenance anchors established before introducing THAILONGA v1.
+# Locked source/provenance anchors established before introducing THAILONGA v1.
 if($manifestSha -cne '2c33d3cb2a4b42df5abf4868c370943feeeff274207f241aa3289e6c9487a308' -or
    $evidenceSha -cne 'd5db2528c8995ff1138ea2d9eae687ce04f5903b0fe56f5ba90940312e88f56a'){
   throw 'THAILONGA|V1|HOLD|frozen_manifest_or_native_annex_changed'
