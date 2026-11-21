@@ -678,3 +678,11 @@ if(SWE_NINZA_PING_EXECUTOR AND BUILD_TESTING)
     set_tests_properties(ninza_fifonfu_parent_supervision PROPERTIES TIMEOUT 90)
   endif()
 endif()
+
+# Opt-in PiPi dual scheduling and idle-retirement fixture.
+if(SWE_NINZA_PING_EXECUTOR AND BUILD_TESTING AND SWE_NINZA_PWSH)
+  add_test(NAME ninza_pipi_star_supervision
+    COMMAND "${SWE_NINZA_PWSH}" -NoLogo -NoProfile -NonInteractive
+      -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/Test-NinzaPiPi.ps1")
+  set_tests_properties(ninza_pipi_star_supervision PROPERTIES TIMEOUT 180)
+endif()
