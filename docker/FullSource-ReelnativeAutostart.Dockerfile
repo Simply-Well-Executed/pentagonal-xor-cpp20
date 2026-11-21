@@ -20,14 +20,16 @@ RUN ["pwsh","-NoLogo","-NoProfile","-File","/opt/swe/source/ci/Invoke-FullSource
 FROM ${RUNTIME_IMAGE} AS autostart
 ARG SOURCE_SHA
 ARG PROFILE
+ARG EVIDENCE_REF
 LABEL org.opencontainers.image.title="SWE complete-source normal-CLI autostart"
 LABEL org.opencontainers.image.description="Full C++20 root/shared/consumer tested, normal parity executable autostarts; not OpenBSD OS"
 LABEL org.opencontainers.image.source="https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20"
 LABEL org.opencontainers.image.revision="${SOURCE_SHA}"
 LABEL org.opencontainers.image.licenses="0BSD"
 LABEL com.simplywellexecuted.runtime-profile="${PROFILE}"
+LABEL com.simplywellexecuted.evidence-reference="${EVIDENCE_REF}"
 LABEL com.simplywellexecuted.native-openbsd-builds="0"
-LABEL com.simplywellexecuted.release-status="HOLD_UNTIL_EXTERNAL_POLICY_APPROVAL"
+LABEL com.simplywellexecuted.release-status="NATIVE_OPENBSD_HOLD"
 # The full original source and license reference library remain inspectable.
 COPY --from=full-source-validation --chown=65534:65534 /opt/swe/source/ /opt/swe/source/
 COPY --from=full-source-validation --chown=65534:65534 /opt/swe/build/install/ /opt/swe/app/
