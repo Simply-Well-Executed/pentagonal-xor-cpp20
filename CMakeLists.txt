@@ -133,8 +133,28 @@ install(FILES
   DESTINATION include/swe)
 install(FILES shared/quantum_operand_lexicon.hpp DESTINATION include/swe)
 
+# Independently authored 0BSD NiteRex / Web9.X core and native XHTML projection.
+# These targets do not claim a complete browser, certificate verification or
+# historical archive certification. Keep existing parity and witness APIs intact.
+if(WIN32)
+  add_executable(niterex_web9x_xhtml src/niterex_web9x_xhtml_renderer.cpp)
+  target_include_directories(niterex_web9x_xhtml PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_compile_features(niterex_web9x_xhtml PRIVATE cxx_std_20)
+  set_target_properties(niterex_web9x_xhtml PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS niterex_web9x_xhtml RUNTIME DESTINATION bin)
+endif()
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(niterex_web9x_ninebit_test tests/niterex_web9x_ninebit_test.cpp)
+    target_include_directories(niterex_web9x_ninebit_test PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_features(niterex_web9x_ninebit_test PRIVATE cxx_std_20)
+    set_target_properties(niterex_web9x_ninebit_test PROPERTIES
+      CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME niterex_web9x_ninebit_exhaustive
+      COMMAND niterex_web9x_ninebit_test)
     if(TARGET pentagonal_xor_std_free)
       add_test(NAME parity_std_free_example COMMAND
         pentagonal_xor_std_free 0.80 0.70 0.90 0.60 0.95)
