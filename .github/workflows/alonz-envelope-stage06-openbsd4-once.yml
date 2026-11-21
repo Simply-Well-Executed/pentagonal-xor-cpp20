@@ -1,6 +1,7 @@
-name: ALONZ ENVELOPE stage 06 OPENBSD3 evidence and openbsd4 pointers
+name: ALONZ ENVELOPE stage06 THAILONGA CORE and openbsd4 pointers
 # SPDX-License-Identifier: 0BSD
-# This publishes stage-06 Linux/amd64 witness only, NOT an OpenBSD binary.
+# Stage06 uses the THAILONGA postflight CORE=OPENBSD2, preserving canonical CORE=NONE.
+# This publishes only a Linux/amd64 diagnostic, NOT an OpenBSD binary.
 # One explicit publish(stage06): commit, no merge or mutable latest tag.
 on:
   push:
@@ -8,6 +9,9 @@ on:
       - feat/fresh-artistic-eye-chain-20261120
     paths:
       - .github/workflows/alonz-envelope-stage06-openbsd4-once.yml
+      - ci/Build-AlonzStage06EvidenceOci.ps1
+      - packaging/alonz-envelope-stage06/**
+      - docs/ALONZ_ENVELOPE_STAGE06_THAILONGA_V2.md
 permissions:
   contents: read
   packages: write
@@ -52,7 +56,7 @@ jobs:
             throw 'ALONZ|OCI|HOLD|bad_source_archive'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'alonz-oci-root.txt'),$dirs[0].FullName)
-      - name: Execute stage 06 3.9, compile freestanding C++20 O2, Docker HEAD and TAIL
+      - name: Validate stage06 and THAILONGA CORE; compile C++20 O2 and run offline HEAD TAIL
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
@@ -98,7 +102,7 @@ jobs:
           if(-not $m.Success -or $m.Groups[1].Value -cne $expectedDigest){
             throw 'ALONZ|GHCR_ALIAS|HOLD|alias_digest_mismatch'
           }
-          Write-Host ('ALONZ|GHCR_ALIAS|PIN_MATCH|IMAGE='+$alias+'|DIGEST='+$expectedDigest+'|STAGE=06|CORE=NONE|LATER_COREAO=OPENBSD2')
+          Write-Host ('ALONZ|GHCR_ALIAS|PIN_MATCH|IMAGE='+$alias+'|DIGEST='+$expectedDigest+'|STAGE=06|CORE=OPENBSD2|CORE_MODE=THAILONGA_POSTFLIGHT|CANONICAL_CORE=NONE')
           & docker logout ghcr.io | Out-Null
       - name: Publish separate immutable evidence tag to Docker Hub
         shell: pwsh
@@ -152,12 +156,12 @@ jobs:
           if(-not $m.Success -or $m.Groups[1].Value -cne $expectedDigest){
             throw 'ALONZ|DOCKERHUB_ALIAS|HOLD|alias_digest_mismatch'
           }
-          Write-Host ('ALONZ|DOCKERHUB_ALIAS|PIN_MATCH|IMAGE='+$alias+'|DIGEST='+$expectedDigest+'|STAGE=06|CORE=NONE|LATER_COREAO=OPENBSD2')
+          Write-Host ('ALONZ|DOCKERHUB_ALIAS|PIN_MATCH|IMAGE='+$alias+'|DIGEST='+$expectedDigest+'|STAGE=06|CORE=OPENBSD2|CORE_MODE=THAILONGA_POSTFLIGHT|CANONICAL_CORE=NONE')
           & docker logout | Out-Null
       - name: Preserve OpenBSD native-build and GNU policy HOLD
         if: always()
         shell: pwsh
         run: |
-          Write-Host 'ALONZ|CUSTODY|STAGE=06|CORE=NONE|LATER_COREAO=OPENBSD2|YIN_YANG_SEPARATE|NATIVE_OPENBSD_BUILDS=0|RELEASE=HOLD'
-          Write-Host 'ALONZ|CUSTODY|LINUX_AMD64_STAGE06_3_9_WITNESS_ONLY|CORE=OPENBSD2|NO_MERGE|NO_LATEST_TAG'
+          Write-Host 'ALONZ|CUSTODY|STAGE=06|CORE=OPENBSD2|CORE_MODE=THAILONGA_POSTFLIGHT|CANONICAL_CORE=NONE|YIN_YANG_SEPARATE|NATIVE_OPENBSD_BUILDS=0|RELEASE=HOLD'
+          Write-Host 'ALONZ|CUSTODY|LINUX_AMD64_STAGE06_3_9_WITNESS_ONLY|CORE=OPENBSD2|CORE_MODE=THAILONGA_POSTFLIGHT|NO_MERGE|NO_LATEST_TAG'
           Write-Host 'ALONZ|CUSTODY|EXISTING_GNU_POSIX_RELEASE_HOLD_UNCHANGED'
