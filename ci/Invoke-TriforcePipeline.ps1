@@ -14,6 +14,10 @@ $gateScript=Join-Path $root 'ci/Assert-TriforceHeadTail.ps1'
 $nativeBuild=Join-Path $evidence 'native'
 $rootBuild=Join-Path $evidence 'root'
 $nativeExe=Join-Path $nativeBuild 'Release/triforce_native_gate.exe'
+$processAuditScript=Join-Path $root 'ci/Invoke-JstarProcessAudit.ps1'
+$processEvidence=Join-Path $evidence 'jstar-process'
+$env:MSBUILDDISABLENODEREUSE='1'
+$env:DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER='1'
 function Invoke-Gate([string]$op,[string]$phase) {
     $args=@('-NoLogo','-NoProfile','-NonInteractive','-File',$gateScript,
             '-RepositoryRoot',$root,'-EvidenceDirectory',$evidence,
@@ -28,13 +32,18 @@ function Invoke-Gate([string]$op,[string]$phase) {
 }
 function Invoke-Stage([string]$name,[scriptblock]$operation) {
     Invoke-Gate $name 'HEAD'
-    $global:LASTEXITCODE=0
-    & $operation
-    if($LASTEXITCODE -ne 0){
-        throw ('TRIFORCE|HOLD|stage_command_failed|'+$name+
-               '|exit='+$LASTEXITCODE)
+    try {
+        $global:LASTEXITCODE=0
+        & $operation
+        if($LASTEXITCODE -ne 0){
+            throw ('TRIFORCE|HOLD|stage_command_failed|'+$name+
+                   '|exit='+$LASTEXITCODE)
+        }
+    } finally {
+        # Preserve a paired TAIL even when the compiler reports a failure.
+        # Failed native compilation remains a HOLD, never a bypass.
+        Invoke-Gate $name 'TAIL'
     }
-    Invoke-Gate $name 'TAIL'
 }
 # The exact commit archive is already fetched by the workflow bootstrap.
 # No stage may proceed unless the independently recomputed owner records pass.
@@ -43,7 +52,9 @@ Invoke-Stage 'configure-native' {
       -G 'Visual Studio 18 2026' -A x64
 }
 Invoke-Stage 'build-native' {
-    & cmake --build $nativeBuild --config Release --target triforce_native_gate --parallel 1
+    & $processAuditScript -RepositoryRoot $root -BuildDirectory $nativeBuild `
+      -EvidenceDirectory $processEvidence -Operation 'build_native' `
+      -Targets @('triforce_native_gate')
 }
 Invoke-Stage 'execute-native' {
     & $nativeExe
@@ -53,8 +64,9 @@ Invoke-Stage 'configure-root' {
       -DBUILD_TESTING=ON -DSWE_STD_FREE_CORE_ONLY=OFF
 }
 Invoke-Stage 'build-toolong' {
-    & cmake --build $rootBuild --config Release --parallel 1 `
-      --target toolong_arithmetic_test gammagamma_pi_precision_test
+    & $processAuditScript -RepositoryRoot $root -BuildDirectory $rootBuild `
+      -EvidenceDirectory $processEvidence -Operation 'build_toolong' `
+      -Targets @('toolong_arithmetic_test','gammagamma_pi_precision_test')
 }
 Invoke-Stage 'ctest-toolong' {
     & ctest --test-dir $rootBuild -C Release `
