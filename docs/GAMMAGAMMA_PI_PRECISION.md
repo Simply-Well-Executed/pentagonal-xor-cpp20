@@ -42,6 +42,29 @@ Use **`std::setprecision(swe::pi_precision::display_digits)`** for new iostream 
 - Exact decimal BigUnsigned factorial results, exact input digit strings, hashes, binary source records and algorithmic constants must **never be rounded or truncated to 16 digits**. This is the explicit exception required to avoid data corruption.
 - Historical immutable code and old output fixtures remain as they were. New, source-preserving adapters use the shared convention; this document does not falsely claim every legacy file was retroactively rewritten.
 
+## PR #32: exploratory SigmaPi-for-pi intensity substitution
+
+The user's exploratory circle-area formulation, with `I` as a standalone
+symbol, is `(P × e^(−αω)) / (Σπω²) = I`. Here `Σπ` means this document's
+prefix GammaGamma `!π`, not ordinary mathematical π and not the separate
+`handi::sigmapi` review tool. The canonical 18-digit π source remains
+`314159265358979323`, and the exact decimal token `3.14159265358979323`
+remains unmodified.
+
+`gammagamma::sigma_pi("3.14159265358979323")` yields `symbolic_only`,
+because the right factorial argument exceeds the explicit resource bound.
+There is therefore **no numeric value for Σπ in this source**, and no
+justified numeric intensity `I`, inverse, division, or physical stability
+claim. `shared/euler_pi_inverse_square.hpp` records the candidate as a
+`static constexpr` **symbolic** `I` with
+`numerically_defined=false` and compile-time assertions. It does not
+replace or mutate the original spherical inverse-square equation; that
+equation has the separate `4π` geometrical denominator.
+
+An actual fixed numerical `I` requires an independently justified positive
+finite `Σπ` value and explicit `P`, attenuation and radial-distance inputs.
+No alternate value is guessed or silently substituted.
+
 ## Validation
 
 `tests/gammagamma_pi_precision_test.cpp` checks 0!, 1!, factorial subtraction direction, magnitude preservation, literal decimal-point provenance, symbolic overflow handling, PiDi remainder, the exact BiPi square, ordinary and fixed-format output, and source-independent compile-time constants.
