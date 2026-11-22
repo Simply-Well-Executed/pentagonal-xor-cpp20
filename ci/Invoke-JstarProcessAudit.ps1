@@ -171,12 +171,16 @@ try {
 # process names. Missing information is not proof of malicious behavior.
 $identities=[Collections.Generic.List[object]]::new()
 $paths=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+$buildPaths=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 [void]$paths.Add($exe)
+[void]$buildPaths.Add($exe)
 foreach($p in $observed){
+    $inBuild=($p.scope -ceq 'build_root' -or $p.scope -ceq 'build_descendant')
     if(-not [string]::IsNullOrWhiteSpace($p.executable_path)){
         [void]$paths.Add($p.executable_path)
-    } elseif($critical.Contains($p.name) -or $p.scope -ceq 'build_descendant'){ 
-        $errors.Add(('unknown_critical_executable_path|'+$p.name+'|'+$p.pid))
+        if($inBuild){[void]$buildPaths.Add($p.executable_path)}
+    }elseif($inBuild){
+        $errors.Add(('unverifiable_build_descendant_executable_path|'+$p.name+'|'+$p.pid))
     }
 }
 foreach($path in $paths){
@@ -192,12 +196,12 @@ foreach($path in $paths){
         if($null -ne $signature.SignerCertificate){
             $subject=[string]$signature.SignerCertificate.Subject
         }
-        if($critical.Contains($name) -and
+        if($buildPaths.Contains($path) -and $critical.Contains($name) -and
            ($status -cne 'Valid' -or $subject -notmatch '(?i)(Microsoft|Kitware)')){
             $errors.Add(('unapproved_critical_binary|'+$name+'|'+$status))
         }
     }catch{
-        if($critical.Contains($name)){
+        if($buildPaths.Contains($path) -and $critical.Contains($name)){
             $errors.Add(('critical_identity_probe_failed|'+$name+'|'+$_.Exception.Message))
         }
     }
