@@ -15,6 +15,8 @@ $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath($RepositoryRoot)
 $evidence=[IO.Path]::GetFullPath($EvidenceDirectory)
 if(-not [IO.Directory]::Exists($root)){throw 'TRIFORCE|HOLD|source_missing'}
+& pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Assert-ExternalEvidencePath.ps1') -RepositoryRoot $root -EvidencePath $evidence
+if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|unsafe_evidence_path'}
 if($evidence.StartsWith($root+[IO.Path]::DirectorySeparatorChar,
        [StringComparison]::OrdinalIgnoreCase)){
     throw 'TRIFORCE|HOLD|evidence_must_be_outside_source'
@@ -33,6 +35,9 @@ $required=@(
  'ci/Assert-TriforceHeadTail.ps1',
  'ci/Invoke-TriforcePipeline.ps1',
  'ci/Invoke-JstarProcessAudit.ps1',
+ 'ci/Assert-ExternalEvidencePath.ps1',
+ 'ci/Test-ExternalEvidenceBoundary.ps1',
+ 'ci/Invoke-AtomixHalfPhiping.ps1',
  'ci/Invoke-FullSourceAutostartNativeSuite.ps1',
  '.github/workflows/triforce-headtail.yml',
  '.github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml',
@@ -91,6 +96,9 @@ foreach($item in Get-ChildItem -LiteralPath $root -Force -Recurse -File){
     $relative=[IO.Path]::GetRelativePath($root,$item.FullName).Replace([string][IO.Path]::DirectorySeparatorChar,'/')
     if($relative.StartsWith('.git/',[StringComparison]::OrdinalIgnoreCase)){
         continue
+    }
+    if(($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){
+        throw ('TRIFORCE|HOLD|source_reparse_point|'+$relative)
     }
     $paths.Add($relative)
 }
