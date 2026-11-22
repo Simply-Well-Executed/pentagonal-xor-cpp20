@@ -34,12 +34,31 @@ consteval Ratio at_radius(u64 source_digits18) noexcept {
     return {source_digits18, scale * Radius * Radius};
 }
 
-inline constexpr Ratio e1 = at_radius<1>(euler_digits18);
-inline constexpr Ratio e2 = at_radius<2>(euler_digits18);
-inline constexpr Ratio e3 = at_radius<3>(euler_digits18);
-inline constexpr Ratio p1 = at_radius<1>(pi_digits18);
-inline constexpr Ratio p2 = at_radius<2>(pi_digits18);
-inline constexpr Ratio p3 = at_radius<3>(pi_digits18);
+// The shared form for any separately identified, verified 18-digit real scalar.
+// The attached third symbol is NOT given an assumed numerical identity.
+template<u64 SourceDigits18>
+struct IsolatedScalar18 {
+    static_assert(SourceDigits18 >= scale && SourceDigits18 < 10 * scale,
+                  "Source must preserve 18 integer digits with 17 fractional places");
+    inline static constexpr u64 source_digits18 = SourceDigits18;
+    inline static constexpr Ratio r1 = at_radius<1>(SourceDigits18);
+    inline static constexpr Ratio r2 = at_radius<2>(SourceDigits18);
+    inline static constexpr Ratio r3 = at_radius<3>(SourceDigits18);
+    static_assert(r1.numerator == SourceDigits18 && r1.denominator == scale);
+    static_assert(r2.numerator == r1.numerator &&
+                  r2.denominator == 4 * r1.denominator);
+    static_assert(r3.numerator == r1.numerator &&
+                  r3.denominator == 9 * r1.denominator);
+};
+
+using Euler = IsolatedScalar18<euler_digits18>;
+using Pi = IsolatedScalar18<pi_digits18>;
+inline constexpr Ratio e1 = Euler::r1;
+inline constexpr Ratio e2 = Euler::r2;
+inline constexpr Ratio e3 = Euler::r3;
+inline constexpr Ratio p1 = Pi::r1;
+inline constexpr Ratio p2 = Pi::r2;
+inline constexpr Ratio p3 = Pi::r3;
 
 static_assert(euler_series_prefix() == euler_digits18, "Euler source-prefix mismatch");
 static_assert(euler_digits18 >= scale && euler_digits18 < 10 * scale);
