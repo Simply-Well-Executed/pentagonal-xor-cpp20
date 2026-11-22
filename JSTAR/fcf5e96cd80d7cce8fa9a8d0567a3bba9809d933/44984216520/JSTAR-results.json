@@ -1,0 +1,18 @@
+{
+  "schema": "JSTAR-1",
+  "commit": "fcf5e96cd80d7cce8fa9a8d0567a3bba9809d933",
+  "run": "44984216520",
+  "source_test_sha256": "584b26dc325723cc4a3192c78bc887f85978a71d390626d51b37b02192eb878d",
+  "native_configure": 0,
+  "native_build": 0,
+  "native_execute": 0,
+  "root_configure": 0,
+  "full_native_build": 1,
+  "isolated_toolong_build": 1,
+  "ctest": 8,
+  "oracle_archive": "NFTC_27.0.1.1_SHA256_VERIFIED",
+  "oracle_javac_version": "javac 27.0.1.1",
+  "javac_raw_vcxproj_exit": 2,
+  "release": "HOLD",
+  "vcxproj_sha256": "03dcfd31b8302e1cbe076b74f66a1ad2eb5275519dfdb20bf665396ab34af766"
+}
