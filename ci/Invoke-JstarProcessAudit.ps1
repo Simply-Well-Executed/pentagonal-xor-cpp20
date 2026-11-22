@@ -206,6 +206,35 @@ foreach($p in $observed){
         $errors.Add(('unverifiable_build_descendant_executable_path|'+$p.name+'|'+$p.pid))
     }
 }
+# Critical identities require both a trusted Authenticode signature
+# and an expected toolchain installation root. CN is not a unique
+# certificate thumbprint; log it and keep release HOLD for human review.
+$vsRoots=[Collections.Generic.List[string]]::new()
+foreach($folder in @(
+  [Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFiles),
+  [Environment]::GetFolderPath([Environment+SpecialFolder]::ProgramFilesX86)
+)){
+  if(-not [string]::IsNullOrWhiteSpace($folder)){
+    $vsRoots.Add([IO.Path]::GetFullPath((Join-Path $folder 'Microsoft Visual Studio')))
+  }
+}
+function Test-ExpectedToolIdentity([string]$toolPath,[string]$fileName,
+                                    [string]$signatureStatus,[string]$signer){
+  if($signatureStatus -cne 'Valid'){return $false}
+  if($fileName -ieq 'cmake.exe'){
+    return ([string]::Equals($toolPath,$exe,
+         [StringComparison]::OrdinalIgnoreCase) -and
+         $signer -match '^CN=Kitware, Inc\.(,|$)')
+  }
+  if($signer -notmatch '^CN=Microsoft Corporation(,|$)'){return $false}
+  foreach($installRoot in $vsRoots){
+    $prefix=$installRoot+[IO.Path]::DirectorySeparatorChar
+    if($toolPath.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){
+      return $true
+    }
+  }
+  return $false
+}
 foreach($path in $paths){
     $name=[IO.Path]::GetFileName($path)
     $status='UNAVAILABLE'
@@ -220,8 +249,8 @@ foreach($path in $paths){
             $subject=[string]$signature.SignerCertificate.Subject
         }
         if($buildPaths.Contains($path) -and $critical.Contains($name) -and
-           ($status -cne 'Valid' -or $subject -notmatch '(?i)(Microsoft|Kitware)')){
-            $errors.Add(('unapproved_critical_binary|'+$name+'|'+$status))
+           -not (Test-ExpectedToolIdentity $path $name $status $subject)){
+            $errors.Add(('unapproved_critical_binary_or_install_root|'+$name+'|'+$status+'|'+$path))
         }
     }catch{
         if($buildPaths.Contains($path)){
