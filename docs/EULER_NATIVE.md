@@ -29,6 +29,10 @@ authority is:
 
 Source: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/3#issuecomment-6902016891
 
+The original author glyph is **ℼ (U+213C)**. It is not silently normalized
+into ordinary **π (U+03C0)**. The original PR #3 source comment retains its
+exact code points and remains authoritative for that symbol.
+
 Euler counterpart, using the same Q62 seed / 10^17 decimal scale / shift:
 
     const uint64_t result = (uint64_t)(((__uint128_t)(uint64_t)12535862302449814170ULL * 100000000000000000ULL) >> 62);
@@ -42,6 +46,13 @@ integers. They are not independently complete algorithms for deriving the
 irrational constants from first principles. The Euler seed was independently
 cross-checked against the factorial-series expansion, whose exact rational
 bound agrees with the same 18-digit truncated result.
+
+The Q62 seed may be checked independently as
+`floor(2^62 * sum(1/k!, k=0..40)) = 12535862302449814170`.
+The positive omitted series remainder is smaller than `1/(40 * 40!)`,
+which is too small to cross that Q62 integer boundary. This is an audit
+of the **chosen seed**, not a claim that the single Q62 multiplication
+computes the irrational e from scratch.
 
 The new `euler_scaled18` uses the native `__uint128_t` multiplication where
 supported. Because `__uint128_t` is a compiler extension and not ISO C++20,
