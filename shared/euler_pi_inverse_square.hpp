@@ -70,5 +70,29 @@ static_assert(e3.numerator == e1.numerator && e3.denominator == 9 * e1.denominat
 static_assert(p2.numerator == p1.numerator && p2.denominator == 4 * p1.denominator);
 static_assert(p3.numerator == p1.numerator && p3.denominator == 9 * p1.denominator);
 
+// EXPLORATORY: replace numeric pi in the user's modified circular-area
+// equation with GammaGamma SigmaPi (!pi). This is a *symbolic* substitution,
+// not a numerical physical intensity or a new definition of pi.
+// Canonical source digits and the original inverse-square witnesses above
+// remain unchanged. Do not conflate with HANDI sigmapi audit observations.
+namespace sigmapi_exploratory {
+enum class State : unsigned char { symbolic_only };
+struct SymbolicIntensity {
+    const char* expression;
+    const char* sigma_pi_input;
+    State state;
+    bool numerically_defined;
+};
+static constexpr SymbolicIntensity I{
+    "(P * e^(-alpha * omega)) / (SigmaPi * omega * omega)",
+    "3.14159265358979323",
+    State::symbolic_only,
+    false
+};
+static_assert(I.state == State::symbolic_only);
+static_assert(!I.numerically_defined);
+static_assert(pi_digits18 == 314159265358979323ULL);
+} // namespace sigmapi_exploratory
+
 } // namespace swe::inverse_square
 #endif // SWE_EULER_PI_INVERSE_SQUARE_HPP
