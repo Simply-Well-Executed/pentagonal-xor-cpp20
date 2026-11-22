@@ -47,7 +47,8 @@ $required=@(
  'CMakeLists.txt',
  'shared/CMakeLists.txt',
  'tests/consumer/CMakeLists.txt',
- 'docs/TOOLONG_TRIFORCE_Q62.md'
+ 'docs/TOOLONG_TRIFORCE_Q62.md',
+ 'docs/ATOMIX_PR34_BACKPORT.md'
 )
 $header=Join-Path $root 'shared/toolong_q62_core.hpp'
 if(-not [IO.File]::Exists($header)){throw 'TRIFORCE|HOLD|canonical_source_missing'}
