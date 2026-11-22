@@ -59,6 +59,16 @@ Invoke-Stage 'build-native' {
 Invoke-Stage 'execute-native' {
     & $nativeExe
 }
+# Backported from bookstore PR #1 and fixed after upstream PR #79 findings.
+# These stages are bracketed by the original authoritative TRIFORCE gate.
+Invoke-Stage 'guard-external-evidence' {
+    & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Test-ExternalEvidenceBoundary.ps1') -RepositoryRoot $root
+}
+Invoke-Stage 'atomix-half-phiping' {
+    $atomixDir=Join-Path $evidence ('atomix-'+[Guid]::NewGuid().ToString('N'))
+    & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-AtomixHalfPhiping.ps1') -RepositoryRoot $root -EvidenceDirectory $atomixDir
+}
+
 Invoke-Stage 'configure-root' {
     & cmake -S $root -B $rootBuild -G 'Visual Studio 18 2026' -A x64 `
       -DBUILD_TESTING=ON -DSWE_STD_FREE_CORE_ONLY=OFF
@@ -83,7 +93,7 @@ Invoke-Stage 'release-hold' {
 }
 $state=Get-Content -LiteralPath (Join-Path $evidence 'triforce-state.json') -Raw |
        ConvertFrom-Json
-if($state.phase -cne 'TAIL' -or $state.completed -ne 7){
+if($state.phase -cne 'TAIL' -or $state.completed -ne 9){
     throw 'TRIFORCE|HOLD|unpaired_or_incomplete_HEAD_TAIL'
 }
-Write-Host 'TRIFORCE|ΣΣΣ|HEAD_TAIL_PASSED|7_STAGES|MSVC_CXX20_O2|RELEASE=HOLD'
+Write-Host 'TRIFORCE|ΣΣΣ|HEAD_TAIL_PASSED|9_STAGES|MSVC_CXX20_O2|RELEASE=HOLD'
