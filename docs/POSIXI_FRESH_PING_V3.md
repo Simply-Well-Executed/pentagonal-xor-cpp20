@@ -1,12 +1,14 @@
 # FRESH-ART-EYE-PING-v3: YING-only ↔ AIRGAP
 
+**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
+
 **EXPLORATORY / SOURCE ONLY / RELEASE HOLD.** This is a new protocol version, not a retroactive edit to FRESH-ART-EYE-PING-v2.
 
 ## Frozen lineage
 
 - FRESH-ART-EYE-v1: `Archive/Retired/ci/FRESH-GammaGamma.art-eye-v1.sh.txt`
 - FRESH-ART-EYE-PING-v2: `Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v2.sh.txt` (Git blob SHA-1 `f1870c1169ccdbb72f39a917dfa292a1b53c3f59`).
-- FRESH-ART-EYE-PING-v3: active `ci/FRESH-GammaGamma.sh` on this proposal branch. v3 adds 14 explicit pair markers; v2 and v3 stdout streams are **not equivalent**.
+- FRESH-ART-EYE-PING-v3: archived `Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v3.sh.txt`. v3 adds 14 explicit pair markers; v2 and v3 stdout streams are **not equivalent**.
 
 ## New mapping
 

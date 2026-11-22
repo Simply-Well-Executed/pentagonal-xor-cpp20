@@ -1,5 +1,7 @@
 # Pentagonal XOR throughput engine (independent C++20 module)
 
+**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
+
 **Current implementation update, STD-free:** The earlier `std::span`, `std::memcpy`, `std::vector`, `std::chrono` and `std::views` descriptions below are retained as *earlier design provenance*, not the present source contract. The current throughput header and CLI use only C++20 core-language constructs plus native Win32/POSIX APIs. See the [superseding STD-free T-CROSS record](STD_FREE_NATIVE_T_CROSS.md) for exact current APIs, new compile-time LE packing, scoped cipher access, native 16 MiB fixed storage and separate runtime library/import verification. **No full source/compile/link audit has been executed in this revision.**
 
 **Status: EXPLORATORY / SOURCE COMMITTED / FULL REPOSITORY TEST NOT OBSERVED.**
@@ -49,7 +51,7 @@ ctest --test-dir build -C Release --output-on-failure
 
 On Visual Studio multi-configuration builds, the CLI may be under `build/Release/pentagonal_xor_cli.exe`. The `pentagonal_xor_cli` test uses `--bytes 65536` to avoid allocating 16 MiB during every test; the default standalone demonstration allocates 16 MiB, and the explicit limit is 256 MiB. The benchmark timer measures **only one XOR pass**, excluding the allocation, checksum calculation and printing. The printed witness is deterministic, not a cryptographic integrity guarantee. Before comparing throughput, control affinity, priority, thermal state, power mode, input size, repetitions and counter methodology; no speedup has been verified here.
 
-The local [POSIX T-CROSS executor](../ci/t-cross-posix.sh) and [YAML Taskfile](../Taskfile.yml) capture a Git-derived +/-DIFF at execution time. Their strict whole-repository residual-surface and REST-source gates may remain blocked by historical scripts. Direct binary import checks cover both `pentagonal_xor` and `pentagonal_xor_cli`; static imports alone do not establish an isolated runtime.
+The local [POSIX T-CROSS executor](../Archive/Retired/ci/t-cross-posix.sh.txt) and [YAML Taskfile](../Taskfile.yml) capture a Git-derived +/-DIFF at execution time. Their strict whole-repository residual-surface and REST-source gates may remain blocked by historical scripts. Direct binary import checks cover both `pentagonal_xor` and `pentagonal_xor_cli`; static imports alone do not establish an isolated runtime.
 
 ## T-CROSS source disposition
 

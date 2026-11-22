@@ -1,5 +1,7 @@
 ## What changed?
 
+**Current CI custody:** 17 POSIX wrappers were removed; their original and wrapper Git blob identities are recorded in [discarded-files registry](../discardedfiles.md). Any shell commands below are historical examples, not current operator instructions. Retained Taskfile/Compose entrypoints now print the native fixed transcript with exit 42 / **RELEASE=HOLD**; they do not build, export inventories or stage releases. Use reviewed native PowerShell build entrypoints for actual validation.
+
 Describe the exact native C++20 / PowerShell code or documentation change, affected paths, and source provenance.
 
 ## Local native T-CROSS validation
@@ -9,7 +11,7 @@ Describe the exact native C++20 / PowerShell code or documentation change, affec
 - [ ] StrictMode 2.0 and Magic Comb SelfTest / Verify passed.
 - [ ] CMake `CXX_STANDARD 20`, `CXX_STANDARD_REQUIRED ON`, and `CXX_EXTENSIONS OFF` verified; MSVC Release `/O2` and GCC/Clang Release `-O3` verified; no O0.
 - [ ] CTest checks passed, with actual test count, commit SHA and local evidence identified.
-- [ ] POSIX T-CROSS produced a current Git-derived `.iron-t-cross-diff.yml` (base/head SHAs, +/- source lines) or exporter failure was recorded.
+- [ ] Retired T-CROSS exporters are identified from `discardedfiles.tsv`; no current Git-derived `.iron-t-cross-diff.yml` is claimed from the HOLD transcript. Independent replacement evidence or NOT TESTED is recorded.
 - [ ] Baseline versus candidate comparison includes negative controls, limitations and NOT TESTED results.
 - [ ] Machine-code CALL gate examines the isolated parity probe object, with CLI and other code explicitly out of that narrow scope.
 - [ ] C++ Core Guidelines and PowerShell beginners reference were considered for changed code.
@@ -38,7 +40,7 @@ Describe the exact native C++20 / PowerShell code or documentation change, affec
 - [ ] Native compiler/SDK exists locally; no runner image, GitHub Actions, network fetch, installer or container was introduced.
 - [ ] `SWE_STD_FREE_CORE_ONLY=ON` created an archive and headers with no legacy build target leakage, or exact failure is captured.
 - [ ] Cross-compiled archive status `ARCHIVE_BUILT_NOT_RUNTIME_TESTED` is not misreported as hardware execution, CTest pass or CRT-free linkage.
-- [ ] `sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml` completed; unresolved standard-library references remain explicitly BLOCKED.
+- [ ] The archived STD inventory exporter is not invoked; independent native inventory evidence or NOT TESTED is recorded, and unresolved standard-library references remain explicitly BLOCKED.
 - [ ] Independent STD-free five-feature parity CLI compared with canonical CLI, including decimal-grammar compatibility and invalid-input test outcomes.
 - [ ] Full-repository STD-free goal not marked passed until **all** tracked C/C++ source, public APIs, tests, binaries and linked runtime dependencies have measured acceptance evidence.
 
@@ -65,6 +67,6 @@ State what passed, what failed, what was not run, and whether the PR should rema
 - [ ] Android four NDK ABIs were built using separately licensed installed NDK; report CROSS_COMPILED_NOT_DEVICE_TESTED, never device OQ PASS.
 - [ ] All 13 required profile package trees, SHA256 manifests and validation receipts refer to the **same** source commit. Any missing/stale/edited item must block assembly.
 - [ ] Third-party OS and SDK licenses, runtime dependencies, SBOM expectations and release-authentication limitations reviewed.
-- [ ] `ci/Assemble-Gamp4-Release.sh` produced STAGED_NOT_PUBLISHED after all gates. Actual GitHub release assets, immutable tag and digest are verified separately if later published.
+- [ ] The retired release assembler is absent from active source and identified in `discardedfiles.tsv`; retained HOLD entrypoints produce no release bundle. Actual historical release assets, immutable tag and digest are verified separately if relevant.
 - [ ] Confirmed GAMP4-style supplier verification is **not** independent QA approval, PQ or GMP certification; no status promoted without explicit evidence.
 

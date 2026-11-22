@@ -1,6 +1,6 @@
 schema: SWE-IRON-GAMP4-DOCKER-RELEASE-v1
 policy:
-  activation: explicitly-requested-local-Docker
+  activation: HOLD-retired-POSIX-build-entrypoints
   network_inside_container: none
   image_pull: never
   local_builder: SHA256-digest-qualified-and-preloaded
@@ -33,13 +33,17 @@ policy:
   required_full_ctest: PASS
   required_gamp4_summary: 'GAMP4_STYLE_SUMMARY|PASS|cases=12|failures=0'
   success_evidence: exact-source-sha-and-SHA256
-  release_stage: STAGED_NOT_PUBLISHED
+  release_stage: HOLD_RETIRED_ASSEMBLER
+  historical_release_stage: STAGED_NOT_PUBLISHED
   required_profile_count: 13
   qa_status: NOT_APPROVED
   pq_status: NOT_PERFORMED
   legacy_suite_requires_std_library: true
 artifacts:
-  assembler: ci/Assemble-Gamp4-Release.sh
+  assembler: null
+  retired_assembler_source: Archive/Retired/ci/Assemble-Gamp4-Release.sh.txt
+  retired_wrapper_registry: discardedfiles.tsv
+  hold_transcript: ci/FRESH-GammaGamma.ps1
   path: build/gamp4-release/SHA/release-ready/SHA
   packaging: per-profile-tar-gz-with-SHA256SUMS
   oci_payload_dockerfile: docker/ReleasePayload.Dockerfile

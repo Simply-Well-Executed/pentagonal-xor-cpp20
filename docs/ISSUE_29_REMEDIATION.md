@@ -1,5 +1,7 @@
 # Issue #29 remediation and validation ledger
 
+**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
+
 **CURRENT | November 20, 2026 | OPEN / RELEASE HOLD.** The dedicated branch `29-exc-gnu-linux-001-prefer-mit-oracle-lgpl-21-forbid-lgpl-3-gpl-eupl-epl-release-hold` has a historical name that does not convey current approvals.
 
 ## Rules
@@ -62,7 +64,7 @@ The PowerShell source verifier checks exact v1 and v2 Git blobs, reconstructs v2
 
 ## FRESH-ART-EYE-PING-v4: symbolic equals-to-s substitution
 
-**NEW EXPERIMENTAL v4.** The frozen v3 source now resides byte-for-byte at `Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v3.sh.txt` (Git blob `0efd33eb495d951137e7181d44f659a447067110`). The current `ci/FRESH-GammaGamma.sh` changes only 14 YING-only `=→s` witnesses and 14 corresponding artistic `(=)→(s)` suffixes, across all GammaGamma/BiDi/TriDi/SigmaDi/FRESH checkpoints. Historical versions and the ancestral DOOM-shaped form remain unchanged; neither the 66 PING count nor the AIRGAP pairing is altered.
+**NEW EXPERIMENTAL v4.** The frozen v3 source now resides byte-for-byte at `Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v3.sh.txt` (Git blob `0efd33eb495d951137e7181d44f659a447067110`). The historical v4 `ci/FRESH-GammaGamma.sh` changed only 14 YING-only `=→s` witnesses and 14 corresponding artistic `(=)→(s)` suffixes, across all GammaGamma/BiDi/TriDi/SigmaDi/FRESH checkpoints. Historical versions and the ancestral DOOM-shaped form remain unchanged; neither the 66 PING count nor the AIRGAP pairing is altered.
 
 The exact final stdout remains `ItWasOnlyOnceILookedInTheirEye`, the process remains `exit 42`, and a Windows PowerShell source-only gate verifies all 28 substitutions after validating the v1/v2/v3 historical chain. The v4 output protocol has a new ID and must not be treated as byte-equivalent to v3. No POSIX or GNU permission, executable POSIXI runtime, network PING, or release approval follows. See `docs/POSIXI_FRESH_PING_V4.md`.
 

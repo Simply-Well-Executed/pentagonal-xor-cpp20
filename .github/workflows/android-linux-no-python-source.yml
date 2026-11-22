@@ -60,7 +60,10 @@ jobs:
             $rel = [IO.Path]::GetRelativePath($src,$f.FullName).Replace('\','/')
             if ([regex]::IsMatch($rel,$pathPattern)) { throw "IRON|PYTHON|HOLD|path=$rel" }
           }
-          $entrypoints = @('ci/Build-Android.ps1','ci/Build-AndroidUnsigned.ps1','ci/Initialize-AndroidRuntime.ps1','ci/Initialize-AndroidSdk.ps1','ci/Invoke-AndroidDockerValidation.ps1','ci/Invoke-LinuxDockerValidation.ps1','ci/docker/Build-Android-NDK.sh')
+          $entrypoints = @('ci/Build-Android.ps1','ci/Build-AndroidUnsigned.ps1','ci/Initialize-AndroidRuntime.ps1','ci/Initialize-AndroidSdk.ps1','ci/Invoke-AndroidDockerValidation.ps1','ci/Invoke-LinuxDockerValidation.ps1','ci/FRESH-GammaGamma.ps1','ci/Test-FreshGammaGammaNative.ps1')
+          # The historical NDK shell source is data, never an active entrypoint.
+          if ([IO.File]::Exists((Join-Path $src 'ci/docker/Build-Android-NDK.sh'))) { throw 'IRON|PYTHON|HOLD|retired_ndk_shell_reintroduced' }
+          if (-not [IO.File]::Exists((Join-Path $src 'Archive/Retired/ci/docker/Build-Android-NDK.sh.txt'))) { throw 'IRON|PYTHON|HOLD|missing_ndk_history' }
           $executionPattern = '(?im)^\s*(&\s*)?([./a-z0-9_-]+/)?(python([0-9.]+)?|pip([0-9.]+)?|pypy[0-9.]*|conda|poetry|pytest)([\s;|&)]|$)'
           foreach ($rel in $entrypoints) {
             $f = Join-Path $src ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))

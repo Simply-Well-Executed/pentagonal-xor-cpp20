@@ -1,5 +1,7 @@
 # Docker Hub Python-free Android/Linux candidate: verified registry deployment
 
+**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
+
 **Status:** SOURCE-MATCHED CANDIDATE PUBLISHED TO DOCKER HUB; GITHUB DEPLOYMENT SUCCESS; NOT PRODUCTION QUALIFIED.
 
 ## Public candidate location
@@ -28,6 +30,6 @@
 ## Repository references
 
 - [Python-free Android/Linux policy](ANDROID_LINUX_NO_PYTHON.md).
-- [Cloud candidate publishing script](../ci/Promote-VerifiedAndroidLinux-ToDockerHub.sh).
+- [Cloud candidate publishing script](../Archive/Retired/ci/Promote-VerifiedAndroidLinux-ToDockerHub.sh.txt).
 - [Cloud deployment workflow](../.github/workflows/dockerhub-pythonfree-candidate-deployment.yml).
 - [Earlier historic Docker Hub same-digest publication](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44746338664).

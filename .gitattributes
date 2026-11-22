@@ -1,2 +1,5 @@
 LICENSES/** -text
 LICENSE -text
+Archive/Retired/** -text
+discardedfiles.tsv text eol=lf
+ci/FRESH-GammaGamma.ps1 text eol=lf

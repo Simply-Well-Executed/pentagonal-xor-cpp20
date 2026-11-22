@@ -1,5 +1,7 @@
 # Pentagonal Suite Engine: ISO C++20 operation protocol
 
+**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
+
 **Status: EXPLORATORY source committed in draft PR #19.** All new suite source files contain zero C/C++ standard-library includes, zero `std::` references and zero code comments. Do not apply this status automatically to the existing parity, legacy tools, whole repository or final linked binaries.
 
 ## Source and authority
@@ -7,7 +9,7 @@
 - [`include/pentagonal_suite.hpp`](../include/pentagonal_suite.hpp): additive source of the nine suite operations. Includes the existing [`pentagonal_xor.hpp`](../include/pentagonal_xor.hpp) and reuses its original pentagonal function, 256-byte keystream LUT, exact XOR, fast XOR and little-endian pack/unpack.
 - [`tests/pentagonal_suite_test.cpp`](../tests/pentagonal_suite_test.cpp): independent source-level and constexpr checks for seeded and periodic mode results, 14 buffer lengths, unaligned offsets, NAN tails, bounded COR/VISTA behavior and integer-limit traversal.
 - [`src/suite_main.cpp`](../src/suite_main.cpp): separate native Windows/Linux demo and timed suite pipeline. The existing throughput benchmark CLI and five-feature parity CLI are preserved.
-- [`Taskfile.yml`](../Taskfile.yml) and [`ci/t-cross-posix.sh`](../ci/t-cross-posix.sh): automatic Git-derived ±DIFF YAML exporter and fail-closed STD-free/comment-free validation gates.
+- [`Taskfile.yml`](../Taskfile.yml) and [`ci/t-cross-posix.sh`](../Archive/Retired/ci/t-cross-posix.sh.txt): automatic Git-derived ±DIFF YAML exporter and fail-closed STD-free/comment-free validation gates.
 - **Identity:** These are separate bytewise operations. None is a replacement for the established five-input odd-parity probability calculation.
 
 ## Explicit operation matrix

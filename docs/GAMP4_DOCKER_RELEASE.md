@@ -1,5 +1,7 @@
 # GAMP4-gated Docker release custody, native OS/ABI matrix
 
+**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
+
 **Status: CANDIDATE SOURCE COMMITTED. Docker execution, target-hardware testing, release assembly, QA signoff and GitHub release publication NOT PERFORMED.** This is a supplier-side *GAMP 4-style* validation procedure, not ISPE certification, GMP compliance, FDA approval or operational PQ.
 
 This is an **explicitly requested exception** to the earlier absolute container-image prohibition. It allows opt-in **locally controlled, preloaded, digest-pinned Docker** for release validation and artifact transport. It does not reauthorize GitHub Actions runners, remote builders, Node/npm, automatic SDK downloads, container registry pushes or unattended GitHub releases. Older Docker and Android source is retained with its existing provenance.
@@ -10,13 +12,13 @@ This is an **explicitly requested exception** to the earlier absolute container-
 | --- | --- | --- |
 | [ci/gamp4-docker-release.yml](../ci/gamp4-docker-release.yml) | Declarative, fixed 13-profile release policy | Required gates and unsupported targets |
 | [docker/compose.release.yml](../docker/compose.release.yml) | Offline non-root Linux build containers, read-only exported Git-committed source snapshot (without .git or untracked files), dropped capabilities | Explicit operator-invoked local container execution |
-| [ci/Invoke-LocalDocker-Gamp4.sh](../ci/Invoke-LocalDocker-Gamp4.sh) | Verify local Unix/npipe Docker daemon, preloaded @sha256 image, clean source SHA; no pull | Docker preflight if actually run |
-| [ci/docker/Run-Gamp4-Container.sh](../ci/docker/Run-Gamp4-Container.sh) | Full Release CMake, CTest, independent exact 12-URS checks, archive and hash | Linux platform supplier test evidence after real execution |
-| [ci/docker/Build-Android-NDK.sh](../ci/docker/Build-Android-NDK.sh) | Four NDK ABI archive builds after identical-SHA Linux source validation | Cross-compiled core archive, **not** Android execution |
-| [ci/Run-Native-Macos-Gamp4.sh](../ci/Run-Native-Macos-Gamp4.sh) | Native Apple Clang full CTest, URS, installed archive and CLI packages | Native macOS evidence, host architecture recorded |
+| [ci/Invoke-LocalDocker-Gamp4.sh](../Archive/Retired/ci/Invoke-LocalDocker-Gamp4.sh.txt) | Verify local Unix/npipe Docker daemon, preloaded @sha256 image, clean source SHA; no pull | Docker preflight if actually run |
+| [ci/docker/Run-Gamp4-Container.sh](../Archive/Retired/ci/docker/Run-Gamp4-Container.sh.txt) | Full Release CMake, CTest, independent exact 12-URS checks, archive and hash | Linux platform supplier test evidence after real execution |
+| [ci/docker/Build-Android-NDK.sh](../Archive/Retired/ci/docker/Build-Android-NDK.sh.txt) | Four NDK ABI archive builds after identical-SHA Linux source validation | Cross-compiled core archive, **not** Android execution |
+| [ci/Run-Native-Macos-Gamp4.sh](../Archive/Retired/ci/Run-Native-Macos-Gamp4.sh.txt) | Native Apple Clang full CTest, URS, installed archive and CLI packages | Native macOS evidence, host architecture recorded |
 | [ci/Run-Native-Windows-Gamp4.ps1](../ci/Run-Native-Windows-Gamp4.ps1) | Native local MSVC Windows x86/x64/ARM64 full CTest and GAMP4 evidence | Windows platform test evidence, if run on compatible host |
 | [ci/Build-Windows-ReleaseContainer.ps1](../ci/Build-Windows-ReleaseContainer.ps1) | Optional local Windows x64 container smoke, cached digest base, no push | Windows Server Core container smoke only |
-| [ci/Assemble-Gamp4-Release.sh](../ci/Assemble-Gamp4-Release.sh) | Check all 13 profiles, 12 URS, SHA256 receipts and package files, assemble tarballs and release notes | **STAGED_NOT_PUBLISHED** |
+| [ci/Assemble-Gamp4-Release.sh](../Archive/Retired/ci/Assemble-Gamp4-Release.sh.txt) | Check all 13 profiles, 12 URS, SHA256 receipts and package files, assemble tarballs and release notes | **STAGED_NOT_PUBLISHED** |
 | [docker/ReleasePayload.Dockerfile](../docker/ReleasePayload.Dockerfile) | Scratch OCI payload of verified release archives only | Non-executable artifact transport, not a native OS container |
 
 Canonical mathematics and source identity remain in the existing parity implementation, Pentagonal Suite, DecaSigma and related public headers. The full GAMP4 CTest suite may use existing C/C++ standard libraries. The **separate STD-free core-only archive** is source-library-free within its defined code boundaries, not an assertion that the full repository or linked executables have zero CRT imports.

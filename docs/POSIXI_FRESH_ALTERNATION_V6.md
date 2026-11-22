@@ -1,5 +1,7 @@
 # FRESH-ART-EYE-ALTERNATION-v6: GAMMA rest / GAMME work
 
+**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
+
 **EXPLORATORY SOURCE-ONLY PROTOCOL v6 | GNU/POSIX RELEASE HOLD.** User correction to v5: alternate the *names* and the movement/rest semantics, not merely the `=` and `s` witnesses.
 
 ## Canonical phase schedule (nine named phases)
