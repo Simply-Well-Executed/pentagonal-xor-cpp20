@@ -16,9 +16,8 @@ if(-not [IO.Directory]::Exists($root)){throw 'AUTOSTART|HOLD|repository_missing'
 if($Platform -cne 'Windows' -or -not $IsWindows){
   throw 'AUTOSTART|HOLD|native_MSVC_only_Linux_toolchain_not_approved'
 }
-if($output.StartsWith($root+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){
-  throw 'AUTOSTART|HOLD|build_output_must_be_outside_source_custody'
-}
+& pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Assert-ExternalEvidencePath.ps1') -RepositoryRoot $root -EvidencePath $output
+if($LASTEXITCODE -ne 0){throw 'AUTOSTART|HOLD|build_output_must_be_outside_source_custody'}
 if([IO.Directory]::Exists($output)){throw 'AUTOSTART|HOLD|build_output_not_clean'}
 [IO.Directory]::CreateDirectory($output)|Out-Null
 $needed=@('CMakeLists.txt','LICENSE','LICENSES/LOCK.tsv','LICENSES/README.md',
