@@ -3,9 +3,7 @@ name: TRIFORCE ΣΣΣ native TOOLONG HEAD and TAIL
 # Every stage AFTER exact-source bootstrap runs owner Q62 checks at HEAD and TAIL.
 # This workflow is validation only; never grants release or third-party license approval.
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
   push:
     branches:
       - main
