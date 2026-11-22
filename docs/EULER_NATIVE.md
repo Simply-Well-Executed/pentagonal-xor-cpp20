@@ -1,6 +1,6 @@
 # Native Euler number: integer-derived, guarded decimal witness
 
-Status: EXPLORATORY / review required. Version: EULER-NATIVE-INTEGER-SERIES-v1.
+Status: EXPLORATORY / review required. Version: EULER-Q62-MINZA-v2 (v1 integer-series witness retained).
 License: 0BSD. No POSIX, Python, Node, standard-library includes, remote fetch, or runtime package dependency in the new Euler header.
 
 ## Provenance
@@ -16,6 +16,45 @@ References:
 - docs/GAMMAGAMMA_PI_PRECISION.md
 
 Do not replace the original Pi integer or GammaGamma contracts. Euler's number e is mathematically a different constant and has its own computed source and audit ID.
+
+## Authority correction: PR #3 native Pi Q62 record (2026-11-21)
+
+The maintainer explicitly identifies PR #3's own comment as the canonical
+authority for the **native multiply/shift conversion pattern**, rather than
+the later PR #17 Pi-derived *display policy*. The original, unchanged Pi
+authority is:
+
+    const uint64_t result = (uint64_t)(((__uint128_t)(uint64_t)14488038916154245685ULL * 100000000000000000ULL) >> 62);
+    // 314159265358979323
+
+Source: https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/3#issuecomment-6902016891
+
+Euler counterpart, using the same Q62 seed / 10^17 decimal scale / shift:
+
+    const uint64_t result = (uint64_t)(((__uint128_t)(uint64_t)12535862302449814170ULL * 100000000000000000ULL) >> 62);
+    // 271828182845904523
+
+Place the decimal point explicitly after the first digit to display
+**2.71828182845904523** (18 significant digits, truncated).
+
+Both expressions convert *already chosen fixed-point seeds* to scaled decimal
+integers. They are not independently complete algorithms for deriving the
+irrational constants from first principles. The Euler seed was independently
+cross-checked against the factorial-series expansion, whose exact rational
+bound agrees with the same 18-digit truncated result.
+
+The new `euler_scaled18` uses the native `__uint128_t` multiplication where
+supported. Because `__uint128_t` is a compiler extension and not ISO C++20,
+the same header also implements the exact equivalent operation using four
+32x32 multiplies and carry propagation for compilers without that type,
+including MSVC. This portable equivalent uses no floating point or standard
+library headers. Static and runtime tests compare both forms, and independently
+test the original PR #3 Pi seed through the portable operation.
+
+**Custody:** PR #3 authority remains unchanged. PR #17 output formatting is a
+separate historical rule. The original v1 factorial-series check is retained,
+not erased or relabeled as a Q62 experiment. The v2 Q62 result has 18 significant
+digits; the v1 rounded display has 16. They must not be conflated.
 
 ## Native algorithm
 
@@ -53,7 +92,7 @@ This is a *certified decimal-rounding interval*, not a claim of infinite precisi
 
 ## Verification
 
-- tests/euler_native_test.cpp checks the exact lower interval, upper interval, rounded result, ASCII placement, and the optional binary64 numeric neighborhood.
+- tests/euler_native_test.cpp checks the exact lower interval, upper interval, rounded result, ASCII placement, and the optional binary64 numeric neighborhood, plus Q62 Euler output, its 64-bit-limb parity witness, and the PR #3 Pi seed as regression witness.
 - The calculations are compile-time asserted; a CTest executable also returns a nonzero status if the witnesses disagree.
 - The source uses no standard-library headers and does not touch the production Pentagonal XOR hot path.
 - The test must be built with an explicitly validated ISO C++20 /O2 or -O2 toolchain and executed on the desired supported platforms.
