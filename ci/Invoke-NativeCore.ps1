@@ -86,7 +86,9 @@ try {
     try {
         & cmake -S . -B build -G $generator -A x64 -DBUILD_TESTING=ON -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF '-DCMAKE_CXX_FLAGS_RELEASE=/O2 /DNDEBUG'
         if ($LASTEXITCODE -ne 0) { throw 'Local CMake configure failed.' }
-        & cmake --build build --config Release --parallel
+        $env:MSBUILDDISABLENODEREUSE = '1'
+        $env:DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER = '1'
+        & cmake --build build --config Release --parallel 1 -- /m:1 /nr:false
         if ($LASTEXITCODE -ne 0) { throw 'Local C++20 /O2 build failed.' }
         & ctest --test-dir build -C Release --output-on-failure
         if ($LASTEXITCODE -ne 0) { throw 'Local CTest verification failed.' }
