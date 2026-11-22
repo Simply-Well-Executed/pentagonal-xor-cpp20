@@ -67,6 +67,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/pentagonal_xor_std_free.h
     shared/deca_sigma.hpp
     shared/tri_pi.hpp
+    shared/euler_pi_inverse_square.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/coreo_stereo.hpp
@@ -348,6 +349,7 @@ install(EXPORT swe_audit_headers_targets
 install(FILES
     shared/deca_sigma.hpp
     shared/tri_pi.hpp
+    shared/euler_pi_inverse_square.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/gammagamma.hpp
