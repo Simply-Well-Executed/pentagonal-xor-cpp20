@@ -6,6 +6,7 @@
 #define SWE_GAMMAGAMMA_HPP
 
 #include "toolong.hpp"
+#include "toolong_q62_core.hpp"
 #include <algorithm>
 #include <cstdint>
 #include <string>
@@ -109,7 +110,7 @@ struct DecimalToken { std::string_view text; };
 // Keep the author's π integer digits fixed; caller chooses the decimal point.
 // This cannot silently turn π into ordinary irrational pi or guess a split.
 inline constexpr std::string_view pi_digits="314159265358979323";
-inline constexpr std::uint64_t pi_integer=314159265358979323ULL;
+inline constexpr std::uint64_t pi_integer=toolong_q62::pi.expected_integer;
 inline constexpr std::string_view bipi_square=
     "98696044010893585656621344341538329";
 [[nodiscard]] inline toolong bipi_exact() {

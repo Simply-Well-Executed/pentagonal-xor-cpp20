@@ -41,8 +41,10 @@ function Add-ToolFingerprint {
     })
 }
 
-foreach ($name in @('cmake', 'ctest', 'git', 'pwsh', 'c++', 'g++', 'clang++',
-                    'clang-cl.exe', 'cl.exe', 'link.exe', 'ld', 'objcopy')) {
+# Do not discover, invoke or fingerprint the disallowed compiler family.
+# Generic c++ and g++ wrappers may resolve to it on some operating systems.
+foreach ($name in @('cmake', 'ctest', 'git', 'pwsh',
+                    'cl.exe', 'link.exe', 'ld', 'objcopy')) {
     $command = Get-Command $name -ErrorAction SilentlyContinue |
         Where-Object { $_.Source -and (Test-Path -LiteralPath $_.Source -PathType Leaf) } |
         Select-Object -First 1
@@ -72,15 +74,7 @@ if ($IsWindows) {
     }
 }
 
-if ($IsMacOS) {
-    $xcrun = Get-Command xcrun -ErrorAction SilentlyContinue
-    if ($xcrun) {
-        $clang = & xcrun --find clang++ 2>$null
-        if ($LASTEXITCODE -eq 0 -and $clang) {
-            Add-ToolFingerprint -Name 'Xcode clang++' -Path ([string]$clang)
-        }
-    }
-}
+# macOS native compilation is HOLD: no compiler-family probing is performed.
 
 # Compiler identity as reported by CMake, retained independently of the
 # executable fingerprints. In a failed configure this file may not exist.

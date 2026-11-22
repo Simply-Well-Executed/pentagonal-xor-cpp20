@@ -1,0 +1,179 @@
+name: OpenBSD 8-to-2 serial COREAO compatibility preflight
+
+# Serial source-contract validation and a Windows C++20 smoke build.
+# Runs after every commit to the protected feature branch; historical target stages retain HOLD.
+# Not an OpenBSD binary build or automatic image release.
+on:
+  push:
+    branches:
+      - feat/fresh-artistic-eye-chain-20261120
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/openbsd-serial-coreao.yml
+      - ci/OPENBSD_SERIAL_COREAO.tsv
+      - ci/Invoke-OpenBSDSerialCoreao.ps1
+      - ci/Test-OpenBSDSerialCoreao.ps1
+      - ci/OPENBSD_80_SOURCE_LOCK.tsv
+      - ci/OPENBSD_79_SOURCE_LOCK.tsv
+      - ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv
+      - ci/Test-OpenBSDNativeEvidence.ps1
+      - docs/OPENBSD_NATIVE_EVIDENCE_V1.md
+      - CMakeLists.txt
+      - include/**
+      - shared/**
+      - tests/std_free_portable_probe.cpp
+
+permissions:
+  contents: read
+concurrency:
+  group: openbsd-serial-coreao
+  cancel-in-progress: false
+jobs:
+  ordered-compatibility-preflight:
+    name: Nine target passes then COREAO(OpenBSD2) and Windows core test
+    runs-on: windows-2025
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Retrieve exact source revision using PowerShell
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference='Stop'
+          if ($env:GITHUB_ACTIONS -ne 'true' -or $env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+              $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$') { throw 'OPENBSD|SERIAL|HOLD|untrusted_runner_or_revision' }
+          $zip=Join-Path $env:RUNNER_TEMP 'openbsd-serial-source.zip'
+          $dest=Join-Path $env:RUNNER_TEMP 'openbsd-serial-source'
+          $uri='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:GITHUB_SHA
+          Invoke-WebRequest -Uri $uri -Headers @{ Authorization=('Bearer '+$env:GH_TOKEN);
+            Accept='application/vnd.github+json'; 'User-Agent'='swe-openbsd-serial-native';
+            'X-GitHub-Api-Version'='2022-11-28' } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $dest
+          $dirs=@(Get-ChildItem -LiteralPath $dest -Directory)
+          if ($dirs.Count -ne 1 -or -not [IO.File]::Exists((Join-Path $dirs[0].FullName 'ci/OPENBSD_SERIAL_COREAO.tsv'))) {
+            throw 'OPENBSD|SERIAL|HOLD|source_archive_layout' }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'),$dirs[0].FullName)
+      - name: Validate all serial profiles and MagicComb HEAD TAIL
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_02' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_02|HEAD'}
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          $dir=Join-Path $env:RUNNER_TEMP 'openbsd-serial-ledger'
+          & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Test-OpenBSDSerialCoreao.ps1') -RepositoryRoot $src -TemporaryDirectory $dir
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|ledger_test_failed'}
+          & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Assert-OpenBSD80SourceLock.ps1') -RepositoryRoot $src
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|source_lock_failed'}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_02' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_02|TAIL'}
+      - name: Check historical native evidence metadata twice and reject false promotion
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_03' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_03|HEAD'}
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          $test=Join-Path $src 'ci/Test-OpenBSDNativeEvidence.ps1'
+          $first=@(& pwsh -NoLogo -NoProfile -File $test -RepositoryRoot $src)
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|EVIDENCE|HOLD|HEAD_failed'}
+          $second=@(& pwsh -NoLogo -NoProfile -File $test -RepositoryRoot $src)
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|EVIDENCE|HOLD|TAIL_failed'}
+          if(-not [StringComparer]::Ordinal.Equals(($first -join [char]10),($second -join [char]10))){
+            throw 'OPENBSD|EVIDENCE|HOLD|HEAD_TAIL_CHANGED'
+          }
+          foreach($line in $first){Write-Host $line}
+          $inputFile=Join-Path $src 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv'
+          $before=[IO.File]::ReadAllText($inputFile)
+          $after=$before.Replace('OPENBSD4_RETURN','OPENBSD4_FIRST')
+          if([StringComparer]::Ordinal.Equals($before,$after)){
+            throw 'OPENBSD|EVIDENCE|HOLD|corruption_test_not_applicable'
+          }
+          $tampered=Join-Path $env:RUNNER_TEMP 'openbsd-evidence-corrupted.tsv'
+          [IO.File]::WriteAllText($tampered,$after,[Text.UTF8Encoding]::new($false))
+          & pwsh -NoLogo -NoProfile -File $test -RepositoryRoot $src -EvidencePath $tampered *> $null
+          $negativeExit=$LASTEXITCODE
+          if($negativeExit -eq 0){throw 'OPENBSD|EVIDENCE|HOLD|false_stage_accepted'}
+          # pwsh exits with LASTEXITCODE even after a successful expected-failure assertion.
+          $global:LASTEXITCODE=0
+          Write-Host 'OPENBSD|EVIDENCE|TEST_PASS|HEAD_TAIL_EXACT|CORRUPTION_REJECTED|SOURCE_METADATA_ONLY|CORE=OPENBSD2|NATIVE_BUILDS=0|RELEASE=HOLD'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_03' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_03|TAIL'}
+      - name: Emit ordered SHA-256 witness hashes with source evidence
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_04' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_04|HEAD'}
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          $ledger=Join-Path $env:RUNNER_TEMP 'openbsd-stage-witnesses.jsonl'
+          & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Invoke-OpenBSDSerialCoreao.ps1') -RepositoryRoot $src -ReportPath $ledger > $null
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|WITNESS|HOLD|ledger_generation_failed'}
+          $entries=@([IO.File]::ReadAllLines($ledger))
+          $annex=@([IO.File]::ReadAllLines((Join-Path $src 'ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv')))
+          if($entries.Count -ne 10 -or $annex.Count -ne 11){throw 'OPENBSD|WITNESS|HOLD|row_count'}
+          $previous='0'*64
+          for($i=0;$i -lt 10;$i++){
+            $stage=$entries[$i] | ConvertFrom-Json
+            $source=$annex[$i+1].Split([char]9)
+            if($source.Count -ne 13 -or $stage.stage -cne $source[1] -or
+               $stage.previous_sha256 -cne $previous -or
+               $stage.native_openbsd_binary -cne 'NOT_BUILT' -or
+               $source[12] -cne 'HOLD'){throw ('OPENBSD|WITNESS|HOLD|stage_mismatch|'+$i)}
+            Write-Host ('OPENBSD|WITNESS|STEP='+$stage.ordinal+'|STAGE='+$stage.stage+
+              '|RELEASE='+$stage.release+'|PASS='+$stage.pass+'|SOURCE_REF='+$source[4]+
+              '|SOURCE_STATE='+$source[6]+'|SOURCE_SRC_SHA256='+$source[5]+
+              '|COMPILER=UNATTESTED|NATIVE_BUILD='+$source[9]+
+              '|STATUS=HOLD|WITNESS_SHA256='+$stage.witness_sha256)
+            $previous=$stage.witness_sha256
+          }
+          Write-Host ('OPENBSD|WITNESS|COMPLETE|COUNT=10|CORE=OPENBSD2|TAIL_SHA256='+$previous)
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_04' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_04|TAIL'}
+      - name: Verify THAILONGA V1 after the frozen ten stages (HEAD TAIL negative)
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_05' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_05|HEAD'}
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Test-OpenBSDThailongaPostflightV1.ps1') -RepositoryRoot $src -TemporaryDirectory (Join-Path $env:RUNNER_TEMP 'thailonga-postflight-v1')
+          if($LASTEXITCODE -ne 0){throw 'THAILONGA|V1|HOLD|postflight_custody_check_failed'}
+          Write-Host 'THAILONGA|AUTO_BRANCH_PREFLIGHT_PASS|POSTFLIGHT_ONLY|YIN_YANG_SEPARATE|HISTORICAL_DIGESTS_UNCHANGED'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_05' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_05|TAIL'}
+      - name: Compile the portable C++20 core serially on Windows, not OpenBSD
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_06' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_06|HEAD'}
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          $build=Join-Path $env:RUNNER_TEMP 'openbsd-portability-preflight'
+          cmake -S $src -B $build -G 'Visual Studio 18 2026' -A x64 -DSWE_STD_FREE_CORE_ONLY=ON -DBUILD_TESTING=OFF
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|windows_core_configure_failed'}
+          cmake --build $build --config Release --target swe_std_free_portable_core --parallel 1
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|windows_core_build_failed'}
+          Write-Host 'OPENBSD|SERIAL|PORTABILITY_BUILD_PASS|HOST=WINDOWS|CXX20|MSVC_O2|NATIVE_OPENBSD_BUILDS=0|RELEASE=HOLD'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_06' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_06|TAIL'}
+      - name: Preserve explicit historical target HOLD
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'openbsd-serial-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_07' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_07|HEAD'}
+          Write-Host 'OPENBSD|SERIAL|COMPATIBILITY_PREFLIGHT_COMPLETE|NATIVE_OPENBSD_2_TO_8_BUILDS=UNVERIFIED|SOURCE_PINS_2_TO_7=UNPINNED|CORE=OPENBSD2|RELEASE=HOLD'
+
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-serial') -Operation 'serial_07' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|serial_07|TAIL'}
