@@ -16,6 +16,59 @@ inline constexpr word scale18 = 1000000000000000000ULL;
 inline constexpr word scale15 = 1000000000000000ULL;
 inline constexpr word guard_divisor = 1000ULL;
 
+ 
+// PR #3 authority: Pi uses a Q62 unsigned seed multiplied by 10^17,
+// followed by a right shift of 62. This is the Euler counterpart:
+// floor(12535862302449814170 * 10^17 / 2^62) = 271828182845904523.
+// It is 18 significant decimal digits (integer digits with an explicit
+// decimal point after the first digit), TRUNCATED, not rounded.
+// This path has distinct provenance from the 16-digit factorial-series
+// rounding witness below. The Q62 seed is an encoded approximation of e.
+inline constexpr word euler_q62_seed = 12535862302449814170ULL;
+inline constexpr word decimal_scale17 = 100000000000000000ULL;
+static_assert(sizeof(word) == 8u, "Q62 conversion requires 64-bit unsigned words");
+
+// Portable native C++20 64x64 -> 128 multiply, using 32-bit limbs.
+// Reconstruct the upper and lower halves, then shift the pair by 62.
+// No floating point, compiler extension, standard header or heap use.
+[[nodiscard]] constexpr word q62_decimal_portable(word seed,
+                                                    word decimal_scale) noexcept {
+    constexpr word mask32 = 0xFFFFFFFFULL;
+    const word a_lo = seed & mask32;
+    const word a_hi = seed >> 32u;
+    const word b_lo = decimal_scale & mask32;
+    const word b_hi = decimal_scale >> 32u;
+    const word cross1 = a_hi * b_lo;
+    const word cross2 = a_lo * b_hi;
+    word lower = a_lo * b_lo;
+    word upper = a_hi * b_hi + (cross1 >> 32u) + (cross2 >> 32u);
+
+    const word add1 = (cross1 & mask32) << 32u;
+    const word lower1 = lower + add1;
+    if (lower1 < lower) ++upper;
+    lower = lower1;
+
+    const word add2 = (cross2 & mask32) << 32u;
+    const word lower2 = lower + add2;
+    if (lower2 < lower) ++upper;
+    lower = lower2;
+
+    return (upper << 2u) | (lower >> 62u);
+}
+inline constexpr word portable_euler_scaled18 =
+    q62_decimal_portable(euler_q62_seed, decimal_scale17);
+
+// Exact PR #3 arithmetic pattern, when the native compiler provides
+// __uint128_t (GCC/Clang). MSVC uses the ISO C++20 limb equivalent.
+#if defined(__SIZEOF_INT128__)
+inline constexpr word euler_scaled18 = static_cast<word>(
+    ((static_cast<__uint128_t>(euler_q62_seed) * decimal_scale17) >> 62u));
+#else
+inline constexpr word euler_scaled18 = portable_euler_scaled18;
+#endif
+static_assert(euler_scaled18 == 271828182845904523ULL);
+static_assert(euler_scaled18 == portable_euler_scaled18);
+
 struct Result {
     word lower_scaled18;
     word upper_scaled18;
