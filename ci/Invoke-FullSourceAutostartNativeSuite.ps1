@@ -13,6 +13,9 @@ $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath($RepositoryRoot)
 $output=[IO.Path]::GetFullPath($OutputDirectory)
 if(-not [IO.Directory]::Exists($root)){throw 'AUTOSTART|HOLD|repository_missing'}
+if($Platform -cne 'Windows' -or -not $IsWindows){
+  throw 'AUTOSTART|HOLD|native_MSVC_only_Linux_toolchain_not_approved'
+}
 if($output.StartsWith($root+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){
   throw 'AUTOSTART|HOLD|build_output_must_be_outside_source_custody'
 }
@@ -42,9 +45,27 @@ $sourceFileCount=@(Get-ChildItem -LiteralPath $root -Recurse -File -Force).Count
 if($sourceFileCount -lt 340){throw ('AUTOSTART|HOLD|incomplete_source_tree|'+$sourceFileCount)}
 Write-Host ('AUTOSTART|SOURCE_CUSTODY_PASS|TRACKED_ARCHIVE_FILE_COUNT='+$sourceFileCount+
             '|ROOT_LICENSE=0BSD|LICENSES_AND_WORKFLOWS_PRESENT|CANONICAL_SHA256='+$observedCanonical)
+# Each native operation is bracketed by the same independent Q62/source gate.
+# The nested session is separate from the calling GitHub workflow's outer gate.
+$triforceScript=Join-Path $root 'ci/Assert-TriforceHeadTail.ps1'
+$triforceEvidence=Join-Path $output 'triforce-inner-headtail'
+function Assert-Triforce([string]$Name,[string]$Phase) {
+  $args=@('-NoLogo','-NoProfile','-NonInteractive','-File',$triforceScript,
+          '-RepositoryRoot',$root,'-EvidenceDirectory',$triforceEvidence,
+          '-Operation',('autostart_'+$Name),'-Phase',$Phase)
+  # This native executable, once built, exercises the existing TOOLONG engine.
+  $toolongTest=Join-Path $rootBuild 'Release/toolong_arithmetic_test.exe'
+  if([IO.File]::Exists($toolongTest)){
+    $args+=@('-NativeExecutable',$toolongTest)
+  }
+  & pwsh @args
+  if($LASTEXITCODE -ne 0){throw ('AUTOSTART|TRIFORCE|HOLD|'+$Name+'|'+$Phase)}
+}
 function Invoke-Checked([string]$Executable,[string[]]$Arguments,[string]$Gate){
+  Assert-Triforce $Gate 'HEAD'
   & $Executable @Arguments
   if($LASTEXITCODE -ne 0){throw ('AUTOSTART|HOLD|'+$Gate+'|EXIT='+$LASTEXITCODE)}
+  Assert-Triforce $Gate 'TAIL'
 }
 $cmake=Get-Command cmake -ErrorAction SilentlyContinue
 $ctest=Get-Command ctest -ErrorAction SilentlyContinue
@@ -79,20 +100,26 @@ $app=Join-Path $stage 'bin/pentagonal_xor'
 if($Platform -ceq 'Windows'){$app+='.exe'}
 if(-not [IO.File]::Exists($app)){throw 'AUTOSTART|HOLD|normal_main_executable_missing'}
 $args=@('0.80','0.70','0.90','0.60','0.95')
+Assert-Triforce 'normal_application' 'HEAD'
 $run=@(& $app @args)
 if($LASTEXITCODE -ne 0 -or $run.Count -ne 1 -or
    $run[0] -cne 'Pentagonal XOR: 51.72800000%'){
   throw ('AUTOSTART|HOLD|normal_application_output_mismatch|'+($run -join ';'))
 }
+Assert-Triforce 'normal_application' 'TAIL'
 Write-Host ('AUTOSTART|NORMAL_STARTUP_PASS|PLATFORM='+$Platform+'|PROGRAM='+$app+'|OUTPUT='+$run[0])
+Assert-Triforce 'typed_output_contracts' 'HEAD'
 & pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-FullSourceOutputContractsV1.ps1') -RepositoryRoot $root -InstalledBinDirectory (Join-Path $stage 'bin') -Platform $Platform
 if($LASTEXITCODE -ne 0){throw 'AUTOSTART|HOLD|typed_stdout_json_xml_contract_failed'}
+Assert-Triforce 'typed_output_contracts' 'TAIL'
 
 # New native NiteRex/Web9.X XHTML renderer is separate from the legacy CLI.
 # Windows-only source projection; unsigned, no browser or CA conformance claim.
 if($Platform -ceq 'Windows'){
+ Assert-Triforce 'niterex_web9x' 'HEAD'
  & pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-NiteRexWeb9XOutputV1.ps1') -InstalledBinDirectory (Join-Path $stage 'bin')
  if($LASTEXITCODE -ne 0){throw 'AUTOSTART|HOLD|NiteRex_Web9X_XHTML_native_contract_failed'}
+ Assert-Triforce 'niterex_web9x' 'TAIL'
 }
 $tests=@(
  'ci/Test-ReleaseSafety.ps1',
@@ -110,12 +137,18 @@ foreach($relative in $tests){
     'ci/Test-OpenBSDThailongaPostflightV1.ps1' {$argv+=@('-RepositoryRoot',$root,'-TemporaryDirectory',(Join-Path $output 'thailonga-head-tail'))}
   }
   try{
+    Assert-Triforce ('security_'+[IO.Path]::GetFileNameWithoutExtension($relative)) 'HEAD'
     & pwsh @argv
     if($LASTEXITCODE -ne 0){
       $failedGates.Add($relative+'|EXIT='+$LASTEXITCODE)
-    }else{Write-Host ('AUTOSTART|INDEPENDENT_GATE_PASS|'+$relative)}
+      break
+    }else{
+      Assert-Triforce ('security_'+[IO.Path]::GetFileNameWithoutExtension($relative)) 'TAIL'
+      Write-Host ('AUTOSTART|INDEPENDENT_GATE_PASS|'+$relative)
+    }
   }catch{
     $failedGates.Add($relative+'|ERROR='+$_.Exception.GetType().Name)
+    break
   }
 }
 if($failedGates.Count -ne 0){

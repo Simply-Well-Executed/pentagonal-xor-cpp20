@@ -92,6 +92,44 @@ struct ApprovalClaim {
            same_text(b.reviewed_head_sha,expected_head) &&
            same_text(c.reviewed_head_sha,expected_head);
 }
+// AIRGAP CENTRIX: a read-only Circle of Sanity, not a fourth triangle.
+// Three distinct lanes (source -> Q62 arithmetic -> suffix witness) feed one
+// status. This PING is a local integrity probe, not a network packet and
+// not independent proof of the underlying physical theory.
+namespace circle_of_sanity {
+struct Lane {
+    bool q62_matches;
+    bool suffix23_matches;
+};
+struct Report {
+    Lane euler;
+    Lane pi;
+    Lane intensity;
+    bool sources_are_distinct;
+    bool all_consistent;
+    bool release_authorized;
+};
+[[nodiscard]] constexpr Report inspect() noexcept {
+    const Lane a{matches(euler), suffix23(euler)};
+    const Lane b{matches(pi), suffix23(pi)};
+    const Lane c{matches(intensity), suffix23(intensity)};
+    const bool distinct =
+        euler.source_word != pi.source_word &&
+        euler.source_word != intensity.source_word &&
+        pi.source_word != intensity.source_word &&
+        euler.expected_integer != pi.expected_integer &&
+        euler.expected_integer != intensity.expected_integer &&
+        pi.expected_integer != intensity.expected_integer;
+    return {a,b,c,distinct,
+            a.q62_matches && a.suffix23_matches &&
+            b.q62_matches && b.suffix23_matches &&
+            c.q62_matches && c.suffix23_matches && distinct,
+            false};
+}
+inline constexpr Report centrix=inspect();
+static_assert(centrix.all_consistent,"AIRGAP CENTRIX: TRIFORCE HOLD");
+static_assert(!centrix.release_authorized);
+} // namespace circle_of_sanity
 // No identities, sign-offs or authenticated approvals are embedded here.
 inline constexpr bool externally_authenticated_approval = false;
 static_assert(!externally_authenticated_approval);

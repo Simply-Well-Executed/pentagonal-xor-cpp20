@@ -18,6 +18,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   coreao-airgap:
+    # PR #32 native-MSVC policy: preserve old source but do not execute Linux jobs.
+    if: ${{ false }}
     name: DASH-REPOSE defense then MagicComb then network-none YANG / YIN
     runs-on: ubuntu-24.04
     timeout-minutes: 45
@@ -77,7 +79,7 @@ jobs:
           Write-Host 'DASH-REPOSE|CUSTODY|DOCKER_NETWORK_NONE|NO_RELEASE_PROMOTION|NATIVE_OPENBSD_HOLD'
 
   native-full-source:
-    needs: coreao-airgap
+    # Native Windows validation is independent of the retired Linux stage.
     name: All root, shared and installed-consumer CTest plus normal program execution
     runs-on: windows-2025
     timeout-minutes: 80
@@ -115,16 +117,26 @@ jobs:
       - name: PEEK Warcraft III-inspired arena harness syntax and negative preflight
         shell: pwsh
         run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'autostart-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-fullsource') -Operation 'fullsource_06' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|fullsource_06|HEAD'}
           $ErrorActionPreference='Stop'
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'autostart-root.txt'))
           & pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Test-PeekGateStaticV1.ps1') -RepositoryRoot $root
           if($LASTEXITCODE -ne 0){throw 'PEEK|HOLD|invalid_trial_harness_cannot_publish'}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-fullsource') -Operation 'fullsource_06' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|fullsource_06|TAIL'}
       - name: Build complete native targets, execute root/shared/consumer CTest and normal CLI
         shell: pwsh
         run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'autostart-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-fullsource') -Operation 'fullsource_07' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|fullsource_07|HEAD'}
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'autostart-root.txt'))
           & pwsh -NoLogo -NoProfile -File (Join-Path $root 'ci/Invoke-FullSourceAutostartNativeSuite.ps1') -RepositoryRoot $root -OutputDirectory (Join-Path $env:RUNNER_TEMP 'autostart-results') -Platform Windows
           if($LASTEXITCODE -ne 0){throw 'AUTOSTART|HOLD|native_CTest_or_program_start_failed'}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-fullsource') -Operation 'fullsource_07' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|fullsource_07|TAIL'}
       - name: Preserve separate release-policy and unsupported Android testing HOLD
         if: always()
         shell: pwsh
@@ -136,6 +148,7 @@ jobs:
     name: Full-source Docker tests plus pinned autostart / ${{ matrix.profile }}
     needs: native-full-source
     if: >-
+      false &&
       github.event_name != 'pull_request' &&
       vars.SWE_AUTOSTART_BASES_APPROVED == 'true' &&
       vars.SWE_AUTOSTART_ALL_TESTS_ATTESTED == 'true' &&
