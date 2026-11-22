@@ -3,6 +3,7 @@
 // Tests must be compiled with C++20 -O2; keep exact values separate from display.
 #include "../shared/gammagamma.hpp"
 #include "../shared/pi_precision.hpp"
+#include "../shared/euler_pi_inverse_square.hpp"
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
@@ -14,6 +15,11 @@
 int main() {
     using namespace swe;
     static_assert(pi_precision::pi_digits.size()==18u);
+    // Both source constants retain all 18 digits; no floating-point coercion.
+    static_assert(inverse_square::euler_digits18 == 271828182845904523ULL);
+    static_assert(inverse_square::euler_series_prefix() == inverse_square::euler_digits18);
+    static_assert(inverse_square::pi_digits18 == gammagamma::pi_integer);
+    static_assert(pi_precision::pi_digits == "314159265358979323");
     static_assert(pi_precision::display_digits==16);
     static_assert(gammagamma::pidi_mod4==3u);
     static_assert(gammagamma::pi_integer==314159265358979323ULL);
