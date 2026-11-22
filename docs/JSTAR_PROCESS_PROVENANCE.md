@@ -71,3 +71,14 @@ JSTAR record is still meaningful evidence; it never becomes PASS.
 
 All release, licensing and human-approval requirements remain unchanged:
 **RELEASE=HOLD; chosen, never assumed.**
+
+
+## PR #79 and Atomix source safety backport
+
+The post-review adaptation from [intro-to-codeql PR #79](https://github.com/skills/introduction-to-codeql/pull/79) now shares an external-evidence boundary guard between the Q62 gate, JSTAR, Atomix and full-source autostart. The guard rejects the repository root itself, descendants and existing reparse-point ancestors (including an external junction back into the source directory). This is a preflight safety check; it is not a race-free filesystem sandbox.
+
+A native Windows negative test creates a temporary junction *outside* the source, checks its attempted output is rejected and removes only the junction itself. The TRIFORCE pipeline runs this regression and the isolated Atomix Unicode/SARIF one-bit checks before executing a compiler build. Each new operation has a paired Q62 HEAD and TAIL, and no result is interpreted as human approval.
+
+JSTAR now records a HOLD when the build-root process is absent from sampled observations, rather than accepting unrelated host samples. Its process observer avoids PowerShell's reserved PID variable, and the exception cleanup distinguishes an unstarted process from a started one, using bounded exit waiting and output-drain error reporting. Identity read failures from all observed build paths cause HOLD. Critical executable admission requires an exact approved Visual Studio installation root (or the exact Program Files CMake path), Valid Authenticode and an explicitly scoped signer subject. These signer patterns were selected from observed signed runner records for CMake and MSBuild; certificate thumbprints are not independently pre-pinned, so this is not complete binary authenticity proof.
+
+The [backport review record](ATOMIX_PR34_BACKPORT.md) holds the scope, protocol differences, code links and independent failure conditions. Failed compilation, missing samples, path uncertainty or unreviewed certificates remain evidence and HOLD, not automatic PASS or an excuse to mutate source.
