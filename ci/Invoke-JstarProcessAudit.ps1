@@ -66,7 +66,7 @@ $seen=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $observed=[Collections.Generic.List[object]]::new()
 $errors=[Collections.Generic.List[string]]::new()
 $rootPid=-1
-$lineage=[Collections.Generic.HashSet[int]]::new()
+$rootBirthUtc=[DateTimeOffset]::MinValue
 $exitCode=-999
 $startedUtc=[DateTimeOffset]::UtcNow.ToString('o')
 $psi=[Diagnostics.ProcessStartInfo]::new()
@@ -86,40 +86,70 @@ $stdErrStream=[IO.File]::Open($stderrPath,[IO.FileMode]::CreateNew,
 try {
     if(-not $proc.Start()){throw 'JSTAR|HOLD|cmake_process_not_started'}
     $rootPid=$proc.Id
-    [void]$lineage.Add($rootPid)
+    $rootBirthUtc=([DateTimeOffset]$proc.StartTime).ToUniversalTime()
     $stdoutTask=$proc.StandardOutput.BaseStream.CopyToAsync($stdOutStream)
     $stderrTask=$proc.StandardError.BaseStream.CopyToAsync($stdErrStream)
     do {
-        # Global snapshot of ONLY named compiler/console tools, not other
-        # runner applications or their potentially sensitive command lines.
+        # Enumerate system PIDs for relationship tests but RECORD only
+        # sampled build descendants and selected named tools.
         $snapshot=@(Get-CimInstance -ClassName Win32_Process -ErrorAction Stop)
-        # Derive the observed ancestry from parent PIDs, including tool helpers
-        # with names outside the expected toolchain. This is sampled evidence.
+        $current=@{}
+        foreach($p in $snapshot){$current[[int]$p.ProcessId]=$p}
+        # Build ancestry from *this snapshot only*. A stale PID retained
+        # across samples can otherwise turn unrelated services into descendants.
+        $active=[Collections.Generic.HashSet[int]]::new()
+        if($current.ContainsKey($rootPid) -and
+           $null -ne $current[$rootPid].CreationDate){
+            $rootObserved=([DateTimeOffset]$current[$rootPid].CreationDate).ToUniversalTime()
+            if([Math]::Abs(($rootObserved-$rootBirthUtc).TotalSeconds) -le 5){
+                [void]$active.Add($rootPid)
+            }
+        }
         $expanded=$true
         while($expanded){
             $expanded=$false
             foreach($p in $snapshot){
-                if($lineage.Contains([int]$p.ParentProcessId) -and
-                   $lineage.Add([int]$p.ProcessId)){$expanded=$true}
+                $parentId=[int]$p.ParentProcessId
+                if(-not $active.Contains($parentId) -or
+                   -not $current.ContainsKey($parentId) -or
+                   $null -eq $current[$parentId].CreationDate -or
+                   $null -eq $p.CreationDate){continue}
+                $parentBirth=([DateTimeOffset]$current[$parentId].CreationDate).ToUniversalTime()
+                $childBirth=([DateTimeOffset]$p.CreationDate).ToUniversalTime()
+                if($childBirth -ge $parentBirth -and $active.Add([int]$p.ProcessId)){
+                    $expanded=$true
+                }
             }
         }
         foreach($p in $snapshot){
+            $pid=[int]$p.ProcessId
             if(-not $watch.Contains([string]$p.Name) -and
-               -not $lineage.Contains([int]$p.ProcessId)){continue}
+               -not $active.Contains($pid)){continue}
             $birth=if($null -ne $p.CreationDate){
                 ([DateTimeOffset]$p.CreationDate).ToString('o')
             }else{'UNAVAILABLE'}
-            $key=([string]$p.ProcessId)+'|'+$birth+'|'+[string]$p.Name
+            $key=([string]$pid)+'|'+$birth+'|'+[string]$p.Name
             if(-not $seen.Add($key)){continue}
-            if($seen.Count -gt 256){throw 'JSTAR|HOLD|process_audit_record_limit'}
+            if($seen.Count -gt 4096){throw 'JSTAR|HOLD|process_audit_record_limit'}
+            $scope=if($pid -eq $rootPid -and $active.Contains($pid)){
+                'build_root'
+            }elseif($active.Contains($pid)){
+                'build_descendant'
+            }else{'host_sample'}
+            $observedPath=[string]$p.ExecutablePath
+            if($scope -ceq 'build_root' -and
+               [string]::IsNullOrWhiteSpace($observedPath)){
+                # Exact binary was started via ProcessStartInfo by this script.
+                $observedPath=$exe
+            }
             $observed.Add([pscustomobject]@{
-                pid=[int]$p.ProcessId
+                pid=$pid
                 parent_pid=[int]$p.ParentProcessId
                 name=[string]$p.Name
                 created_utc=$birth
-                executable_path=[string]$p.ExecutablePath
+                executable_path=$observedPath
                 command_line=[string]$p.CommandLine
-                scope=if([int]$p.ProcessId -eq $rootPid){'build_root'}elseif($lineage.Contains([int]$p.ProcessId)){'build_descendant'}else{'host_sample'}
+                scope=$scope
             })
         }
     }while(-not $proc.WaitForExit(250))
@@ -198,7 +228,7 @@ $report=[ordered]@{
     msbuild_node_reuse='disabled_env_and_/nr:false'
     msbuild_max_workers=1
     sample_interval_ms=250
-    scope='sampled_build_descendants_and_named_host_tools; not a complete kernel event trace'
+    scope='same_snapshot_parent_child_birth_checked_descendants_and_named_host_tools; not a complete kernel event trace'
     process_count=$observed.Count
     observed_processes=@($observed.ToArray())
     executable_identities=@($identities.ToArray())
