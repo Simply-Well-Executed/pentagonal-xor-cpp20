@@ -19,6 +19,10 @@ int main() {
     static_assert(inverse_square::euler_digits18 == 271828182845904523ULL);
     static_assert(inverse_square::euler_series_prefix() == inverse_square::euler_digits18);
     static_assert(inverse_square::pi_digits18 == gammagamma::pi_integer);
+    // SigmaPi substitution is a symbolic candidate, never a hidden 1/pi.
+    static_assert(inverse_square::sigmapi_exploratory::I.state ==
+                  inverse_square::sigmapi_exploratory::State::symbolic_only);
+    static_assert(!inverse_square::sigmapi_exploratory::I.numerically_defined);
     static_assert(pi_precision::pi_digits == "314159265358979323");
     static_assert(pi_precision::display_digits==16);
     static_assert(gammagamma::pidi_mod4==3u);
