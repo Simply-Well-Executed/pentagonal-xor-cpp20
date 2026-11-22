@@ -1,5 +1,20 @@
 cmake_minimum_required(VERSION 3.23)
+# PR #32 current compiler policy: fail before project() for named Clang
+# drivers and native Apple/OpenBSD hosts without an approved alternative.
+# Compiler identity is checked again after detection to catch renamed binaries.
+if(APPLE OR CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin" OR
+   CMAKE_HOST_SYSTEM_NAME STREQUAL "OpenBSD")
+  message(FATAL_ERROR "TOOLCHAIN|HOLD|native_apple_openbsd_no_approved_nonclang_compiler")
+endif()
+if((DEFINED CMAKE_CXX_COMPILER AND CMAKE_CXX_COMPILER MATCHES "[Cc][Ll][Aa][Nn][Gg]") OR
+   (DEFINED ENV{CXX} AND "$ENV{CXX}" MATCHES "[Cc][Ll][Aa][Nn][Gg]"))
+  message(FATAL_ERROR "TOOLCHAIN|HOLD|clang_compiler_prohibited")
+endif()
 project(PentagonalXOR VERSION 0.2.0 LANGUAGES CXX)
+# A renamed Clang/AppleClang driver must not bypass the path gate.
+if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
+  message(FATAL_ERROR "TOOLCHAIN|HOLD|clang_family_compiler_prohibited")
+endif()
 
 # ISO C++20, strict O2 optimization (no O0/O3).
 # Historical O3 evidence remains in Git history, never relabeled.
@@ -7,14 +22,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
-if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD")
-  if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
-     NOT CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "22.1.6")
-    message(FATAL_ERROR
-      "OPENBSD|HOLD|expected_base_clang_22_1_6|source_and_license_review_required")
-  endif()
-  message(STATUS
-    "OPENBSD|8.0|CLANG_VERSION_MATCH_ONLY|SOURCE_PIN_IN_ci/OPENBSD_80_SOURCE_LOCK.tsv|STABLE_PATCH_AND_LICENSE_HOLD")
+if(CMAKE_SYSTEM_NAME STREQUAL "OpenBSD" OR APPLE)
+  message(FATAL_ERROR "TOOLCHAIN|HOLD|no_approved_native_compiler_for_target")
 endif()
 foreach(_config DEBUG RELEASE RELWITHDEBINFO MINSIZEREL)
   if(MSVC)
