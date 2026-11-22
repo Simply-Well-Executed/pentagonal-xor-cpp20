@@ -224,9 +224,9 @@ function Test-ExpectedToolIdentity([string]$toolPath,[string]$fileName,
   if($fileName -ieq 'cmake.exe'){
     return ([string]::Equals($toolPath,$exe,
          [StringComparison]::OrdinalIgnoreCase) -and
-         $signer -match '^CN=Kitware, Inc\.(,|$)')
+         $signer -match '^CN="Kitware, Inc\.", O="Kitware, Inc\."(,|$)')
   }
-  if($signer -notmatch '^CN=Microsoft Corporation(,|$)'){return $false}
+  if($signer -notmatch '^CN=(Microsoft Corporation|\.NET), O=Microsoft Corporation(,|$)'){return $false}
   foreach($installRoot in $vsRoots){
     $prefix=$installRoot+[IO.Path]::DirectorySeparatorChar
     if($toolPath.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){
