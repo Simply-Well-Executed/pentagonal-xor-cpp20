@@ -32,6 +32,7 @@ $required=@(
  'ci/triforce/CMakeLists.txt',
  'ci/Assert-TriforceHeadTail.ps1',
  'ci/Invoke-TriforcePipeline.ps1',
+ 'ci/Invoke-JstarProcessAudit.ps1',
  'ci/Invoke-FullSourceAutostartNativeSuite.ps1',
  '.github/workflows/triforce-headtail.yml',
  '.github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml',
