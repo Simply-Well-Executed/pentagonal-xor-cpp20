@@ -6,6 +6,7 @@
 #include "../shared/right_triangle_f123_original.hpp"
 #include "../shared/f123_eighth_fold_experiment.hpp"
 #include "../shared/sigma_e_redaxualchoice.hpp"
+#include "../shared/sigma_f_redaxualchoice.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -340,6 +341,31 @@ constexpr unsigned long long sigma_e_u128 =
         static_cast<__uint128_t>(Q)) / 256ULL);
 static_assert(sigma_e_u128 == esigma.sigma_q62);
 #endif
+
+
+// SIGMA-F-REDAXUALCHOICE-PR34-007: independent CARBON-COPY F lane.
+// F is F1+F2+F3, not the eighth-fold E or SigmaE.
+namespace sf=swe::sigma_f_redaxualchoice;
+static_assert(sf::Q == Q);
+static_assert(sf::X==f123::x && sf::Y==f123::y && sf::Z==f123::z);
+static_assert(sf::OBLIQUE==f123::oblique_double_area);
+static_assert(sf::F1==f123::F1_Q62 && sf::F2==f123::F2_Q62 &&
+              sf::F3==f123::F3_Q62);
+static_assert(sf::BASE==f123::BASE_Q62 && sf::TOTAL==f123::TOTAL_Q62);
+static_assert(sf::SIGMA_F123==f123::LATERAL_Q62);
+static_assert(sf::F==4035225266123964416ULL);
+static_assert(sf::R_NEG3==2017612633061982208ULL);
+static_assert(sf::R_NEG2==sf::R_NEG3);
+static_assert(sf::R_NEG1==sf::R_NEG3);
+static_assert(sf::R_ZERO==sf::R_NEG3);
+static_assert(sf::R_POS1==sf::R_NEG3);
+static_assert(sf::R_POS2==sf::R_NEG3);
+static_assert(sf::R_POS3==sf::R_NEG3);
+static_assert(sf::SIGMA_REDAXUALCHOICE==14123288431433875456ULL);
+static_assert(fa::decimal17({sf::SIGMA_REDAXUALCHOICE,true})==
+              306250000000000000ULL);
+static_assert(sf::SIGMA_REDAXUALCHOICE!=esigma.sigma_q62);
+static_assert(sf::TOTAL==Q && sf::BASE+sf::F==sf::TOTAL);
 
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};

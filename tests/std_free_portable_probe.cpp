@@ -7,6 +7,7 @@
 #include "../shared/right_triangle_f123_original.hpp"
 #include "../shared/f123_eighth_fold_experiment.hpp"
 #include "../shared/sigma_e_redaxualchoice.hpp"
+#include "../shared/sigma_f_redaxualchoice.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -76,6 +77,18 @@ static_assert(sigma_e_probe.valid &&
 static_assert(sigma_e_probe.sigma_q62 ==
               21ULL*ai::unit/256ULL);
 static_assert(!sigma_e_probe.geometric_tip_verified);
+
+// Separate SigmaF carbon-copy, alongside (not over) SigmaE.
+namespace sigma_f_core=swe::sigma_f_redaxualchoice;
+static_assert(sigma_f_core::BASE ==
+              swe::right_triangle_f123_original::BASE_Q62);
+static_assert(sigma_f_core::SIGMA_F123 ==
+              swe::right_triangle_f123_original::LATERAL_Q62);
+static_assert(sigma_f_core::SIGMA_REDAXUALCHOICE ==
+              14123288431433875456ULL);
+static_assert(sigma_f_core::SIGMA_REDAXUALCHOICE !=
+              sigma_e_probe.sigma_q62);
+static_assert(sigma_f_core::TOTAL == ai::unit);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
