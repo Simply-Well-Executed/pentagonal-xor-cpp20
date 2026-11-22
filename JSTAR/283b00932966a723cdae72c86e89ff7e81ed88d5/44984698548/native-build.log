@@ -1,0 +1,7 @@
+MSBuild version 18.12.2-1.26514.2+04f6ca984 for .NET Framework
+
+  1>Checking Build System
+  Building Custom Rule D:/a/_temp/jstar-source/Simply-Well-Executed-pentagonal-xor-cpp20-283b009/ci/triforce/CMakeLists.txt
+  triforce_native_gate_test.cpp
+  triforce_native_gate.vcxproj -> D:\a\_temp\jstar-evidence\native\Release\triforce_native_gate.exe
+  Building Custom Rule D:/a/_temp/jstar-source/Simply-Well-Executed-pentagonal-xor-cpp20-283b009/ci/triforce/CMakeLists.txt
