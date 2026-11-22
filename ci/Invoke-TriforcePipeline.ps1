@@ -24,7 +24,7 @@ function Invoke-Gate([string]$op,[string]$phase) {
             '-Operation',$op,'-Phase',$phase)
     if([IO.File]::Exists($nativeExe)){
         $args+=@('-NativeExecutable',$nativeExe)
-    }elseif($op -notin @('configure-native','build-native')){
+    }elseif($op -notin @('configure-native','build-native','guard-external-evidence','atomix-half-phiping')){
         throw ('TRIFORCE|HOLD|native_test_not_built_before_stage|'+$op)
     }
     & pwsh @args
@@ -51,14 +51,6 @@ Invoke-Stage 'configure-native' {
     & cmake -S (Join-Path $root 'ci/triforce') -B $nativeBuild `
       -G 'Visual Studio 18 2026' -A x64
 }
-Invoke-Stage 'build-native' {
-    & $processAuditScript -RepositoryRoot $root -BuildDirectory $nativeBuild `
-      -EvidenceDirectory $processEvidence -Operation 'build_native' `
-      -Targets @('triforce_native_gate')
-}
-Invoke-Stage 'execute-native' {
-    & $nativeExe
-}
 # Backported from bookstore PR #1 and fixed after upstream PR #79 findings.
 # These stages are bracketed by the original authoritative TRIFORCE gate.
 Invoke-Stage 'guard-external-evidence' {
@@ -67,6 +59,14 @@ Invoke-Stage 'guard-external-evidence' {
 Invoke-Stage 'atomix-half-phiping' {
     $atomixDir=Join-Path $evidence ('atomix-'+[Guid]::NewGuid().ToString('N'))
     & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-AtomixHalfPhiping.ps1') -RepositoryRoot $root -EvidenceDirectory $atomixDir
+}
+Invoke-Stage 'build-native' {
+    & $processAuditScript -RepositoryRoot $root -BuildDirectory $nativeBuild `
+      -EvidenceDirectory $processEvidence -Operation 'build_native' `
+      -Targets @('triforce_native_gate')
+}
+Invoke-Stage 'execute-native' {
+    & $nativeExe
 }
 
 Invoke-Stage 'configure-root' {
