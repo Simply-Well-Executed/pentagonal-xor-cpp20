@@ -29,6 +29,7 @@ $required=@(
  'shared/euler_pi_inverse_square.hpp',
  'shared/sigma_form_geometry.hpp',
  'shared/sigma_form_area_q62.hpp',
+ 'shared/right_triangle_f123_original.hpp',
  'shared/gammagamma.hpp',
  'tests/triforce_native_gate_test.cpp',
  'tests/toolong_arithmetic_test.cpp',
@@ -51,6 +52,7 @@ $required=@(
  'tests/consumer/CMakeLists.txt',
  'docs/TOOLONG_TRIFORCE_Q62.md',
  'docs/SIGMA_FORM_GEOMETRY.md',
+ 'docs/F123_ORIGINAL_BASELINE.md',
  'docs/ATOMIX_PR34_BACKPORT.md'
 )
 $header=Join-Path $root 'shared/toolong_q62_core.hpp'

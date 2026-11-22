@@ -4,6 +4,7 @@
 #include "../shared/euler_pi_inverse_square.hpp"
 #include "../shared/sigma_form_geometry.hpp"
 #include "../shared/sigma_form_area_q62.hpp"
+#include "../shared/right_triangle_f123_original.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -51,6 +52,10 @@ constexpr auto probe_f3=ai::right_triangle_f3_rotated_90(
     ai::unit/2ULL,ai::unit/2ULL,ai::unit,3ULL*ai::unit/4ULL);
 static_assert(probe_f3.valid && probe_f3.area_preserved);
 static_assert(probe_f3.oblique_face.value==3ULL*ai::unit/8ULL);
+static_assert(swe::right_triangle_f123_original::F3_Q62 ==
+              probe_f3.oblique_face.value);
+static_assert(swe::right_triangle_f123_original::TOTAL_Q62 ==
+              right_tri_core.total.value);
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
 static_assert(swe::sigma_form::inverse_square_intensity(

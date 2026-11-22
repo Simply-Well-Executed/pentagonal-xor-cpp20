@@ -3,6 +3,7 @@
 #include "../shared/toolong_q62.hpp"
 #include "../shared/sigma_form_geometry.hpp"
 #include "../shared/sigma_form_area_q62.hpp"
+#include "../shared/right_triangle_f123_original.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -243,6 +244,20 @@ static_assert(!fa::right_triangle_f3_rotated_90(
     Q/2ULL,Q/2ULL,Q,Q/2ULL).valid);
 static_assert(!fa::right_triangle_f3_rotated_90(
     0ULL,Q/2ULL,Q,3ULL*Q/4ULL).valid);
+// Immutable-by-convention F1/F2/F3 baseline, separately from any folds.
+// Frozen values were captured at original source commit
+// 65a86d5ecd474efb41a7694d52b656e43636ba3c.
+namespace f123 = swe::right_triangle_f123_original;
+static_assert(f123::F1_Q62 == triangle_pyramid.face_xz.value);
+static_assert(f123::F2_Q62 == triangle_pyramid.face_yz.value);
+static_assert(f123::F3_Q62 == triangle_pyramid.face_oblique.value);
+static_assert(f123::F3_Q62 == rotated_f3.oblique_face.value);
+static_assert(f123::BASE_Q62 == triangle_pyramid.base.value);
+static_assert(f123::LATERAL_Q62 == triangle_pyramid.lateral.value);
+static_assert(f123::TOTAL_Q62 == triangle_pyramid.total.value);
+static_assert(f123::F1_Q62 + f123::F2_Q62 + f123::F3_Q62 +
+              f123::BASE_Q62 == f123::TOTAL_Q62);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};
