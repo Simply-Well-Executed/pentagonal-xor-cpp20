@@ -30,6 +30,7 @@ $required=@(
  'shared/sigma_form_geometry.hpp',
  'shared/sigma_form_area_q62.hpp',
  'shared/right_triangle_f123_original.hpp',
+ 'shared/f123_eighth_fold_experiment.hpp',
  'shared/gammagamma.hpp',
  'tests/triforce_native_gate_test.cpp',
  'tests/toolong_arithmetic_test.cpp',
@@ -53,6 +54,7 @@ $required=@(
  'docs/TOOLONG_TRIFORCE_Q62.md',
  'docs/SIGMA_FORM_GEOMETRY.md',
  'docs/F123_ORIGINAL_BASELINE.md',
+ 'docs/F123_EIGHTH_FOLD_EXPERIMENT.md',
  'docs/ATOMIX_PR34_BACKPORT.md'
 )
 $header=Join-Path $root 'shared/toolong_q62_core.hpp'

@@ -5,6 +5,7 @@
 #include "../shared/sigma_form_geometry.hpp"
 #include "../shared/sigma_form_area_q62.hpp"
 #include "../shared/right_triangle_f123_original.hpp"
+#include "../shared/f123_eighth_fold_experiment.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -56,6 +57,16 @@ static_assert(swe::right_triangle_f123_original::F3_Q62 ==
               probe_f3.oblique_face.value);
 static_assert(swe::right_triangle_f123_original::TOTAL_Q62 ==
               right_tri_core.total.value);
+// F123 experimental 8-denominator path compiles without STL or
+// any additional source dependencies beyond the original two headers.
+constexpr auto eighth_probe=swe::f123_eighth_fold_experiment::calculate(probe_f3);
+static_assert(eighth_probe.valid);
+static_assert(eighth_probe.f2_over_2_q62==
+              eighth_probe.four_times_f2_over_8_q62);
+static_assert(eighth_probe.final_egress_q62==
+              3ULL*ai::unit/128ULL);
+static_assert(!eighth_probe.geometric_tip_verified);
+
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
 static_assert(swe::sigma_form::inverse_square_intensity(

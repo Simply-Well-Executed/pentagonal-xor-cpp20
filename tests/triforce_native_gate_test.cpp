@@ -4,6 +4,7 @@
 #include "../shared/sigma_form_geometry.hpp"
 #include "../shared/sigma_form_area_q62.hpp"
 #include "../shared/right_triangle_f123_original.hpp"
+#include "../shared/f123_eighth_fold_experiment.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -257,6 +258,40 @@ static_assert(f123::LATERAL_Q62 == triangle_pyramid.lateral.value);
 static_assert(f123::TOTAL_Q62 == triangle_pyramid.total.value);
 static_assert(f123::F1_Q62 + f123::F2_Q62 + f123::F3_Q62 +
               f123::BASE_Q62 == f123::TOTAL_Q62);
+
+
+// F123-EIGHTH-FOLD-PR34-005: symbolic F3-labelled cross slot, with
+// F1 left of the norm and F2/2 = 2F2/4 = 4F2/8.
+// The original frozen F1/F2/F3 source is NOT rewritten.
+namespace ef = swe::f123_eighth_fold_experiment;
+constexpr auto eighth=ef::calculate(rotated_f3);
+static_assert(eighth.valid && eighth.fraction_equivalent);
+static_assert(eighth.original_reference_unchanged);
+static_assert(!eighth.geometric_tip_verified);
+static_assert(eighth.f1_q62==f123::F1_Q62);
+static_assert(eighth.f2_q62==f123::F2_Q62);
+static_assert(eighth.frozen_f3_q62==f123::F3_Q62);
+static_assert(eighth.gap.valid &&
+              eighth.gap.norm_q62==2ULL*f123::F3_Q62);
+static_assert(eighth.f2_over_2_q62==Q/8ULL);
+static_assert(eighth.twice_f2_over_4_q62==Q/8ULL);
+static_assert(eighth.four_times_f2_over_8_q62==Q/8ULL);
+static_assert(eighth.first_multiplication_q62==3ULL*Q/16ULL);
+static_assert(eighth.final_egress_q62==3ULL*Q/128ULL);
+static_assert(eighth.final_egress_q62==108086391056891904ULL);
+static_assert(fa::decimal17(
+    {eighth.final_egress_q62,true})==2343750000000000ULL);
+static_assert(!ef::calculate(fa::right_triangle_f3_rotated_90(
+    Q/2ULL,Q/2ULL,Q,Q/2ULL)).valid);
+#if defined(__SIZEOF_INT128__) && !defined(_MSC_VER)
+constexpr unsigned long long eighth_u128_expected =
+    static_cast<unsigned long long>(
+        (static_cast<__uint128_t>(
+             (static_cast<__uint128_t>(f123::F1_Q62) *
+              (2ULL*f123::F3_Q62)) >> 62u) *
+         (4ULL*f123::F2_Q62/8ULL)) >> 62u);
+static_assert(eighth_u128_expected==eighth.final_egress_q62);
+#endif
 
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
