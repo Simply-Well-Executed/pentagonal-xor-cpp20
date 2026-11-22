@@ -49,6 +49,10 @@ Write-Host ('AUTOSTART|SOURCE_CUSTODY_PASS|TRACKED_ARCHIVE_FILE_COUNT='+$sourceF
 # The nested session is separate from the calling GitHub workflow's outer gate.
 $triforceScript=Join-Path $root 'ci/Assert-TriforceHeadTail.ps1'
 $triforceEvidence=Join-Path $output 'triforce-inner-headtail'
+$processAuditScript=Join-Path $root 'ci/Invoke-JstarProcessAudit.ps1'
+$processEvidence=Join-Path $output 'jstar-process'
+$env:MSBUILDDISABLENODEREUSE='1'
+$env:DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER='1'
 function Assert-Triforce([string]$Name,[string]$Phase) {
   $args=@('-NoLogo','-NoProfile','-NonInteractive','-File',$triforceScript,
           '-RepositoryRoot',$root,'-EvidenceDirectory',$triforceEvidence,
@@ -63,9 +67,19 @@ function Assert-Triforce([string]$Name,[string]$Phase) {
 }
 function Invoke-Checked([string]$Executable,[string[]]$Arguments,[string]$Gate){
   Assert-Triforce $Gate 'HEAD'
-  & $Executable @Arguments
-  if($LASTEXITCODE -ne 0){throw ('AUTOSTART|HOLD|'+$Gate+'|EXIT='+$LASTEXITCODE)}
-  Assert-Triforce $Gate 'TAIL'
+  try {
+    if($Arguments.Count -gt 1 -and $Arguments[0] -ceq '--build') {
+      # Route all MSVC build stages through the signed-process custody gate.
+      # The wrapper pins a single worker and disables retained MSBuild nodes.
+      & $processAuditScript -RepositoryRoot $root -BuildDirectory $Arguments[1] `
+        -EvidenceDirectory $processEvidence -Operation $Gate
+    }else{
+      & $Executable @Arguments
+      if($LASTEXITCODE -ne 0){throw ('AUTOSTART|HOLD|'+$Gate+'|EXIT='+$LASTEXITCODE)}
+    }
+  }finally{
+    Assert-Triforce $Gate 'TAIL'
+  }
 }
 $cmake=Get-Command cmake -ErrorAction SilentlyContinue
 $ctest=Get-Command ctest -ErrorAction SilentlyContinue
@@ -81,20 +95,20 @@ $config=@('-S',$root,'-B',$rootBuild,'-DBUILD_TESTING=ON','-DSWE_STD_FREE_CORE_O
 if($Platform -ceq 'Windows'){$config+=@('-G','Visual Studio 18 2026','-A','x64')}
 else{$config+=@('-DCMAKE_BUILD_TYPE=Release')}
 Invoke-Checked $cmake.Source $config 'cmake_root_configure'
-Invoke-Checked $cmake.Source @('--build',$rootBuild,'--config','Release','--parallel','2') 'cmake_root_full_build'
+Invoke-Checked $cmake.Source @('--build',$rootBuild,'--config','Release','--parallel','1') 'cmake_root_full_build'
 Invoke-Checked $ctest.Source @('--test-dir',$rootBuild,'-C','Release','--output-on-failure','--no-tests=error') 'ctest_root_all'
 $sharedConfig=@('-S',(Join-Path $root 'shared'),'-B',$sharedBuild)
 if($Platform -ceq 'Windows'){$sharedConfig+=@('-G','Visual Studio 18 2026','-A','x64')}
 else{$sharedConfig+=@('-DCMAKE_BUILD_TYPE=Release')}
 Invoke-Checked $cmake.Source $sharedConfig 'cmake_shared_configure'
-Invoke-Checked $cmake.Source @('--build',$sharedBuild,'--config','Release','--parallel','2') 'cmake_shared_full_build'
+Invoke-Checked $cmake.Source @('--build',$sharedBuild,'--config','Release','--parallel','1') 'cmake_shared_full_build'
 Invoke-Checked $ctest.Source @('--test-dir',$sharedBuild,'-C','Release','--output-on-failure','--no-tests=error') 'ctest_shared_all'
 Invoke-Checked $cmake.Source @('--install',$rootBuild,'--config','Release','--prefix',$stage) 'cmake_install'
 $consumerConfig=@('-S',(Join-Path $root 'tests/consumer'),'-B',$consumerBuild,('-DSWE_AUDIT_PREFIX='+$stage))
 if($Platform -ceq 'Windows'){$consumerConfig+=@('-G','Visual Studio 18 2026','-A','x64')}
 else{$consumerConfig+=@('-DCMAKE_BUILD_TYPE=Release')}
 Invoke-Checked $cmake.Source $consumerConfig 'cmake_consumer_configure'
-Invoke-Checked $cmake.Source @('--build',$consumerBuild,'--config','Release','--parallel','2') 'cmake_consumer_full_build'
+Invoke-Checked $cmake.Source @('--build',$consumerBuild,'--config','Release','--parallel','1') 'cmake_consumer_full_build'
 Invoke-Checked $ctest.Source @('--test-dir',$consumerBuild,'-C','Release','--output-on-failure','--no-tests=error') 'ctest_consumer_all'
 $app=Join-Path $stage 'bin/pentagonal_xor'
 if($Platform -ceq 'Windows'){$app+='.exe'}
