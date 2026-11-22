@@ -136,6 +136,143 @@ jobs:
             $runResult.javac_raw_vcxproj_exit=Capture 'javac-literal-vcxproj' $javac @($project)
           }
           Gate 'jstar_oracle' 'TAIL'
+          # JSTAR ROT13 diagnostic feedback: raw byte IO, no source edits.
+          # A compiler may ignore stdin; never label this a successful C++ compile.
+          Gate 'jstar_rot13_io' 'HEAD'
+          $ioDir=Join-Path $evidence 'java-io'
+          [void][IO.Directory]::CreateDirectory($ioDir)
+          function IOHash([byte[]]$inputBytes) {
+            return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($inputBytes)).ToLowerInvariant()
+          }
+          function Invoke-JavacByteIO([string]$tag,[byte[]]$stdinBytes) {
+            $psi=[Diagnostics.ProcessStartInfo]::new()
+            $psi.FileName=$javac
+            [void]$psi.ArgumentList.Add($project)
+            $psi.UseShellExecute=$false
+            $psi.CreateNoWindow=$true
+            $psi.RedirectStandardInput=$true
+            $psi.RedirectStandardOutput=$true
+            $psi.RedirectStandardError=$true
+            $proc=[Diagnostics.Process]::new()
+            $proc.StartInfo=$psi
+            $outStream=[IO.MemoryStream]::new()
+            $errStream=[IO.MemoryStream]::new()
+            $stdinError=''
+            try {
+              if(-not $proc.Start()){throw 'JSTAR|HOLD|javac_process_not_started'}
+              $stdoutTask=$proc.StandardOutput.BaseStream.CopyToAsync($outStream)
+              $stderrTask=$proc.StandardError.BaseStream.CopyToAsync($errStream)
+              try {
+                if($stdinBytes.Length -gt 0) {
+                  $proc.StandardInput.BaseStream.Write($stdinBytes,0,$stdinBytes.Length)
+                  $proc.StandardInput.BaseStream.Flush()
+                }
+              } catch {
+                # javac may not read stdin; retain this evidence instead of assuming consumption.
+                $stdinError=($_|Out-String)
+              } finally {
+                try{$proc.StandardInput.Close()}catch{}
+              }
+              if(-not $proc.WaitForExit(120000)) {
+                $proc.Kill($true)
+                throw 'JSTAR|HOLD|javac_120s_timeout'
+              }
+              $stdoutTask.GetAwaiter().GetResult()
+              $stderrTask.GetAwaiter().GetResult()
+              $rawStdout=$outStream.ToArray()
+              $rawStderr=$errStream.ToArray()
+              if($rawStdout.Length -gt 2097152 -or $rawStderr.Length -gt 2097152) {
+                throw 'JSTAR|HOLD|javac_io_exceeds_2MiB_per_channel'
+              }
+              [IO.File]::WriteAllBytes((Join-Path $ioDir ($tag+'-stdin.bin')),$stdinBytes)
+              [IO.File]::WriteAllBytes((Join-Path $ioDir ($tag+'-stdout.bin')),$rawStdout)
+              [IO.File]::WriteAllBytes((Join-Path $ioDir ($tag+'-stderr.bin')),$rawStderr)
+              [IO.File]::WriteAllText((Join-Path $ioDir ($tag+'-stdin-write-error.txt')),$stdinError,[Text.UTF8Encoding]::new($false))
+              Write-Host ('JSTAR|IO|'+$tag+'|EXIT='+$proc.ExitCode+
+                '|IN_SHA256='+(IOHash $stdinBytes)+
+                '|OUT_SHA256='+(IOHash $rawStdout)+
+                '|ERR_SHA256='+(IOHash $rawStderr))
+              return [pscustomobject]@{
+                exit=[int]$proc.ExitCode
+                stdout=$rawStdout
+                stderr=$rawStderr
+                stdinWriteError=$stdinError
+              }
+            } finally {
+              $outStream.Dispose()
+              $errStream.Dispose()
+              $proc.Dispose()
+            }
+          }
+          function Invoke-Rot13Bytes([byte[]]$inputBytes) {
+            $outBytes=[byte[]]::new($inputBytes.Length)
+            for($i=0;$i -lt $inputBytes.Length;$i++){
+              $b=[int]$inputBytes[$i]
+              if($b -ge 65 -and $b -le 90){$b=65+(($b-65+13)%26)}
+              elseif($b -ge 97 -and $b -le 122){$b=97+(($b-97+13)%26)}
+              $outBytes[$i]=[byte]$b
+            }
+            return ,$outBytes
+          }
+          function Invoke-MagicCombIO([byte[]]$inputBytes) {
+            # Same text transform as ci/Invoke-MagicComb.ps1 without running
+            # its source-tree Apply/Verify mode on derived compiler evidence.
+            $utf8=[Text.UTF8Encoding]::new($false,$true)
+            $text=$utf8.GetString($inputBytes)
+            $cleaned=[regex]::Replace($text.Normalize([Text.NormalizationForm]::FormKC),
+              '[\u200B-\u200D\uFEFF]','')
+            return ,$utf8.GetBytes($cleaned)
+          }
+          $runResult.javac_rot13_feedback='NOT_RUN'
+          $runResult.javac_raw_byte_exit=-999
+          $runResult.javac_rot13_replay_exit=-999
+          $runResult.javac_io_encoding='UTF8_STRICT_NFKC_ZERO_WIDTH_CLEAN'
+          if($null -ne $javac -and [IO.File]::Exists($project)) {
+            $fresh=Invoke-JavacByteIO 'javac-exit2-original' ([byte[]]::new(0))
+            $runResult.javac_raw_byte_exit=$fresh.exit
+            if($fresh.exit -eq 2) {
+              # stdout and stderr are separately preserved. Their ordering
+              # across channels cannot be reconstructed from captured pipes.
+              $rOut=Invoke-Rot13Bytes $fresh.stdout
+              $rErr=Invoke-Rot13Bytes $fresh.stderr
+              [IO.File]::WriteAllBytes((Join-Path $ioDir 'rot13-stdout.bin'),$rOut)
+              [IO.File]::WriteAllBytes((Join-Path $ioDir 'rot13-stderr.bin'),$rErr)
+              $feed=[Collections.Generic.List[byte]]::new()
+              $feed.AddRange($rOut)
+              if($rOut.Length -gt 0 -and $rErr.Length -gt 0){$feed.Add([byte]10)}
+              $feed.AddRange($rErr)
+              $rot13Payload=$feed.ToArray()
+              [IO.File]::WriteAllBytes((Join-Path $ioDir 'rot13-uncombed-stdin.bin'),$rot13Payload)
+              try {
+                $combedFeed=Invoke-MagicCombIO $rot13Payload
+                [IO.File]::WriteAllBytes((Join-Path $ioDir 'rot13-magiccomb-stdin.bin'),$combedFeed)
+                $replayed=Invoke-JavacByteIO 'javac-rot13-replayed' $combedFeed
+                $runResult.javac_rot13_replay_exit=$replayed.exit
+                $combReplayStdout=Invoke-MagicCombIO $replayed.stdout
+                $combReplayStderr=Invoke-MagicCombIO $replayed.stderr
+                [IO.File]::WriteAllBytes((Join-Path $ioDir 'replay-magiccomb-stdout.bin'),$combReplayStdout)
+                [IO.File]::WriteAllBytes((Join-Path $ioDir 'replay-magiccomb-stderr.bin'),$combReplayStderr)
+                $runResult.javac_rot13_feedback='OBSERVED_TWO_PASSES'
+                $runResult.javac_rot13_original_stdout_sha256=IOHash $fresh.stdout
+                $runResult.javac_rot13_original_stderr_sha256=IOHash $fresh.stderr
+                $runResult.javac_rot13_replay_stdin_sha256=IOHash $combedFeed
+                $runResult.javac_rot13_replay_stdout_sha256=IOHash $replayed.stdout
+                $runResult.javac_rot13_replay_stderr_sha256=IOHash $replayed.stderr
+                $runResult.javac_rot13_postcomb_stdout_sha256=IOHash $combReplayStdout
+                $runResult.javac_rot13_postcomb_stderr_sha256=IOHash $combReplayStderr
+                $runResult.javac_rot13_stdin_consumption='NOT_ESTABLISHED_BY_PIPE_WRITE'
+                Write-Host ('JSTAR|ROT13|EXIT2_REPLAY='+$replayed.exit+'|MAGICCOMB|EVIDENCE_ONLY|RELEASE=HOLD')
+              } catch {
+                $runResult.javac_rot13_feedback='FAILED_REPLAY_OR_UTF8_CHECK'
+                [IO.File]::WriteAllText((Join-Path $ioDir 'rot13-magiccomb-exception.txt'),($_|Out-String),[Text.UTF8Encoding]::new($false))
+              }
+            } else {
+              $runResult.javac_rot13_feedback='FIRST_RAW_JAVAC_NOT_EXIT2'
+            }
+          } else {
+            $runResult.javac_rot13_feedback='NO_VALIDATED_JAVAC_OR_GENERATED_PROJECT'
+          }
+          Gate 'jstar_rot13_io' 'TAIL'
           Gate 'jstar_custody' 'HEAD'
           $payload=Join-Path $evidence 'payload'
           $generated=Join-Path $payload 'generated'
@@ -153,6 +290,10 @@ jobs:
           $preserved=Join-Path $generated 'full/toolong_arithmetic_test.vcxproj'
           if(-not [IO.File]::Exists($preserved)) {throw 'JSTAR|HOLD|no_generated_project'}
           $runResult.vcxproj_sha256=(Get-FileHash -LiteralPath $preserved -Algorithm SHA256).Hash.ToLowerInvariant()
+          $ioPayload=Join-Path $payload 'java-io'
+          if([IO.Directory]::Exists($ioDir)) {
+            Copy-Item -LiteralPath $ioDir -Destination $ioPayload -Recurse
+          }
           $resultFile=Join-Path $payload 'JSTAR-results.json'
           [IO.File]::WriteAllText($resultFile,($runResult|ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false))
           foreach($file in Get-ChildItem -LiteralPath $evidence -File | Where-Object {$_.Extension -in @('.log','.txt')}) {
@@ -190,6 +331,11 @@ jobs:
           }
           CommitEvidence 'toolong_arithmetic_test.vcxproj' $preserved
           CommitEvidence 'JSTAR-results.json' $resultFile
+          if([IO.Directory]::Exists($ioDir)) {
+            foreach($ioFile in Get-ChildItem -LiteralPath $ioDir -File | Sort-Object Name) {
+              CommitEvidence ('IO-'+$ioFile.Name) $ioFile.FullName
+            }
+          }
           foreach($label in @('full-build','isolated-toolong','all-ctest','javac-literal-vcxproj','native-build','native-execute')) {
             $log=Join-Path $evidence ($label+'.log')
             if([IO.File]::Exists($log)) {CommitEvidence ($label+'.log') $log}
@@ -203,6 +349,9 @@ jobs:
             ('TOOLONG target exit: '+$runResult.isolated_toolong_build),
             ('Oracle JDK: '+$runResult.oracle_archive),
             ('Raw javac vcxproj exit: '+$runResult.javac_raw_vcxproj_exit),
+            ('Raw byte javac exit: '+$runResult.javac_raw_byte_exit),
+            ('ROT13 replay javac exit: '+$runResult.javac_rot13_replay_exit),
+            ('ROT13 and MagicComb evidence: '+$runResult.javac_rot13_feedback),
             ('Evidence ZIP SHA-256: '+$digest),
             'Release: HOLD. No repair, no approval, no PR.'
           ) -join [Environment]::NewLine
