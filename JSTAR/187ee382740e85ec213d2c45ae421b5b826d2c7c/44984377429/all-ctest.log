@@ -1,0 +1,112 @@
+Test project D:/a/_temp/jstar-evidence/full
+      Start  1: niterex_web9x_ninebit_exhaustive
+      Start  2: parity_std_free_example
+      Start  3: parity_std_free_all_zero
+      Start  4: parity_std_free_odd
+ 1/47 Test  #1: niterex_web9x_ninebit_exhaustive ...............   Passed    0.02 sec
+      Start  5: parity_std_free_invalid_range
+ 2/47 Test  #3: parity_std_free_all_zero .......................   Passed    0.02 sec
+ 3/47 Test  #2: parity_std_free_example ........................   Passed    0.03 sec
+      Start  6: parity_std_free_invalid_nan
+      Start  7: parity_std_free_invalid_arity
+ 4/47 Test  #4: parity_std_free_odd ............................   Passed    0.02 sec
+      Start  8: pentagonal_suite_operations
+ 5/47 Test  #5: parity_std_free_invalid_range ..................   Passed    0.01 sec
+      Start  9: pentagonal_suite_cli_smoke
+ 6/47 Test  #6: parity_std_free_invalid_nan ....................   Passed    0.02 sec
+ 7/47 Test  #7: parity_std_free_invalid_arity ..................   Passed    0.02 sec
+      Start 10: pentagonal_xor_swar_roundtrip
+      Start 11: pentagonal_xor_throughput_cli_smoke
+ 8/47 Test  #8: pentagonal_suite_operations ....................   Passed    0.02 sec
+      Start 12: parity_example
+ 9/47 Test #10: pentagonal_xor_swar_roundtrip ..................   Passed    0.02 sec
+      Start 13: parity_all_zero
+10/47 Test #12: parity_example .................................   Passed    0.02 sec
+      Start 14: parity_odd
+11/47 Test #13: parity_all_zero ................................   Passed    0.01 sec
+12/47 Test #11: pentagonal_xor_throughput_cli_smoke ............   Passed    0.03 sec
+      Start 15: invalid_feature
+      Start 16: invalid_nan
+13/47 Test #14: parity_odd .....................................   Passed    0.01 sec
+      Start 17: invalid_arity
+14/47 Test #15: invalid_feature ................................   Passed    0.01 sec
+      Start 18: parity_reference_exhaustive
+15/47 Test #16: invalid_nan ....................................   Passed    0.01 sec
+      Start 19: deca_sigma_roundtrip
+16/47 Test #17: invalid_arity ..................................   Passed    0.02 sec
+      Start 20: tri_pi_three_routes
+17/47 Test #18: parity_reference_exhaustive ....................   Passed    0.02 sec
+      Start 21: quantum_operand_exact_symbol_registry
+18/47 Test #19: deca_sigma_roundtrip ...........................   Passed    0.02 sec
+      Start 22: coreao_unified_scalar
+19/47 Test #20: tri_pi_three_routes ............................   Passed    0.02 sec
+      Start 23: coreao_rf_9dbi_eirp
+20/47 Test #21: quantum_operand_exact_symbol_registry ..........   Passed    0.02 sec
+      Start 24: counterarccosine_secondwave_phase
+21/47 Test #22: coreao_unified_scalar ..........................   Passed    0.02 sec
+      Start 25: stability10d_hexabyte_and_minterms
+22/47 Test #23: coreao_rf_9dbi_eirp ............................   Passed    0.02 sec
+      Start 26: coreo_stereo_invertibility
+23/47 Test #24: counterarccosine_secondwave_phase ..............   Passed    0.02 sec
+      Start 27: gammagamma_pi_precision_boundaries
+24/47 Test  #9: pentagonal_suite_cli_smoke .....................   Passed    0.12 sec
+      Start 28: toolong_exact_arithmetic
+Could not find executable D:/a/_temp/jstar-evidence/full/Release/toolong_arithmetic_test.exe
+Looked in the following places:
+D:/a/_temp/jstar-evidence/full/Release/toolong_arithmetic_test.exe
+D:/a/_temp/jstar-evidence/full/Release/toolong_arithmetic_test.exe.exe
+D:/a/_temp/jstar-evidence/full/Release/Release/toolong_arithmetic_test.exe
+D:/a/_temp/jstar-evidence/full/Release/Release/toolong_arithmetic_test.exe.exe
+Release/D:/a/_temp/jstar-evidence/full/Release/toolong_arithmetic_test.exe
+Release/D:/a/_temp/jstar-evidence/full/Release/toolong_arithmetic_test.exe.exe
+25/47 Test #28: toolong_exact_arithmetic .......................***Not Run   0.00 sec
+Unable to find executable: D:/a/_temp/jstar-evidence/full/Release/toolong_arithmetic_test.exe
+26/47 Test #25: stability10d_hexabyte_and_minterms .............   Passed    0.02 sec
+27/47 Test #26: coreo_stereo_invertibility .....................   Passed    0.01 sec
+      Start 29: pentagonal_gates_truth_witness_and_flop
+      Start 30: pentagonal_control_json
+      Start 31: pentagonal_depth_three_benchmark
+28/47 Test #29: pentagonal_gates_truth_witness_and_flop ........   Passed    0.02 sec
+      Start 32: gamp4_pentagonal_urs_11_to_22
+29/47 Test #30: pentagonal_control_json ........................   Passed    0.03 sec
+      Start 33: pentagonal_ligaze_exhaustive_cor_witness
+30/47 Test #32: gamp4_pentagonal_urs_11_to_22 ..................   Passed    0.02 sec
+      Start 34: pentagonal_ligaze_native_cli
+31/47 Test #33: pentagonal_ligaze_exhaustive_cor_witness .......   Passed    0.02 sec
+      Start 35: pentagonal_ligaze_benchmark_smoke
+32/47 Test #27: gammagamma_pi_precision_boundaries .............   Passed    0.07 sec
+      Start 36: pentagonal_ligaze_platform_v2_api_contract
+33/47 Test #34: pentagonal_ligaze_native_cli ...................   Passed    0.03 sec
+      Start 37: release_safety_negative_fixture_contract
+34/47 Test #35: pentagonal_ligaze_benchmark_smoke ..............   Passed    0.02 sec
+      Start 38: pentagonal_vista_9x9_complete_and_readonly
+35/47 Test #36: pentagonal_ligaze_platform_v2_api_contract .....   Passed    0.02 sec
+      Start 39: pentagonal_vista_9x9_native_demo
+36/47 Test #38: pentagonal_vista_9x9_complete_and_readonly .....   Passed    0.01 sec
+      Start 40: handi_sigmapi_observation_not_automatic_pass
+37/47 Test #39: pentagonal_vista_9x9_native_demo ...............   Passed    0.01 sec
+      Start 41: sigma_penta_ping_triple_ring_and_braid
+38/47 Test #40: handi_sigmapi_observation_not_automatic_pass ...   Passed    0.01 sec
+      Start 42: sigma_di_han_osi6_audit
+39/47 Test #41: sigma_penta_ping_triple_ring_and_braid .........   Passed    0.02 sec
+      Start 43: sigmadi_collision12_declaration_custody
+40/47 Test #42: sigma_di_han_osi6_audit ........................   Passed    0.02 sec
+      Start 44: minza_color_eyes_rgba64_temporal_integrity
+41/47 Test #43: sigmadi_collision12_declaration_custody ........   Passed    0.02 sec
+      Start 45: vista9x9_separate_terminal_route
+42/47 Test #44: minza_color_eyes_rgba64_temporal_integrity .....   Passed    0.01 sec
+      Start 46: minza_ninza_ping_54byte_inverse_and_mismatch
+43/47 Test #45: vista9x9_separate_terminal_route ...............   Passed    0.01 sec
+      Start 47: minza_centrix_light_symmetry
+44/47 Test #46: minza_ninza_ping_54byte_inverse_and_mismatch ...   Passed    0.01 sec
+45/47 Test #47: minza_centrix_light_symmetry ...................   Passed    0.01 sec
+46/47 Test #31: pentagonal_depth_three_benchmark ...............   Passed    0.16 sec
+47/47 Test #37: release_safety_negative_fixture_contract .......   Passed    5.18 sec
+
+98% tests passed, 1 tests failed out of 47
+
+Total Test time (real) =   5.46 sec
+
+The following tests FAILED:
+	 28 - toolong_exact_arithmetic (Not Run)
+Errors while running CTest
