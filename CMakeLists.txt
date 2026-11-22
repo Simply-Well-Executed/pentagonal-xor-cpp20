@@ -63,6 +63,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/tri_pi.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
+    shared/euler_native.hpp
     shared/coreo_stereo.hpp
     shared/stability10d.hpp
     shared/quantum_operand_lexicon.hpp
@@ -275,6 +276,19 @@ if(BUILD_TESTING)
     add_test(NAME gammagamma_pi_precision_boundaries
         COMMAND gammagamma_pi_precision_test)
 
+    # Include-free integer-only Euler constant calculation and exact witnesses.
+    # This is an independent audit target, not part of production XOR.
+    add_executable(euler_native_test tests/euler_native_test.cpp)
+    target_compile_features(euler_native_test PRIVATE cxx_std_20)
+    set_target_properties(euler_native_test PROPERTIES
+        CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    if(MSVC)
+        target_compile_options(euler_native_test PRIVATE /O2 /W4 /permissive-)
+    else()
+        target_compile_options(euler_native_test PRIVATE -O2 -Wall -Wextra -Wpedantic)
+    endif()
+    add_test(NAME euler_native_integer_interval COMMAND euler_native_test)
+
     add_executable(toolong_arithmetic_test tests/toolong_arithmetic_test.cpp)
     target_compile_features(toolong_arithmetic_test PRIVATE cxx_std_20)
     set_target_properties(toolong_arithmetic_test PROPERTIES
@@ -326,6 +340,7 @@ install(FILES
     shared/coreao_gain.hpp
     shared/gammagamma.hpp
     shared/pi_precision.hpp
+    shared/euler_native.hpp
     shared/toolong.hpp
     shared/toolong_ratio.hpp
     shared/toolong_bits.hpp
@@ -339,7 +354,7 @@ install(TARGETS pentagonal_xor RUNTIME DESTINATION bin)
 if(MSVC)
     install(FILES "$<TARGET_PDB_FILE:pentagonal_xor>" DESTINATION symbols OPTIONAL)
 endif()
-install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md docs/STABILITY10D.md docs/ANDROID.md docs/COREAO_GAIN.md docs/TOOLONG.md docs/GAMMAGAMMA_PI_PRECISION.md docs/COUNTERARCCOSINE_2NDWAVE.svg DESTINATION share/doc/pentagonal-xor)
+install(FILES README.md LICENSE docs/DECASIGMA.md docs/TRI_PI.md docs/COREAO.md docs/BUILD_EVIDENCE.md docs/RELEASE_PREFLIGHT.md docs/STABILITY10D.md docs/ANDROID.md docs/COREAO_GAIN.md docs/TOOLONG.md docs/GAMMAGAMMA_PI_PRECISION.md docs/EULER_NATIVE.md docs/COUNTERARCCOSINE_2NDWAVE.svg DESTINATION share/doc/pentagonal-xor)
 
 
 # Experimental gate controller, isolated from the original XOR executable.
