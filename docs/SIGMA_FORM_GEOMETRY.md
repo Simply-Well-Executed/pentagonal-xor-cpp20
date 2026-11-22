@@ -273,3 +273,52 @@ wrong oblique witnesses are covered by `static_assert`.
 Every sample here uses declared normalized coordinates, not
 measurements extracted from photographs. Source validation, approval
 and release policy remain independent. **RELEASE=HOLD.**
+
+
+## SOHCAHTOA-F3-ROTATE-90-PR34-004: exact oblique-face shortcut
+
+The earlier figure is an **already folded** right-triangular pyramid
+(tetrahedron), not an exploded or inverse-square model. The user
+identified the transformation `R_y(+90):(x,y,z)->(z,y,-x)` as a
+shortcut for the gap `||PB|| ||PC||` in the third lateral face.
+
+With apex `P=(0,0,z)` and oblique-face base endpoints
+`B=(x,0,0)`, `C=(0,y,0)`:
+
+`PB=(x,0,-z)`, `PC=(0,y,-z)`
+
+`R(PB)=(-z,0,-x)`, `R(PC)=(-z,y,0)`
+
+`R(PB) x R(PC)=(xy,xz,-yz)`
+
+Therefore the face area is **exactly**:
+
+`F3 = ||PB||*||PC||*SIN(theta)/2`
+`   = ||R(PB) x R(PC)||/2`
+`   = sqrt((xy)^2+(xz)^2+(yz)^2)/2`.
+
+There are **three SIN face factors**: two right-angle side faces
+(`SIN(90 degrees)=1`) and the oblique face (whose SIN factor is
+implicitly contained in the cross product). No inverse-trig
+calculation is needed and no angle is guessed. This is the
+shortcut in the user's requested direction; COS and TAN are not
+silently introduced as additional operators.
+
+The example `x=y=1/2`, `z=1` gives
+`R(PB)=(-1,0,-1/2)`, `R(PC)=(-1,1/2,0)`,
+cross `(1/4,1/2,-1/2)`, norm `3/4` and
+`F3=3/8`, Q62 `1729382256910270464`.
+The other three face areas and total Q62 surface `1.0`
+remain unchanged.
+
+`right_triangle_f3_rotated_90()` applies the coordinate
+rotation directly in header-only C++20. It multiplies the signed
+Q62 cross components, tests their squared norm with existing
+128-bit limb functions, and compares the existing authoritative
+oblique double-area witness. An inconsistent geometric input
+returns `valid=false` rather than approximating a square root.
+The F3 shortcut is a **derived** representation of the same
+geometry, not independent evidence of the image or a new physical
+measurement. The operator/representation is separately named
+and auditable. The Euler/Pi/Intensity Q62 source records, HEAD/TAIL
+custody, consent and RELEASE=HOLD remain unchanged.

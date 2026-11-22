@@ -418,6 +418,84 @@ struct TrianglePyramid {
     return {base,face_xz,face_yz,face_oblique,lateral,total,true};
 }
 
+
+// SOHCAHTOA-F3-ROTATE-90-PR34-004.
+// F3 = |PB|*|PC|*SIN(theta)/2 = |PB x PC|/2.
+// Rotate both rays exactly using R_y(+90): (x,y,z)->(z,y,-x).
+// The cross product transforms with the rays, preserving its length;
+// therefore NO square root, inverse-trig function or numerical SIN
+// approximation is needed to check the oblique triangular face.
+// This is an area-preserving rigid rotation of an ALREADY folded solid,
+// not proof of fabric folding or a physical instant 90-degree motion.
+struct SignedQ62Vec3 { s64 x,y,z; };
+[[nodiscard]] constexpr SignedQ62Vec3 rotate_y_90(
+    SignedQ62Vec3 vector) noexcept {
+    return {vector.z,vector.y,-vector.x};
+}
+[[nodiscard]] constexpr s64 product_signed_q62(
+    s64 x,s64 y) noexcept {
+    const u64 product=shift62(multiply(magnitude(x),magnitude(y)));
+    const s64 signed_product=static_cast<s64>(product);
+    return (x<0)!=(y<0) ? -signed_product : signed_product;
+}
+// Components are formed from normalized source rays with |each|<=Q.
+// For this contract, each result component has magnitude <=Q.
+[[nodiscard]] constexpr SignedQ62Vec3 cross_q62(
+    SignedQ62Vec3 a, SignedQ62Vec3 b) noexcept {
+    return {
+        product_signed_q62(a.y,b.z)-product_signed_q62(a.z,b.y),
+        product_signed_q62(a.z,b.x)-product_signed_q62(a.x,b.z),
+        product_signed_q62(a.x,b.y)-product_signed_q62(a.y,b.x)
+    };
+}
+struct RotatedF3Witness {
+    SignedQ62Vec3 rotated_PB,rotated_PC,rotated_cross;
+    Q62Area oblique_face;
+    bool orientation_verified;
+    bool area_preserved;
+    bool valid;
+};
+[[nodiscard]] constexpr RotatedF3Witness right_triangle_f3_rotated_90(
+    u64 x_leg,u64 y_leg,u64 vertical_height,
+    u64 oblique_double_area) noexcept {
+    const TrianglePyramid original=right_triangle_pyramid(
+        x_leg,y_leg,vertical_height,oblique_double_area);
+    if (!original.right_triangle_geometry_verified)
+        return {{0,0,0},{0,0,0},{0,0,0},{0ULL,false},
+                false,false,false};
+    // The oblique face uses vertices P=(0,0,z),
+    // B=(x,0,0), C=(0,y,0).
+    // Hence PB=(x,0,-z), PC=(0,y,-z).
+    const SignedQ62Vec3 PB{
+        static_cast<s64>(x_leg),0,-static_cast<s64>(vertical_height)};
+    const SignedQ62Vec3 PC{
+        0,static_cast<s64>(y_leg),-static_cast<s64>(vertical_height)};
+    const SignedQ62Vec3 PB90=rotate_y_90(PB);
+    const SignedQ62Vec3 PC90=rotate_y_90(PC);
+    const SignedQ62Vec3 cross90=cross_q62(PB90,PC90);
+    const u64 xy=shift62(multiply(x_leg,y_leg));
+    const u64 xz=shift62(multiply(x_leg,vertical_height));
+    const u64 yz=shift62(multiply(y_leg,vertical_height));
+    // Shortcut: R(PB)xR(PC)=(xy,xz,-yz). No angle is evaluated.
+    const bool orientation=
+        cross90.x==static_cast<s64>(xy) &&
+        cross90.y==static_cast<s64>(xz) &&
+        cross90.z==-static_cast<s64>(yz);
+    const Wide sum_of_squares=wide_add(
+        wide_add(multiply(magnitude(cross90.x),
+                          magnitude(cross90.x)),
+                 multiply(magnitude(cross90.y),
+                          magnitude(cross90.y))),
+        multiply(magnitude(cross90.z),magnitude(cross90.z)));
+    const bool area=orientation &&
+        equal_wide(sum_of_squares,
+                   multiply(oblique_double_area,oblique_double_area)) &&
+        original.face_oblique.valid &&
+        original.face_oblique.value==oblique_double_area/2ULL;
+    return {PB90,PC90,cross90,original.face_oblique,
+            orientation,area,area};
+}
+
 struct PyramidClosure {
     FoldTrace trace;
     SquarePyramid geometry;

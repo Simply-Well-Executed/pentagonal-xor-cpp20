@@ -216,6 +216,33 @@ static_assert(triangle_closure.trace.valid &&
               !triangle_closure.formal_areas_equal &&
               !triangle_closure.folding_proves_pyramid);
 
+
+// F3 gap resolved by rotating PB and PC before the cross product.
+// x=y=1/2, z=1 -> R(PB)=(-1,0,-1/2),
+// R(PC)=(-1,1/2,0), cross=(1/4,1/2,-1/2).
+// Magnitude=3/4, F3=3/8. Two right-angle SIN face factors
+// equal 1; the third SIN factor is already captured by |cross|.
+constexpr auto rotated_f3=fa::right_triangle_f3_rotated_90(
+    Q/2ULL,Q/2ULL,Q,3ULL*Q/4ULL);
+static_assert(rotated_f3.valid &&
+              rotated_f3.orientation_verified &&
+              rotated_f3.area_preserved);
+static_assert(rotated_f3.rotated_PB.x==-static_cast<fa::s64>(Q));
+static_assert(rotated_f3.rotated_PB.y==0);
+static_assert(rotated_f3.rotated_PB.z==-static_cast<fa::s64>(Q/2ULL));
+static_assert(rotated_f3.rotated_PC.x==-static_cast<fa::s64>(Q));
+static_assert(rotated_f3.rotated_PC.y==static_cast<fa::s64>(Q/2ULL));
+static_assert(rotated_f3.rotated_PC.z==0);
+static_assert(rotated_f3.rotated_cross.x==static_cast<fa::s64>(Q/4ULL));
+static_assert(rotated_f3.rotated_cross.y==static_cast<fa::s64>(Q/2ULL));
+static_assert(rotated_f3.rotated_cross.z==-static_cast<fa::s64>(Q/2ULL));
+static_assert(rotated_f3.oblique_face.value==1729382256910270464ULL);
+static_assert(rotated_f3.oblique_face.value==
+              triangle_pyramid.face_oblique.value);
+static_assert(!fa::right_triangle_f3_rotated_90(
+    Q/2ULL,Q/2ULL,Q,Q/2ULL).valid);
+static_assert(!fa::right_triangle_f3_rotated_90(
+    0ULL,Q/2ULL,Q,3ULL*Q/4ULL).valid);
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};

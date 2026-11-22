@@ -45,6 +45,12 @@ static_assert(!ai::right_triangle_pyramid(
     ai::unit/2ULL,ai::unit/2ULL,ai::unit,
     ai::unit/2ULL).right_triangle_geometry_verified);
 
+// Read-only C++20 folded oblique-face witness using an exact
+// 90-degree rotated cross product (no transcendentals).
+constexpr auto probe_f3=ai::right_triangle_f3_rotated_90(
+    ai::unit/2ULL,ai::unit/2ULL,ai::unit,3ULL*ai::unit/4ULL);
+static_assert(probe_f3.valid && probe_f3.area_preserved);
+static_assert(probe_f3.oblique_face.value==3ULL*ai::unit/8ULL);
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
 static_assert(swe::sigma_form::inverse_square_intensity(
