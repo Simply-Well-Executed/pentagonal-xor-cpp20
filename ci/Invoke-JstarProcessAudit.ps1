@@ -55,11 +55,11 @@ $env:MSBUILDDISABLENODEREUSE='1'
 $env:DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER='1'
 $watch=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach($n in @('cmake.exe','msbuild.exe','cl.exe','link.exe','cvtres.exe',
-                'rc.exe','mt.exe','conhost.exe','vctip.exe','cmd.exe','mspdbsrv.exe')){
+                'rc.exe','mt.exe','conhost.exe','vctip.exe','cmd.exe','mspdbsrv.exe','Tracker.exe')){
     [void]$watch.Add($n)
 }
 $critical=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-foreach($n in @('cmake.exe','msbuild.exe','cl.exe','link.exe')){
+foreach($n in @('cmake.exe','msbuild.exe','cl.exe','link.exe','Tracker.exe')){
     [void]$critical.Add($n)
 }
 $seen=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
