@@ -26,6 +26,9 @@ jobs:
     timeout-minutes: 50
     permissions:
       contents: read
+    env:
+      MSBUILDDISABLENODEREUSE: '1'
+      DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
     steps:
       - name: Bootstrap exact SHA source via PowerShell (no Node actions)
         shell: pwsh
@@ -79,3 +82,12 @@ jobs:
         run: |
           Write-Host 'TRIFORCE|RELEASE=HOLD|HUMAN_APPROVAL=NOT_ASSUMED'
           Write-Host 'TRIFORCE|CI_PASSED_IS_NOT_MERGE_OR_PUBLICATION_APPROVAL'
+          $audits=Join-Path $env:RUNNER_TEMP 'triforce-evidence/jstar-process'
+          if([IO.Directory]::Exists($audits)) {
+            foreach($audit in Get-ChildItem -LiteralPath $audits -Filter '*-process-audit.json' -File) {
+              Write-Host ('JSTAR|PROCESS_EVIDENCE|FILE='+$audit.Name+'|SHA256='+
+                (Get-FileHash -LiteralPath $audit.FullName -Algorithm SHA256).Hash.ToLowerInvariant())
+            }
+          } else {
+            Write-Host 'JSTAR|PROCESS_EVIDENCE|NOT_REACHED|RELEASE=HOLD'
+          }
