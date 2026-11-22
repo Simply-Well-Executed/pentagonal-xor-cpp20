@@ -1,0 +1,11 @@
+MSBuild version 18.12.2-1.26514.2+04f6ca984 for .NET Framework
+
+  toolong_arithmetic_test.cpp
+D:\a\_temp\jstar-source\Simply-Well-Executed-pentagonal-xor-cpp20-187ee38\tests\toolong_arithmetic_test.cpp(112,30): error C2371: 'third': redefinition; different basic types [D:\a\_temp\jstar-evidence\full\toolong_arithmetic_test.vcxproj]
+      D:\a\_temp\jstar-source\Simply-Well-Executed-pentagonal-xor-cpp20-187ee38\tests\toolong_arithmetic_test.cpp(40,29):
+      see declaration of 'third'
+  
+D:\a\_temp\jstar-source\Simply-Well-Executed-pentagonal-xor-cpp20-187ee38\tests\toolong_arithmetic_test.cpp(113,17): error C2088: built-in operator '+' cannot be applied to an operand of type 'const swe::toolong_q62::ApprovalClaim' [D:\a\_temp\jstar-evidence\full\toolong_arithmetic_test.vcxproj]
+D:\a\_temp\jstar-source\Simply-Well-Executed-pentagonal-xor-cpp20-187ee38\tests\toolong_arithmetic_test.cpp(114,17): error C2088: built-in operator '*' cannot be applied to an operand of type 'const swe::toolong_q62::ApprovalClaim' [D:\a\_temp\jstar-evidence\full\toolong_arithmetic_test.vcxproj]
+D:\a\_temp\jstar-source\Simply-Well-Executed-pentagonal-xor-cpp20-187ee38\tests\toolong_arithmetic_test.cpp(115,17): error C2088: built-in operator '/' cannot be applied to an operand of type 'const swe::toolong_q62::ApprovalClaim' [D:\a\_temp\jstar-evidence\full\toolong_arithmetic_test.vcxproj]
+D:\a\_temp\jstar-source\Simply-Well-Executed-pentagonal-xor-cpp20-187ee38\tests\toolong_arithmetic_test.cpp(116,17): error C2088: built-in operator '-' cannot be applied to an operand of type 'const swe::toolong_q62::ApprovalClaim' [D:\a\_temp\jstar-evidence\full\toolong_arithmetic_test.vcxproj]
