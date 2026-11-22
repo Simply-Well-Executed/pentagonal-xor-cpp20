@@ -82,6 +82,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/deca_sigma.hpp
     shared/tri_pi.hpp
     shared/euler_pi_inverse_square.hpp
+    shared/sigma_form_geometry.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
@@ -365,6 +366,7 @@ install(FILES
     shared/deca_sigma.hpp
     shared/tri_pi.hpp
     shared/euler_pi_inverse_square.hpp
+    shared/sigma_form_geometry.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp

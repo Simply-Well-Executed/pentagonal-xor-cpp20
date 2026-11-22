@@ -2,6 +2,7 @@
 #include "../shared/deca_sigma.hpp"
 #include "../shared/tri_pi.hpp"
 #include "../shared/euler_pi_inverse_square.hpp"
+#include "../shared/sigma_form_geometry.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -11,6 +12,10 @@
 static_assert(swe::deca_sigma::witnesses_return(swe::deca_sigma::run(2.0)));
 static_assert(swe::tri_pi::inspect(swe::deca_sigma::run(2.0)).passed());
 // The same exact inverse-square static asserts also compile in the STD-free path.
+static_assert(swe::sigma_form::square_pyramid_z(
+    0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
+static_assert(swe::sigma_form::inverse_square_intensity(
+    1.0,0.15,1.0,swe::sigma_form::geometry_pi).valid);
 static_assert(swe::inverse_square::e1.numerator == 271828182845904523ULL);
 static_assert(swe::inverse_square::p1.numerator == 314159265358979323ULL);
 static_assert(swe::coreao::inspect(swe::deca_sigma::run(2.0)).passed());
