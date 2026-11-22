@@ -17,11 +17,14 @@ $root=[IO.Path]::GetFullPath($RepositoryRoot)
 $build=[IO.Path]::GetFullPath($BuildDirectory)
 $evidence=[IO.Path]::GetFullPath($EvidenceDirectory)
 if(-not [IO.File]::Exists((Join-Path $root 'CMakeLists.txt')) -or
-   -not [IO.Directory]::Exists($build) -or
-   $evidence.StartsWith($root+[IO.Path]::DirectorySeparatorChar,
-                        [StringComparison]::OrdinalIgnoreCase)){
-    throw 'JSTAR|HOLD|invalid_source_build_or_evidence_boundary'
+   -not [IO.Directory]::Exists($build)){
+    throw 'JSTAR|HOLD|invalid_source_or_build'
 }
+$pathGuard=Join-Path $root 'ci/Assert-ExternalEvidencePath.ps1'
+& pwsh -NoLogo -NoProfile -NonInteractive -File $pathGuard -RepositoryRoot $root -EvidencePath $evidence
+if($LASTEXITCODE -ne 0){throw 'JSTAR|HOLD|invalid_evidence_boundary'}
+& pwsh -NoLogo -NoProfile -NonInteractive -File $pathGuard -RepositoryRoot $root -EvidencePath $build
+if($LASTEXITCODE -ne 0){throw 'JSTAR|HOLD|invalid_build_boundary'}
 [void][IO.Directory]::CreateDirectory($evidence)
 # Never concatenate multiple Get-Command matches into a fake executable path.
 # The GitHub Windows runner has both official CMake and Strawberry's shim.
@@ -79,12 +82,16 @@ $psi.RedirectStandardError=$true
 foreach($arg in $argv){[void]$psi.ArgumentList.Add($arg)}
 $proc=[Diagnostics.Process]::new()
 $proc.StartInfo=$psi
+$procStarted=$false
+$stdoutTask=$null
+$stderrTask=$null
 $stdOutStream=[IO.File]::Open($stdoutPath,[IO.FileMode]::CreateNew,
                              [IO.FileAccess]::Write,[IO.FileShare]::Read)
 $stdErrStream=[IO.File]::Open($stderrPath,[IO.FileMode]::CreateNew,
                              [IO.FileAccess]::Write,[IO.FileShare]::Read)
 try {
     if(-not $proc.Start()){throw 'JSTAR|HOLD|cmake_process_not_started'}
+    $procStarted=$true
     $rootPid=$proc.Id
     $rootBirthUtc=([DateTimeOffset]$proc.StartTime).ToUniversalTime()
     $stdoutTask=$proc.StandardOutput.BaseStream.CopyToAsync($stdOutStream)
@@ -122,18 +129,18 @@ try {
             }
         }
         foreach($p in $snapshot){
-            $pid=[int]$p.ProcessId
+            $observedPid=[int]$p.ProcessId
             if(-not $watch.Contains([string]$p.Name) -and
-               -not $active.Contains($pid)){continue}
+               -not $active.Contains($observedPid)){continue}
             $birth=if($null -ne $p.CreationDate){
                 ([DateTimeOffset]$p.CreationDate).ToString('o')
             }else{'UNAVAILABLE'}
-            $key=([string]$pid)+'|'+$birth+'|'+[string]$p.Name
+            $key=([string]$observedPid)+'|'+$birth+'|'+[string]$p.Name
             if(-not $seen.Add($key)){continue}
             if($seen.Count -gt 4096){throw 'JSTAR|HOLD|process_audit_record_limit'}
-            $scope=if($pid -eq $rootPid -and $active.Contains($pid)){
+            $scope=if($observedPid -eq $rootPid -and $active.Contains($observedPid)){
                 'build_root'
-            }elseif($active.Contains($pid)){
+            }elseif($active.Contains($observedPid)){
                 'build_descendant'
             }else{'host_sample'}
             $observedPath=[string]$p.ExecutablePath
@@ -143,7 +150,7 @@ try {
                 $observedPath=$exe
             }
             $observed.Add([pscustomobject]@{
-                pid=$pid
+                pid=$observedPid
                 parent_pid=[int]$p.ParentProcessId
                 name=[string]$p.Name
                 created_utc=$birth
@@ -159,8 +166,24 @@ try {
     $exitCode=[int]$proc.ExitCode
 } catch {
     $errors.Add(('capture_failed|'+$_.Exception.GetType().Name+'|'+$_.Exception.Message))
-    if(-not $proc.HasExited){
-        try{$proc.Kill($true)}catch{}
+    if($procStarted){
+        $stopped=$false
+        try {
+            if(-not $proc.HasExited){$proc.Kill($true)}
+            $stopped=$proc.WaitForExit(15000)
+        } catch {
+            $errors.Add(('cleanup_failed|'+$_.Exception.GetType().Name))
+        }
+        if($stopped){
+            foreach($task in @($stdoutTask,$stderrTask)){
+                if($null -ne $task){
+                    try{$task.GetAwaiter().GetResult()}
+                    catch{$errors.Add(('stream_drain_failed|'+$_.Exception.GetType().Name))}
+                }
+            }
+        }else{
+            $errors.Add('process_exit_or_stream_drain_not_confirmed')
+        }
     }
 } finally {
     $stdOutStream.Dispose()
@@ -201,8 +224,8 @@ foreach($path in $paths){
             $errors.Add(('unapproved_critical_binary|'+$name+'|'+$status))
         }
     }catch{
-        if($buildPaths.Contains($path) -and $critical.Contains($name)){
-            $errors.Add(('critical_identity_probe_failed|'+$name+'|'+$_.Exception.Message))
+        if($buildPaths.Contains($path)){
+            $errors.Add(('build_executable_identity_probe_failed|'+$name+'|'+$_.Exception.Message))
         }
     }
     $identities.Add([pscustomobject]@{
@@ -220,6 +243,9 @@ foreach($p in $observed){
 }
 if($exitCode -eq -999){$errors.Add('build_exit_not_observed')}
 if($observed.Count -eq 0){$errors.Add('process_sampling_empty')}
+if(@($observed | Where-Object {
+    $_.scope -ceq 'build_root' -and $_.pid -eq $rootPid
+  }).Count -eq 0){$errors.Add('build_root_process_not_observed')}
 $report=[ordered]@{
     schema='SWE-JSTAR-PROCESS-PROVENANCE-v1'
     operation=$Operation
