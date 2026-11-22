@@ -2,6 +2,7 @@
 // Compile and execute with native MSVC C++20 /O2, not clang-cl.
 #include "../shared/toolong_q62.hpp"
 #include "../shared/sigma_form_geometry.hpp"
+#include "../shared/sigma_form_area_q62.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -70,6 +71,53 @@ constexpr unsigned long long sigma_form_wide_q62(
 static_assert(sigma_form_wide_q62(euler.source_word)==euler.expected_integer);
 static_assert(sigma_form_wide_q62(pi.source_word)==pi.expected_integer);
 static_assert(sigma_form_wide_q62(intensity.source_word)==intensity.expected_integer);
+#endif
+
+// SIGMA-AREA-BCD-AIRGAP-001: independently declared normalized inputs.
+// Never call these synthetic unit-square tests measurements of the images.
+namespace fa = swe::sigma_form_area;
+constexpr fa::u64 Q = fa::unit;
+constexpr fa::Q62Area airgap_area = fa::airgap_a(Q,Q);
+constexpr fa::Q62Area sigma_b_area =
+    fa::sigma_b({0ULL,0ULL},{Q/2ULL,Q},{Q,0ULL});
+constexpr fa::Q62Area sigma_c_area = fa::sigma_c(Q/4ULL,Q);
+constexpr fa::WidthSample sigma_d_profile[] = {
+    {0ULL,Q/2ULL}, {Q/2ULL,(3ULL*Q)/4ULL}, {Q,Q/2ULL}
+};
+constexpr fa::Q62Area sigma_d_area = fa::sigma_d(sigma_d_profile);
+constexpr fa::BcdAirgap form_area_audit = fa::assemble(
+    airgap_area,sigma_b_area,sigma_c_area,sigma_d_area);
+static_assert(form_area_audit.inputs_consistent);
+static_assert(!form_area_audit.physical_area_verified);
+static_assert(airgap_area.value == 2305843009213693952ULL);
+static_assert(sigma_b_area.value == 1537228672809129301ULL);
+static_assert(sigma_c_area.value == 1152921504606846976ULL);
+static_assert(sigma_d_area.value == 2882303761517117440ULL);
+static_assert(fa::decimal17(airgap_area) == 50000000000000000ULL);
+static_assert(fa::decimal17(sigma_b_area) == 33333333333333333ULL);
+static_assert(fa::decimal17(sigma_c_area) == 25000000000000000ULL);
+static_assert(fa::decimal17(sigma_d_area) == 62500000000000000ULL);
+static_assert(fa::sigma_b({Q,0ULL},{Q/2ULL,Q},{0ULL,0ULL}).value
+              == sigma_b_area.value);
+static_assert(!fa::airgap_a(0ULL,Q).valid);
+static_assert(!fa::sigma_b({Q+1ULL,0ULL},{0ULL,0ULL},{Q,0ULL}).valid);
+static_assert(!fa::assemble(fa::airgap_a(0ULL,Q),
+    sigma_b_area,sigma_c_area,sigma_d_area).inputs_consistent);
+static_assert(!fa::relative_to_airgap(
+    sigma_b_area,fa::airgap_a(0ULL,Q)).valid);
+constexpr fa::WidthSample invalid_d[] = {
+    {Q/2ULL,Q/2ULL}, {0ULL,Q/2ULL}
+};
+static_assert(!fa::sigma_d(invalid_d).valid);
+constexpr auto b_relative = fa::relative_to_airgap(
+    sigma_b_area,airgap_area);
+static_assert(b_relative.valid &&
+              b_relative.numerator == sigma_b_area.value &&
+              b_relative.denominator == airgap_area.value);
+#if defined(__SIZEOF_INT128__) && !defined(_MSC_VER)
+static_assert(fa::wide_matches_native_u128(Q,Q));
+static_assert(fa::wide_matches_native_u128(
+    14488038916154245685ULL,100000000000000000ULL));
 #endif
 
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";

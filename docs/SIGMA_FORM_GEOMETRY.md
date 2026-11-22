@@ -73,3 +73,57 @@ and all licensing/CI HOLDs remain independent and unresolved.
 
 **No auto-approval, source rewrite, merge, or release. Failure never
 becomes policy; chosen, never assumed.**
+
+
+## Three SIGMA projected areas + independent AIRGAP A
+
+**Protocol:** SIGMA-AREA-BCD-AIRGAP-001. Canonical C++20 header:
+`shared/sigma_form_area_q62.hpp`. The `circle_of_sanity::centrix`
+Q62 arithmetic gate is left intact. This module defines a separate
+geometric area check, not another owner or fourth triangle.
+
+- **AIRGAP A:** `base*altitude/2`, reference triangular pyramid silhouette.
+  This is **not** the full 3-D surface area of a square pyramid.
+- **SIGMA B:** quadratic Bézier segment plus its closing chord,
+  `abs(det(P1-P0,P2-P0))/3`.
+- **SIGMA C:** constant-width pleated strip's *projected* area,
+  `width*height`; the folded 3-D fabric surface area can differ.
+- **SIGMA D:** variable-width billowing strip, integrated using
+  exact trapezoids over ordered position/width samples.
+
+Input coordinates are unsigned Q62 integers with `unit=2^62`; areas
+are unsigned Q62 squared-coordinate representations:
+`raw=floor(area*2^62)`. The exported `decimal17` function computes
+`floor(raw*10^17/2^62)` using 64x64->128 four-limb multiplication
+with no includes, no STL and no floating-point input. The expression
+matches the integer-scaling *style* of the canonical Q62 source
+records but these geometric source coordinates are newly declared,
+distinct and synthetic. Numeric photograph-derived meters or pixel
+coordinates are NOT available.
+
+### Explicit synthetic normalized test, not measured photograph areas
+
+| Lane | Declared normalized inputs | Q62 area | decimal17 |
+| --- | --- | ---: | ---: |
+| A | triangle base 1, altitude 1 | 2305843009213693952 | 50000000000000000 |
+| B | Bezier (0,0), (0.5,1), (1,0) | 1537228672809129301 | 33333333333333333 |
+| C | strip width 0.25, height 1 | 1152921504606846976 | 25000000000000000 |
+| D | widths 0.5,0.75,0.5 at 0,0.5,1 | 2882303761517117440 | 62500000000000000 |
+
+These map to 0.5, approximately 1/3, 0.25 and 0.625
+**normalized area units** respectively. They are not square metres
+and are not inferred from a person's appearance, garment physics
+or pyramid photograph. In the same 2-D coordinate system,
+the reference ratios are exactly represented as the Q62 rational
+pairs `B/A`, `C/A`, and `D/A`, with no forced equality.
+Without common camera geometry, known scale and perspective, those
+projected ratios must not be interpreted as physical 3-D surface-area
+ratios.
+
+All three SIGMA lanes require individually valid inputs. The AIRGAP A
+must have positive independently supplied area. `assemble()` returns
+false for incomplete inputs and always reports physical calibration
+as unverified. An internal consistency pass cannot authorize a
+release, authenticate a photograph, waive CI HOLD, or substitute for
+external validation. Static assertions in the native gate and
+STD-free probe cover these inputs and negative controls.

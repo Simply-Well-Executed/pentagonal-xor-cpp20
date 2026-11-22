@@ -28,6 +28,7 @@ $required=@(
  'shared/toolong_bits.hpp',
  'shared/euler_pi_inverse_square.hpp',
  'shared/sigma_form_geometry.hpp',
+ 'shared/sigma_form_area_q62.hpp',
  'shared/gammagamma.hpp',
  'tests/triforce_native_gate_test.cpp',
  'tests/toolong_arithmetic_test.cpp',

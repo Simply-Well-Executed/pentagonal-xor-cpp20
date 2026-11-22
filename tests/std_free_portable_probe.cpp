@@ -3,6 +3,7 @@
 #include "../shared/tri_pi.hpp"
 #include "../shared/euler_pi_inverse_square.hpp"
 #include "../shared/sigma_form_geometry.hpp"
+#include "../shared/sigma_form_area_q62.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -12,6 +13,16 @@
 static_assert(swe::deca_sigma::witnesses_return(swe::deca_sigma::run(2.0)));
 static_assert(swe::tri_pi::inspect(swe::deca_sigma::run(2.0)).passed());
 // The same exact inverse-square static asserts also compile in the STD-free path.
+// Each new area lane compiles independently in the include-free core.
+namespace ai = swe::sigma_form_area;
+static_assert(ai::airgap_a(ai::unit,ai::unit).value==ai::unit/2ULL);
+static_assert(ai::sigma_b({0ULL,0ULL},
+    {ai::unit/2ULL,ai::unit},{ai::unit,0ULL}).valid);
+static_assert(ai::sigma_c(ai::unit/4ULL,ai::unit).value==ai::unit/4ULL);
+constexpr ai::WidthSample std_free_d[]={
+    {0ULL,ai::unit/2ULL},{ai::unit,ai::unit/2ULL}
+};
+static_assert(ai::sigma_d(std_free_d).value==ai::unit/2ULL);
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
 static_assert(swe::sigma_form::inverse_square_intensity(
