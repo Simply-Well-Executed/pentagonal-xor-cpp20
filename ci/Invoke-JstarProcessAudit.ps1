@@ -23,8 +23,13 @@ if(-not [IO.File]::Exists((Join-Path $root 'CMakeLists.txt')) -or
     throw 'JSTAR|HOLD|invalid_source_build_or_evidence_boundary'
 }
 [void][IO.Directory]::CreateDirectory($evidence)
-$cmake=Get-Command cmake -CommandType Application -ErrorAction Stop
-$exe=[IO.Path]::GetFullPath($cmake.Source)
+# Never concatenate multiple Get-Command matches into a fake executable path.
+# The GitHub Windows runner has both official CMake and Strawberry's shim.
+# Prefer the canonical installed CMake binary; HOLD if it is absent.
+$exe=[IO.Path]::GetFullPath((Join-Path $env:ProgramFiles 'CMake/bin/cmake.exe'))
+if(-not [IO.File]::Exists($exe)){
+    throw 'JSTAR|HOLD|canonical_ProgramFiles_CMake_missing'
+}
 $stdoutPath=Join-Path $evidence ($Operation+'-stdout.log')
 $stderrPath=Join-Path $evidence ($Operation+'-stderr.log')
 $auditPath=Join-Path $evidence ($Operation+'-process-audit.json')
