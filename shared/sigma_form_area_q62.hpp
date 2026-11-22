@@ -370,6 +370,54 @@ struct SquarePyramid {
     const Q62Area total{base.value+lateral.value,true};
     return {base,face,lateral,total,true};
 }
+
+// RIGHT TRIANGULAR PYRAMID (trirectangular tetrahedron):
+// Three edges from the right-angle vertex are mutually perpendicular.
+// Base vertices: (0,0,0), (x,0,0), (0,y,0); apex: (0,0,z).
+// The apex stands directly over the RIGHT-ANGLE VERTEX, not the centroid.
+// Four triangular faces, unlike the five faces of a square pyramid.
+//
+// Let xy=x*y, xz=x*z, yz=y*z. The oblique face has
+// double-area q = sqrt(xy^2 + xz^2 + yz^2).
+// All inputs and xy/xz/yz/q are Q62 quantities. We REQUIRE the exact
+// squared identity in the quantized domain, avoiding sqrt, floats,
+// library includes, and false claims of exactness after rounding.
+struct TrianglePyramid {
+    Q62Area base, face_xz, face_yz, face_oblique;
+    Q62Area lateral, total;
+    bool right_triangle_geometry_verified;
+};
+[[nodiscard]] constexpr TrianglePyramid right_triangle_pyramid(
+    u64 x_leg, u64 y_leg, u64 vertical_height,
+    u64 oblique_double_area) noexcept {
+    const TrianglePyramid invalid{
+        {0ULL,false},{0ULL,false},{0ULL,false},{0ULL,false},
+        {0ULL,false},{0ULL,false},false};
+    if (x_leg==0ULL || y_leg==0ULL || vertical_height==0ULL ||
+        oblique_double_area==0ULL ||
+        x_leg>unit || y_leg>unit || vertical_height>unit ||
+        oblique_double_area>2ULL*unit)
+        return invalid;
+    const u64 xy=shift62(multiply(x_leg,y_leg));
+    const u64 xz=shift62(multiply(x_leg,vertical_height));
+    const u64 yz=shift62(multiply(y_leg,vertical_height));
+    const Wide expected=wide_add(
+        wide_add(multiply(xy,xy),multiply(xz,xz)),multiply(yz,yz));
+    if (!equal_wide(multiply(oblique_double_area,oblique_double_area),
+                    expected))
+        return invalid;
+    // Quantize each face individually, then sum. Input Q62 scalars
+    // are dimensionless, so outputs are normalized square units.
+    const Q62Area base{xy/2ULL,true};
+    const Q62Area face_xz{xz/2ULL,true};
+    const Q62Area face_yz{yz/2ULL,true};
+    const Q62Area face_oblique{oblique_double_area/2ULL,true};
+    const Q62Area lateral{face_xz.value+face_yz.value+
+                          face_oblique.value,true};
+    const Q62Area total{base.value+lateral.value,true};
+    return {base,face_xz,face_yz,face_oblique,lateral,total,true};
+}
+
 struct PyramidClosure {
     FoldTrace trace;
     SquarePyramid geometry;
@@ -384,6 +432,25 @@ struct PyramidClosure {
                         sequence.source.formal_sum.value ==
                             geometry.total.value;
     // Even coincident numerical area cannot establish shape equivalence.
+    return {sequence,geometry,matching,false};
+}
+
+
+// A distinct typed closure for the four-face triangular pyramid.
+// Matching a formal sum cannot authenticate a geometric transformation.
+struct TrianglePyramidClosure {
+    FoldTrace trace;
+    TrianglePyramid geometry;
+    bool formal_areas_equal;
+    bool folding_proves_pyramid;
+};
+[[nodiscard]] constexpr TrianglePyramidClosure evaluate_triangle_closure(
+    FoldTrace sequence, TrianglePyramid geometry) noexcept {
+    const bool matching=sequence.valid &&
+                        sequence.stage==FoldStep::SpindleWithC &&
+                        geometry.right_triangle_geometry_verified &&
+                        sequence.source.formal_sum.value==
+                            geometry.total.value;
     return {sequence,geometry,matching,false};
 }
 

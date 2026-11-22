@@ -184,6 +184,38 @@ constexpr auto closure=fa::evaluate_closure(fold8,pyramid);
 static_assert(closure.trace.valid && !closure.formal_areas_equal);
 static_assert(!closure.folding_proves_pyramid);
 
+
+// SIGMA-TRIANGLE-PYRAMID-PR34-003:
+// Three mutually perpendicular edges, base a RIGHT triangle.
+// Sample x=1/2, y=1/2, z=1, oblique double-area=3/4.
+// The oblique face identity is: (1/4)^2+(1/2)^2+(1/2)^2=(3/4)^2.
+constexpr auto triangle_pyramid = fa::right_triangle_pyramid(
+    Q/2ULL,Q/2ULL,Q,3ULL*Q/4ULL);
+static_assert(triangle_pyramid.right_triangle_geometry_verified);
+static_assert(triangle_pyramid.base.value==576460752303423488ULL);
+static_assert(triangle_pyramid.face_xz.value==1152921504606846976ULL);
+static_assert(triangle_pyramid.face_yz.value==1152921504606846976ULL);
+static_assert(triangle_pyramid.face_oblique.value==1729382256910270464ULL);
+static_assert(triangle_pyramid.lateral.value==4035225266123964416ULL);
+static_assert(triangle_pyramid.total.value==4611686018427387904ULL);
+static_assert(fa::decimal17(triangle_pyramid.total)==100000000000000000ULL);
+static_assert(triangle_pyramid.total.value!=pyramid.total.value);
+static_assert(!fa::right_triangle_pyramid(
+    0ULL,Q/2ULL,Q,3ULL*Q/4ULL).right_triangle_geometry_verified);
+static_assert(!fa::right_triangle_pyramid(
+    Q/2ULL,0ULL,Q,3ULL*Q/4ULL).right_triangle_geometry_verified);
+static_assert(!fa::right_triangle_pyramid(
+    Q/2ULL,Q/2ULL,0ULL,3ULL*Q/4ULL).right_triangle_geometry_verified);
+static_assert(!fa::right_triangle_pyramid(
+    Q/2ULL,Q/2ULL,Q,Q/2ULL).right_triangle_geometry_verified);
+static_assert(!fa::right_triangle_pyramid(
+    Q+1ULL,Q/2ULL,Q,3ULL*Q/4ULL).right_triangle_geometry_verified);
+constexpr auto triangle_closure=fa::evaluate_triangle_closure(
+    fold8,triangle_pyramid);
+static_assert(triangle_closure.trace.valid &&
+              !triangle_closure.formal_areas_equal &&
+              !triangle_closure.folding_proves_pyramid);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};

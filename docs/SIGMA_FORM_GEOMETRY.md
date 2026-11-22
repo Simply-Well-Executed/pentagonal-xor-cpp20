@@ -218,3 +218,58 @@ automatic merge, approval, or release is introduced by this protocol.
 It is guarded by the existing whole-tree HEAD/TAIL source evidence.
 CI must independently compile the new tests before any PASS can be
 claimed. **RELEASE=HOLD. Chosen, never assumed.**
+
+
+## SIGMA-TRIANGLE-PYRAMID-PR34-003: right_triangle_pyramid
+
+Added **alongside** `right_square_pyramid`, without replacing the
+square-pyramid formula, earlier symbolic folds, or AIRGAP records.
+
+**Geometric definition is explicit:** the tetrahedron has a
+right-triangle base with coordinates `(0,0,0)`, `(x,0,0)`,
+`(0,y,0)`, and apex `(0,0,z)`. Thus the three edges incident
+to the right-angle vertex are mutually perpendicular. The apex is
+directly above that vertex, **not over the base centroid**.
+This is a *trirectangular tetrahedron*, here called
+`right_triangle_pyramid`. It has four triangular faces.
+
+Let the orthogonal base legs be `x`, `y`, vertical height `z`,
+and oblique face **double-area**
+`q=sqrt((xy)^2+(xz)^2+(yz)^2)`. The total four-face surface area is:
+
+`S_triangle = (xy + xz + yz + q)/2`.
+
+For no-include C++20 Q62 arithmetic, the caller explicitly supplies
+`q` as an unsigned integer Q62 value. The implementation checks the
+exact identity `q*q == (xy)^2+(xz)^2+(yz)^2` in 128-bit limbs,
+after computing each scaled product as
+`floor(leg1*leg2/2^62)`. This **fails closed** when quantized
+inputs do not admit an exact oblique double-area witness. It does
+not claim to handle all otherwise valid real-valued tetrahedra or
+approximate square roots silently.
+
+### Synthetic normalized exact rational example
+
+`x=1/2`, `y=1/2`, `z=1`,
+`q=3/4`. Then `xy=1/4`, `xz=1/2`,
+`yz=1/2` and `q²=(1/4)²+(1/2)²+(1/2)²`.
+
+| Triangle face | Geometric area | Q62 integer | Decimal17 |
+| --- | ---: | ---: | ---: |
+| Right-triangle base (xy) | 0.125 | 576460752303423488 | 12500000000000000 |
+| Side xz | 0.25 | 1152921504606846976 | 25000000000000000 |
+| Side yz | 0.25 | 1152921504606846976 | 25000000000000000 |
+| Opposite oblique face | 0.375 | 1729382256910270464 | 37500000000000000 |
+| Three lateral faces | 0.875 | 4035225266123964416 | 87500000000000000 |
+| **Total four-face surface** | **1.0** | **4611686018427387904** | **100000000000000000** |
+
+The earlier right-square-pyramid normalized sample has area 1.5,
+so these two independent models are not conflated.
+`evaluate_triangle_closure()` separately compares the B/C/D
+formal sum against triangle surface and never claims that folding
+establishes a tetrahedron. Domain-invalid inputs and deliberately
+wrong oblique witnesses are covered by `static_assert`.
+
+Every sample here uses declared normalized coordinates, not
+measurements extracted from photographs. Source validation, approval
+and release policy remain independent. **RELEASE=HOLD.**

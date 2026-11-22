@@ -36,6 +36,15 @@ static_assert(ai::right_square_pyramid(
     3ULL*ai::unit/4ULL,ai::unit/2ULL,
     5ULL*ai::unit/8ULL).right_square_geometry_verified);
 
+// Independently verified four-face right triangular pyramid (tetrahedron).
+constexpr auto right_tri_core = ai::right_triangle_pyramid(
+    ai::unit/2ULL,ai::unit/2ULL,ai::unit,3ULL*ai::unit/4ULL);
+static_assert(right_tri_core.right_triangle_geometry_verified);
+static_assert(right_tri_core.total.value==ai::unit);
+static_assert(!ai::right_triangle_pyramid(
+    ai::unit/2ULL,ai::unit/2ULL,ai::unit,
+    ai::unit/2ULL).right_triangle_geometry_verified);
+
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
 static_assert(swe::sigma_form::inverse_square_intensity(
