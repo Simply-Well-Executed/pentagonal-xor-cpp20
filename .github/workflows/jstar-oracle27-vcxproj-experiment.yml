@@ -190,6 +190,10 @@ jobs:
           }
           CommitEvidence 'toolong_arithmetic_test.vcxproj' $preserved
           CommitEvidence 'JSTAR-results.json' $resultFile
+          foreach($label in @('full-build','isolated-toolong','all-ctest','javac-literal-vcxproj','native-build','native-execute')) {
+            $log=Join-Path $evidence ($label+'.log')
+            if([IO.File]::Exists($log)) {CommitEvidence ($label+'.log') $log}
+          }
           CommitEvidence 'JSTAR-evidence.zip' $bundle
           CommitEvidence 'JSTAR-evidence.zip.sha256' $shaPath
           $summary= @(
