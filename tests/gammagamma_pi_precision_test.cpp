@@ -4,6 +4,7 @@
 #include "../shared/gammagamma.hpp"
 #include "../shared/pi_precision.hpp"
 #include "../shared/euler_pi_inverse_square.hpp"
+#include "../shared/toolong_q62.hpp"
 #include <cmath>
 #include <cstdint>
 #include <iomanip>
@@ -18,6 +19,8 @@ int main() {
     // Both source constants retain all 18 digits; no floating-point coercion.
     static_assert(inverse_square::euler_digits18 == 271828182845904523ULL);
     static_assert(inverse_square::euler_series_prefix() == inverse_square::euler_digits18);
+    static_assert(toolong_q62::sigma_sigma_sigma());
+    if(!toolong_q62::verify_triforce())return 90;
     static_assert(inverse_square::pi_digits18 == gammagamma::pi_integer);
     // SigmaPi substitution is a symbolic candidate, never a hidden 1/pi.
     static_assert(inverse_square::sigmapi_exploratory::I.state ==

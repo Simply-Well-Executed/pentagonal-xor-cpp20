@@ -11,6 +11,11 @@ if((DEFINED CMAKE_CXX_COMPILER AND CMAKE_CXX_COMPILER MATCHES "[Cc][Ll][Aa][Nn][
   message(FATAL_ERROR "TOOLCHAIN|HOLD|clang_compiler_prohibited")
 endif()
 project(SWEAuditReleaseConsumer LANGUAGES CXX)
+# PR #32 native MSVC-only (clang-cl is NOT MSVC).
+if(NOT CMAKE_HOST_WIN32 OR NOT MSVC OR
+   NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  message(FATAL_ERROR "TOOLCHAIN|HOLD|native_MSVC_only")
+endif()
 # A renamed Clang/AppleClang driver must not bypass the path gate.
 if(CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|AppleClang)$")
   message(FATAL_ERROR "TOOLCHAIN|HOLD|clang_family_compiler_prohibited")

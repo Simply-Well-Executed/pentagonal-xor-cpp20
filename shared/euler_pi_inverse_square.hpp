@@ -3,12 +3,13 @@
 // Compile-time only; no non-ISO 128-bit extensions, floating point or runtime state.
 #ifndef SWE_EULER_PI_INVERSE_SQUARE_HPP
 #define SWE_EULER_PI_INVERSE_SQUARE_HPP
+#include "toolong_q62_core.hpp"
 
 namespace swe::inverse_square {
 using u64 = unsigned long long;
 inline constexpr u64 scale = 100000000000000000ULL; // 17 fractional places, 18 total digits
-inline constexpr u64 euler_digits18 = 271828182845904523ULL;
-inline constexpr u64 pi_digits18 = 314159265358979323ULL;
+inline constexpr u64 euler_digits18 = toolong_q62::euler.expected_integer;
+inline constexpr u64 pi_digits18 = toolong_q62::pi.expected_integer;
 
 // Independent C++20 fixed-point witness of the first 18 digits of e.
 // Twenty levels of the finite factorial-series Horner form yield this prefix.

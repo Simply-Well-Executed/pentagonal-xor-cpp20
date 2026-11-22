@@ -4,6 +4,7 @@
 #include "../shared/toolong_ratio.hpp"
 #include "../shared/toolong_photon_model.hpp"
 #include "../shared/toolong_bits.hpp"
+#include "../shared/toolong_q62.hpp"
 #include <cstdint>
 #include <iostream>
 #include <limits>
@@ -14,6 +15,34 @@ using swe::toolong;
 static void check(bool ok, const char* why) { if(!ok)throw std::runtime_error(why); }
 int main() {
 try {
+    static_assert(swe::toolong_q62::sigma_sigma_sigma());
+    static_assert(swe::toolong_q62::euler.expected_integer % 100ULL == 23ULL);
+    static_assert(swe::toolong_q62::pi.expected_integer % 100ULL == 23ULL);
+    static_assert(swe::toolong_q62::intensity.expected_integer % 100ULL == 23ULL);
+    for(const auto r : {swe::toolong_q62::euler,
+                        swe::toolong_q62::pi,
+                        swe::toolong_q62::intensity}) {
+        const auto audit=swe::toolong_q62::recompute(r);
+        check(swe::toolong_q62::verify(r),"TRIFORCE exact source witness");
+        check(audit.exact_product ==
+              audit.exact_quotient*audit.divisor+audit.exact_remainder,
+              "TRIFORCE quotient and remainder reconstruction");
+    }
+    check(swe::toolong_q62::verify_triforce(), "TRIFORCE all three records");
+    auto changed=swe::toolong_q62::intensity;
+    ++changed.expected_integer;
+    check(!swe::toolong_q62::verify(changed),
+          "TRIFORCE corrupted output must fail");
+    using swe::toolong_q62::ApprovalClaim;
+    constexpr const char* head="0123456789abcdef0123456789abcdef01234567";
+    constexpr ApprovalClaim first{"test-reviewer-a",head,true};
+    constexpr ApprovalClaim second{"test-reviewer-b",head,true};
+    constexpr ApprovalClaim third{"test-reviewer-c",head,true};
+    static_assert(swe::toolong_q62::three_distinct_claims(first,second,third,head));
+    static_assert(!swe::toolong_q62::three_distinct_claims(first,first,third,head));
+    static_assert(!swe::toolong_q62::three_distinct_claims(first,second,
+                  ApprovalClaim{"test-reviewer-c",head,false},head));
+    static_assert(!swe::toolong_q62::externally_authenticated_approval);
     const toolong zero, x{"314159265358979323"}, y{"123456789012345678901234567890"};
     check(zero.str()=="0" && toolong{"-000"}==zero,"canonical zero");
     check(toolong{"+000123456789000"}.str()=="123456789000","leading zero parsing");
