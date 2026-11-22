@@ -1,0 +1,208 @@
+# SPDX-License-Identifier: 0BSD
+# JSTAR isolated experiment. Never repair source, merge, release, or auto-approve.
+name: JSTAR Oracle 27 raw vcxproj and full native MSVC evidence
+on:
+  push:
+    branches:
+      - experiment/oracle-jdk27-vcxproj-diagnostics-20261121
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  jstar:
+    name: MSVC full C++20 O2 build + literal Oracle javac vcxproj probe
+    runs-on: windows-2025
+    timeout-minutes: 90
+    steps:
+      - name: Obtain exact source commit without Node checkout
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:GITHUB_REF -cne 'refs/heads/experiment/oracle-jdk27-vcxproj-diagnostics-20261121' -or
+             $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or
+             $env:RUNNER_OS -cne 'Windows') {throw 'JSTAR|HOLD|untrusted_run_context'}
+          $zip=Join-Path $env:RUNNER_TEMP 'jstar-source.zip'
+          $dir=Join-Path $env:RUNNER_TEMP 'jstar-source'
+          $url='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:GITHUB_SHA
+          Invoke-WebRequest -Uri $url -OutFile $zip -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-jstar-experiment'
+          }
+          Expand-Archive -LiteralPath $zip -DestinationPath $dir
+          $roots=@(Get-ChildItem -LiteralPath $dir -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Assert-TriforceHeadTail.ps1'))) {
+            throw 'JSTAR|HOLD|source_invalid'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'jstar-root.txt'),$roots[0].FullName)
+      - name: Native full build, Oracle exact probe, and JSTAR custody
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $PSNativeCommandUseErrorActionPreference=$false
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'jstar-root.txt'))
+          $evidence=Join-Path $env:RUNNER_TEMP 'jstar-evidence'
+          $native=Join-Path $evidence 'native'
+          $full=Join-Path $evidence 'full'
+          [void][IO.Directory]::CreateDirectory($evidence)
+          $guard=Join-Path $root 'ci/Assert-TriforceHeadTail.ps1'
+          $guardState=Join-Path $evidence 'head-tail'
+          $runResult=[ordered]@{
+            schema='JSTAR-1'
+            commit=[string]$env:GITHUB_SHA
+            run=[string]$env:GITHUB_RUN_ID
+            source_test_sha256=(Get-FileHash (Join-Path $root 'tests/toolong_arithmetic_test.cpp') -Algorithm SHA256).Hash.ToLowerInvariant()
+            native_configure=-999
+            native_build=-999
+            native_execute=-999
+            root_configure=-999
+            full_native_build=-999
+            isolated_toolong_build=-999
+            ctest=-999
+            oracle_archive='NOT_RUN'
+            oracle_javac_version='NOT_RUN'
+            javac_raw_vcxproj_exit=-999
+            release='HOLD'
+          }
+          function Gate([string]$operation,[string]$phase) {
+            & pwsh -NoLogo -NoProfile -NonInteractive -File $guard -RepositoryRoot $root -EvidenceDirectory $guardState -Operation $operation -Phase $phase
+            if($LASTEXITCODE -ne 0) {throw ('JSTAR|HOLD|TRIFORCE|'+$operation+'|'+$phase)}
+          }
+          function Capture([string]$label,[string]$executable,[string[]]$arguments) {
+            $log=Join-Path $evidence ($label+'.log')
+            $code=999
+            try {
+              $global:LASTEXITCODE=0
+              & $executable @arguments *> $log
+              $code=[int]$LASTEXITCODE
+            } catch {
+              [IO.File]::AppendAllText($log,($_|Out-String))
+            }
+            Write-Host ('JSTAR|'+$label+'|EXIT='+$code)
+            return $code
+          }
+          Gate 'jstar_configure' 'HEAD'
+          $runResult.native_configure=Capture 'native-configure' 'cmake' @('-S',(Join-Path $root 'ci/triforce'),'-B',$native,'-G','Visual Studio 18 2026','-A','x64')
+          $runResult.root_configure=Capture 'full-configure' 'cmake' @('-S',$root,'-B',$full,'-G','Visual Studio 18 2026','-A','x64','-DBUILD_TESTING=ON','-DSWE_STD_FREE_CORE_ONLY=OFF')
+          Gate 'jstar_configure' 'TAIL'
+          Gate 'jstar_fullbuild' 'HEAD'
+          if($runResult.native_configure -eq 0) {
+            $runResult.native_build=Capture 'native-build' 'cmake' @('--build',$native,'--config','Release','--parallel','4')
+            $exe=Join-Path $native 'Release/triforce_native_gate.exe'
+            if($runResult.native_build -eq 0 -and [IO.File]::Exists($exe)) {
+              $runResult.native_execute=Capture 'native-execute' $exe @()
+            }
+          }
+          if($runResult.root_configure -eq 0) {
+            $runResult.full_native_build=Capture 'full-build' 'cmake' @('--build',$full,'--config','Release','--parallel','4')
+            $runResult.isolated_toolong_build=Capture 'isolated-toolong' 'cmake' @('--build',$full,'--config','Release','--target','toolong_arithmetic_test','--parallel','1')
+            $runResult.ctest=Capture 'all-ctest' 'ctest' @('--test-dir',$full,'-C','Release','--output-on-failure','--no-tests=error','--parallel','4')
+          }
+          Gate 'jstar_fullbuild' 'TAIL'
+          Gate 'jstar_oracle' 'HEAD'
+          $officialUrl='https://download.oracle.com/java/27/latest/jdk-27_windows-x64_bin.zip'
+          $officialSha='9a2972e8ade166718fdc47e903b10b88e046b9839efb0a5cacb994a4be3266f7'
+          $oracleZip=Join-Path $evidence 'oracle-jdk27.zip'
+          $oracleDir=Join-Path $evidence 'oracle'
+          $javac=$null
+          try {
+            Invoke-WebRequest -Uri $officialUrl -OutFile $oracleZip -MaximumRedirection 3
+            $actual=(Get-FileHash -LiteralPath $oracleZip -Algorithm SHA256).Hash.ToLowerInvariant()
+            if($actual -cne $officialSha) {throw ('JSTAR|HOLD|Oracle_SHA256_mismatch|'+$actual)}
+            Expand-Archive -LiteralPath $oracleZip -DestinationPath $oracleDir
+            $candidates=@(Get-ChildItem -LiteralPath $oracleDir -Recurse -File -Filter 'javac.exe')
+            if($candidates.Count -ne 1) {throw 'JSTAR|HOLD|Oracle_javac_unavailable_or_ambiguous'}
+            $javac=$candidates[0].FullName
+            $runResult.oracle_archive='NFTC_27.0.1.1_SHA256_VERIFIED'
+            $runResult.oracle_javac_version=(& $javac -version 2>&1 | Out-String).Trim()
+            [IO.File]::WriteAllText((Join-Path $evidence 'oracle-custody.txt'),('URL='+$officialUrl+[Environment]::NewLine+'SHA256='+$actual+[Environment]::NewLine+'LICENSE=Oracle NFTC'+[Environment]::NewLine))
+          } catch {
+            $runResult.oracle_archive='FAILED'
+            [IO.File]::WriteAllText((Join-Path $evidence 'oracle-fetch-error.log'),($_|Out-String))
+          }
+          $project=Join-Path $full 'toolong_arithmetic_test.vcxproj'
+          if($null -ne $javac -and [IO.File]::Exists($project)) {
+            $runResult.javac_raw_vcxproj_exit=Capture 'javac-literal-vcxproj' $javac @($project)
+          }
+          Gate 'jstar_oracle' 'TAIL'
+          Gate 'jstar_custody' 'HEAD'
+          $payload=Join-Path $evidence 'payload'
+          $generated=Join-Path $payload 'generated'
+          [void][IO.Directory]::CreateDirectory($generated)
+          foreach($build in @($native,$full)) {
+            if(-not [IO.Directory]::Exists($build)) {continue}
+            if($build -ceq $native) {$sub='native'} else {$sub='full'}
+            foreach($file in Get-ChildItem -LiteralPath $build -File -Recurse) {
+              if($file.Extension -notin @('.vcxproj','.filters','.sln','.exe','.lib','.pdb')) {continue}
+              $target=Join-Path $generated (Join-Path $sub ([IO.Path]::GetRelativePath($build,$file.FullName)))
+              [void][IO.Directory]::CreateDirectory((Split-Path -Parent $target))
+              Copy-Item -LiteralPath $file.FullName -Destination $target
+            }
+          }
+          $preserved=Join-Path $generated 'full/toolong_arithmetic_test.vcxproj'
+          if(-not [IO.File]::Exists($preserved)) {throw 'JSTAR|HOLD|no_generated_project'}
+          $runResult.vcxproj_sha256=(Get-FileHash -LiteralPath $preserved -Algorithm SHA256).Hash.ToLowerInvariant()
+          $resultFile=Join-Path $payload 'JSTAR-results.json'
+          [IO.File]::WriteAllText($resultFile,($runResult|ConvertTo-Json -Depth 5),[Text.UTF8Encoding]::new($false))
+          foreach($file in Get-ChildItem -LiteralPath $evidence -File | Where-Object {$_.Extension -in @('.log','.txt')}) {
+            Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $payload $file.Name)
+          }
+          $inventory=Join-Path $payload 'JSTAR-file-inventory.tsv'
+          $records=[Collections.Generic.List[string]]::new()
+          [void]$records.Add(('path'+[char]9+'bytes'+[char]9+'sha256'))
+          foreach($file in Get-ChildItem -LiteralPath $payload -File -Recurse | Sort-Object FullName) {
+            $name=[IO.Path]::GetRelativePath($payload,$file.FullName).Replace([IO.Path]::DirectorySeparatorChar,'/')
+            $hash=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            [void]$records.Add(($name+[char]9+$file.Length+[char]9+$hash))
+          }
+          [IO.File]::WriteAllLines($inventory,$records,[Text.UTF8Encoding]::new($false))
+          $bundle=Join-Path $evidence 'JSTAR-evidence.zip'
+          Compress-Archive -Path (Join-Path $payload '*') -DestinationPath $bundle -CompressionLevel Optimal
+          $digest=(Get-FileHash -LiteralPath $bundle -Algorithm SHA256).Hash.ToLowerInvariant()
+          $shaPath=Join-Path $evidence 'JSTAR-evidence.zip.sha256'
+          [IO.File]::WriteAllText($shaPath,($digest+'  JSTAR-evidence.zip'+[Environment]::NewLine),[Text.UTF8Encoding]::new($false))
+          Gate 'jstar_custody' 'TAIL'
+          function CommitEvidence([string]$filename,[string]$filepath) {
+            $branch='evidence/jstar-oracle27-20261121'
+            $path='JSTAR/'+$env:GITHUB_SHA+'/'+$env:GITHUB_RUN_ID+'/'+$filename
+            $bytes=[IO.File]::ReadAllBytes($filepath)
+            $data=@{branch=$branch; message=('JSTAR custody: '+$filename); content=[Convert]::ToBase64String($bytes)}|ConvertTo-Json -Compress
+            $url='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/contents/'+$path
+            $response=Invoke-RestMethod -Uri $url -Method Put -ContentType 'application/json' -Headers @{
+              Authorization='Bearer '+$env:GH_TOKEN
+              Accept='application/vnd.github+json'
+              'X-GitHub-Api-Version'='2022-11-28'
+              'User-Agent'='swe-jstar-custody'
+            } -Body $data
+            if($response.content.path -cne $path) {throw 'JSTAR|HOLD|custody_write_response_invalid'}
+            Write-Host ('JSTAR|CUSTODY|'+$path+'|COMMIT='+$response.commit.sha)
+          }
+          CommitEvidence 'toolong_arithmetic_test.vcxproj' $preserved
+          CommitEvidence 'JSTAR-results.json' $resultFile
+          CommitEvidence 'JSTAR-evidence.zip' $bundle
+          CommitEvidence 'JSTAR-evidence.zip.sha256' $shaPath
+          $summary= @(
+            '### JSTAR experimental evidence',
+            ('Source commit: '+$env:GITHUB_SHA),
+            ('Native full build exit: '+$runResult.full_native_build),
+            ('TOOLONG target exit: '+$runResult.isolated_toolong_build),
+            ('Oracle JDK: '+$runResult.oracle_archive),
+            ('Raw javac vcxproj exit: '+$runResult.javac_raw_vcxproj_exit),
+            ('Evidence ZIP SHA-256: '+$digest),
+            'Release: HOLD. No repair, no approval, no PR.'
+          ) -join [Environment]::NewLine
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value $summary
+          if($runResult.full_native_build -ne 0 -or $runResult.native_execute -ne 0 -or $runResult.ctest -ne 0) {
+            throw 'JSTAR|HOLD|native_compilation_or_test_failed|evidence_committed'
+          }
