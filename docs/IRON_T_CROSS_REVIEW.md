@@ -1,7 +1,5 @@
 # IRON / T-CROSS: native call-boundary and CI audit
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 Status: **EXPLORATORY / NOT CERTIFIED**. This record reports inspections and a controlled proposed change. It does not assert that any build is completely network-free, that all function calls have been removed, or that a later workflow has passed.
 
 ## Evidence snapshot and authority
@@ -176,7 +174,7 @@ Status: **SOURCE CHANGE COMMITTED / NEW LOCAL RUNTIME NOT TESTED**. This continu
 ### Derived audit YAML and execution source
 
 - [Taskfile.yml](../Taskfile.yml) contains the nine ordered T-CROSS gates and `emit-diff-yaml` task in YAML v3 format, **not** in `.github/workflows`. Running `task` is optional and does not install third-party tools.
-- [ci/t-cross-posix.sh](../Archive/Retired/ci/t-cross-posix.sh.txt) is the primary POSIX `sh` implementation. `sh ci/t-cross-posix.sh` automatically derives `.iron-t-cross-diff.yml` from the locally available frozen baseline and committed `HEAD` before attempting gates.
+- [ci/t-cross-posix.sh](../ci/t-cross-posix.sh) is the primary POSIX `sh` implementation. `sh ci/t-cross-posix.sh` automatically derives `.iron-t-cross-diff.yml` from the locally available frozen baseline and committed `HEAD` before attempting gates.
 - `sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml` produces the audit without attempting build gates. The output is a derived Git ledger (`before`, `after`, per-file added/removed, totals, binary-line caveat); no hand-authored numbers override Git.
 - The example offline operator assertions in Taskfile are PowerShell 7.7.0 and CMake 3.30.0. A static assertion is **not proof** that these are forever the latest versions or that the local host has them. The script fails closed when versions differ or tools are unavailable.
 - The default policy is deliberately strict: configured Git remotes, any workflow YAML, source REST/download candidates, and remaining `java/`, `docker/`, `android/` directories each have separate gates. Existence of historical source is factual, not automatically evidence of active execution. Retiring it requires separate provenance and acceptance review.
@@ -319,7 +317,7 @@ Canonical source-level contract: [STD-free native T-CROSS](STD_FREE_NATIVE_T_CRO
 4. After this snapshot, run `sh ci/t-cross-posix.sh emit-diff-yaml` and `sh ci/Export-StdFreeInventory.sh` to derive current, rather than historical, counts.
 5. Actual CMake configure/build, native CTest, toolchain identification, unsupported ABI negative controls and runtime import/zero-CALL checks remain **HOLD / NOT TESTED**.
 
-Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [platform YAML](../ci/native-platform-matrix.yml), [STD inventory exporter](../Archive/Retired/ci/Export-StdFreeInventory.sh.txt), [POSIX executor](../Archive/Retired/ci/Build-PlatformMatrix.sh.txt), [Windows executor](../ci/Build-PlatformMatrix.ps1).
+Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [platform YAML](../ci/native-platform-matrix.yml), [STD inventory exporter](../ci/Export-StdFreeInventory.sh), [POSIX executor](../ci/Build-PlatformMatrix.sh), [Windows executor](../ci/Build-PlatformMatrix.ps1).
 
 ## T-CROSS: operator-authorized post-GAMP4 Docker and native multi-OS release candidate
 
@@ -373,7 +371,7 @@ Canonical references: [native platform protocol](NATIVE_PLATFORM_MATRIX.md), [pl
 
 **Current observations:** No Docker daemon available in assistant environment, no approved preloaded builder image digests, no native Windows/macOS target run, no 12-URS runtime report for this candidate, no 13-profile release artifact, no registry push and no published GitHub release. This is a deliberate HOLD, not a passing release.
 
-**Canonical protocol:** [GAMP4 Docker release custody](GAMP4_DOCKER_RELEASE.md), [13-profile YAML](../ci/gamp4-docker-release.yml), [local Docker Compose](../docker/compose.release.yml), [release assembler](../Archive/Retired/ci/Assemble-Gamp4-Release.sh.txt).
+**Canonical protocol:** [GAMP4 Docker release custody](GAMP4_DOCKER_RELEASE.md), [13-profile YAML](../ci/gamp4-docker-release.yml), [local Docker Compose](../docker/compose.release.yml), [release assembler](../ci/Assemble-Gamp4-Release.sh).
 
 ## T-CROSS follow-up: sanitized local Docker source isolation
 

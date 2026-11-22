@@ -1,7 +1,5 @@
 # GitHub Container Registry and Android/Linux Python-free development requirement
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 **Status: source change and GitHub-only validation proposal.** The historical Docker Hub digest is immutable evidence. A Python-free image must be rebuilt and independently tested and must carry a different digest; it must never inherit prior GAMP4 approval by implication.
 
 ## Two distinct image identities

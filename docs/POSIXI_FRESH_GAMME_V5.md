@@ -1,7 +1,5 @@
 # FRESH-ART-EYE-GAMME-v5: FLOP/FLIP nine-beat ingress
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 **EXPLORATORY / SOURCE-ONLY / RELEASE HOLD**. This is an explicitly versioned new source stream rather than mutation of any prior frozen protocol.
 
 ## Vocabulary and operator boundaries

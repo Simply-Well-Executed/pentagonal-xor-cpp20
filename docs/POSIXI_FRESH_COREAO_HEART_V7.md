@@ -1,7 +1,5 @@
 # FRESH-ART-EYE-COREAO-HEART-v7
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 **EXPLORATORY / SOURCE-ONLY / RELEASE HOLD.** COREAO, here named HEART, is an explicit **symbolic bridge between an outer phase and its modeled inner experience**. It does not create an agent, conscious process, physical energy/radiation, real interpersonal relationship, or operational network action.
 
 ## Canonical mapping

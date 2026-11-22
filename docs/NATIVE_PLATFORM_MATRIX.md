@@ -1,7 +1,5 @@
 # IRON native platform matrix and staged STD-free migration
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 
 **CURRENT operator-selected Docker exception:** [GAMP4 Docker release candidate](GAMP4_DOCKER_RELEASE.md) adds a separate, explicit local-only, digest-pinned Docker validation and artifact-transport path. It does not replace native Windows/macOS toolchains, or alter the historical core archive manifest's target identities. All GAMP4 results and release assets remain NOT TESTED for this candidate until executed.
 
@@ -10,7 +8,7 @@
 ## Canonical paths
 
 - [`ci/native-platform-matrix.yml`](../ci/native-platform-matrix.yml) lists a fixed whitelist of target OS/CPU combinations and their initial verification states.
-- [`ci/Build-PlatformMatrix.sh`](../Archive/Retired/ci/Build-PlatformMatrix.sh.txt) uses installed POSIX sh, CMake, Git and platform SDKs for local macOS/Linux or installed-NDK Android cross compilation.
+- [`ci/Build-PlatformMatrix.sh`](../ci/Build-PlatformMatrix.sh) uses installed POSIX sh, CMake, Git and platform SDKs for local macOS/Linux or installed-NDK Android cross compilation.
 - [`ci/Build-PlatformMatrix.ps1`](../ci/Build-PlatformMatrix.ps1) uses local PowerShell 7, MSVC, CMake, Git and Visual Studio's existing `vswhere` to create Win32/x64/ARM64 archives. It requires an exact version match with the operator's independently verified latest stable PowerShell release.
 - [`Taskfile.yml`](../Taskfile.yml) exposes fixed profile aliases, but the Task CLI is **optional**. Run the POSIX or PowerShell script directly without installing a Go-based task runner or any other orchestrator.
 - [`CMakeLists.txt`](../CMakeLists.txt) has the new explicit opt-in `-DSWE_STD_FREE_CORE_ONLY=ON`, which compiles `swe_std_free_portable_core` as a platform static archive and installs ten native STD-free public headers, including the existing DecaSigma/TriPi/COREAO/gain/stereo/Stability10D math contracts. It skips legacy C++ targets **for that particular build**, but those source files remain present and unchanged in the default full build.

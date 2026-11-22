@@ -1,7 +1,5 @@
 # FRESH-ART-EYE-PING-v4: exact YING and eye-art s projection
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 **CURRENT EXPERIMENT: v4, SOURCE ONLY, RELEASE HOLD.** The user-selected substitution is `= → s` at the YING-only witness and its corresponding `(=)` artistic suffix **throughout** the active 14 artistic checkpoints. Do not edit frozen v1–v3 or historical evidence.
 
 ## Two-line exemplar

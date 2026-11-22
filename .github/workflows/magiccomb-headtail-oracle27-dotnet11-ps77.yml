@@ -13,7 +13,6 @@ on:
       - main
       - 29-exc-gnu-linux-001-prefer-mit-oracle-lgpl-21-forbid-lgpl-3-gpl-eupl-epl-release-hold
       - feat/magiccomb-license-oracle27-dotnet11-ps77-20261120
-      - feat/jstar-msvc-process-provenance-20261121
     paths:
       - .github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml
       - LICENSE
@@ -27,10 +26,6 @@ on:
       - docs/LOCALITY_FIRST_SOURCE_CUSTODY.md
       - README.md
       - .gitattributes
-      - discardedfiles.tsv
-      - discardedfiles.md
-      - Archive/Retired/**
-      - Taskfile.yml
 
 permissions:
   contents: read
@@ -134,7 +129,7 @@ jobs:
           Write-Host 'OPENBSD|COREAO|HEAD_TAIL_PASS|CORE=OPENBSD2|YIN_YANG_DISTINCT|NATIVE_LEGACY_HOLD'
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_04' -Phase 'TAIL'
           if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_04|TAIL'}
-      - name: Verify discarded custody, historical FRESH lineage and native transcript
+      - name: Verify FRESH source custody and variable-free terminal without shell execution
         shell: pwsh
         run: |
           $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
@@ -144,11 +139,72 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $root = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
           $utf8 = [Text.UTF8Encoding]::new($false,$true)
-          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Assert-RetiredCiCustody.ps1') -RepositoryRoot $root
-          if ($LASTEXITCODE -ne 0) { throw 'FRESH|HOLD|discarded_registry_or_policy' }
-          # Historical shell bytes remain inert data. The v1-to-v8 derivation below
-          # is unchanged; native transcript equivalence is verified independently.
-          $gammaPath = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.sigmapi-v8.sh.txt'
+          $manifestPath = Join-Path $root 'Archive/Retired/ISSUE_29_LEGACY_SHELLS.tsv'
+          if (-not [IO.File]::Exists($manifestPath)) { throw 'FRESH|HOLD|missing_archive_manifest' }
+          $records = [IO.File]::ReadAllLines($manifestPath,$utf8)
+          $header = @('original_path','archive_path','original_git_blob_sha1','original_size_bytes','custody_state') -join [char]9
+          if ($records.Length -ne 18 -or -not [StringComparer]::Ordinal.Equals($records[0],$header)) {
+            throw 'FRESH|HOLD|archive_manifest_schema'
+          }
+          $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+          foreach ($row in $records[1..17]) {
+            $f = $row.Split([char]9)
+            if ($f.Length -ne 5) { throw 'FRESH|HOLD|archive_record_columns' }
+            $original,$archived,$sha,$byteCount,$state = $f
+            if ($original -cnotmatch '^ci/(?:docker/)?[A-Za-z0-9.-]+[.]sh$' -or -not $seen.Add($original)) {
+              throw 'FRESH|HOLD|invalid_original_path'
+            }
+            if (-not [StringComparer]::Ordinal.Equals($archived,('Archive/Retired/' + $original + '.txt')) -or
+                -not [StringComparer]::Ordinal.Equals($state,'RETIRED_HISTORY_ONLY') -or
+                $sha -cnotmatch '^[0-9a-f]{40}$' -or $byteCount -cnotmatch '^[0-9]+$') {
+              throw ('FRESH|HOLD|invalid_record|' + $original)
+            }
+            $archivedFile = Join-Path $root ($archived.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            if (-not [IO.File]::Exists($archivedFile)) { throw ('FRESH|HOLD|missing_archive|' + $original) }
+            if (((Get-Item -LiteralPath $archivedFile -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+              throw ('FRESH|HOLD|archive_symlink|' + $original)
+            }
+            $bytes = [IO.File]::ReadAllBytes($archivedFile)
+            if ($bytes.Length -ne [long]$byteCount) { throw ('FRESH|HOLD|archive_size_drift|' + $original) }
+            $prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $bytes.Length) + [char]0)
+            $blob = [byte[]]::new($prefix.Length + $bytes.Length)
+            [Array]::Copy($prefix,0,$blob,0,$prefix.Length)
+            [Array]::Copy($bytes,0,$blob,$prefix.Length,$bytes.Length)
+            $actualSha = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($blob)).ToLowerInvariant()
+            if (-not [StringComparer]::Ordinal.Equals($actualSha,$sha)) {
+              throw ('FRESH|HOLD|archive_blob_drift|' + $original)
+            }
+            $wrapperFile = Join-Path $root ($original.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            if (-not [IO.File]::Exists($wrapperFile)) { throw ('FRESH|HOLD|missing_wrapper|' + $original) }
+            if (((Get-Item -LiteralPath $wrapperFile -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+              throw ('FRESH|HOLD|wrapper_symlink|' + $original)
+            }
+            $wrapper = $utf8.GetString([IO.File]::ReadAllBytes($wrapperFile))
+            $expected = @(
+              '#!/bin/sh'
+              '# SPDX-License-Identifier: 0BSD'
+              '# ISSUE-29: retired legacy entrypoint; original exact bytes archived in Git.'
+              ('# Archive: Archive/Retired/' + $original + '.txt')
+              '# FRESH GammaGamma fixed control transfer; no original release operation.'
+              '# REQUIRES repository root as working directory; experimental only.'
+              ("echo 'FRESH|ENTRY|" + $original + "|RETIRED|HOLD'")
+              'exec sh ./ci/FRESH-GammaGamma.sh'
+              'exit 42'
+            )
+            if (-not [StringComparer]::Ordinal.Equals($wrapper,(($expected -join [char]10) + [char]10)) -or
+                $wrapper.Contains([char]36) -or $wrapper.Contains([char]37)) {
+              throw ('FRESH|HOLD|wrapper_drift_or_variable|' + $original)
+            }
+          }
+          $shells = @(Get-ChildItem -LiteralPath (Join-Path $root 'ci') -Filter '*.sh' -File -Recurse -Force)
+          if ($shells.Count -ne 18) { throw "FRESH|HOLD|unreviewed_shell_count|$($shells.Count)" }
+          foreach ($file in $shells) {
+            $relative = [IO.Path]::GetRelativePath($root,$file.FullName).Replace('\','/')
+            if (-not $seen.Contains($relative) -and -not [StringComparer]::Ordinal.Equals($relative,'ci/FRESH-GammaGamma.sh')) {
+              throw ('FRESH|HOLD|unreviewed_shell_path|' + $relative)
+            }
+          }
+          $gammaPath = Join-Path $root 'ci/FRESH-GammaGamma.sh'
           $gamma = $utf8.GetString([IO.File]::ReadAllBytes($gammaPath))
           if ($gamma.Contains([char]36) -or $gamma.Contains([char]37)) { throw 'FRESH|HOLD|gamma_variable_or_format' }
           $commands = @([IO.File]::ReadAllLines($gammaPath,$utf8) | Where-Object {
@@ -547,10 +603,8 @@ jobs:
           }
           Write-Host 'FRESH|PING|STATIC_PASS|events=66|yang_ying_pairs=36|ying_only=14|none=16|no_network|exit=42'
           Write-Host 'FRESH|ART_CHAIN|STATIC_PASS|GAMMA_BIDI_TRIDI_SIGMADI_BUTTERFLY|UP_DOWN|exit=42'
-          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Test-FreshGammaGammaNative.ps1') -RepositoryRoot $root
-          if ($LASTEXITCODE -ne 0) { throw 'FRESH|HOLD|native_transcript_semantics' }
-          Write-Host 'FRESH|STATIC_PASS|exact_original_archives=17|removed_wrappers=17|native_harness=1|terminal=EXACT|exit=42'
-          Write-Host 'FRESH|LIMIT|SYMBOLIC_TRANSCRIPT_ONLY|NO_POSIX_EXECUTION|RELEASE=HOLD'
+          Write-Host ('FRESH|STATIC_PASS|exact_archives=' + $seen.Count + '|zero_variable_wrappers=17|harness=1|terminal=EXACT|exit=42')
+          Write-Host 'FRESH|LIMIT|SOURCE_ONLY|NO_SHELL_EXECUTION|RELEASE_HOLD'
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_05' -Phase 'TAIL'
           if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_05|TAIL'}
       - name: Verify HANDI SigmaPi and ROT triad with native C++20 MSVC O2
@@ -597,7 +651,36 @@ jobs:
           if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_07|HEAD'}
           $ErrorActionPreference = 'Stop'
           $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
-          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $src 'ci/Assert-RetiredCiCustody.ps1') -RepositoryRoot $src
-          if ($LASTEXITCODE -ne 0) { throw 'POLICY|HOLD|retired_ci_custody' }
+          $scripts = @(Get-ChildItem -LiteralPath $src -Filter '*.sh' -File -Recurse -Force)
+          foreach ($item in $scripts) {
+            Write-Host ('POLICY|POSIX|UNAPPROVED|' + $item.FullName.Substring($src.Length + 1))
+          }
+          $docker = Join-Path $src 'docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile'
+          $legacyWorkflows = @('cloud-dockerhub-repush.yml','cloud-ghcr-android-no-python.yml','dockerhub-pythonfree-candidate-deployment.yml','github-cloud-docker-gamp4.yml')
+          foreach ($name in $legacyWorkflows) {
+            $wf = Join-Path (Join-Path $src '.github/workflows') $name
+            if (-not [IO.File]::Exists($wf)) { throw ('POLICY|HOLD|missing_workflow|' + $name) }
+            $body = [IO.File]::ReadAllText($wf)
+            $jobsBlock = [regex]::Match($body,'(?ms)^jobs:\r?\n(?<entries>.*)$')
+            if (-not $jobsBlock.Success) { throw ('POLICY|HOLD|missing_jobs|' + $name) }
+            $count = [regex]::Matches($jobsBlock.Groups['entries'].Value,'(?m)^  [a-z0-9_-]+:\s*$').Count
+            $blocked = [regex]::Matches($body,'(?m)^    if: \$\{\{ false \}\}').Count
+            if ($count -eq 0 -or $count -ne $blocked) {
+              throw ('POLICY|HOLD|legacy_workflow_executable|' + $name + '|jobs=' + $count + '|blocked=' + $blocked)
+            }
+            Write-Host ('POLICY|WORKFLOW|FROZEN|' + $name + '|jobs=' + $blocked)
+          }
+          $gnuTooling = $false
+          if ([IO.File]::Exists($docker)) {
+            $line = [IO.File]::ReadAllText($docker)
+            $gnuTooling = [regex]::IsMatch($line,'\b(g\+\+|gcc|gawk|make|grep|findutils)\b')
+            if ($gnuTooling) { Write-Host 'POLICY|GNU|UNAPPROVED|experimental_Dockerfile_toolchain' }
+          }
+          if ($scripts.Count -ne 0 -or $gnuTooling) {
+            throw "POLICY|HOLD|posix_scripts=$($scripts.Count)|unapproved_gnu_probe=$gnuTooling|migration_required"
+          }
+          Write-Host 'POLICY|SOURCE_CHECK|PASS|no_known_unapproved_ci_shell_or_probe'
+          Write-Host 'POLICY|LIMIT|source_scan_only|third_party_and_organization_inventory_still_required'
+
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_07' -Phase 'TAIL'
           if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_07|TAIL'}

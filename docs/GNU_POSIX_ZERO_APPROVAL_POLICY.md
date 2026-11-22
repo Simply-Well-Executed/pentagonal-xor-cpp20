@@ -1,7 +1,5 @@
 # GNU / POSIX zero-approval migration protocol
 
-**Migration update, 2026-11-22 (PR #34):** The 17 retired `.sh` wrappers have been removed from active source. The [versioned discarded-files registry](../discardedfiles.md) records each original and wrapper Git blob SHA; exact original text remains archival evidence. The current fixed transcript is [native PowerShell](../ci/FRESH-GammaGamma.ps1), preserving every historical v8 output line and nonzero exit 42 / **RELEASE=HOLD**. The GNU-dependent, unpublished probe Dockerfile is retained only as [archived text](../Archive/Retired/docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile.txt), with its Git blob identity in the registry. The four deprecated publishing/build workflows remain disabled. This migration does not approve GNU components, inherited toolchains, third-party licenses, existing images, publication or merge; those independent holds persist. Earlier statements below about active wrappers or the probe describe the historical migration state.
-
 **CURRENT, 2026-11-20, operator-directed**. This policy applies to project-authored source, scripts, CI jobs, build containers and runtime images in this repository. The operator additionally states the same expectation for other organizational projects, but this repository and its CI **cannot enforce changes outside their scope**. Current policy has **no GNU or POSIX component exceptions**, including GPL, LGPL 2.1/3.0, AGPL, GFDL, GCC/g++, GNU make, GNU grep/gawk, and authored POSIX shell execution.
 
 ## License versus interface

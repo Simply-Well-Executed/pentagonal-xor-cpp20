@@ -1,7 +1,5 @@
 # STD-free native C++20 XOR engine: T-CROSS +/-DIFF
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 **Status: CANDIDATE SOURCE COMMITTED; COMPILE, LINK, RUNTIME AND WHOLE-REPOSITORY VERIFICATION PENDING.**
 
 This record applies to the *separate throughput byte-stream engine*. It does not silently alter the established five-input parity-probability algorithm, other C++ public header interfaces, Git history or previously frozen T-CROSS line counts.

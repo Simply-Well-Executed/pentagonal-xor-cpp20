@@ -1,7 +1,5 @@
 # FRESH-ART-EYE-PING-v2: YANG/YING paren ownership
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 **EXPLORATORY.** Source-only symbolic annotation; not an approved POSIX interpreter, network probe, executable POSIXI compiler, license exception, or a release gate PASS.
 
 ## Frozen input and delta

@@ -1,7 +1,5 @@
 # POSIXI / FRESH artistic lineage: Eye Witness v1
 
-**Historical shell instructions:** POSIX commands and shell behavior described below are preserved as historical protocol/evidence. The 17 wrappers are removed from active CI; links target archived text. See the [discarded-files registry](../discardedfiles.md). Retained task names invoke the native fixed transcript and exit 42 / **RELEASE=HOLD**, without performing these former operations.
-
 **Status: EXPLORATORY, source-only.** This records a proposed display-language transformation, not a native POSIXI runtime or an approved POSIX execution path. New version identifier: `FRESH-ART-EYE-v1`. The existing FRESH source remains in its historical GNU/POSIX policy HOLD.
 
 ## Source and derived forms

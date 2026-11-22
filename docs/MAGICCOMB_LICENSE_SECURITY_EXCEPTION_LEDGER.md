@@ -1,7 +1,5 @@
 # MagicComb HEAD/TAIL: License and CVE exception ledger
 
-**Migration update, 2026-11-22 (PR #34):** The 17 retired `.sh` wrappers have been removed from active source. The [versioned discarded-files registry](../discardedfiles.md) records each original and wrapper Git blob SHA; exact original text remains archival evidence. The current fixed transcript is [native PowerShell](../ci/FRESH-GammaGamma.ps1), preserving every historical v8 output line and nonzero exit 42 / **RELEASE=HOLD**. The GNU-dependent, unpublished probe Dockerfile is retained only as [archived text](../Archive/Retired/docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile.txt), with its Git blob identity in the registry. The four deprecated publishing/build workflows remain disabled. This migration does not approve GNU components, inherited toolchains, third-party licenses, existing images, publication or merge; those independent holds persist. Earlier statements below about active wrappers or the probe describe the historical migration state.
-
 > **Release status: HOLD.** This ledger is a custody and triage record, not a license grant, production approval, or an instruction to delete historical images. All identities are source-bound. Every exception is **UNAPPROVED** until explicit operator review.
 
 ## CURRENT license-variant admission delta (2026-11-20)

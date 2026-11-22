@@ -37,9 +37,7 @@ RUN set -eu; \
 
 WORKDIR /study
 COPY --chown=10001:10001 . /study/
-# Historical no-Python shell gate is retired; this build deliberately stops at HOLD.
-# This is not a replacement image audit or permission to publish GNU-dependent layers.
-RUN ["pwsh", "-NoLogo", "-NoProfile", "-NonInteractive", "-File", "/study/ci/FRESH-GammaGamma.ps1"]
+RUN /bin/sh /study/ci/Assert-AndroidLinux-NoPython.sh image
 RUN chown -R 10001:10001 /study
 USER 10001:10001
 ENTRYPOINT ["pwsh", "-NoLogo", "-NoProfile"]

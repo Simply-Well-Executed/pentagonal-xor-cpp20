@@ -6,7 +6,7 @@
 
 **Simply Well Executed** · **0BSD** · **Native runtime imports under audit**
 
-**Native verification:** [PowerShell + MSVC + CTest](ci/Invoke-NativeCore.ps1); [historical GitHub cloud GAMP4 workflow](.github/workflows/github-cloud-docker-gamp4.yml) remains disabled
+**Native verification:** [PowerShell + MSVC + CTest](ci/Invoke-NativeCore.ps1) or [explicit GitHub cloud GAMP4 workflow](.github/workflows/github-cloud-docker-gamp4.yml) (no user-local compute for cloud runs)
 [![Releases](https://img.shields.io/github/v/release/Simply-Well-Executed/pentagonal-xor-cpp20?include_prereleases&label=release)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus)](CMakeLists.txt)
 [![License: 0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE)
@@ -17,8 +17,6 @@
 </div>
 
 ---
-
-**Current CI custody:** 17 POSIX wrappers were removed; their original and wrapper Git blob identities are recorded in [discarded-files registry](discardedfiles.md). Any shell commands below are historical examples, not current operator instructions. Retained Taskfile/Compose entrypoints now print the native fixed transcript with exit 42 / **RELEASE=HOLD**; they do not build, export inventories or stage releases. Use reviewed native PowerShell build entrypoints for actual validation.
 
 ## Local-first evidence and licensing registry
 
@@ -56,13 +54,13 @@ sha256:cf8ea2216382fd030d36caeb8092d28506c1bd74128cfb0f8beedc303aa24b62
 ```
 
 **This is a candidate, not a new approved production release.** The original historic Docker Hub digest remains unchanged; Android device acceptance, independent QA, and the remaining 12 GAMP4 platform profiles are not implied. GitHub package visibility is separately private until an authorized package administrator changes it.
-Repository source: [`docker/android-source-study-v1.Dockerfile`](docker/android-source-study-v1.Dockerfile), [`ci/Mirror-AndroidSourceStudy-GHCR.sh`](Archive/Retired/ci/Mirror-AndroidSourceStudy-GHCR.sh.txt), and [GitHub cloud GHCR workflow](.github/workflows/cloud-ghcr-android-no-python.yml).
+Repository source: [`docker/android-source-study-v1.Dockerfile`](docker/android-source-study-v1.Dockerfile), [`ci/Mirror-AndroidSourceStudy-GHCR.sh`](ci/Mirror-AndroidSourceStudy-GHCR.sh), and [GitHub cloud GHCR workflow](.github/workflows/cloud-ghcr-android-no-python.yml).
 
 ## GAMP4-gated local Docker release staging (candidate)
 
 An explicit, operator-requested [GAMP4 Docker release protocol](docs/GAMP4_DOCKER_RELEASE.md) now provides a **local-only, SHA256-digest-pinned Docker Compose** path for full Linux CMake/CTest and all twelve GAMP4-style URS checks, plus offline Android NDK archive builds dependent on the validated source SHA. Native **macOS Intel/Apple Silicon** and **Windows Win32/x64/ARM64** validation scripts produce separate platform-specific GAMP4/CTest evidence. Docker cannot provide a genuine macOS runtime, and Windows container images require matching Windows infrastructure.
 
-The [13-profile release YAML](ci/gamp4-docker-release.yml) and [offline Docker Compose](docker/compose.release.yml) require cached toolchain images, local Docker daemon, disabled container networking, non-root execution, read-only Git-archived committed source without .git or untracked files and no automatic image/SDK downloads. The [release assembler](Archive/Retired/ci/Assemble-Gamp4-Release.sh.txt) refuses incomplete source-matched evidence or failed package checksums; it stages bundles and release notes with status **STAGED_NOT_PUBLISHED**. The optional [OCI payload Dockerfile](docker/ReleasePayload.Dockerfile) transports multi-OS files but is **not a runnable macOS/Windows/Android container**.
+The [13-profile release YAML](ci/gamp4-docker-release.yml) and [offline Docker Compose](docker/compose.release.yml) require cached toolchain images, local Docker daemon, disabled container networking, non-root execution, read-only Git-archived committed source without .git or untracked files and no automatic image/SDK downloads. The [release assembler](ci/Assemble-Gamp4-Release.sh) refuses incomplete source-matched evidence or failed package checksums; it stages bundles and release notes with status **STAGED_NOT_PUBLISHED**. The optional [OCI payload Dockerfile](docker/ReleasePayload.Dockerfile) transports multi-OS files but is **not a runnable macOS/Windows/Android container**.
 
 **One scoped GitHub-hosted Linux amd64 GAMP4-style validation** passed 44/44 CTest and 12/12 URS on commit `3b4fef5f49d1d90029b88184a91a84d4598f4d48` ([run #44704209472](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/44704209472)). Other 12 release profiles, QA and production qualification are not implied. The user explicitly authorized GitHub-hosted compute; self-hosted and user-local runners remain excluded from the cloud workflows. Full repository STD-free certification remains unclaimed.
 
@@ -79,11 +77,11 @@ The [exact-token test](tests/quantum_operand_lexicon_test.cpp) is registered as 
 
 [Native platform matrix](ci/native-platform-matrix.yml) now declares locally buildable C++20 static-archive profiles for **macOS arm64 / x86_64 / universal**, **Windows x86 / x64 (AMD64) / ARM64**, **Linux x86 / x86_64 / ARM64**, and **Android arm64-v8a / armeabi-v7a / x86 / x86_64**. The macOS 32-bit Intel profile is explicitly unsupported on modern macOS, not silently marked green. See [OS/ABI setup and operator commands](docs/NATIVE_PLATFORM_MATRIX.md).
 
-The opt-in `-DSWE_STD_FREE_CORE_ONLY=ON` CMake path compiles the [STD-free portable core probe](tests/std_free_portable_probe.cpp) into a static archive and installs ten native STD-free public headers, including the existing DecaSigma/TriPi/COREAO/gain/stereo/Stability10D math contracts. It skips unrelated legacy projects **only for this explicitly scoped build**; the normal full build remains available. The local [POSIX builder](Archive/Retired/ci/Build-PlatformMatrix.sh.txt) and [Windows PowerShell builder](ci/Build-PlatformMatrix.ps1) perform no network fetch, package installation, hosted runner execution or container launch. Their local YAML reports say `ARCHIVE_BUILT_NOT_RUNTIME_TESTED`, not a claimed application pass.
+The opt-in `-DSWE_STD_FREE_CORE_ONLY=ON` CMake path compiles the [STD-free portable core probe](tests/std_free_portable_probe.cpp) into a static archive and installs ten native STD-free public headers, including the existing DecaSigma/TriPi/COREAO/gain/stereo/Stability10D math contracts. It skips unrelated legacy projects **only for this explicitly scoped build**; the normal full build remains available. The local [POSIX builder](ci/Build-PlatformMatrix.sh) and [Windows PowerShell builder](ci/Build-PlatformMatrix.ps1) perform no network fetch, package installation, hosted runner execution or container launch. Their local YAML reports say `ARCHIVE_BUILT_NOT_RUNTIME_TESTED`, not a claimed application pass.
 
 The independent [STD-free parity CLI](src/parity_std_free_main.cpp) reuses the original five-feature probability function and has six comparison CTests. It is not yet promoted over the [original parity CLI](pentagonal_xor_cpp20.cpp); its strict ASCII decimal parser does not claim full `std::stod` grammar/locale equivalence. The existing legacy headers, tools and tests still contain standard-library dependencies, so **the entire repository is not yet STD-free**.
 
-The former POSIX inventory exporter and T-CROSS runner are retired. Their archived source explains the historical inventory and Git-derived `+/-DIFF` YAML; current retained task names emit only the native HOLD transcript and create no inventory or validation evidence. Repository-wide compliance remains unverified until independent native checks replace those operations.
+Generate the current complete source inventory using `sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml`. The POSIX T-CROSS default also writes this inventory and a Git-derived `+/-DIFF` YAML before enforcing strict gates. No source deletion or replacement of mathematical definitions is performed to manufacture a green result.
 
 ## PENTAGONAL SUITE: nine native C++20 operations
 
@@ -116,7 +114,7 @@ The `-LatestStableVersion` argument is **not a repository pin**. The operator mu
 
 **Source integrity:** The local entrypoint runs the existing [Magic Comb](ci/Invoke-MagicComb.ps1) in SelfTest and Verify modes (strict UTF-8, Unicode NFKC, remove U+200B..U+200D and U+FEFF, nesting depth 9), then requires ISO C++20 (`CXX_STANDARD 20`, `CXX_STANDARD_REQUIRED ON`, `CXX_EXTENSIONS OFF`) with MSVC `/O2`, builds, and invokes CTest. It writes `.iron-native-evidence.json` locally. It does **not** download or execute an automated installer.
 
-**Historical POSIX T-CROSS +/−DIFF gate runner (retired):** [Taskfile.yml](Taskfile.yml) is the declarative, version-3 YAML manifest; [ci/t-cross-posix.sh](Archive/Retired/ci/t-cross-posix.sh.txt) is the archived implementation. The Task CLI is optional and never installed automatically. Historical command, no longer executable here: `sh ci/t-cross-posix.sh` in a locally controlled, already-checked-out source tree to generate a fresh `.iron-t-cross-diff.yml` from Git and attempt the nine ordered gates. To export only the derived audit YAML: `sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml`. The generated file is local and ignored by Git; exact baseline/current SHAs and counts derive from Git, never from display prose.
+**POSIX T-CROSS +/−DIFF gate runner:** [Taskfile.yml](Taskfile.yml) is the declarative, version-3 YAML manifest; [ci/t-cross-posix.sh](ci/t-cross-posix.sh) is the actual executable implementation. The Task CLI is optional and never installed automatically. Run `sh ci/t-cross-posix.sh` in a locally controlled, already-checked-out source tree to generate a fresh `.iron-t-cross-diff.yml` from Git and attempt the nine ordered gates. To export only the derived audit YAML: `sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml`. The generated file is local and ignored by Git; exact baseline/current SHAs and counts derive from Git, never from display prose.
 
 **Zero-CALL scope:** [tests/zero_call_core_probe.cpp](tests/zero_call_core_probe.cpp) compiles a separate object using the *canonical shared five-input parity function* under the existing /O2 or -O2 policy. The POSIX disassembly gate requires no CALL instructions in that **isolated mathematical core**. The CLI still performs input parsing, validation, and output; those are not covertly certified as call-free. The historical fifth-root helper has been made non-recursive. Current `java/`, `docker/`, and `android/` directories remain tracked, so a strict whole-tree residual-surface gate will fail until a separately audited retirement. The native tests and nine-gate bundle have not yet been executed under the new ISO mode.
 

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: 0BSD
 # Native T-CROSS policy manifest. Never place this under .github/workflows.
-# Retired POSIX task names now invoke the native fixed transcript and exit 42 (HOLD).
-# Current transcript: pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+# Execution source is POSIX sh; the external Task CLI is optional, not required.
+# Canonical local invocation: sh ci/t-cross-posix.sh
 version: '3'
 
 vars:
@@ -21,7 +21,7 @@ env:
 
 tasks:
   default:
-    desc: 'HOLD: former POSIX gates are retired; no validation result is produced'
+    desc: 'Run all strict, ordered, local T-CROSS gates without hosted runners'
     cmds:
       - task: emit-diff-yaml
       - task: emit-std-inventory-yaml
@@ -40,182 +40,182 @@ tasks:
       - task: test-ctest
 
   gate-no-remote-git:
-    desc: '[RETIRED/HOLD] Reject configured remotes and dirty tracked files; no Git fetch'
+    desc: 'Reject configured remotes and dirty tracked files; no Git fetch'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-no-remote-git
 
   gate-no-github-workflows:
-    desc: '[RETIRED/HOLD] Reject active .github/workflows YAML runners'
+    desc: 'Reject active .github/workflows YAML runners'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-no-github-workflows
 
   gate-no-live-rest:
-    desc: '[RETIRED/HOLD] Reject network API/download candidates in CI, tools and CMake'
+    desc: 'Reject network API/download candidates in CI, tools and CMake'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-no-live-rest
 
   gate-no-std-throughput:
-    desc: '[RETIRED/HOLD] Require no STD headers or namespaces in twelve native sources including experimental exact-symbol lexicon and tests'
+    desc: 'Require no STD headers or namespaces in twelve native sources including experimental exact-symbol lexicon and tests'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-no-std-throughput
 
   gate-suite-no-comments:
-    desc: '[RETIRED/HOLD] Reject comment tokens in three Pentagonal Suite C++20 source files'
+    desc: 'Reject comment tokens in three Pentagonal Suite C++20 source files'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-suite-no-comments
 
   gate-no-std-repository:
-    desc: '[RETIRED/HOLD] Strict red gate until all legacy C/C++ tracked sources are STD-free'
+    desc: 'Strict red gate until all legacy C/C++ tracked sources are STD-free'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-no-std-repository
 
   gate-no-residual-surfaces:
-    desc: '[RETIRED/HOLD] Reject retained Java, Docker and Android manual-use directories'
+    desc: 'Reject retained Java, Docker and Android manual-use directories'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-no-residual-surfaces
 
   gate-pinned-versions:
-    desc: '[RETIRED/HOLD] Require pinned local CMake; check PowerShell version only when pwsh is installed'
+    desc: 'Require pinned local CMake; check PowerShell version only when pwsh is installed'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-pinned-versions
 
   build-cpp20:
-    desc: '[RETIRED/HOLD] Configure ISO C++20 with approved compiler, O2 only; Clang prohibited (HOLD)'
+    desc: 'Configure ISO C++20 with approved compiler, O2 only; Clang prohibited (HOLD)'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh build-cpp20
 
   gate-zero-function-calls:
-    desc: '[RETIRED/HOLD] Inspect optimized canonical parity object only; do not claim zero CLI calls'
+    desc: 'Inspect optimized canonical parity object only; do not claim zero CLI calls'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-zero-function-calls
 
   gate-zero-network-imports:
-    desc: '[RETIRED/HOLD] Inspect canonical parity and three native CLIs for known network imports'
+    desc: 'Inspect canonical parity and three native CLIs for known network imports'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-zero-network-imports
 
   gate-no-std-binary:
-    desc: '[RETIRED/HOLD] Inspect STD-free parity, throughput and Suite CLI C/C++ runtime imports'
+    desc: 'Inspect STD-free parity, throughput and Suite CLI C/C++ runtime imports'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh gate-no-std-binary
 
   test-ctest:
-    desc: '[RETIRED/HOLD] Run parity, SWAR, suite operations and native CLI CTests locally'
+    desc: 'Run parity, SWAR, suite operations and native CLI CTests locally'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh test-ctest
 
   emit-std-inventory-yaml:
-    desc: '[RETIRED/HOLD] Derive non-mutating per-file STD reference inventory from tracked Git source'
+    desc: 'Derive non-mutating per-file STD reference inventory from tracked Git source'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml
 
   emit-diff-yaml:
-    desc: '[RETIRED/HOLD] Derive a fresh +/-DIFF YAML audit from frozen base SHA and local Git HEAD'
+    desc: 'Derive a fresh +/-DIFF YAML audit from frozen base SHA and local Git HEAD'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml
 
-  # Historical platform task names are retained only as native HOLD entrypoints.
-  # These tasks no longer build archives, export inventories or generate evidence.
+  # Local-only platform builds. Each command receives a fixed whitelist ID.
+  # No Task CLI or YAML interpreter is required when invoking sh directly.
   matrix-macos-arm64:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: macos-arm64; no binary execution proof'
+    desc: 'Build local native STD-free core archive: macos-arm64; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh macos-arm64
 
   matrix-macos-x86_64:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: macos-x86_64; no binary execution proof'
+    desc: 'Build local native STD-free core archive: macos-x86_64; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh macos-x86_64
 
   matrix-macos-universal:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: macos-universal; no binary execution proof'
+    desc: 'Build local native STD-free core archive: macos-universal; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh macos-universal
 
   matrix-linux-x86_64:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: linux-x86_64; no binary execution proof'
+    desc: 'Build local native STD-free core archive: linux-x86_64; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh linux-x86_64
 
   matrix-linux-arm64:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: linux-arm64; no binary execution proof'
+    desc: 'Build local native STD-free core archive: linux-arm64; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh linux-arm64
 
   matrix-linux-x86:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: linux-x86; no binary execution proof'
+    desc: 'Build local native STD-free core archive: linux-x86; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh linux-x86
 
   matrix-android-arm64-v8a:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: android-arm64-v8a; no binary execution proof'
+    desc: 'Build local native STD-free core archive: android-arm64-v8a; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh android-arm64-v8a
 
   matrix-android-armeabi-v7a:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: android-armeabi-v7a; no binary execution proof'
+    desc: 'Build local native STD-free core archive: android-armeabi-v7a; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh android-armeabi-v7a
 
   matrix-android-x86:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: android-x86; no binary execution proof'
+    desc: 'Build local native STD-free core archive: android-x86; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh android-x86
 
   matrix-android-x86_64:
-    desc: '[RETIRED/HOLD] Build local native STD-free core archive: android-x86_64; no binary execution proof'
+    desc: 'Build local native STD-free core archive: android-x86_64; no binary execution proof'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-PlatformMatrix.sh android-x86_64
 
   matrix-windows-info:
     desc: 'Windows x86/x64/AMD64/ARM64 uses PowerShell with independently reviewed latest release'
     cmds:
       - pwsh -NoLogo -NoProfile -Command "Write-Host 'Run ci/Build-PlatformMatrix.ps1 with Profile, LatestStablePowerShellVersion and ReleaseEvidenceUri'"
 
-  # Retired Docker task names remain HOLD; no Docker execution is performed.
+  # Explicit local Docker exception. These tasks are never in the default gate.
   gamp4-docker-linux-amd64:
-    desc: '[RETIRED/HOLD] Local pinned Linux amd64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    desc: 'Local pinned Linux amd64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-amd64
 
   gamp4-docker-linux-arm64:
-    desc: '[RETIRED/HOLD] Local pinned Linux arm64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    desc: 'Local pinned Linux arm64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-arm64
 
   gamp4-docker-linux-x86:
-    desc: '[RETIRED/HOLD] Local pinned Linux i386 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    desc: 'Local pinned Linux i386 GAMP4 full CTest + 12 URS; no pull or remote publisher'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-x86
 
   gamp4-docker-android-arm64-v8a:
-    desc: '[RETIRED/HOLD] NDK arm64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    desc: 'NDK arm64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-arm64-v8a
 
   gamp4-docker-android-armeabi-v7a:
-    desc: '[RETIRED/HOLD] NDK armv7 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    desc: 'NDK armv7 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-armeabi-v7a
 
   gamp4-docker-android-x86:
-    desc: '[RETIRED/HOLD] NDK x86 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    desc: 'NDK x86 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-x86
 
   gamp4-docker-android-x86_64:
-    desc: '[RETIRED/HOLD] NDK x86_64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    desc: 'NDK x86_64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-x86_64
 
   gamp4-assemble-release:
-    desc: '[RETIRED/HOLD] Require all 13 source-matched platform receipts and package SHA256 files'
+    desc: 'Require all 13 source-matched platform receipts and package SHA256 files'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Assemble-Gamp4-Release.sh
 
   gamp4-local-oci-payload:
-    desc: '[RETIRED/HOLD] Pack staged release files into a local scratch OCI transport only'
+    desc: 'Pack staged release files into a local scratch OCI transport only'
     cmds:
-      - pwsh -NoLogo -NoProfile -NonInteractive -File ci/FRESH-GammaGamma.ps1
+      - sh ci/Build-Release-OciPayload.sh
 
   dockerhub-source-study-inspect:
     desc: 'Operator-invoked registry read-only check of sha-07eb2a4561f0 versus pinned digest; no push'
