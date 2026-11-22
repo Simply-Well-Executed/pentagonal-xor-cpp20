@@ -6,6 +6,7 @@
 #include "../shared/sigma_form_area_q62.hpp"
 #include "../shared/right_triangle_f123_original.hpp"
 #include "../shared/f123_eighth_fold_experiment.hpp"
+#include "../shared/sigma_e_redaxualchoice.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -66,6 +67,15 @@ static_assert(eighth_probe.f2_over_2_q62==
 static_assert(eighth_probe.final_egress_q62==
               3ULL*ai::unit/128ULL);
 static_assert(!eighth_probe.geometric_tip_verified);
+
+// Read-only bounded finite SigmaE from frozen F123 -> Eighth Fold.
+constexpr auto sigma_e_probe =
+    swe::sigma_e_redaxualchoice::calculate(eighth_probe);
+static_assert(sigma_e_probe.valid &&
+              sigma_e_probe.all_terms_equivalent);
+static_assert(sigma_e_probe.sigma_q62 ==
+              21ULL*ai::unit/256ULL);
+static_assert(!sigma_e_probe.geometric_tip_verified);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);

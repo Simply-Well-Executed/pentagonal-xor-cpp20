@@ -86,6 +86,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/sigma_form_area_q62.hpp
     shared/right_triangle_f123_original.hpp
     shared/f123_eighth_fold_experiment.hpp
+    shared/sigma_e_redaxualchoice.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
@@ -373,6 +374,7 @@ install(FILES
     shared/sigma_form_area_q62.hpp
     shared/right_triangle_f123_original.hpp
     shared/f123_eighth_fold_experiment.hpp
+    shared/sigma_e_redaxualchoice.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp

@@ -5,6 +5,7 @@
 #include "../shared/sigma_form_area_q62.hpp"
 #include "../shared/right_triangle_f123_original.hpp"
 #include "../shared/f123_eighth_fold_experiment.hpp"
+#include "../shared/sigma_e_redaxualchoice.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -291,6 +292,53 @@ constexpr unsigned long long eighth_u128_expected =
               (2ULL*f123::F3_Q62)) >> 62u) *
          (4ULL*f123::F2_Q62/8ULL)) >> 62u);
 static_assert(eighth_u128_expected==eighth.final_egress_q62);
+#endif
+
+
+// SIGMA-E-REDAXUALCHOICE-PR34-006:
+// E is the independent frozen BCD F3-cross-slot E, not Σ(F1+F2+F3).
+// Each k in [-3,+3] is a distinct fraction witness equal to E/2.
+namespace sigmae=swe::sigma_e_redaxualchoice;
+constexpr auto esigma=sigmae::calculate(eighth);
+static_assert(esigma.source_verified && esigma.all_terms_equivalent);
+static_assert(esigma.valid && !esigma.infinite_sum_converges);
+static_assert(!esigma.geometric_tip_verified);
+static_assert(esigma.source_e_q62==108086391056891904ULL);
+static_assert(esigma.minus3.index==-3 && esigma.plus3.index==3);
+static_assert(esigma.minus3.numerator_q62==13510798882111488ULL);
+static_assert(esigma.minus3.denominator_numerator==2ULL &&
+              esigma.minus3.denominator_denominator==8ULL);
+static_assert(esigma.zero.numerator_q62==108086391056891904ULL);
+static_assert(esigma.plus3.numerator_q62==864691128455135232ULL);
+static_assert(esigma.plus3.denominator_numerator==16ULL &&
+              esigma.plus3.denominator_denominator==1ULL);
+static_assert(esigma.minus3.result_q62==54043195528445952ULL);
+static_assert(esigma.minus2.result_q62==esigma.minus3.result_q62);
+static_assert(esigma.minus1.result_q62==esigma.minus3.result_q62);
+static_assert(esigma.zero.result_q62==esigma.minus3.result_q62);
+static_assert(esigma.plus1.result_q62==esigma.minus3.result_q62);
+static_assert(esigma.plus2.result_q62==esigma.minus3.result_q62);
+static_assert(esigma.plus3.result_q62==esigma.minus3.result_q62);
+static_assert(esigma.sigma_q62==378302368699121664ULL);
+static_assert(fa::decimal17({esigma.sigma_q62,true})==
+              8203125000000000ULL);
+static_assert(!sigmae::term(eighth.final_egress_q62,-4).valid);
+static_assert(!sigmae::term(eighth.final_egress_q62,4).valid);
+static_assert(!sigmae::term(0ULL,0).valid);
+static_assert(!sigmae::term(eighth.final_egress_q62+1ULL,-3).valid);
+static_assert(!sigmae::term(~0ULL,3).valid);
+constexpr auto ecorrupt=[]() constexpr {
+    auto x=eighth;
+    ++x.final_egress_q62;
+    return x;
+}();
+static_assert(!sigmae::calculate(ecorrupt).valid);
+#if defined(__SIZEOF_INT128__) && !defined(_MSC_VER)
+constexpr unsigned long long sigma_e_u128 =
+    static_cast<unsigned long long>(
+       (static_cast<__uint128_t>(21ULL) *
+        static_cast<__uint128_t>(Q)) / 256ULL);
+static_assert(sigma_e_u128 == esigma.sigma_q62);
 #endif
 
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
