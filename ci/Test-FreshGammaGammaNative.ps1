@@ -5,7 +5,7 @@
 param([Parameter(Mandatory=$true)][string]$RepositoryRoot)
 
 $ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 2.0
 $root = [IO.Path]::GetFullPath($RepositoryRoot)
 $nativePath = Join-Path $root 'ci/FRESH-GammaGamma.ps1'
 $archivePath = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.sigmapi-v8.sh.txt'

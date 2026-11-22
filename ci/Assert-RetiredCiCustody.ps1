@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param([Parameter(Mandatory)][string]$RepositoryRoot)
 
-Set-StrictMode -Version Latest
+Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 $root = [IO.Path]::GetFullPath($RepositoryRoot)
 $utf8 = [Text.UTF8Encoding]::new($false,$true)
