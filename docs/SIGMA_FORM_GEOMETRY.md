@@ -127,3 +127,94 @@ as unverified. An internal consistency pass cannot authorize a
 release, authenticate a photograph, waive CI HOLD, or substitute for
 external validation. Static assertions in the native gate and
 STD-free probe cover these inputs and negative controls.
+
+
+## SIGMA-FORM-FOLD-PR34-002: two independent paths and B/C/D fold sequence
+
+This is an **additive exploratory protocol**, retaining all earlier
+SIGMA-AREA-BCD-AIRGAP-001 source and witnessed history. It does not rename
+or replace the original Q62 Euler/Pi/Intensity `circle_of_sanity::centrix`.
+
+**Names:** `SigmaA` is a new square-base surface-area witness
+`s²`; `AIRGAP A` remains the separate triangular reference
+`b*h/2`. They are not aliases, despite sharing A in their names.
+
+The three ordered and independently preserved formal sums are:
+
+1. `SigmaA + SigmaB + SigmaC | AIRGAP A` (ABC);
+2. `SigmaC + SigmaD + SigmaB | AIRGAP A` (CDB);
+3. `SigmaB + SigmaC + SigmaD | AIRGAP A` (BCD).
+
+`paired_and(ABC,CDB)` denotes the user's `^&^` conjunction,
+not consensus, aliasing, equivalence, human consent or release
+authority. CDB and BCD have identical arithmetic sums **because addition
+is commutative**; the ordered lane metadata is distinct and preserved.
+
+The BCD branch is the source for these nine named C++20 `constexpr`
+stages, with a strict precondition on its predecessor:
+
+| Stage | Pure function | Formal operation |
+| --- | --- | --- |
+| 0 | `start_fold` | Store B,C,D in original order |
+| 1 | `fold_b_into_c` | B-first conceptual overlap |
+| 2 | `fold_d_into_c` | D-second conceptual overlap |
+| 3 | `push_c_into_d` | Record symbolic nesting |
+| 4 | `twirl_to_rope` | Rotate complex orientation `i^n` |
+| 5 | `loop_into_needle` | Tag intended loop/needle geometry |
+| 6 | `insert_into_airgap_a` | Enter independent A validation boundary |
+| 7 | `twist_a_90` | Exact imaginary quarter turn `i*(x+i*y)` |
+| 8 | `spindle_with_c` | Four additional quarter turns `i^4=1` |
+
+Every stage retains its source B,C,D and the formal sum. Folding,
+nesting, imaginary-number rotation, looping and spindling do not
+automatically convert disjoint *projected* shapes into a physical
+square pyramid. Rope radius, needle sharpness, curvature, stretching,
+self-intersection, fabric footprint, and 3-D equivalence remain
+**unmeasured/unverified**. The conceptual names record the user's
+chosen operator order, not measured dynamics or invented geometry.
+Bad operator order and invalid domains return a failed state.
+
+### Independent closed square-pyramid surface
+
+For a **right square pyramid** with square-base side `s`, vertical
+height `h`, and face slant `l`:
+
+`4*l*l=4*h*h+s*s` (exact slant consistency, integer-safe)
+
+`base=s*s`, `each_face=s*l/2`,
+`lateral=4*each_face`, and **`total=s*s+2*s*l`**.
+
+The four triangular lateral faces and one square base make **five**
+faces. A tetrahedron is a different polyhedron with four triangular
+faces; this module does not equate them. The optional user nickname
+"Tetrid" is only descriptive metadata, never a shape identity claim.
+
+To avoid any square root or non-ISO compiler dependence, the new
+`right_square_pyramid()` verifies
+`4*l²=4*h²+s²` using the existing 128-bit limb products and returns
+the base, one triangular face, all lateral faces, and total surface
+as independent Q62 outputs. The normalized exact illustrative sample
+`s=3/4, h=1/2, l=5/8` gives:
+
+| Quantity | Q62 area | Decimal17 output |
+| --- | ---: | ---: |
+| Square base | 2594073385365405696 | 56250000000000000 |
+| One triangular face | 1080863910568919040 | 23437500000000000 |
+| Four lateral faces | 4323455642275676160 | 93750000000000000 |
+| Total square-pyramid area | 6917529027641081856 | 150000000000000000 |
+
+These are normalized square units, not photograph-derived m².
+The declared BCD sum remains
+`5572453938933093717` Q62 units, whereas the independently
+defined square-pyramid area is `6917529027641081856`. They are
+**not equal**. Consequently `evaluate_closure()` records both the
+actual comparison result and `folding_proves_pyramid=false` even if
+numerical equality occurs in another example. The geometric formula
+is validated by exact side/height/slant premises, never inferred
+from a decorative operator sequence.
+
+No C++ include directives, STL, runtime allocation, remote fetch,
+automatic merge, approval, or release is introduced by this protocol.
+It is guarded by the existing whole-tree HEAD/TAIL source evidence.
+CI must independently compile the new tests before any PASS can be
+claimed. **RELEASE=HOLD. Chosen, never assumed.**

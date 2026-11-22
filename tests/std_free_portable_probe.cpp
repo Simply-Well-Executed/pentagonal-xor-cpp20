@@ -23,6 +23,19 @@ constexpr ai::WidthSample std_free_d[]={
     {0ULL,ai::unit/2ULL},{ai::unit,ai::unit/2ULL}
 };
 static_assert(ai::sigma_d(std_free_d).value==ai::unit/2ULL);
+// The follow-on ordered folds keep distinct source lanes and fail closed.
+constexpr ai::Q62Area std_a=ai::airgap_a(ai::unit,ai::unit);
+constexpr ai::Q62Area std_b=ai::sigma_b(
+    {0ULL,0ULL},{ai::unit/2ULL,ai::unit},{ai::unit,0ULL});
+constexpr ai::Q62Area std_c=ai::sigma_c(ai::unit/4ULL,ai::unit);
+constexpr ai::Q62Area std_d=ai::sigma_d(std_free_d);
+constexpr auto std_path=ai::path_bcd(std_b,std_c,std_d,std_a);
+static_assert(std_path.valid);
+static_assert(ai::fold_b_into_c(ai::start_fold(std_path)).valid);
+static_assert(ai::right_square_pyramid(
+    3ULL*ai::unit/4ULL,ai::unit/2ULL,
+    5ULL*ai::unit/8ULL).right_square_geometry_verified);
+
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
 static_assert(swe::sigma_form::inverse_square_intensity(

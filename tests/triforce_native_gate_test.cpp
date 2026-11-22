@@ -120,6 +120,70 @@ static_assert(fa::wide_matches_native_u128(
     14488038916154245685ULL,100000000000000000ULL));
 #endif
 
+
+// SIGMA-FORM-FOLD-PR34-002: all three distinct paths, all nine stages.
+// These are explicitly normalized illustrative parameters, not photos.
+constexpr fa::Q62Area sigma_a_square = fa::sigma_a_square_base(3ULL*Q/4ULL);
+static_assert(sigma_a_square.valid);
+static_assert(sigma_a_square.value==2594073385365405696ULL);
+constexpr fa::OrderedPath abc =
+    fa::path_abc(sigma_a_square,sigma_b_area,sigma_c_area,airgap_area);
+constexpr fa::OrderedPath cdb =
+    fa::path_cdb(sigma_c_area,sigma_d_area,sigma_b_area,airgap_area);
+constexpr fa::OrderedPath bcd =
+    fa::path_bcd(sigma_b_area,sigma_c_area,sigma_d_area,airgap_area);
+static_assert(fa::paired_and(abc,cdb));
+static_assert(abc.formal_sum.value==5284223562781381973ULL);
+static_assert(cdb.formal_sum.value==5572453938933093717ULL);
+static_assert(bcd.formal_sum.value==5572453938933093717ULL);
+static_assert(cdb.first!=bcd.first && cdb.second!=bcd.second);
+static_assert(!fa::paired_and(bcd,abc));
+constexpr auto fold0=fa::start_fold(bcd);
+constexpr auto fold1=fa::fold_b_into_c(fold0);
+constexpr auto fold2=fa::fold_d_into_c(fold1);
+constexpr auto fold3=fa::push_c_into_d(fold2);
+constexpr auto fold4=fa::twirl_to_rope(fold3,3u);
+constexpr auto fold5=fa::loop_into_needle(fold4);
+constexpr auto fold6=fa::insert_into_airgap_a(fold5);
+constexpr auto fold7=fa::twist_a_90(fold6);
+constexpr auto fold8=fa::spindle_with_c(fold7);
+static_assert(fold0.valid && fold0.stage==fa::FoldStep::SeedBCD);
+static_assert(fold1.valid && fold1.stage==fa::FoldStep::FoldBIntoC);
+static_assert(fold2.valid && fold2.stage==fa::FoldStep::FoldDIntoC);
+static_assert(fold3.valid && fold3.stage==fa::FoldStep::PushCIntoD);
+static_assert(fold4.valid && fold4.stage==fa::FoldStep::TwirlToRope);
+static_assert(fold5.valid && fold5.stage==fa::FoldStep::LoopIntoNeedle);
+static_assert(fold6.valid && fold6.stage==fa::FoldStep::InsertIntoAirgapA);
+static_assert(fold7.valid && fold7.stage==fa::FoldStep::TwistA90);
+static_assert(fold8.valid && fold8.stage==fa::FoldStep::SpindleWithC);
+static_assert(fold8.quarter_turns==8u);
+static_assert(fold8.phase.real==1 && fold8.phase.imag==0);
+static_assert(fold0.source.formal_sum.value==
+              fold8.source.formal_sum.value);
+static_assert(!fold8.physical_shape_verified);
+static_assert(!fa::fold_d_into_c(fold0).valid);
+static_assert(!fa::twirl_to_rope(fold3,0u).valid);
+static_assert(!fa::start_fold(abc).valid);
+static_assert(fa::multiply_by_i(
+    fa::multiply_by_i(
+    fa::multiply_by_i(
+    fa::multiply_by_i({1,0})))).real==1);
+// Independent geometric closure, not derived from B/C/D folding.
+// s=3/4, h=1/2, l=5/8 -> l^2=h^2+(s/2)^2.
+constexpr auto pyramid=fa::right_square_pyramid(
+    3ULL*Q/4ULL,Q/2ULL,5ULL*Q/8ULL);
+static_assert(pyramid.right_square_geometry_verified);
+static_assert(pyramid.base.value==2594073385365405696ULL);
+static_assert(pyramid.one_triangle.value==1080863910568919040ULL);
+static_assert(pyramid.lateral.value==4323455642275676160ULL);
+static_assert(pyramid.total.value==6917529027641081856ULL);
+static_assert(fa::decimal17(pyramid.total)==150000000000000000ULL);
+static_assert(!fa::right_square_pyramid(
+    3ULL*Q/4ULL,Q/2ULL,Q/2ULL).right_square_geometry_verified);
+constexpr auto closure=fa::evaluate_closure(fold8,pyramid);
+static_assert(closure.trace.valid && !closure.formal_areas_equal);
+static_assert(!closure.folding_proves_pyramid);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};

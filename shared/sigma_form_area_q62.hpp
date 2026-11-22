@@ -175,6 +175,218 @@ template<unsigned N>
     return area.valid ? shift62(multiply(area.value,scale17)) : 0ULL;
 }
 
+
+// SIGMA-FORM-FOLD-PR34-002: additional independently named exploratory
+// sequence. Do not mutate the historical SIGMA-AREA-BCD-AIRGAP-001.
+// Distinct SIGMA A (square base) != AIRGAP A (triangular reference).
+[[nodiscard]] constexpr Q62Area sigma_a_square_base(u64 side) noexcept {
+    if (side == 0ULL || side > unit) return invalid_area();
+    return {shift62(multiply(side,side)), true};
+}
+enum class Lane : unsigned char {
+    SigmaA, SigmaB, SigmaC, SigmaD
+};
+struct OrderedPath {
+    Lane first, second, third;
+    Q62Area formal_sum;
+    Q62Area airgap_reference;
+    bool valid;
+};
+[[nodiscard]] constexpr OrderedPath ordered_path(
+    Lane first, Lane second, Lane third,
+    Q62Area x, Q62Area y, Q62Area z, Q62Area a) noexcept {
+    const bool distinct = first != second && first != third &&
+                          second != third;
+    const bool valid = distinct && x.valid && y.valid && z.valid &&
+                       a.valid && a.value != 0ULL &&
+                       x.value <= unit && y.value <= unit &&
+                       z.value <= unit && a.value <= unit;
+    // Inputs <= unit; 3*unit is less than 2^64. This is a FORMAL SUM,
+    // NOT a measure of non-overlapping fabric or geometric union.
+    return {first,second,third,
+            {valid ? x.value+y.value+z.value : 0ULL,valid},a,valid};
+}
+[[nodiscard]] constexpr OrderedPath path_abc(
+    Q62Area sigma_a, Q62Area sigma_b, Q62Area sigma_c,
+    Q62Area airgap_a_ref) noexcept {
+    return ordered_path(Lane::SigmaA,Lane::SigmaB,Lane::SigmaC,
+                        sigma_a,sigma_b,sigma_c,airgap_a_ref);
+}
+[[nodiscard]] constexpr OrderedPath path_cdb(
+    Q62Area sigma_c, Q62Area sigma_d, Q62Area sigma_b,
+    Q62Area airgap_a_ref) noexcept {
+    return ordered_path(Lane::SigmaC,Lane::SigmaD,Lane::SigmaB,
+                        sigma_c,sigma_d,sigma_b,airgap_a_ref);
+}
+[[nodiscard]] constexpr OrderedPath path_bcd(
+    Q62Area sigma_b, Q62Area sigma_c, Q62Area sigma_d,
+    Q62Area airgap_a_ref) noexcept {
+    return ordered_path(Lane::SigmaB,Lane::SigmaC,Lane::SigmaD,
+                        sigma_b,sigma_c,sigma_d,airgap_a_ref);
+}
+// ^&^ : conjunction, not identity, equality, voting or record merging.
+[[nodiscard]] constexpr bool paired_and(
+    OrderedPath abc, OrderedPath cdb) noexcept {
+    return abc.valid && cdb.valid &&
+           abc.first == Lane::SigmaA &&
+           abc.second == Lane::SigmaB &&
+           abc.third == Lane::SigmaC &&
+           cdb.first == Lane::SigmaC &&
+           cdb.second == Lane::SigmaD &&
+           cdb.third == Lane::SigmaB &&
+           abc.airgap_reference.value == cdb.airgap_reference.value;
+}
+// Exactly 90 degrees in a complex phase plane: i*(real+i*imag).
+// This is orientation bookkeeping, not material twist radius or tension.
+struct ImaginaryQuarterTurn {
+    int real, imag;
+};
+[[nodiscard]] constexpr ImaginaryQuarterTurn multiply_by_i(
+    ImaginaryQuarterTurn p) noexcept {
+    // Only four valid unit quadratures are admitted.
+    if ((p.real != 0 && p.imag != 0) ||
+        (p.real == 0 && p.imag == 0) ||
+        p.real < -1 || p.real > 1 ||
+        p.imag < -1 || p.imag > 1) return {0,0};
+    return {-p.imag,p.real};
+}
+enum class FoldStep : unsigned char {
+    SeedBCD,
+    FoldBIntoC,
+    FoldDIntoC,
+    PushCIntoD,
+    TwirlToRope,
+    LoopIntoNeedle,
+    InsertIntoAirgapA,
+    TwistA90,
+    SpindleWithC,
+    Invalid
+};
+struct FoldTrace {
+    OrderedPath source;
+    FoldStep stage;
+    ImaginaryQuarterTurn phase;
+    unsigned quarter_turns;
+    bool valid;
+    bool physical_shape_verified;
+};
+[[nodiscard]] constexpr FoldTrace start_fold(
+    OrderedPath bcd) noexcept {
+    const bool ok = bcd.valid &&
+                    bcd.first == Lane::SigmaB &&
+                    bcd.second == Lane::SigmaC &&
+                    bcd.third == Lane::SigmaD;
+    return {bcd,ok?FoldStep::SeedBCD:FoldStep::Invalid,
+            {1,0},0u,ok,false};
+}
+[[nodiscard]] constexpr FoldTrace advance(
+    FoldTrace t, FoldStep from, FoldStep to) noexcept {
+    if (!t.valid || t.stage != from) {
+        t.valid=false;
+        t.stage=FoldStep::Invalid;
+        return t;
+    }
+    t.stage=to;
+    return t;
+}
+[[nodiscard]] constexpr FoldTrace fold_b_into_c(FoldTrace t) noexcept {
+    return advance(t,FoldStep::SeedBCD,FoldStep::FoldBIntoC);
+}
+[[nodiscard]] constexpr FoldTrace fold_d_into_c(FoldTrace t) noexcept {
+    return advance(t,FoldStep::FoldBIntoC,FoldStep::FoldDIntoC);
+}
+[[nodiscard]] constexpr FoldTrace push_c_into_d(FoldTrace t) noexcept {
+    return advance(t,FoldStep::FoldDIntoC,FoldStep::PushCIntoD);
+}
+[[nodiscard]] constexpr FoldTrace twirl_to_rope(
+    FoldTrace t, unsigned quarter_turns) noexcept {
+    t=advance(t,FoldStep::PushCIntoD,FoldStep::TwirlToRope);
+    if (!t.valid) return t;
+    if (quarter_turns == 0u || quarter_turns > 32u) {
+        t.valid=false; t.stage=FoldStep::Invalid;
+        return t;
+    }
+    for (unsigned i=0u;i<quarter_turns;++i)
+        t.phase=multiply_by_i(t.phase);
+    t.quarter_turns=quarter_turns;
+    return t;
+}
+[[nodiscard]] constexpr FoldTrace loop_into_needle(FoldTrace t) noexcept {
+    // A loop/needle designation needs independent 3-D evidence to
+    // become a physical curvature or topology claim.
+    return advance(t,FoldStep::TwirlToRope,FoldStep::LoopIntoNeedle);
+}
+[[nodiscard]] constexpr FoldTrace insert_into_airgap_a(
+    FoldTrace t) noexcept {
+    return advance(t,FoldStep::LoopIntoNeedle,
+                   FoldStep::InsertIntoAirgapA);
+}
+[[nodiscard]] constexpr FoldTrace twist_a_90(FoldTrace t) noexcept {
+    t=advance(t,FoldStep::InsertIntoAirgapA,FoldStep::TwistA90);
+    if (t.valid) {
+        t.phase=multiply_by_i(t.phase);
+        ++t.quarter_turns;
+    }
+    return t;
+}
+[[nodiscard]] constexpr FoldTrace spindle_with_c(FoldTrace t) noexcept {
+    t=advance(t,FoldStep::TwistA90,FoldStep::SpindleWithC);
+    if (!t.valid) return t;
+    // Four exact imaginary quarter-turns close the phase:
+    // i^4 = 1. This is NOT infinite physical winding.
+    for (unsigned i=0u;i<4u;++i)
+        t.phase=multiply_by_i(t.phase);
+    t.quarter_turns+=4u;
+    return t;
+}
+// Exact squared-length slant witness:
+// 4*slant^2 = 4*vertical_height^2 + side^2.
+// This avoids square roots and avoids dividing odd Q62 coordinates by 2.
+[[nodiscard]] constexpr Wide times_four(Wide x) noexcept {
+    return {(x.high << 2u) | (x.low >> 62u),x.low << 2u};
+}
+[[nodiscard]] constexpr bool equal_wide(Wide a,Wide b) noexcept {
+    return a.high == b.high && a.low == b.low;
+}
+struct SquarePyramid {
+    Q62Area base, one_triangle, lateral, total;
+    bool right_square_geometry_verified;
+};
+[[nodiscard]] constexpr SquarePyramid right_square_pyramid(
+    u64 side, u64 height, u64 slant) noexcept {
+    if (side == 0ULL || height == 0ULL || slant == 0ULL ||
+        side > unit || height > unit || slant > unit)
+        return {{0ULL,false},{0ULL,false},{0ULL,false},
+                {0ULL,false},false};
+    const Wide left=times_four(multiply(slant,slant));
+    const Wide right=wide_add(times_four(multiply(height,height)),
+                              multiply(side,side));
+    if (!equal_wide(left,right))
+        return {{0ULL,false},{0ULL,false},{0ULL,false},
+                {0ULL,false},false};
+    const Q62Area base=sigma_a_square_base(side);
+    const Q62Area face{shift63(multiply(side,slant)),true};
+    const Q62Area lateral{4ULL*face.value,true};
+    const Q62Area total{base.value+lateral.value,true};
+    return {base,face,lateral,total,true};
+}
+struct PyramidClosure {
+    FoldTrace trace;
+    SquarePyramid geometry;
+    bool formal_areas_equal;
+    bool folding_proves_pyramid;
+};
+[[nodiscard]] constexpr PyramidClosure evaluate_closure(
+    FoldTrace sequence, SquarePyramid geometry) noexcept {
+    const bool matching=sequence.valid &&
+                        sequence.stage == FoldStep::SpindleWithC &&
+                        geometry.right_square_geometry_verified &&
+                        sequence.source.formal_sum.value ==
+                            geometry.total.value;
+    // Even coincident numerical area cannot establish shape equivalence.
+    return {sequence,geometry,matching,false};
+}
+
 #if defined(__SIZEOF_INT128__) && !defined(_MSC_VER)
 // Optional direct oracle in compilers supporting the extension,
 // matching the user's precise __uint128_t multiplication style.
