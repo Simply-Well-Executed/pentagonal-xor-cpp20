@@ -50,7 +50,7 @@ $env:MSBUILDDISABLENODEREUSE='1'
 $env:DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER='1'
 $watch=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
 foreach($n in @('cmake.exe','msbuild.exe','cl.exe','link.exe','cvtres.exe',
-                'rc.exe','mt.exe','conhost.exe','vctip.exe')){
+                'rc.exe','mt.exe','conhost.exe','vctip.exe','cmd.exe','mspdbsrv.exe')){
     [void]$watch.Add($n)
 }
 $critical=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
@@ -61,6 +61,7 @@ $seen=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $observed=[Collections.Generic.List[object]]::new()
 $errors=[Collections.Generic.List[string]]::new()
 $rootPid=-1
+$lineage=[Collections.Generic.HashSet[int]]::new()
 $exitCode=-999
 $startedUtc=[DateTimeOffset]::UtcNow.ToString('o')
 $psi=[Diagnostics.ProcessStartInfo]::new()
@@ -80,14 +81,26 @@ $stdErrStream=[IO.File]::Open($stderrPath,[IO.FileMode]::CreateNew,
 try {
     if(-not $proc.Start()){throw 'JSTAR|HOLD|cmake_process_not_started'}
     $rootPid=$proc.Id
+    [void]$lineage.Add($rootPid)
     $stdoutTask=$proc.StandardOutput.BaseStream.CopyToAsync($stdOutStream)
     $stderrTask=$proc.StandardError.BaseStream.CopyToAsync($stdErrStream)
     do {
         # Global snapshot of ONLY named compiler/console tools, not other
         # runner applications or their potentially sensitive command lines.
-        $snapshot=@(Get-CimInstance -ClassName Win32_Process -ErrorAction Stop |
-                    Where-Object { $watch.Contains([string]$_.Name) })
+        $snapshot=@(Get-CimInstance -ClassName Win32_Process -ErrorAction Stop)
+        # Derive the observed ancestry from parent PIDs, including tool helpers
+        # with names outside the expected toolchain. This is sampled evidence.
+        $expanded=$true
+        while($expanded){
+            $expanded=$false
+            foreach($p in $snapshot){
+                if($lineage.Contains([int]$p.ParentProcessId) -and
+                   $lineage.Add([int]$p.ProcessId)){$expanded=$true}
+            }
+        }
         foreach($p in $snapshot){
+            if(-not $watch.Contains([string]$p.Name) -and
+               -not $lineage.Contains([int]$p.ProcessId)){continue}
             $birth=if($null -ne $p.CreationDate){
                 ([DateTimeOffset]$p.CreationDate).ToString('o')
             }else{'UNAVAILABLE'}
@@ -101,7 +114,7 @@ try {
                 created_utc=$birth
                 executable_path=[string]$p.ExecutablePath
                 command_line=[string]$p.CommandLine
-                scope=if([int]$p.ProcessId -eq $rootPid){'build_root'}else{'host_sample'}
+                scope=if([int]$p.ProcessId -eq $rootPid){'build_root'}elseif($lineage.Contains([int]$p.ProcessId)){'build_descendant'}else{'host_sample'}
             })
         }
     }while(-not $proc.WaitForExit(250))
@@ -127,7 +140,7 @@ $paths=[Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnor
 foreach($p in $observed){
     if(-not [string]::IsNullOrWhiteSpace($p.executable_path)){
         [void]$paths.Add($p.executable_path)
-    } elseif($critical.Contains($p.name)){
+    } elseif($critical.Contains($p.name) -or $p.scope -ceq 'build_descendant'){ 
         $errors.Add(('unknown_critical_executable_path|'+$p.name+'|'+$p.pid))
     }
 }
@@ -161,6 +174,11 @@ foreach($path in $paths){
         signer_subject=$subject
     })
 }
+foreach($p in $observed){
+    if($p.scope -ceq 'build_descendant' -and -not $watch.Contains($p.name)){
+        $errors.Add(('unreviewed_build_descendant|'+$p.name+'|'+$p.pid))
+    }
+}
 if($exitCode -eq -999){$errors.Add('build_exit_not_observed')}
 if($observed.Count -eq 0){$errors.Add('process_sampling_empty')}
 $report=[ordered]@{
@@ -175,7 +193,7 @@ $report=[ordered]@{
     msbuild_node_reuse='disabled_env_and_/nr:false'
     msbuild_max_workers=1
     sample_interval_ms=250
-    scope='observed_processes_only; not a complete kernel event trace'
+    scope='sampled_build_descendants_and_named_host_tools; not a complete kernel event trace'
     process_count=$observed.Count
     observed_processes=@($observed.ToArray())
     executable_identities=@($identities.ToArray())
