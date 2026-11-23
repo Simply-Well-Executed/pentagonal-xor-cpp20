@@ -92,6 +92,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/u_circle_fit.hpp
     shared/xdr_rdx_fold_tork.hpp
     shared/minza_direct_ping_bidi.hpp
+    shared/minza_direct_ping_tridi.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
@@ -385,6 +386,7 @@ install(FILES
     shared/u_circle_fit.hpp
     shared/xdr_rdx_fold_tork.hpp
     shared/minza_direct_ping_bidi.hpp
+    shared/minza_direct_ping_tridi.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp

@@ -12,6 +12,7 @@
 #include "../shared/u_circle_fit.hpp"
 #include "../shared/xdr_rdx_fold_tork.hpp"
 #include "../shared/minza_direct_ping_bidi.hpp"
+#include "../shared/minza_direct_ping_tridi.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -138,6 +139,17 @@ static_assert(direct_portable::PING(direct_portable::FOLD));
 static_assert(direct_portable::REPORT.bijective);
 static_assert(direct_portable::REPORT.ping_after_restore);
 static_assert(!direct_portable::NINZA_REQUIRED);
+
+// Direct MINZA->PING TriDi three distinct GEOMETRIC side witnesses.
+namespace tridi_portable=swe::minza_direct_ping_tridi;
+static_assert(tridi_portable::AC2==1300ULL);
+static_assert(tridi_portable::AC_FOLDED==219700ULL);
+static_assert(tridi_portable::REPORT.valid);
+static_assert(tridi_portable::PING_CANONICAL(
+              tridi_portable::ROTATION_3));
+static_assert(tridi_portable::BIDI_PRESERVED());
+static_assert(tridi_portable::REJECT_CORRUPTION());
+static_assert(!tridi_portable::NINZA_REQUIRED);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);

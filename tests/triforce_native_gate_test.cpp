@@ -11,6 +11,7 @@
 #include "../shared/u_circle_fit.hpp"
 #include "../shared/xdr_rdx_fold_tork.hpp"
 #include "../shared/minza_direct_ping_bidi.hpp"
+#include "../shared/minza_direct_ping_tridi.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -508,6 +509,29 @@ static_assert(!direct::GENERAL_FOLD_PROVED);
 static_assert(!direct::PHYSICAL_FOLD_PROVED);
 static_assert(!direct::RELEASE_AUTHORIZED);
 
+
+// MINZA-DIRECT-PING-TRIDI-PR34-012: distinct AC hinge third lane.
+// Exact 400+900=1300, scaled by 169. C^3 = identity, BiDi kept.
+namespace tridi=swe::minza_direct_ping_tridi;
+static_assert(tridi::AC2==1300ULL);
+static_assert(tridi::AC_FOLDED==219700ULL);
+static_assert(tridi::AD2+tridi::CD2==tridi::AC2);
+static_assert(tridi::AD_FOLDED+tridi::CD_FOLDED==
+              tridi::AC_FOLDED);
+static_assert(tridi::PING_CANONICAL(tridi::ORIGINAL));
+static_assert(tridi::PING_SET(tridi::ROTATION_1));
+static_assert(tridi::PING_SET(tridi::ROTATION_2));
+static_assert(!tridi::PING_CANONICAL(tridi::ROTATION_1));
+static_assert(!tridi::PING_CANONICAL(tridi::ROTATION_2));
+static_assert(tridi::PING_CANONICAL(tridi::ROTATION_3));
+static_assert(tridi::SAME(tridi::TRIDI_INVERSE(
+              tridi::TRIDI(tridi::ORIGINAL)),tridi::ORIGINAL));
+static_assert(tridi::BIDI_PRESERVED());
+static_assert(tridi::REPORT.valid);
+static_assert(tridi::REJECT_CORRUPTION());
+static_assert(!tridi::NINZA_REQUIRED);
+static_assert(!tridi::RELEASE_AUTHORIZED);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};
@@ -531,5 +555,6 @@ int main() {
     if(!tork::SIGMA_SIGMA_SIGMA(4096u))return 6;
     if(!direct::PING(direct::FOLD)||
        !direct::REPORT.ping_after_restore)return 7;
+    if(!tridi::VALIDATE().valid)return 8;
     return 0;
 }
