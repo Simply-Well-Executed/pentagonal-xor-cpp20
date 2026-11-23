@@ -731,3 +731,7 @@ if(SWE_NINZA_PING_EXECUTOR AND BUILD_TESTING AND SWE_NINZA_PWSH)
       -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/Test-NinzaPiPi.ps1")
   set_tests_properties(ninza_pipi_star_supervision PROPERTIES TIMEOUT 180)
 endif()
+
+# DIAERY native XHTML Strict-profile inspector (experimental).
+# The root native-MSVC and release HOLD policies remain authoritative.
+add_subdirectory(diaery)
