@@ -12,6 +12,7 @@
 #include "../shared/xdr_rdx_fold_tork.hpp"
 #include "../shared/minza_direct_ping_bidi.hpp"
 #include "../shared/minza_direct_ping_tridi.hpp"
+#include "../shared/three_geometric_folds.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -532,6 +533,31 @@ static_assert(tridi::REJECT_CORRUPTION());
 static_assert(!tridi::NINZA_REQUIRED);
 static_assert(!tridi::RELEASE_AUTHORIZED);
 
+
+// THREE-GEOMETRIC-FOLDS-PR34-013: three DISTINCT active 90 degree hinges
+// moving a connected downstream assembly, not label permutations.
+namespace fold3=swe::three_geometric_folds;
+static_assert(fold3::WITNESS.valid);
+static_assert(fold3::FOLD_STEP(1u) && fold3::FOLD_STEP(2u) &&
+              fold3::FOLD_STEP(3u));
+static_assert(fold3::RIGHT_ANGLE_HINGE(1u) &&
+              fold3::RIGHT_ANGLE_HINGE(2u) &&
+              fold3::RIGHT_ANGLE_HINGE(3u));
+static_assert(fold3::SEAMS_MATCH(0u)&&fold3::SEAMS_MATCH(1u)&&
+              fold3::SEAMS_MATCH(2u)&&fold3::SEAMS_MATCH(3u));
+static_assert(fold3::ALL_RIGID(0u)&&fold3::ALL_RIGID(3u));
+static_assert(fold3::DOWNSTREAM_MOVED(1u)&&
+              fold3::DOWNSTREAM_MOVED(2u)&&
+              fold3::DOWNSTREAM_MOVED(3u));
+static_assert(fold3::SUM_DOUBLE_AREA()==7200ULL);
+static_assert(fold3::SUM_DOUBLE_AREA()==uc::SUM_NINE_DOUBLE_AREA());
+static_assert(fold3::FREE_SEAM_COINCIDENT());
+static_assert(fold3::SAME(fold3::CORNER_0,fold3::CORNER_4));
+static_assert(!fold3::SEALED_SEAM_VERIFIED);
+static_assert(!fold3::CLOSED_CUBE_VERIFIED);
+static_assert(!fold3::PHYSICAL_PAPER_FOLD_VERIFIED);
+static_assert(!fold3::RELEASE_AUTHORIZED);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};
@@ -556,5 +582,6 @@ int main() {
     if(!direct::PING(direct::FOLD)||
        !direct::REPORT.ping_after_restore)return 7;
     if(!tridi::VALIDATE().valid)return 8;
+    if(!fold3::PING_THREE_FOLDS().valid)return 9;
     return 0;
 }

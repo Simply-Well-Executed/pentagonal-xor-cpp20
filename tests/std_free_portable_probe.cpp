@@ -13,6 +13,7 @@
 #include "../shared/xdr_rdx_fold_tork.hpp"
 #include "../shared/minza_direct_ping_bidi.hpp"
 #include "../shared/minza_direct_ping_tridi.hpp"
+#include "../shared/three_geometric_folds.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -150,6 +151,16 @@ static_assert(tridi_portable::PING_CANONICAL(
 static_assert(tridi_portable::BIDI_PRESERVED());
 static_assert(tridi_portable::REJECT_CORRUPTION());
 static_assert(!tridi_portable::NINZA_REQUIRED);
+
+// THREE distinct 90-degree geometric fold motions; 8 rigid facets.
+namespace fold3_portable=swe::three_geometric_folds;
+static_assert(fold3_portable::WITNESS.valid);
+static_assert(fold3_portable::FOLD_STEP(1u));
+static_assert(fold3_portable::FOLD_STEP(2u));
+static_assert(fold3_portable::FOLD_STEP(3u));
+static_assert(fold3_portable::SUM_DOUBLE_AREA()==7200ULL);
+static_assert(fold3_portable::FREE_SEAM_COINCIDENT());
+static_assert(!fold3_portable::CLOSED_CUBE_VERIFIED);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
