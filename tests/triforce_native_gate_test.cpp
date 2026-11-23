@@ -7,6 +7,7 @@
 #include "../shared/f123_eighth_fold_experiment.hpp"
 #include "../shared/sigma_e_redaxualchoice.hpp"
 #include "../shared/sigma_f_redaxualchoice.hpp"
+#include "../shared/four_pyramid_reduxualchoice.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -366,6 +367,61 @@ static_assert(fa::decimal17({sf::SIGMA_REDAXUALCHOICE,true})==
               306250000000000000ULL);
 static_assert(sf::SIGMA_REDAXUALCHOICE!=esigma.sigma_q62);
 static_assert(sf::TOTAL==Q && sf::BASE+sf::F==sf::TOTAL);
+
+
+// FOUR-PYRAMID-REDUXUALCHOICE-PR34-008: independent square base
+// triangulated into nine exact nonoverlapping triangles in 3 strips.
+namespace four=swe::four_pyramid_reduxualchoice;
+static_assert(four::CORE.right_square_geometry_verified);
+static_assert(four::SIDE==3ULL*Q/4ULL);
+static_assert(four::HEIGHT==Q/2ULL && four::SLANT==5ULL*Q/8ULL);
+static_assert(four::BASE==pyramid.base.value);
+static_assert(four::F1==pyramid.one_triangle.value);
+static_assert(four::F2==four::F1 && four::F3==four::F1 &&
+              four::F4==four::F1);
+static_assert(four::F==pyramid.lateral.value);
+static_assert(four::TOTAL==pyramid.total.value);
+static_assert(four::NINE.exact_partition_verified);
+static_assert(four::NINE.sum.value==four::BASE);
+static_assert(four::NINE.face[0].value ==
+              2ULL*four::NINE.face[1].value);
+static_assert(four::NINE.face[3].value==four::NINE.face[0].value);
+static_assert(four::NINE.face[6].value==four::NINE.face[0].value);
+static_assert(!four::nine_base_triangles(0ULL,four::CORE).
+              exact_partition_verified);
+static_assert(!four::nine_base_triangles(Q/2ULL,four::CORE).
+              exact_partition_verified);
+// Three distinct rational point samples all at 2/3 the height;
+// never fabricate a fourth diamond vertex or a proven tip.
+static_assert(four::TOP3.rational_geometry_verified &&
+              !four::TOP3.physical_fold_or_diamond_verified);
+static_assert(four::TOP3.on_PA.x_numerator !=
+              four::TOP3.on_PB.x_numerator);
+static_assert(four::TOP3.on_PB.y_numerator !=
+              four::TOP3.on_PC.y_numerator);
+static_assert(four::TOP3.on_PA.z_numerator ==
+              four::TOP3.on_PB.z_numerator);
+static_assert(!four::upper_markers(0ULL,Q/2ULL).
+              rational_geometry_verified);
+static_assert(four::STEP_UP.exact_sample_ratio &&
+              !four::STEP_UP.shape_transition_proved);
+static_assert(four::STEP_UP.numerator==15ULL &&
+              four::STEP_UP.denominator==14ULL);
+static_assert(four::STEP_UP.three_lateral_q62==
+              f123::LATERAL_Q62);
+static_assert(four::R_NEG3==2161727821137838080ULL);
+static_assert(four::R_NEG2==four::R_NEG3 &&
+              four::R_NEG1==four::R_NEG3 &&
+              four::R_ZERO==four::R_NEG3 &&
+              four::R_POS1==four::R_NEG3 &&
+              four::R_POS2==four::R_NEG3 &&
+              four::R_POS3==four::R_NEG3);
+static_assert(four::SIGMA_REDUXUALCHOICE ==
+              15132094747964866560ULL);
+static_assert(four::SIGMA_REDUXUALCHOICE !=
+              sf::SIGMA_REDAXUALCHOICE);
+static_assert(four::TOTAL==6917529027641081856ULL);
+static_assert(!four::missing_tip_or_fold_verified);
 
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};

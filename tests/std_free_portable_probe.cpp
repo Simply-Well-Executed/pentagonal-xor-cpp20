@@ -8,6 +8,7 @@
 #include "../shared/f123_eighth_fold_experiment.hpp"
 #include "../shared/sigma_e_redaxualchoice.hpp"
 #include "../shared/sigma_f_redaxualchoice.hpp"
+#include "../shared/four_pyramid_reduxualchoice.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -89,6 +90,19 @@ static_assert(sigma_f_core::SIGMA_REDAXUALCHOICE ==
 static_assert(sigma_f_core::SIGMA_REDAXUALCHOICE !=
               sigma_e_probe.sigma_q62);
 static_assert(sigma_f_core::TOTAL == ai::unit);
+
+// FOUR-PYRAMID-REDUXUALCHOICE-PR34-008: no STL in new source.
+namespace four_core=swe::four_pyramid_reduxualchoice;
+static_assert(four_core::CORE.right_square_geometry_verified);
+static_assert(four_core::NINE.exact_partition_verified);
+static_assert(four_core::NINE.sum.value==four_core::BASE);
+static_assert(four_core::TOP3.rational_geometry_verified);
+static_assert(four_core::STEP_UP.exact_sample_ratio);
+static_assert(four_core::SIGMA_REDUXUALCHOICE ==
+              15132094747964866560ULL);
+static_assert(four_core::SIGMA_REDUXUALCHOICE !=
+              sigma_f_core::SIGMA_REDAXUALCHOICE);
+static_assert(!four_core::missing_tip_or_fold_verified);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);

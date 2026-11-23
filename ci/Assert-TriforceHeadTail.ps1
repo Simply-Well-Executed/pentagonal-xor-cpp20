@@ -33,6 +33,7 @@ $required=@(
  'shared/f123_eighth_fold_experiment.hpp',
  'shared/sigma_e_redaxualchoice.hpp',
  'shared/sigma_f_redaxualchoice.hpp',
+ 'shared/four_pyramid_reduxualchoice.hpp',
  'shared/gammagamma.hpp',
  'tests/triforce_native_gate_test.cpp',
  'tests/toolong_arithmetic_test.cpp',
@@ -59,6 +60,7 @@ $required=@(
  'docs/F123_EIGHTH_FOLD_EXPERIMENT.md',
  'docs/SIGMA_E_REDAXUALCHOICE.md',
  'docs/SIGMA_F_REDAXUALCHOICE.md',
+ 'docs/FOUR_PYRAMID_REDUXUALCHOICE.md',
  'docs/ATOMIX_PR34_BACKPORT.md'
 )
 $header=Join-Path $root 'shared/toolong_q62_core.hpp'
