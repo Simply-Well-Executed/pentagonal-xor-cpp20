@@ -14,6 +14,7 @@
 #include "../shared/minza_direct_ping_tridi.hpp"
 #include "../shared/three_geometric_folds.hpp"
 #include "../shared/rectangloid_primitive_cxx20.hpp"
+#include "../shared/slidingtoolong.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -582,6 +583,15 @@ static_assert(prism::DIARY_VIEW.fill==prism::Fill::Water);
 static_assert(!prism::PHYSICAL_WATER_FILL_VERIFIED);
 static_assert(!prism::FULL_Z_BUFFER_OCCLUSION_IMPLEMENTED);
 static_assert(!prism::RELEASE_AUTHORIZED);
+
+// SLIDINGTOOLONG-PR34-017: compile-time Q64 and reversible slide gates.
+namespace sliding=swe::slidingtoolong;
+static_assert(sliding::QUALIFIED());
+static_assert(sliding::EULER_JIG_ONE_X1E17==2864498081537971875ULL);
+static_assert(sliding::MATH_E_X1E18==2718281828459045235ULL);
+static_assert(sliding::MATH_PI_X1E18==3141592653589793238ULL);
+static_assert(sliding::SIGMA_Q64_XOR==9391969674587680780ULL);
+static_assert(sliding::REJECT_CORRUPTION());
 
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};

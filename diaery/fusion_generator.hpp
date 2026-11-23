@@ -57,6 +57,19 @@ template<class Sink>
  output.text("static constexpr unsigned long long WATCHDOG=VAR_AD+VAR_CD;\n");
  output.text("static_assert(VAR_AD==67600ULL && VAR_CD==152100ULL);\n");
  output.text("static_assert(VAR_AC==219700ULL && WATCHDOG==VAR_AC);\n");
+ // Harmony / SlidingToolong are compile-time-only qualified witnesses.
+ output.text("static constexpr unsigned long long EULERS_JIG_X1E17=");
+ st::Builder ej{};ej.num(static_cast<long long>(
+    swe::slidingtoolong::EULER_JIG_ONE_X1E17));
+ output.text(ej.s);output.text("ULL;\n");
+ output.text("static constexpr unsigned long long MATH_E_X1E18=");
+ st::Builder me{};me.num(static_cast<long long>(
+    swe::slidingtoolong::MATH_E_X1E18));
+ output.text(me.s);output.text("ULL;\n");
+ output.text("static constexpr unsigned HARMONY_64_SQUARED=64u*64u;\n");
+ output.text("static_assert(HARMONY_64_SQUARED==4096u);\n");
+ output.text("static_assert(EULERS_JIG_X1E17==2864498081537971875ULL);\n");
+ output.text("static_assert(MATH_E_X1E18==2718281828459045235ULL);\n");
  output.text("static_assert(SOURCE_LENGTH>0u && SOURCE_LENGTH<=16000u);\n");
  output.text("static_assert(FORM[0]==3ULL && FORM[1]==8ULL &&\n");
  output.text(" FORM[2]==4ULL && FORM[3]==12ULL &&\n");

@@ -16,6 +16,10 @@
 #include "../shared/minza_direct_ping_tridi.hpp"
 #include "../shared/three_geometric_folds.hpp"
 #include "../shared/rectangloid_primitive_cxx20.hpp"
+#include "../shared/toolong_q62_core.hpp"
+#include "../shared/slidingtoolong.hpp"
+#include "strict_profile.hpp"
+#include "harmony.hpp"
 namespace swe::diaery::geometry {
 namespace form=swe::three_geometric_folds;
 namespace solid=swe::rectangloid_primitive;
@@ -23,6 +27,10 @@ namespace nice=swe::u_circle_fit;
 namespace bidi=swe::minza_direct_ping_bidi;
 namespace tridi=swe::minza_direct_ping_tridi;
 namespace tork=swe::xdr_rdx_fold_tork;
+namespace slide=swe::slidingtoolong;
+namespace harm=swe::diaery::harmony;
+static_assert(slide::QUALIFIED());
+static_assert(harm::INTEGRITY());
 static_assert(form::WITNESS.valid);
 static_assert(solid::WITNESS.valid);
 static_assert(nice::TRIANGLE_RESULT==nice::U::Nice);

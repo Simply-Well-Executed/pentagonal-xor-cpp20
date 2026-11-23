@@ -43,3 +43,21 @@ add_test(NAME diaery_fusion_watchdog_negative_order
  COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_watchdog_order.xhtml)
 set_tests_properties(diaery_fusion_watchdog_negative_order
  PROPERTIES WILL_FAIL TRUE)
+
+# HARMONY-PR34-018: targeted corrupted XHTML witness.
+add_test(NAME diaery_harmony_negative_missing
+ COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_harmony_missing.xhtml)
+set_tests_properties(diaery_harmony_negative_missing
+ PROPERTIES WILL_FAIL TRUE)
+
+# HARMONY-PR34-018: targeted corrupted XHTML witness.
+add_test(NAME diaery_harmony_negative_mutated
+ COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_harmony_mutated.xhtml)
+set_tests_properties(diaery_harmony_negative_mutated
+ PROPERTIES WILL_FAIL TRUE)
+
+# HARMONY-PR34-018: targeted corrupted XHTML witness.
+add_test(NAME diaery_harmony_negative_order
+ COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_harmony_order.xhtml)
+set_tests_properties(diaery_harmony_negative_order
+ PROPERTIES WILL_FAIL TRUE)

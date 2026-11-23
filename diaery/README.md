@@ -168,3 +168,62 @@ a watchdog's definition.
 A passing watchdog does **not** establish formal XHTML DTD
 qualification, real fluid pressure safety, physical waterproof
 seams or release authorization. **RELEASE=HOLD.**
+
+## HARMONY: patience in humanism, tolerance in engineering (PR34-018)
+
+**EXPLORATORY**. The user-defined `EULER'S JIG` constant is the
+per-triangle area of the displayed 64-triangle total:
+`1833.278772184302 / 64 = 28.64498081537971875` square units.
+It is stored exactly as `2864498081537971875ULL` at a `10^17`
+decimal scale. It is **not** the conventional dimensionless Euler
+number `e`, separately recorded as `2718281828459045235ULL`
+at a `10^18` scale.
+
+A separate `shared/slidingtoolong.hpp` keeps conventional e and
+pi's **64-bit fractional** Q64 words and distinct integer parts,
+without changing historical `shared/toolong.hpp` or Q62 records.
+The intensity fractional word is the historical Q62 word shifted
+left twice; these two extra zero digits are NOT newfound precision.
+A 3+1 32-bit register unit holds low, high, tag plus watchdog,
+tests round trips across 8/16/24-bit reversible rotates, and
+rejects mutated registers. A data-register watchdog is **not** NVRAM.
+A fixed XOR diagnostic named `SIGMA_Q64_XOR` does not redefine
+mathematical sigma or claim physical meaning. All slides occur in
+compile-time proofs, not per-frame native rendering.
+
+**64 x 64 = 4096** is an integer witness. **sqrt(360)** is
+irrational, so `HARMONY_RADICAL_360_MICRO=18973665` is the
+floor of sqrt(360) scaled by 1,000,000. It has a proved numerical
+error bound less than 1 micro-unit, not a license to alter exact
+topology. 64 wedges of 1 degree cover only 64 degrees, leaving
+**296 degrees** missing from a full 360-degree circle.
+
+The triangle-vs-square fold comparison is separate and deliberately
+physical-geometry-oriented. Three 60 x 20 strips folded at TWO
+120-degree hinges form an ideal equilateral triangular tube of
+edge 20 with exact perimeter 60. Two copies of 60 x 60 stock
+can each supply one equilateral side-20 triangular end cap, area
+`100*sqrt(3)` square units. No geometric material-length
+airgap is needed for that triangular tube, though real seals
+and manufacturing remain untested.
+
+By contrast, Euler's Jig's 1-degree triangle with minimum
+height 1 has base greater than 57 and hypotenuse greater
+than the base. Its perimeter is greater than 115, exceeding
+the 60 available wall strip: **more sidewall material is needed**.
+Each thin triangular cap can still fit a separate 60 x 60
+stock sheet. Cap fitness and tube wall sufficiency must
+not be treated as interchangeable tests.
+
+`diaery/harmony.hpp` derives these facts without system
+or standard-library includes, with separate EXACT and
+TOLERANCE checks. The three `HARMONY-*` XHTML Strict
+paragraphs are treated as **ordered, unique qualification
+records** in C++20, including missing, mutated and re-ordered
+negative fixtures. The offline native MSVC /O2 Fusion
+concurrence workflow checks both source and generated C++20.
+These are exploratory integer/geometry invariants,
+not quantum mechanics, physical safety certification,
+general XHTML DTD certification, or a merge approval.
+
+**RELEASE=HOLD. Chosen, never assumed.**

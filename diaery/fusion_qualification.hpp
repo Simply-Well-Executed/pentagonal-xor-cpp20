@@ -14,6 +14,8 @@ namespace str=swe::diaery::strict;
 namespace par=swe::diaery::parity;
 namespace geo=swe::diaery::geometry;
 namespace wd=swe::diaery::watchdog;
+namespace harm=swe::diaery::harmony;
+namespace slide=swe::slidingtoolong;
 using u64=unsigned long long;
 using s64=long long;
 
@@ -86,16 +88,18 @@ inline constexpr Quad QUAD_SOURCE{{1u,2u,3u,4u}};
 }
 struct Result {
  bool bidi,tridi,pidi,pipi,sigmadi,sigmasigma,gammagamma;
- bool watchdog,concurrence,qualified;
+ bool watchdog,concurrence,harmony,sliding,qualified;
 };
 [[nodiscard]] constexpr Result TEST(const str::Page& p) noexcept {
  const bool a=BiDi(),b=TriDi(),c=PiDi(),d=PiPi(),
             e=SigmaDi(),f=SigmaSigma(),g=GammaGamma(),
-            h=par::concurrence(p),w=wd::qualified(p);
- return {a,b,c,d,e,f,g,w,h,a&&b&&c&&d&&e&&f&&g&&w&&h};
+            h=par::concurrence(p),w=wd::qualified(p),
+            k=harm::QUALIFY(p),l=slide::QUALIFIED();
+ return {a,b,c,d,e,f,g,w,h,k,l,a&&b&&c&&d&&e&&f&&g&&w&&h&&k&&l};
 }
 static_assert(BiDi()&&TriDi()&&PiDi()&&PiPi());
 static_assert(SigmaDi()&&SigmaSigma()&&GammaGamma());
+static_assert(harm::INTEGRITY() && slide::QUALIFIED());
 static_assert(!geo::solid::RELEASE_AUTHORIZED);
 inline constexpr bool SAFETY_CERTIFIED=false;
 inline constexpr bool RELEASE_AUTHORIZED=false;

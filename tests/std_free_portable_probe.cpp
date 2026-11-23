@@ -15,6 +15,8 @@
 #include "../shared/minza_direct_ping_tridi.hpp"
 #include "../shared/three_geometric_folds.hpp"
 #include "../shared/rectangloid_primitive_cxx20.hpp"
+#include "../shared/toolong_q62_core.hpp"
+#include "../shared/slidingtoolong.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -173,6 +175,13 @@ static_assert(prism_portable::SURFACE_AREA==4050);
 static_assert(prism_portable::VISIBLE_TRIANGLES(
               prism_portable::CAMERA)==6u);
 static_assert(!prism_portable::RELEASE_AUTHORIZED);
+
+static_assert(swe::slidingtoolong::QUALIFIED());
+static_assert(swe::slidingtoolong::EULER_JIG_ONE_X1E17==
+              2864498081537971875ULL);
+static_assert(swe::slidingtoolong::MATH_PI.fraction==
+              2611923443488327891ULL);
+static_assert(swe::slidingtoolong::REJECT_CORRUPTION());
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
