@@ -11,6 +11,7 @@
 #include "../shared/four_pyramid_reduxualchoice.hpp"
 #include "../shared/u_circle_fit.hpp"
 #include "../shared/xdr_rdx_fold_tork.hpp"
+#include "../shared/minza_direct_ping_bidi.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -127,6 +128,16 @@ static_assert(tork_portable::SIGMA_SIGMA());
 static_assert(tork_portable::SIGMA_SIGMA_SIGMA(64u));
 static_assert(tork_portable::CORRUPTION_REJECTED());
 static_assert(!tork_portable::PHYSICAL_FOLD_INFERRED);
+
+// Independent direct MINZA -> PING -> BiDi compile-time checks.
+namespace direct_portable=swe::minza_direct_ping_bidi;
+static_assert(direct_portable::FOLD.valid);
+static_assert(direct_portable::FOLD.ad_folded==67600ULL);
+static_assert(direct_portable::FOLD.cd_folded==152100ULL);
+static_assert(direct_portable::PING(direct_portable::FOLD));
+static_assert(direct_portable::REPORT.bijective);
+static_assert(direct_portable::REPORT.ping_after_restore);
+static_assert(!direct_portable::NINZA_REQUIRED);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);

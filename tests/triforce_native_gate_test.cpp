@@ -10,6 +10,7 @@
 #include "../shared/four_pyramid_reduxualchoice.hpp"
 #include "../shared/u_circle_fit.hpp"
 #include "../shared/xdr_rdx_fold_tork.hpp"
+#include "../shared/minza_direct_ping_bidi.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -481,6 +482,32 @@ static_assert(tork::PING_STRESS(128u));
 static_assert(tork::CORRUPTION_REJECTED());
 static_assert(!tork::EXTERNAL_APPROVAL_INFERRED);
 
+
+// MINZA-DIRECT-PING-BIDI-PR34-011: skip NINZA intermediates for
+// the frozen A--C hinge, validate in one step, then reversible BiDi.
+namespace direct=swe::minza_direct_ping_bidi;
+static_assert(direct::HINGE_VALID(direct::LARGE,direct::SMALL));
+static_assert(direct::FOLD.valid);
+static_assert(direct::FOLD.dot_cross_verified);
+static_assert(direct::FOLD.length_preserved);
+static_assert(direct::FOLD.x13==120 && direct::FOLD.y13==80);
+static_assert(direct::FOLD.z2_169==46800);
+static_assert(direct::FOLD.ad_folded==67600ULL &&
+              direct::FOLD.cd_folded==152100ULL);
+static_assert(direct::PING(direct::FOLD));
+static_assert(direct::FOLD.ad_folded==tork::AD_FOLDED);
+static_assert(direct::FOLD.cd_folded==tork::CD_FOLDED);
+static_assert(direct::REPORT.bijective &&
+              direct::REPORT.ping_after_restore);
+static_assert(!direct::PING_PAIR(direct::REPORT.swapped));
+static_assert(direct::PING_PAIR(direct::REPORT.restored));
+static_assert(direct::HEAD_PING && direct::TAIL_PING);
+static_assert(direct::REJECT_CORRUPTION());
+static_assert(!direct::NINZA_REQUIRED);
+static_assert(!direct::GENERAL_FOLD_PROVED);
+static_assert(!direct::PHYSICAL_FOLD_PROVED);
+static_assert(!direct::RELEASE_AUTHORIZED);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};
@@ -502,5 +529,7 @@ int main() {
     if(verify(corrupted))return 4;
     if(!verify(euler)||!verify(pi)||!verify(intensity))return 5;
     if(!tork::SIGMA_SIGMA_SIGMA(4096u))return 6;
+    if(!direct::PING(direct::FOLD)||
+       !direct::REPORT.ping_after_restore)return 7;
     return 0;
 }
