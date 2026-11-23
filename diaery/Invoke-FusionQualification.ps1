@@ -78,9 +78,11 @@ if($firstHash -cne $secondHash){
  throw 'FUSION|HOLD|FIFO_LAFIT_generated_sources_differ'
 }
 # Bounded negative input matrix, no artifacts should be produced.
-foreach($bad in @('bad_doctype.xhtml','bad_parity.xhtml','bad_stage.xhtml','bad_script.xhtml')){
+foreach($bad in @('bad_doctype.xhtml','bad_parity.xhtml','bad_stage.xhtml','bad_script.xhtml','bad_watchdog_missing.xhtml','bad_watchdog_mutated.xhtml','bad_watchdog_duplicate.xhtml','bad_watchdog_order.xhtml')){
  $sourceBad=Join-Path $root ('diaery/'+$bad)
  $denied=Join-Path $base ('denied-'+$bad+'.cpp')
+ & $native --qualify $sourceBad
+ if($LASTEXITCODE -eq 0){throw ('FUSION|HOLD|negative_qualified|'+$bad)}
  & $native --fusion $sourceBad $denied
  if($LASTEXITCODE -eq 0 -or [IO.File]::Exists($denied)){
   throw ('FUSION|HOLD|rejected_XHTML_produced_CXX20|'+$bad)

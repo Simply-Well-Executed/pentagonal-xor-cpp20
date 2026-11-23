@@ -6,10 +6,14 @@
 #ifndef SWE_DIAERY_PARITY_GATE_HPP
 #error "Include parity_gate.hpp first"
 #endif
+#ifndef SWE_DIAERY_FUSION_WATCHDOG_HPP
+#error "Include fusion_watchdog.hpp first"
+#endif
 namespace swe::diaery::qualification {
 namespace str=swe::diaery::strict;
 namespace par=swe::diaery::parity;
 namespace geo=swe::diaery::geometry;
+namespace wd=swe::diaery::watchdog;
 using u64=unsigned long long;
 using s64=long long;
 
@@ -82,13 +86,13 @@ inline constexpr Quad QUAD_SOURCE{{1u,2u,3u,4u}};
 }
 struct Result {
  bool bidi,tridi,pidi,pipi,sigmadi,sigmasigma,gammagamma;
- bool concurrence,qualified;
+ bool watchdog,concurrence,qualified;
 };
 [[nodiscard]] constexpr Result TEST(const str::Page& p) noexcept {
  const bool a=BiDi(),b=TriDi(),c=PiDi(),d=PiPi(),
             e=SigmaDi(),f=SigmaSigma(),g=GammaGamma(),
-            h=par::concurrence(p);
- return {a,b,c,d,e,f,g,h,a&&b&&c&&d&&e&&f&&g&&h};
+            h=par::concurrence(p),w=wd::qualified(p);
+ return {a,b,c,d,e,f,g,w,h,a&&b&&c&&d&&e&&f&&g&&w&&h};
 }
 static_assert(BiDi()&&TriDi()&&PiDi()&&PiPi());
 static_assert(SigmaDi()&&SigmaSigma()&&GammaGamma());

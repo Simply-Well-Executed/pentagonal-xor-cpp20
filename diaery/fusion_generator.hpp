@@ -44,6 +44,19 @@ template<class Sink>
    output.text(value.s);if(i<7u)output.chr(',');
  }
  output.text("};\n");
+ // Three genuine geometry operands and one calculated final watchdog.
+ output.text("static constexpr unsigned long long VAR_AD=");
+ st::Builder ad{};ad.num(static_cast<long long>(geo::tridi::AD_FOLDED));
+ output.text(ad.s);output.text("ULL;\n");
+ output.text("static constexpr unsigned long long VAR_CD=");
+ st::Builder cd{};cd.num(static_cast<long long>(geo::tridi::CD_FOLDED));
+ output.text(cd.s);output.text("ULL;\n");
+ output.text("static constexpr unsigned long long VAR_AC=");
+ st::Builder ac{};ac.num(static_cast<long long>(geo::tridi::AC_FOLDED));
+ output.text(ac.s);output.text("ULL;\n");
+ output.text("static constexpr unsigned long long WATCHDOG=VAR_AD+VAR_CD;\n");
+ output.text("static_assert(VAR_AD==67600ULL && VAR_CD==152100ULL);\n");
+ output.text("static_assert(VAR_AC==219700ULL && WATCHDOG==VAR_AC);\n");
  output.text("static_assert(SOURCE_LENGTH>0u && SOURCE_LENGTH<=16000u);\n");
  output.text("static_assert(FORM[0]==3ULL && FORM[1]==8ULL &&\n");
  output.text(" FORM[2]==4ULL && FORM[3]==12ULL &&\n");

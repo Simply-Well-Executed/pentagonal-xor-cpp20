@@ -25,3 +25,21 @@ add_test(NAME diaery_negative_active_script
 # Qualification tests are separate from basic 1:1 parity.
 add_test(NAME diaery_fusion_seven_operator_qualification
   COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/index.xhtml)
+
+# DIAERY-FUSION-WATCHDOG-PR34-016: negative XHTML qualified inputs.
+add_test(NAME diaery_fusion_watchdog_negative_missing
+ COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_watchdog_missing.xhtml)
+set_tests_properties(diaery_fusion_watchdog_negative_missing
+ PROPERTIES WILL_FAIL TRUE)
+add_test(NAME diaery_fusion_watchdog_negative_mutated
+ COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_watchdog_mutated.xhtml)
+set_tests_properties(diaery_fusion_watchdog_negative_mutated
+ PROPERTIES WILL_FAIL TRUE)
+add_test(NAME diaery_fusion_watchdog_negative_duplicate
+ COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_watchdog_duplicate.xhtml)
+set_tests_properties(diaery_fusion_watchdog_negative_duplicate
+ PROPERTIES WILL_FAIL TRUE)
+add_test(NAME diaery_fusion_watchdog_negative_order
+ COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_watchdog_order.xhtml)
+set_tests_properties(diaery_fusion_watchdog_negative_order
+ PROPERTIES WILL_FAIL TRUE)

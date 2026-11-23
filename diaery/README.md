@@ -134,3 +134,37 @@ All seven names preserve their original source meanings where
 established and are labeled EXPERIMENTAL where incomplete.
 No safety or full XHTML 1.0 DTD qualification is inferred.
 **RELEASE=HOLD.**
+
+## Three XHTML variables and a final watchdog (PR34-016)
+
+DIAERY's supported XHTML 1.0 Strict profile expresses these records as
+**ordinary paragraphs**, without scripts, custom elements, event
+handlers or nonstandard XHTML attributes:
+
+```xml
+<p>VAR-AD|squared=67600</p>
+<p>VAR-CD|squared=152100</p>
+<p>VAR-AC|squared=219700</p>
+<p>WATCHDOG|rule=AD+CD=AC|squared=219700</p>
+```
+
+The values come from the earlier fixed-hinge three-edge geometry,
+in which `AD_FOLDED+CD_FOLDED=AC_FOLDED`. A new local header
+`fusion_watchdog.hpp` checks all **four contiguous, ordered,
+unique** records independently against the canonical geometric
+values. The fourth is calculated from the preceding three and
+does not pretend to be a secret, cryptographic signature or a
+fourth independent measurement. Missing, duplicated, swapped,
+or tampered inputs fail the Fusion QUALIFICATION gate.
+
+The generated C++20 snapshot includes corresponding three
+`constexpr` variables, an independently calculated
+`WATCHDOG=VAR_AD+VAR_CD`, and an exact static assertion.
+FIFO/LAFIT recovery preserves the original XHTML bytes,
+including these four paragraphs. The ordinary 1:1 parity gate
+remains a separate prerequisite, rather than silently becoming
+a watchdog's definition.
+
+A passing watchdog does **not** establish formal XHTML DTD
+qualification, real fluid pressure safety, physical waterproof
+seams or release authorization. **RELEASE=HOLD.**

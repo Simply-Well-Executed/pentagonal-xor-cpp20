@@ -5,6 +5,7 @@
 #include "model_bridge.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
+#include "fusion_watchdog.hpp"
 #include "fusion_qualification.hpp"
 #include "fusion_generator.hpp"
 namespace dia=swe::diaery;
@@ -299,7 +300,7 @@ int main(int argc,char** argv){
         const auto results=dia::qualification::TEST(g_page);
         if(!results.qualified){print("DIAERY|FUSION_QUALIFICATION=HOLD\n");return 18;}
         if(qualify) {
-          print("DIAERY|FUSION_QUALIFICATION=PASS|BiDi=1|TriDi=1|PiDi=1|PiPi=SYMBOLIC|SigmaDi=1|SigmaSigma=1|GammaGamma=BOUNDED|RELEASE=HOLD\n");
+          print("DIAERY|FUSION_QUALIFICATION=PASS|BiDi=1|TriDi=1|PiDi=1|PiPi=SYMBOLIC|SigmaDi=1|SigmaSigma=1|GammaGamma=BOUNDED|WATCHDOG=PASS|RELEASE=HOLD\n");
           return 0;
         }
 #if defined(_WIN32)
