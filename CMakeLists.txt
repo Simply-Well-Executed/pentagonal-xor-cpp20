@@ -89,6 +89,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/sigma_e_redaxualchoice.hpp
     shared/sigma_f_redaxualchoice.hpp
     shared/four_pyramid_reduxualchoice.hpp
+    shared/u_circle_fit.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
@@ -379,6 +380,7 @@ install(FILES
     shared/sigma_e_redaxualchoice.hpp
     shared/sigma_f_redaxualchoice.hpp
     shared/four_pyramid_reduxualchoice.hpp
+    shared/u_circle_fit.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp

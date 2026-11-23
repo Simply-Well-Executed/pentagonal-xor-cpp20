@@ -8,6 +8,7 @@
 #include "../shared/sigma_e_redaxualchoice.hpp"
 #include "../shared/sigma_f_redaxualchoice.hpp"
 #include "../shared/four_pyramid_reduxualchoice.hpp"
+#include "../shared/u_circle_fit.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -422,6 +423,35 @@ static_assert(four::SIGMA_REDUXUALCHOICE !=
               sf::SIGMA_REDAXUALCHOICE);
 static_assert(four::TOTAL==6917529027641081856ULL);
 static_assert(!four::missing_tip_or_fold_verified);
+
+
+// U-CIRCLE-FIT-PR34-009: exact projected containment with bounded
+// inputs; independent Nice/NotNice and Q62 cross-lane checks.
+namespace uc=swe::u_circle_fit;
+static_assert(uc::Q==Q);
+static_assert(uc::TRIANGLE_RESULT==uc::U::Nice);
+static_assert(uc::TESSELLATION_RESULT==uc::U::Nice);
+static_assert(uc::ASTRIX_RESULT==uc::U::Nice);
+static_assert(uc::VALIDATE(uc::FACE,uc::HEIGHT_CIRCLE)==
+              uc::U::NotNice);
+static_assert(uc::VALIDATE(uc::FACE,uc::ENCLOSING_CIRCLE)==
+              uc::U::Nice);
+static_assert(uc::DISTANCE2(uc::FACE.a,uc::ENCLOSING_CIRCLE)==4624ULL);
+static_assert(uc::DISTANCE2(uc::FACE.b,uc::ENCLOSING_CIRCLE)==4624ULL);
+static_assert(uc::DISTANCE2(uc::FACE.c,uc::ENCLOSING_CIRCLE)==4624ULL);
+static_assert(uc::VALIDATE(uc::QUAKER,uc::QUAKER_CIRCLE)==uc::U::Nice);
+static_assert(uc::SUM_NINE_DOUBLE_AREA()==7200ULL);
+static_assert(uc::A==600ULL && uc::T==3600ULL);
+static_assert(uc::A*uc::D_DENOMINATOR==uc::T*uc::D_NUMERATOR);
+static_assert(uc::SIGMA==four::SIGMA_REDUXUALCHOICE);
+static_assert(uc::BASE==four::BASE && uc::TOTAL==four::TOTAL);
+static_assert(uc::VALIDATE(uc::DEGENERATE,uc::BASE_CIRCLE)==
+              uc::U::NotNice);
+static_assert(!uc::INSIDE({1000001,0},uc::BASE_CIRCLE));
+static_assert(!uc::INSIDE({0,0},{0,0,0ULL}));
+static_assert(uc::SQUARE(4000001LL)==~0ULL);
+static_assert(uc::DOUBLE_AREA({{1000001,0},{1,0},{0,1}})==0ULL);
+static_assert(!uc::PHYSICAL_FOLD_VERIFIED);
 
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};

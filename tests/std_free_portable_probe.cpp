@@ -9,6 +9,7 @@
 #include "../shared/sigma_e_redaxualchoice.hpp"
 #include "../shared/sigma_f_redaxualchoice.hpp"
 #include "../shared/four_pyramid_reduxualchoice.hpp"
+#include "../shared/u_circle_fit.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -103,6 +104,19 @@ static_assert(four_core::SIGMA_REDUXUALCHOICE ==
 static_assert(four_core::SIGMA_REDUXUALCHOICE !=
               sigma_f_core::SIGMA_REDAXUALCHOICE);
 static_assert(!four_core::missing_tip_or_fold_verified);
+
+// U circle-fit ISO C++20 include-free lane (source arithmetic shared).
+namespace uc_portable=swe::u_circle_fit;
+static_assert(uc_portable::VALIDATE(uc_portable::FACE,
+              uc_portable::HEIGHT_CIRCLE)==uc_portable::U::NotNice);
+static_assert(uc_portable::TRIANGLE_RESULT==uc_portable::U::Nice);
+static_assert(uc_portable::TESSELLATION_RESULT==uc_portable::U::Nice);
+static_assert(uc_portable::ASTRIX_RESULT==uc_portable::U::Nice);
+static_assert(uc_portable::SUM_NINE_DOUBLE_AREA()==7200ULL);
+static_assert(uc_portable::A==600ULL && uc_portable::T==3600ULL);
+static_assert(uc_portable::TOTAL==four_core::TOTAL);
+static_assert(uc_portable::SIGMA==four_core::SIGMA_REDUXUALCHOICE);
+static_assert(!uc_portable::PHYSICAL_FOLD_VERIFIED);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
