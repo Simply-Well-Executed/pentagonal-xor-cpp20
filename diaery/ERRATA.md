@@ -132,3 +132,30 @@ qualified only within this supported profile.
   remain in force. **RELEASE=HOLD** even where DIAERY's own tests pass.
 
 **Chosen, never assumed.**
+
+## ERR-006 | Full-repo substitution and speculative loop closure
+
+**Request:** Make Euler's Jig area canonical and demote conventional
+mathematical e to a non-selectable reference.
+
+**Qualification:** `shared/eulers_jig_canonical.hpp` is DIAERY's
+authoritative area record. Existing series and inverse-square tests
+that intentionally use conventional mathematical e remain present
+as historical scientific reference, not as a user-selectable DIAERY
+runtime mode. Replacing the exponential base in those independent
+algorithms with an area quantity would be a unit error. This
+does **not** constitute a whole-repository replacement.
+
+**Counterexample:** A 64-step closed-loop test based on fractional
+turns does not close for either number. The recorded gaps are
+0.278772184302 turns for the jig and 0.029962978621104960
+turns for the historical reference. A normalized 1/64-turn
+construction closes exactly. There is no general theorem that
+every sufficiently long mathematical line loops.
+
+**Proof boundary:** The 3-4-5 triangle Nice predicate uses exact
+circle inclusion and an increasing squared-radius sweep; it is
+not a universal property of all triangles or a quantum model.
+The optional Oracle JDK 27.0.1.1 lane only qualifies if executed
+on a verified Oracle distribution. Java unavailability means
+**HOLD**, not implied parity. See `diaery/README.md`.

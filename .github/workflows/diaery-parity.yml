@@ -94,6 +94,17 @@ jobs:
             -RepositoryRoot $root `
             -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'diaery-evidence')
           if($LASTEXITCODE -ne 0){throw 'UNBOUND|HOLD|independent_oracle_failed'}
+      - name: Tri-flavors | C++20 versus XHTML, Oracle Java status explicit
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'diaery-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File `
+            (Join-Path $root 'diaery/Invoke-TriFlavorQualification.ps1') `
+            -RepositoryRoot $root `
+            -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'diaery-evidence')
+          if($LASTEXITCODE -ne 0){throw 'TRIFLAVOR|HOLD|CPP_XHTML_qualification_failed'}
       - name: Preserve separate human authorization and release HOLD
         if: always()
         shell: pwsh

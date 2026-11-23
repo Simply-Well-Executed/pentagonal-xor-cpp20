@@ -10,6 +10,7 @@
 #ifndef SWE_TOOLONG_Q62_CORE_HPP
 #error "Include toolong_q62_core.hpp before slidingtoolong.hpp"
 #endif
+#include "eulers_jig_canonical.hpp"
 namespace swe::slidingtoolong {
 using uint64_t=unsigned long long;
 using uint32_t=unsigned int;
@@ -48,10 +49,10 @@ static_assert(MATH_E_X1E18/DECIMAL_SCALE_1E18==2ULL);
 static_assert(MATH_PI_X1E18/DECIMAL_SCALE_1E18==3ULL);
 // User's Euler's Jig is area per triangle, NOT mathematical e.
 // Exact quotient of the DISPLAYED total area 1833.278772184302 / 64.
-inline constexpr uint64_t EULER_JIG_TOTAL_X1E12=1833278772184302ULL;
+inline constexpr uint64_t EULER_JIG_TOTAL_X1E12=
+ swe::eulers_jig::TOTAL_X1E12;
 inline constexpr uint64_t EULER_JIG_ONE_X1E17=
- (EULER_JIG_TOTAL_X1E12/64ULL)*100000ULL+
- ((EULER_JIG_TOTAL_X1E12%64ULL)*100000ULL)/64ULL;
+ swe::eulers_jig::ONE_TRIANGLE_X1E17;
 static_assert(((EULER_JIG_TOTAL_X1E12%64ULL)*100000ULL)%64ULL==0ULL);
 static_assert(EULER_JIG_ONE_X1E17==2864498081537971875ULL);
 // A fixed, explicitly EXPLORATORY bit-mixing witness, not a

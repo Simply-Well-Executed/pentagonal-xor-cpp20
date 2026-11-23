@@ -97,6 +97,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/rectangloid_primitive_cxx20.hpp
     shared/toolong_q62_core.hpp
     shared/slidingtoolong.hpp
+    shared/eulers_jig_canonical.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/coreo_stereo.hpp
@@ -394,6 +395,7 @@ install(FILES
     shared/rectangloid_primitive_cxx20.hpp
     shared/toolong_q62_core.hpp
     shared/slidingtoolong.hpp
+    shared/eulers_jig_canonical.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/gammagamma.hpp

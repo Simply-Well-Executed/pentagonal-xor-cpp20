@@ -79,3 +79,14 @@ target_compile_options(swe_diaery_unbound PRIVATE /O2 /W4 /permissive-)
 target_link_libraries(swe_diaery_unbound PRIVATE kernel32)
 add_test(NAME diaery_unbound_dynamic_limb_128
  COMMAND swe_diaery_unbound --steps 128)
+
+# Native Strict-profile triangle/circle/loop concurrence witness.
+add_executable(swe_diaery_triflavors tri_flavors.cpp)
+set_target_properties(swe_diaery_triflavors PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_triflavors PRIVATE /O2 /W4 /permissive-)
+target_link_libraries(swe_diaery_triflavors PRIVATE kernel32)
+add_test(NAME diaery_triangle_triflavors_cpp_xhtml
+ COMMAND swe_diaery_triflavors ${CMAKE_CURRENT_SOURCE_DIR}/tri_flavors.xhtml)
+# Oracle Java 27.0.1.1 is a SEPARATE externally provisioned
+# toolchain, never an implicit replacement or automatic download.

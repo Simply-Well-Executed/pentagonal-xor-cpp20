@@ -316,3 +316,64 @@ interpretation, physical versus mathematical geometry, and the
 scope of XHTML Strict-profile qualification. It describes source
 records, **not people**. It retains provenance, cites reproducible
 test evidence, and does not grant release authorization.
+
+## TRI-FLAVORS | C++20, XHTML Strict profile, Oracle Java 27 (PR34-022)
+
+**Canonical DIAERY default** is now `shared/eulers_jig_canonical.hpp`:
+`2864498081537971875 / 10^17` square units per triangle,
+derived from the displayed 64-triangle total. The historical
+mathematical constant `e` remains labeled in reference algorithms
+and scientific regression tests; it is not a selectable alternative
+in DIAERY's operational Euler's Jig. No sweeping replacement
+of `exp`, factorial series, or dimensionless physical formulae
+is claimed or attempted. These must keep their source meanings.
+
+**Nice is a project predicate, not a theorem that other polygons
+cannot lie inside circles.** We reuse `shared/u_circle_fit.hpp`:
+the 3-4-5 triangle has nonzero area, three vertices contained
+in the disk centered at doubled coordinates (30,40), and
+minimum squared-radius threshold 2500. One sweep of squared
+radii 1 through 4096 checks the monotonicity of containment.
+Changing **radius** is not changing **radian** angle, and no
+new optimizers or validators are created per iteration.
+
+**Loop test:** interpret the *fractional parts* of the two
+separately labeled numbers as dimensionless step sizes in
+units of full turns. Exactly 64 steps do NOT close either
+arbitrary-step loop:
+`jig_gap_x1e18=278772184302000000`;
+`historical_reference_gap_x1e18=29962978621104960`.
+At 64 steps the historical reference happens to be closer
+to a closed turn. Neither is a symmetric "winner" universally.
+A separately **normalized** 1/64-turn step closes exactly
+after 64 steps. An open line is not an invalid line.
+
+**Three pairwise concurrence gates** use the new versioned
+`diaery/tri_flavors.xhtml` fixture and a common output
+witness. Native `diaery/tri_flavors.cpp` checks the existing
+strict XHTML scanner and geometry. The isolated
+`diaery/DiaeryTriFlavors.java` independently calculates
+the same results, and it also requires an exact file match
+to the fail-closed XHTML Strict-profile fixture. Neither
+component resolves the external DTD or claims complete XHTML
+1.0 DTD certification. `diaery/Invoke-TriFlavorQualification.ps1`
+compiles C++20 using MSVC `/O2`, cross-checks an independent
+PowerShell BigInteger oracle, and rejects mutated XHTML.
+
+**Oracle Java toolchain:** as of November 23, 2026 the latest
+Oracle JDK is **27.0.1.1** (released November 17, 2026).
+The Java adapter requires that *exact* version and the
+`Oracle Corporation` vendor. It is NOT an OpenJDK fallback,
+it is NOT bundled in this 0BSD repository, and is NOT
+downloaded during tests. The regular CI explicitly reports
+`JAVA_XHTML=HOLD` and `JAVA_CPP=HOLD` if no verified
+Oracle JDK is provisioned. The separate manual workflow
+`.github/workflows/diaery-oracle-triflavors.yml` is
+fail-closed and requires `SWE_ORACLE_JDK27_HOME` pointing
+to an existing Oracle JDK 27.0.1.1 installation on the
+Windows job runner. The workflow never silently passes
+Java comparisons without executing Java.
+
+**RELEASE=HOLD.** Conventional-e reference computations
+remain scientific references, not implemented alternatives
+to the DIAERY Euler's Jig definition.

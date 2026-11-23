@@ -15,6 +15,7 @@
 #include "../shared/three_geometric_folds.hpp"
 #include "../shared/rectangloid_primitive_cxx20.hpp"
 #include "../shared/slidingtoolong.hpp"
+#include "../shared/eulers_jig_canonical.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -587,6 +588,7 @@ static_assert(!prism::RELEASE_AUTHORIZED);
 // SLIDINGTOOLONG-PR34-017: compile-time Q64 and reversible slide gates.
 namespace sliding=swe::slidingtoolong;
 static_assert(sliding::QUALIFIED());
+static_assert(swe::eulers_jig::ONE_TRIANGLE_X1E17==sliding::EULER_JIG_ONE_X1E17);
 static_assert(sliding::EULER_JIG_ONE_X1E17==2864498081537971875ULL);
 static_assert(sliding::MATH_E_X1E18==2718281828459045235ULL);
 static_assert(sliding::MATH_PI_X1E18==3141592653589793238ULL);

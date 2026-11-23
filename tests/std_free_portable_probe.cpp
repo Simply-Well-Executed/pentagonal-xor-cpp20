@@ -17,6 +17,7 @@
 #include "../shared/rectangloid_primitive_cxx20.hpp"
 #include "../shared/toolong_q62_core.hpp"
 #include "../shared/slidingtoolong.hpp"
+#include "../shared/eulers_jig_canonical.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -177,6 +178,7 @@ static_assert(prism_portable::VISIBLE_TRIANGLES(
 static_assert(!prism_portable::RELEASE_AUTHORIZED);
 
 static_assert(swe::slidingtoolong::QUALIFIED());
+static_assert(swe::eulers_jig::ONE_TRIANGLE_X1E17==swe::slidingtoolong::EULER_JIG_ONE_X1E17);
 static_assert(swe::slidingtoolong::EULER_JIG_ONE_X1E17==
               2864498081537971875ULL);
 static_assert(swe::slidingtoolong::MATH_PI.fraction==
