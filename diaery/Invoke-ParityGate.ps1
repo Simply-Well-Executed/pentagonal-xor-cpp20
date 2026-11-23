@@ -15,14 +15,16 @@ if($evidence.StartsWith($root+[IO.Path]::DirectorySeparatorChar,[StringCompariso
   throw 'DIAERY|HOLD|evidence_must_be_outside_source'
 }
 [IO.Directory]::CreateDirectory($evidence) | Out-Null
-if($env:RUNNER_OS -cne 'Windows') { throw 'DIAERY|HOLD|Windows_native_required' }
+if(-not $IsWindows) { throw 'DIAERY|HOLD|Windows_native_required' }
 $files=@(
  'diaery/diaery.cpp','diaery/model_bridge.hpp',
  'diaery/strict_profile.hpp','diaery/parity_gate.hpp',
  'diaery/index.xhtml','diaery/bad_doctype.xhtml',
  'diaery/bad_parity.xhtml','diaery/bad_script.xhtml',
+ 'diaery/bad_stage.xhtml',
  'diaery/CMakeLists.txt','diaery/README.md',
  'diaery/Invoke-ParityGate.ps1',
+ '.github/workflows/diaery-parity.yml',
  'shared/sigma_form_geometry.hpp','shared/sigma_form_area_q62.hpp',
  'shared/right_triangle_f123_original.hpp',
  'shared/f123_eighth_fold_experiment.hpp',
