@@ -5,6 +5,8 @@
 #include "model_bridge.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
+#include "fusion_qualification.hpp"
+#include "fusion_generator.hpp"
 namespace dia=swe::diaery;
 static char g_input[16002]{};
 static dia::strict::Page g_page{};
@@ -60,6 +62,7 @@ DIA_IMPORT int DIA_STDCALL TextOutA(W32H,int,int,const char*,int);
 DIA_IMPORT W32H DIA_STDCALL CreateFileA(const char*,W32D,W32D,void*,W32D,W32D,W32H);
 DIA_IMPORT int DIA_STDCALL ReadFile(W32H,void*,W32D,W32D*,void*);
 DIA_IMPORT int DIA_STDCALL CloseHandle(W32H);
+DIA_IMPORT int DIA_STDCALL DeleteFileA(const char*);
 DIA_IMPORT W32H DIA_STDCALL GetStdHandle(W32D);
 DIA_IMPORT int DIA_STDCALL WriteFile(W32H,const void*,W32D,W32D*,void*);
 }
@@ -79,6 +82,38 @@ static int read_local(const char* path){
     g_input[n]=0;return static_cast<int>(n);
 }
 static void print(const char* s){W32D written=0u;WriteFile(GetStdHandle(STDOUT_HANDLE),s,dia::strict::len(s),&written,nullptr);}
+
+// Fusion output is CREATE_NEW: no silent overwrite of old sources.
+// Buffered byte writes, no reinterpreted user XHTML as C++ syntax.
+struct FusionSink {
+ W32H handle;char buffer[4096]{};unsigned used=0u;bool ok=true;
+ void flush() noexcept {
+  if(!ok||used==0u)return;
+  W32D written=0u;
+  if(!WriteFile(handle,buffer,used,&written,nullptr)||written!=used)ok=false;
+  used=0u;
+ }
+ void chr(char c) noexcept {
+  if(!ok)return;
+  if(used==sizeof(buffer))flush();
+  if(ok)buffer[used++]=c;
+ }
+ void text(const char* s) noexcept {
+  for(unsigned i=0u;s&&s[i];++i)chr(s[i]);
+ }
+};
+static bool fusion_to_new_file(const char* output) noexcept {
+ if(!output||!output[0])return false;
+ W32H h=CreateFileA(output,0x40000000u,0u,nullptr,1u,0x80u,nullptr);
+ if(h==reinterpret_cast<W32H>(-1))return false;
+ FusionSink sink{h};
+ const bool generated=dia::fusion::GENERATE(
+     g_input,dia::strict::len(g_input),g_page,sink);
+ sink.flush();const bool success=generated&&sink.ok;
+ CloseHandle(h);
+ if(!success)DeleteFileA(output);
+ return success;
+}
 #else
 extern "C" int open(const char*,int,...);
 extern "C" long read(int,void*,unsigned long);
@@ -246,10 +281,12 @@ static int show_native(){
 int main(int argc,char** argv){
     const bool check=argc>=3&&dia::strict::same(argv[1],"--check");
     const bool reject=argc>=3&&dia::strict::same(argv[1],"--reject");
+    const bool qualify=argc>=3&&dia::strict::same(argv[1],"--qualify");
+    const bool fusion=argc==4&&dia::strict::same(argv[1],"--fusion");
 #if defined(_WIN32)
-    const char* path=(check||reject)?argv[2]:(argc>1?argv[1]:"diaery\\index.xhtml");
+    const char* path=(check||reject||qualify||fusion)?argv[2]:(argc>1?argv[1]:"diaery\\index.xhtml");
 #else
-    const char* path=(check||reject)?argv[2]:(argc>1?argv[1]:"diaery/index.xhtml");
+    const char* path=(check||reject||qualify||fusion)?argv[2]:(argc>1?argv[1]:"diaery/index.xhtml");
 #endif
     g_loaded=load_validate(path);
     if(reject){
@@ -258,6 +295,24 @@ int main(int argc,char** argv){
     }
     if(!g_loaded){print("DIAERY|XHTML_STRICT_OR_PARITY_HOLD\n");return 12;}
     if(check){print("DIAERY|1:1-PARITY-GATE=PASS|XHTML_STRICT_PROFILE=PASS|RELEASE=HOLD\n");return 0;}
+    if(qualify||fusion) {
+        const auto results=dia::qualification::TEST(g_page);
+        if(!results.qualified){print("DIAERY|FUSION_QUALIFICATION=HOLD\n");return 18;}
+        if(qualify) {
+          print("DIAERY|FUSION_QUALIFICATION=PASS|BiDi=1|TriDi=1|PiDi=1|PiPi=SYMBOLIC|SigmaDi=1|SigmaSigma=1|GammaGamma=BOUNDED|RELEASE=HOLD\n");
+          return 0;
+        }
+#if defined(_WIN32)
+        if(!fusion_to_new_file(argv[3])) {
+          print("DIAERY|FUSION_CREATE_NEW_FAILED\n");return 19;
+        }
+        print("DIAERY|FUSION_SOURCE_CREATED|QUALIFICATION=PASS|RELEASE=HOLD\n");
+        return 0;
+#else
+        print("DIAERY|FUSION_OUTPUT_REQUIRES_NATIVE_WINDOWS\n");
+        return 20;
+#endif
+    }
 #if defined(_WIN32)
     return show_native();
 #else

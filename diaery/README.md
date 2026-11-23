@@ -91,3 +91,46 @@ physical properties and release authorization remain explicitly
 unverified. The former 9-triangle partition and symbolic BiDi,
 TriDi, PiDi, PiSigma, SigmaPi and SigmaSigmaSigma source experiments
 remain unmodified and cross-referenced. **Chosen, never assumed.**
+
+## FUSION: qualified XHTML to permanent headerless C++20
+
+`diaery-native.exe --qualify diaery/index.xhtml` runs the independent
+seven-gate qualification check (BiDi, TriDi, PiDi, PiPi, SigmaDi,
+SigmaSigma, GammaGamma) on the **existing** source geometry and XHTML
+parity manifest. `--fusion diaery/index.xhtml output.cpp` creates a
+deterministic **new** C++20 source file. Existing output is never overwritten.
+
+The generated file uses no `#include`, STL or third-party runtime. It
+embeds the exact original XHTML bytes **as data**, geometry values from
+the canonical headers, four 3D fold-stage coordinate records, and
+compile-time assertions. Compiling the generated source produces an
+executable that emits the source XHTML bytes unchanged. This is a
+lossless snapshot/qualification adapter, not a compiler for arbitrary
+XHTML syntax or a second browser engine.
+
+**FIFO == LAFIT** has a concrete contract: the input XHTML bytes must
+equal the recovered bytes emitted by the generated native executable;
+the recovered XHTML must requalify in DIAERY; and regenerating C++20
+from those recovered bytes must produce a byte-for-byte identical
+source file. Source order and the authority of earlier geometry stay
+intact. The produced C++20 file and the original XHTML remain
+separately retained, with SHA-256 evidence.
+
+The new `diaery/Invoke-FusionQualification.ps1` compiles the new source
+using native MSVC `/std:c++20 /O2`, performs binary-safe recovery,
+checks both round-trip hashes, checks regeneration identity,
+denies corrupted XHTML and unsupported input, and prints
+`QUALIFICATION=PASS` only if all gates succeed. It does not change or
+bypass INCEPTION-GATE. The exact source archive bootstrap remains
+networked; compilation and tests after bootstrap are offline.
+
+**Operator boundaries:** PiDi uses the project's symbolic finite
+integer modulo-four witness; PiPi remains `SYMBOLIC_ONLY` and
+does not evaluate pi-to-the-pi. SigmaDi implements the explicitly
+labeled four-branch butterfly as a separate reversible adapter.
+GammaGamma tests bounded integer-factorial differences only; it is
+not asserted equivalent to the full STL-based GammaGamma library.
+All seven names preserve their original source meanings where
+established and are labeled EXPERIMENTAL where incomplete.
+No safety or full XHTML 1.0 DTD qualification is inferred.
+**RELEASE=HOLD.**

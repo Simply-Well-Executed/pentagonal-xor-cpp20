@@ -21,3 +21,7 @@ add_test(NAME diaery_negative_stage_mutation
   COMMAND swe_diaery --reject ${CMAKE_CURRENT_SOURCE_DIR}/bad_stage.xhtml)
 add_test(NAME diaery_negative_active_script
   COMMAND swe_diaery --reject ${CMAKE_CURRENT_SOURCE_DIR}/bad_script.xhtml)
+
+# Qualification tests are separate from basic 1:1 parity.
+add_test(NAME diaery_fusion_seven_operator_qualification
+  COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/index.xhtml)

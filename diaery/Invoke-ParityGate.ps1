@@ -19,6 +19,8 @@ if(-not $IsWindows) { throw 'DIAERY|HOLD|Windows_native_required' }
 $files=@(
  'diaery/diaery.cpp','diaery/model_bridge.hpp',
  'diaery/strict_profile.hpp','diaery/parity_gate.hpp',
+ 'diaery/fusion_qualification.hpp','diaery/fusion_generator.hpp',
+ 'diaery/Invoke-FusionQualification.ps1',
  'diaery/index.xhtml','diaery/bad_doctype.xhtml',
  'diaery/bad_parity.xhtml','diaery/bad_script.xhtml',
  'diaery/bad_stage.xhtml',

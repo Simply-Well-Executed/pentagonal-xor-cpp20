@@ -61,6 +61,17 @@ jobs:
             -RepositoryRoot $root `
             -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'diaery-evidence')
           if($LASTEXITCODE -ne 0){throw 'DIAERY|HOLD|native_concurrence_failed'}
+      - name: FUSION | native XHTML to C++20 reverse FIFO/LAFIT qualification
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'diaery-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File `
+            (Join-Path $root 'diaery/Invoke-FusionQualification.ps1') `
+            -RepositoryRoot $root `
+            -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'diaery-evidence')
+          if($LASTEXITCODE -ne 0){throw 'DIAERY|HOLD|FUSION_QUALIFICATION_FAILED'}
       - name: Preserve separate human authorization and release HOLD
         if: always()
         shell: pwsh
