@@ -98,3 +98,23 @@ A circle-fit success must not be promoted to evidence of an
 actual physical paper fold, missing tip, or pyramid reconstruction.
 No CI success or release authorization is presumed.
 **RELEASE=HOLD. Chosen, never assumed.**
+## REV1 arithmetic correction | U-CIRCLE-FIT-PR34-009-REV1
+
+**Reason:** Native MSVC /O2 compilation of DIAERY 1:1-PARITY-GATE
+revealed that the original `SLANT=5ULL*Q/8ULL` computes `5*Q`
+first and therefore overflows unsigned 64-bit before division.
+With `Q=2^62`, the overflowed result differs from the
+canonical `5*(Q/8)=2882303761517117440` witness. The original
+static assertions properly failed.
+
+**Bounded correction:** `SLANT=5ULL*(Q/8ULL)`, with a
+constant-time exact-value assert and a negative counterexample.
+No F1/F2/F3, eight-fold, seven-term, four-sided pyramid, or
+nine-triangle geometric source was changed. Original `u_circle_fit.hpp`
+source blob `d28c7b7b8604aca910eea47e93b06edbccf9fbe1` remains retrievable through
+Git history for audit. This is a new explicit **REV1** experiment
+record, not a silent reinterpretation of the original snapshot.
+
+**State:** historical failing arithmetic is CONTRADICTED; overflow-safe
+REV1 is under independent native validation. A CI hold must not be
+silently cleared or converted into release authority.

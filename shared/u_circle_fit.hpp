@@ -197,7 +197,12 @@ using Wide=core::Wide;
 // FOUR-SIDED PYRAMID CORE, exact Q62 witnesses.
 // =============================================
 static constexpr u64 SIDE=3ULL*Q/4ULL;
-static constexpr u64 SLANT=5ULL*Q/8ULL;
+// U-CIRCLE-FIT-PR34-009-REV1: overflow-safe Q62 multiplication order.
+// Historic source blob d28c7b7b8604aca910eea47e93b06edbccf9fbe1 stays in Git history.
+// 5*Q cannot fit u64 before dividing by 8; Q/8 can.
+static constexpr u64 SLANT=5ULL*(Q/8ULL);
+static_assert(SLANT==2882303761517117440ULL);
+static_assert((5ULL*Q/8ULL)!=SLANT); // deliberate overflow counterexample
 static constexpr u64 BASE=SHIFT62(MULTIPLY(SIDE,SIDE));
 static constexpr u64 F1=SHIFT63(MULTIPLY(SIDE,SLANT));
 static constexpr u64 F2=F1,F3=F1,F4=F1;
