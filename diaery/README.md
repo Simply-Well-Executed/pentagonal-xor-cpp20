@@ -274,3 +274,36 @@ user-defined Euler's Jig names remain unchanged.
 
 NASCAR remains **EXPLORATORY**, with separate source/CI evidence
 and `RELEASE=HOLD`.
+
+## UNBOUND head-to-head: dynamically growing limbs (PR34-020)
+
+The follow-on `unbound_head_to_head.cpp` removes the **fixed 64-step
+array ceiling** while retaining all prior exact, finite witnesses.
+It uses dynamically allocated base-10^9 arithmetic limbs via native
+Win32 heap APIs and cannot overclaim actual mathematical infinity.
+The caller chooses a strictly positive integer step count with
+`--steps N`; excessive work or memory shortages fail closed.
+
+The user Euler's Jig value and conventional mathematical e remain
+distinct. Both are represented by **their supplied finite decimal
+rationals**, so the forward path `n*value^n` is exact for that
+representation. The reciprocal is retained structurally by
+interchanging numerator and denominator, never by floating point.
+The new source compares both numerators against a
+`UINT64_MAX * denominator` bound, so overflow detection
+doesn't mistake a floating-point approximation for a threshold.
+
+At n=64, 128 and 256, native C++20 `/O2` outputs independent
+modular residues and decimal digit counts, cross-checked by a
+separate PowerShell BigInteger implementation. Invalid step
+arguments fail. HEAD/TAIL SHA-256 source custody includes both
+the native source and its qualification script.
+
+**Safety boundaries:** no STL or system headers in the C++20 source;
+no dynamic memory allocation inside a frame renderer; all
+allocations are checked; finite time/RAM always apply.
+A quiet calculation emits explicit PASS/HOLD output, not fake
+real-time telemetry. Concurrence does not prove that
+mathematical e is wrong, that anyone has cheated, or that
+literal infinities can be evaluated. Separate INCEPTION-GATE
+review and **RELEASE=HOLD** remain unchanged.

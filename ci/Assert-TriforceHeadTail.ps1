@@ -46,6 +46,8 @@ $required=@(
  'diaery/finite_head_to_head.hpp',
  'diaery/head_to_head.cpp',
  'diaery/Invoke-FiniteQualification.ps1',
+ 'diaery/unbound_head_to_head.cpp',
+ 'diaery/Invoke-UnboundQualification.ps1',
  'diaery/strict_profile.hpp',
  'diaery/parity_gate.hpp',
  'diaery/harmony.hpp',
