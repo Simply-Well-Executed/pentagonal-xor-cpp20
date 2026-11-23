@@ -10,6 +10,7 @@
 #include "../shared/sigma_f_redaxualchoice.hpp"
 #include "../shared/four_pyramid_reduxualchoice.hpp"
 #include "../shared/u_circle_fit.hpp"
+#include "../shared/xdr_rdx_fold_tork.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -117,6 +118,15 @@ static_assert(uc_portable::A==600ULL && uc_portable::T==3600ULL);
 static_assert(uc_portable::TOTAL==four_core::TOTAL);
 static_assert(uc_portable::SIGMA==four_core::SIGMA_REDUXUALCHOICE);
 static_assert(!uc_portable::PHYSICAL_FOLD_VERIFIED);
+
+// Portable ISO C++20 tork envelope and three-tier PING.
+namespace tork_portable=swe::xdr_rdx_fold_tork;
+static_assert(tork_portable::AD_FOLDED==67600ULL);
+static_assert(tork_portable::CD_FOLDED==152100ULL);
+static_assert(tork_portable::SIGMA_SIGMA());
+static_assert(tork_portable::SIGMA_SIGMA_SIGMA(64u));
+static_assert(tork_portable::CORRUPTION_REJECTED());
+static_assert(!tork_portable::PHYSICAL_FOLD_INFERRED);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);

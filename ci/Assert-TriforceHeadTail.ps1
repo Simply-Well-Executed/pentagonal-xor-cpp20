@@ -35,6 +35,7 @@ $required=@(
  'shared/sigma_f_redaxualchoice.hpp',
  'shared/four_pyramid_reduxualchoice.hpp',
  'shared/u_circle_fit.hpp',
+ 'shared/xdr_rdx_fold_tork.hpp',
  'shared/gammagamma.hpp',
  'tests/triforce_native_gate_test.cpp',
  'tests/toolong_arithmetic_test.cpp',
@@ -63,6 +64,7 @@ $required=@(
  'docs/SIGMA_F_REDAXUALCHOICE.md',
  'docs/FOUR_PYRAMID_REDUXUALCHOICE.md',
  'docs/U_CIRCLE_FIT.md',
+ 'docs/XDR_RDX_FOLD_TORK.md',
  'docs/ATOMIX_PR34_BACKPORT.md'
 )
 $header=Join-Path $root 'shared/toolong_q62_core.hpp'

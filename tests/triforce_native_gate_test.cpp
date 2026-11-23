@@ -9,6 +9,7 @@
 #include "../shared/sigma_f_redaxualchoice.hpp"
 #include "../shared/four_pyramid_reduxualchoice.hpp"
 #include "../shared/u_circle_fit.hpp"
+#include "../shared/xdr_rdx_fold_tork.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -453,6 +454,33 @@ static_assert(uc::SQUARE(4000001LL)==~0ULL);
 static_assert(uc::DOUBLE_AREA({{1000001,0},{1,0},{0,1}})==0ULL);
 static_assert(!uc::PHYSICAL_FOLD_VERIFIED);
 
+
+// XDR-RDX-FOLD-TORK-PR34-010: exact fold, 6|7|8|9 reversible
+// envelopes, BiDi/TriDi, Pi-family, interleaved Σ²/Σ³ PING.
+namespace tork=swe::xdr_rdx_fold_tork;
+static_assert(tork::AD_FOLDED==67600ULL);
+static_assert(tork::CD_FOLDED==152100ULL);
+static_assert(tork::AD_FOLDED!=tork::CD_FOLDED);
+static_assert(tork::PING_HEAD(tork::HEAD_TORK));
+static_assert(tork::PING_TAIL(tork::TAIL_TORK));
+static_assert(tork::REVERSE(tork::FORWARD(tork::AD_FOLDED))==
+              tork::AD_FOLDED);
+static_assert(tork::FORWARD(tork::REVERSE(tork::CD_FOLDED))==
+              tork::CD_FOLDED);
+static_assert(tork::EQUAL(tork::BIDI(tork::BIDI(tork::INPUT_PAIR)),
+                          tork::INPUT_PAIR));
+static_assert(tork::EQUAL(tork::TRIDI(tork::TRIDI(
+              tork::TRIDI(tork::VIEWS))),tork::VIEWS));
+static_assert(tork::PI_DI==3ULL && tork::SIGMA_PI==false);
+static_assert(tork::PI_SIGMA_WITNESS.distinct);
+static_assert(tork::EQUAL(tork::TALON(tork::PI_SIGMA_WITNESS),
+                          tork::INPUT_PAIR));
+static_assert(tork::SIGMA_SIGMA());
+static_assert(tork::SIGMA_SIGMA_SIGMA(64u));
+static_assert(tork::PING_STRESS(128u));
+static_assert(tork::CORRUPTION_REJECTED());
+static_assert(!tork::EXTERNAL_APPROVAL_INFERRED);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};
@@ -473,5 +501,6 @@ int main() {
     ++corrupted.expected_integer;
     if(verify(corrupted))return 4;
     if(!verify(euler)||!verify(pi)||!verify(intensity))return 5;
+    if(!tork::SIGMA_SIGMA_SIGMA(4096u))return 6;
     return 0;
 }
