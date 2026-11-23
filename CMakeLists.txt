@@ -94,6 +94,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/minza_direct_ping_bidi.hpp
     shared/minza_direct_ping_tridi.hpp
     shared/three_geometric_folds.hpp
+    shared/rectangloid_primitive_cxx20.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
@@ -389,6 +390,7 @@ install(FILES
     shared/minza_direct_ping_bidi.hpp
     shared/minza_direct_ping_tridi.hpp
     shared/three_geometric_folds.hpp
+    shared/rectangloid_primitive_cxx20.hpp
     shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp

@@ -13,6 +13,7 @@
 #include "../shared/minza_direct_ping_bidi.hpp"
 #include "../shared/minza_direct_ping_tridi.hpp"
 #include "../shared/three_geometric_folds.hpp"
+#include "../shared/rectangloid_primitive_cxx20.hpp"
 using namespace swe::toolong_q62;
 
 static_assert(sigma_sigma_sigma());
@@ -558,6 +559,30 @@ static_assert(!fold3::CLOSED_CUBE_VERIFIED);
 static_assert(!fold3::PHYSICAL_PAPER_FOLD_VERIFIED);
 static_assert(!fold3::RELEASE_AUTHORIZED);
 
+
+// RECTANGLOID-PR34-014: 3 physical fold sources + 2 oriented end caps.
+namespace prism=swe::rectangloid_primitive;
+static_assert(prism::WITNESS.valid);
+static_assert(prism::WALL_TRIANGLES==8u);
+static_assert(prism::CAP_TRIANGLES==4u);
+static_assert(prism::TRIANGLES==12u);
+static_assert(prism::ALL_EDGES_PAIRED(prism::CLOSED));
+static_assert(prism::MISSING_CAP_REJECTED());
+static_assert(prism::VOLUME==13500);
+static_assert(prism::SURFACE_AREA==4050);
+static_assert(prism::SIGNED_VOLUME6(prism::CLOSED)==81000);
+static_assert(prism::DOUBLE_AREA_TOTAL()==8100ULL);
+static_assert(prism::VISIBLE_TRIANGLES(prism::CAMERA)==6u);
+static_assert(prism::CULLED_TRIANGLES==6u);
+static_assert(prism::CAP_0.source_area==
+              prism::CAP_0.cap_area+prism::CAP_0.offcut_area);
+static_assert(prism::CAP_1.source_area==
+              prism::CAP_1.cap_area+prism::CAP_1.offcut_area);
+static_assert(prism::DIARY_VIEW.fill==prism::Fill::Water);
+static_assert(!prism::PHYSICAL_WATER_FILL_VERIFIED);
+static_assert(!prism::FULL_Z_BUFFER_OCCLUSION_IMPLEMENTED);
+static_assert(!prism::RELEASE_AUTHORIZED);
+
 constexpr const char* test_sha = "0123456789abcdef0123456789abcdef01234567";
 constexpr ApprovalClaim first{"synthetic-reviewer-1",test_sha,true};
 constexpr ApprovalClaim second{"synthetic-reviewer-2",test_sha,true};
@@ -583,5 +608,6 @@ int main() {
        !direct::REPORT.ping_after_restore)return 7;
     if(!tridi::VALIDATE().valid)return 8;
     if(!fold3::PING_THREE_FOLDS().valid)return 9;
+    if(!prism::PING().valid)return 10;
     return 0;
 }

@@ -14,6 +14,7 @@
 #include "../shared/minza_direct_ping_bidi.hpp"
 #include "../shared/minza_direct_ping_tridi.hpp"
 #include "../shared/three_geometric_folds.hpp"
+#include "../shared/rectangloid_primitive_cxx20.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -161,6 +162,17 @@ static_assert(fold3_portable::FOLD_STEP(3u));
 static_assert(fold3_portable::SUM_DOUBLE_AREA()==7200ULL);
 static_assert(fold3_portable::FREE_SEAM_COINCIDENT());
 static_assert(!fold3_portable::CLOSED_CUBE_VERIFIED);
+
+
+// Rectangloid ISO C++20 primitive: closed geometric boundary + faces.
+namespace prism_portable=swe::rectangloid_primitive;
+static_assert(prism_portable::WITNESS.valid);
+static_assert(prism_portable::ALL_EDGES_PAIRED(prism_portable::CLOSED));
+static_assert(prism_portable::VOLUME==13500);
+static_assert(prism_portable::SURFACE_AREA==4050);
+static_assert(prism_portable::VISIBLE_TRIANGLES(
+              prism_portable::CAMERA)==6u);
+static_assert(!prism_portable::RELEASE_AUTHORIZED);
 
 static_assert(swe::sigma_form::square_pyramid_z(
     0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);

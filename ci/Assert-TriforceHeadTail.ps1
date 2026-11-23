@@ -39,6 +39,7 @@ $required=@(
  'shared/minza_direct_ping_bidi.hpp',
  'shared/minza_direct_ping_tridi.hpp',
  'shared/three_geometric_folds.hpp',
+ 'shared/rectangloid_primitive_cxx20.hpp',
  'shared/gammagamma.hpp',
  'tests/triforce_native_gate_test.cpp',
  'tests/toolong_arithmetic_test.cpp',
@@ -71,6 +72,7 @@ $required=@(
  'docs/MINZA_DIRECT_PING_BIDI.md',
  'docs/MINZA_DIRECT_PING_TRIDI.md',
  'docs/THREE_GEOMETRIC_FOLDS.md',
+ 'docs/RECTANGLOID_PRIMITIVE_DIARY.md',
  'docs/ATOMIX_PR34_BACKPORT.md'
 )
 $header=Join-Path $root 'shared/toolong_q62_core.hpp'
