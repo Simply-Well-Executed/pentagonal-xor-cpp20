@@ -18,6 +18,8 @@ if($evidence.StartsWith($root+[IO.Path]::DirectorySeparatorChar,[StringCompariso
 if(-not $IsWindows) { throw 'DIAERY|HOLD|Windows_native_required' }
 $files=@(
  'diaery/diaery.cpp','diaery/model_bridge.hpp',
+ 'diaery/finite_head_to_head.hpp','diaery/head_to_head.cpp',
+ 'diaery/Invoke-FiniteQualification.ps1',
  'diaery/strict_profile.hpp','diaery/parity_gate.hpp',
  'diaery/fusion_watchdog.hpp',
  'diaery/harmony.hpp','shared/slidingtoolong.hpp',

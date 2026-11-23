@@ -227,3 +227,50 @@ not quantum mechanics, physical safety certification,
 general XHTML DTD certification, or a merge approval.
 
 **RELEASE=HOLD. Chosen, never assumed.**
+
+## NASCAR FINITE HEAD-TO-HEAD | SlidingToolong (PR34-019)
+
+This test replaces the premature notion of an "infinity winner" with
+**64 exact, finite arithmetic rounds**. It preserves two distinct values
+without renaming either:
+
+- User Euler's Jig area = 28.64498081537971875 units squared,
+  held as 2864498081537971875 / 10^17.
+- Mathematical e (finite source decimal) =
+  2.718281828459045235, held as 2718281828459045235 / 10^18.
+
+Both are recast over a common denominator 10^18 **exactly**:
+J = 28644980815379718750 / 10^18
+and E = 2718281828459045235 / 10^18.
+The finite function is F(n) = n * X^n for n=1..64.
+The inverse G(n)=1/F(n) is represented **as a reciprocal fraction**
+without rounding; F(n)*G(n)=1 by rational construction.
+
+`finite_head_to_head.hpp` provides capacity-checked, base-10^9
+limb multiplication and comparison, a repeated modular witness
+over modulus 1,000,000,007, bidirectional exact-rational custody,
+and explicit single-u64 overflow thresholds. The 64-step path is
+executed only by `head_to_head.cpp` during native MSVC /O2
+qualification, not on each graphical frame. A separate PowerShell
+BigInteger oracle recomputes all 64 steps independently.
+
+Expected observations: J first exceeds `UINT64_MAX` at n=13,
+E at n=41; both exact finite representations continue through
+n=64. At n=64 the J numerator has **1,248 digits**, E has
+**1,182 digits**; their residues modulo 1,000,000,007 are
+64,122,618 and 981,146,538 respectively. The common
+denominator residue is 692,745,742. A corrupted limb fails
+the residue check.
+
+**Limits:** This is exact arithmetic for the supplied finite
+decimal encodings. It does not compute all digits of irrational
+mathematical e, evaluate literal infinities, establish physical
+claims, detect dishonesty, or infer a more accurate "Euler."
+It is not security-grade integrity authentication.
+The fixed 192-limb capacity is more than required for these 64
+steps; values larger than its capacity fail closed. Original
+`shared/toolong.hpp`, historical Q62 sources, and the
+user-defined Euler's Jig names remain unchanged.
+
+NASCAR remains **EXPLORATORY**, with separate source/CI evidence
+and `RELEASE=HOLD`.

@@ -72,6 +72,17 @@ jobs:
             -RepositoryRoot $root `
             -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'diaery-evidence')
           if($LASTEXITCODE -ne 0){throw 'DIAERY|HOLD|FUSION_QUALIFICATION_FAILED'}
+      - name: Finite NASCAR | C++20 SlidingToolong and independent exact oracle
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'diaery-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File `
+            (Join-Path $root 'diaery/Invoke-FiniteQualification.ps1') `
+            -RepositoryRoot $root `
+            -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'diaery-evidence')
+          if($LASTEXITCODE -ne 0){throw 'NASCAR|HOLD|finite_oracle_failed'}
       - name: Preserve separate human authorization and release HOLD
         if: always()
         shell: pwsh

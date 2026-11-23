@@ -61,3 +61,12 @@ add_test(NAME diaery_harmony_negative_order
  COMMAND swe_diaery --qualify ${CMAKE_CURRENT_SOURCE_DIR}/bad_harmony_order.xhtml)
 set_tests_properties(diaery_harmony_negative_order
  PROPERTIES WILL_FAIL TRUE)
+
+# DIAERY finite-rational NASCAR qualification: separate from UI rendering.
+add_executable(swe_diaery_finite head_to_head.cpp)
+set_target_properties(swe_diaery_finite PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_finite PRIVATE /O2 /W4 /permissive-)
+target_link_libraries(swe_diaery_finite PRIVATE kernel32)
+add_test(NAME diaery_finite_slidingtoolong_head_to_head
+ COMMAND swe_diaery_finite)
