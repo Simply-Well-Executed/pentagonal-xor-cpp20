@@ -65,6 +65,7 @@ $required=@(
  'diaery/Invoke-ParityGate.ps1',
  'diaery/CMakeLists.txt',
  'diaery/README.md',
+ 'diaery/ERRATA.md',
  '.github/workflows/diaery-parity.yml',
  'shared/gammagamma.hpp',
  'tests/triforce_native_gate_test.cpp',

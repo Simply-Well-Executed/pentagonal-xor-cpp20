@@ -307,3 +307,12 @@ real-time telemetry. Concurrence does not prove that
 mathematical e is wrong, that anyone has cheated, or that
 literal infinities can be evaluated. Separate INCEPTION-GATE
 review and **RELEASE=HOLD** remain unchanged.
+
+## Published engineering errata
+
+The versioned [DIAERY engineering errata](ERRATA.md) records
+corrections to value definitions, fixed-point formats, overflow
+interpretation, physical versus mathematical geometry, and the
+scope of XHTML Strict-profile qualification. It describes source
+records, **not people**. It retains provenance, cites reproducible
+test evidence, and does not grant release authorization.

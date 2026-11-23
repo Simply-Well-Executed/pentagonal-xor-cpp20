@@ -38,6 +38,7 @@ $files=@(
  'diaery/bad_parity.xhtml','diaery/bad_script.xhtml',
  'diaery/bad_stage.xhtml',
  'diaery/CMakeLists.txt','diaery/README.md',
+ 'diaery/ERRATA.md',
  'diaery/Invoke-ParityGate.ps1',
  '.github/workflows/diaery-parity.yml',
  'shared/sigma_form_geometry.hpp','shared/sigma_form_area_q62.hpp',
