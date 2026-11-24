@@ -184,7 +184,7 @@ static_assert(fa::multiply_by_i(
 // Independent geometric closure, not derived from B/C/D folding.
 // s=3/4, h=1/2, l=5/8 -> l^2=h^2+(s/2)^2.
 constexpr auto pyramid=fa::right_square_pyramid(
-    3ULL*Q/4ULL,Q/2ULL,5ULL*Q/8ULL);
+    3ULL*Q/4ULL,Q/2ULL,5ULL*(Q/8ULL));
 static_assert(pyramid.right_square_geometry_verified);
 static_assert(pyramid.base.value==2594073385365405696ULL);
 static_assert(pyramid.one_triangle.value==1080863910568919040ULL);
@@ -382,7 +382,7 @@ static_assert(sf::TOTAL==Q && sf::BASE+sf::F==sf::TOTAL);
 namespace four=swe::four_pyramid_reduxualchoice;
 static_assert(four::CORE.right_square_geometry_verified);
 static_assert(four::SIDE==3ULL*Q/4ULL);
-static_assert(four::HEIGHT==Q/2ULL && four::SLANT==5ULL*Q/8ULL);
+static_assert(four::HEIGHT==Q/2ULL && four::SLANT==5ULL*(Q/8ULL));
 static_assert(four::BASE==pyramid.base.value);
 static_assert(four::F1==pyramid.one_triangle.value);
 static_assert(four::F2==four::F1 && four::F3==four::F1 &&
