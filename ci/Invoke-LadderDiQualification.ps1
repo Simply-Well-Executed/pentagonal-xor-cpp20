@@ -4,7 +4,8 @@
 # Unavailable/policy-invalid lanes are HOLD, never fabricated PASS.
 [CmdletBinding()]
 param([Parameter(Mandatory=$true)][string]$RepositoryRoot,
-      [Parameter(Mandatory=$true)][string]$EvidenceDirectory)
+      [Parameter(Mandatory=$true)][string]$EvidenceDirectory,
+      [ValidateSet('All','HeptaDi','OctaDi','NonaDi','EnneaDi','DecaDi','UnDecaDi','HenDecaDi','DoDecaDi','TriDecaDi')][string]$Lane='All')
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $root=[IO.Path]::GetFullPath($RepositoryRoot)
@@ -57,10 +58,9 @@ $definitions=[ordered]@{
  NonaDi='nonadi/Invoke-NonaDiSelfExclude.ps1'
  OctaDi='octadi/G.py'
 }
-foreach($key in $definitions.Keys){
- $p=Join-Path $root $definitions[$key]
- if(-not [IO.File]::Exists($p)){throw ('LADDERDI|HOLD|missing_canonical_source|'+$key)}
-}
+if($Lane -ceq 'All' -or $Lane -ceq 'HeptaDi'){
+ $beforeCount=$items.Count
+ try {
 # This is not a claim of formal Lua3 lexical verification, nor a runtime PASS.
 $lua=Find 'HEPTADI_LUA_EXE' 'lua.exe'
 $source=Join-Path $root $definitions.HeptaDi
@@ -74,10 +74,26 @@ else{
   Record 'HeptaDi' $(if($result.Exit -eq 0){'PASS'}else{'HOLD'}) '3.2.2' (Hash $source) (Hash $lua) ('exit='+$result.Exit)
  }
 }
+ }catch{
+  Write-Host 'LADDERDI|HeptaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'HeptaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'NonaDi'){
+ $beforeCount=$items.Count
+ try {
 $non=Join-Path $root $definitions.NonaDi
 $nonOut=Join-Path $out 'nona-evidence'
 $nonRun=Run 'nona-self-exclude' (Get-Command pwsh).Source @('-NoLogo','-NoProfile','-NonInteractive','-File',$non,'-RepositoryRoot',$root,'-EvidenceDirectory',$nonOut)
 Record 'NonaDi' $(if($nonRun.Exit -eq 0){'PASS'}else{'HOLD'}) 'SELF_EXCLUDE' (Hash $non) 'NOT_EXECUTED' ('active_node_candidate_exit='+$nonRun.Exit)
+ }catch{
+  Write-Host 'LADDERDI|NonaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'NonaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'EnneaDi'){
+ $beforeCount=$items.Count
+ try {
 $rust=Find 'ENNEADI_RUSTC_EXE' 'rustc.exe'
 $source=Join-Path $root $definitions.EnneaDi
 if($null -eq $rust){Record 'EnneaDi' 'HOLD' 'RUSTC_UNAVAILABLE' (Hash $source) 'NONE' 'native_only'}
@@ -94,6 +110,14 @@ else{
   }else{Record 'EnneaDi' 'HOLD' '1.100.0' (Hash $source) (Hash $rust) 'native_compilation_failed'}
  }
 }
+ }catch{
+  Write-Host 'LADDERDI|EnneaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'EnneaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'DecaDi'){
+ $beforeCount=$items.Count
+ try {
 $go=Find 'DECADI_GO_EXE' 'go.exe'
 $source=Join-Path $root $definitions.DecaDi
 $official='178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1e7e'
@@ -124,6 +148,14 @@ if($null -eq $go -or [string]::IsNullOrWhiteSpace($archive) -or -not [IO.File]::
   }finally{foreach($key in $prior.Keys){[Environment]::SetEnvironmentVariable($key,$prior[$key])}}
  }
 }
+ }catch{
+  Write-Host 'LADDERDI|DecaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'DecaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'UnDecaDi'){
+ $beforeCount=$items.Count
+ try {
 $asm=Join-Path $root $definitions.UnDecaDi
 $cpp=Join-Path $root 'undecadi/UnDecaDiTest.cpp'
 $masm=Find 'UNDECADI_ML64_EXE' 'ml64.exe'
@@ -157,6 +189,14 @@ if($null -eq $masm -or $null -eq $cl -or -not [IO.File]::Exists($cpp)){
   }else{Record 'UnDecaDi' 'HOLD' 'MSVC_MASM' (Hash $asm) 'NONE' 'CXX20_O2_link_failed'}
  }else{Record 'UnDecaDi' 'HOLD' 'MSVC_MASM' (Hash $asm) 'NONE' 'ml64_compile_failed'}
 }
+ }catch{
+  Write-Host 'LADDERDI|UnDecaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'UnDecaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'DoDecaDi'){
+ $beforeCount=$items.Count
+ try {
 $perl=Find 'DODECADI_PERL_EXE' 'perl.exe'
 $source=Join-Path $root $definitions.DoDecaDi
 if($null -eq $perl){Record 'DoDecaDi' 'HOLD' 'PERL_5.44.0_UNAVAILABLE' (Hash $source) 'NONE' 'offline_runtime_required'}
@@ -169,6 +209,14 @@ else{
   Record 'DoDecaDi' $(if($result.Exit -eq 0 -and $result.Text.Contains('DODECADI|PASS')){'PASS'}else{'HOLD'}) '5.44.0' (Hash $source) (Hash $perl) ('exit='+$result.Exit)
  }
 }
+ }catch{
+  Write-Host 'LADDERDI|DoDecaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'DoDecaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'TriDecaDi'){
+ $beforeCount=$items.Count
+ try {
 $ocaml=Find 'TRIDECADI_OCAMLOPT_EXE' 'ocamlopt.exe'
 $source=Join-Path $root $definitions.TriDecaDi
 if($null -eq $ocaml){Record 'TriDecaDi' 'HOLD' 'OCAML_5.5.2_UNAVAILABLE' (Hash $source) 'NONE' 'native_5.5.2_required'}
@@ -185,11 +233,27 @@ else{
   }else{Record 'TriDecaDi' 'HOLD' '5.5.2' (Hash $source) (Hash $ocaml) 'native_build_failed'}
  }
 }
+ }catch{
+  Write-Host 'LADDERDI|TriDecaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'TriDecaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'OctaDi'){
+ $beforeCount=$items.Count
+ try {
 # OCTADI remains separately tested: two runtimes must be locally available.
 $oct=Join-Path $root 'octadi/Invoke-OctaDiGTable.ps1'
 $octResult=Run 'octadi-subgate' (Get-Command pwsh).Source @('-NoLogo','-NoProfile','-NonInteractive','-File',$oct,
  '-RepositoryRoot',$root,'-EvidenceDirectory',(Join-Path $out 'octadi-evidence'))
 Record 'OctaDi' $(if($octResult.Exit -eq 0){'PASS'}else{'HOLD'}) 'PY2_2.7.18_PLUS_PY3' (Hash $oct) 'NOT_BUNDLED' ('exit='+$octResult.Exit)
+ }catch{
+  Write-Host 'LADDERDI|OctaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'OctaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+if($Lane -ceq 'All' -or $Lane -ceq 'HenDecaDi'){
+ $beforeCount=$items.Count
+ try {
 # HENDECA-RSTAR-001: separately provisioned interpreter; no installation.
 $han=Join-Path $root 'hendecadi/HenDecaDi.R'
 $fixture=Join-Path $root 'pentadi/PentaDiC11BranchRecords.reference.tsv'
@@ -218,6 +282,13 @@ if(-not [IO.File]::Exists($han) -or -not [IO.File]::Exists($fixture)){
  }
  Record 'HenDecaDi' $(if($ok){'PASS'}else{'HOLD'}) 'R_4.6.2' $hanHash (Hash $rscript) ('fixture_sha256='+$fixtureHash+'|receipt_sha256='+$digest+'|exit='+$q.Exit)
 }
+ }catch{
+  Write-Host 'LADDERDI|HenDecaDi|HOLD|lane_exception'
+  if($items.Count -eq $beforeCount){Record 'HenDecaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
+ }
+}
+$expectedCount=if($Lane -ceq 'All'){9}else{1}
+if($items.Count -ne ($expectedCount+1)){throw 'LADDERDI|HOLD|lane_count_mismatch'}
 $receipt=Join-Path $out 'ladderdi-qualification.tsv'
 [IO.File]::WriteAllLines($receipt,$items,$utf8)
 Write-Host ('LADDERDI|SUMMARY|PASS='+($items.Count-1-$failure)+'|HOLD='+$failure+
