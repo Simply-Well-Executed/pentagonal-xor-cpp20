@@ -27,8 +27,10 @@ if([IO.Directory]::Exists($ev) -and @(Get-ChildItem -LiteralPath $ev -Force).Cou
 $csrc=Join-Path $root 'pentadi/PentaDiC11BranchRecords.c'
 $unit=Join-Path $root 'pentadi/BranchPinToTsht.pas'
 $program=Join-Path $root 'pentadi/Delphi007PinPipe.dpr'
+$profiler=Join-Path $root 'pentadi/BuildSpeedProfiler.pas'
+$profilerSource=Join-Path $root 'pentadi/keep.pass'
 $reference=Join-Path $root 'pentadi/PentaDiRel8_reference.asm'
-$sources=@($csrc,$unit,$program,$reference,
+$sources=@($csrc,$unit,$program,$profiler,$profilerSource,$reference,
  (Join-Path $root 'shared/bitflying_c_abi_001.h'),$PSCommandPath)
 foreach($src in $sources){
  if(-not [IO.File]::Exists($src)){throw ('PENTADI|HOLD|missing_source|'+$src)}
@@ -40,6 +42,18 @@ if(-not $pascalText.Contains('{$R+}',[StringComparison]::Ordinal) -or
    -not $pascalText.Contains('{$I+}',[StringComparison]::Ordinal)){
  throw 'PENTADI|HOLD|range_overflow_io_checks_not_enabled'
 }
+$profilerText=[IO.File]::ReadAllText($profiler)
+$historicalText=[IO.File]::ReadAllText($profilerSource)
+$runnerText=[IO.File]::ReadAllText($program)
+if(-not $historicalText.StartsWith('unit BuildSpeedProfiler;', [StringComparison]::Ordinal) -or
+   -not $profilerText.Contains('procedure ApplyQualifiedSafety', [StringComparison]::Ordinal) -or
+   -not $profilerText.Contains('function QualifiedBuildSafe', [StringComparison]::Ordinal) -or
+   -not $runnerText.Contains('BuildSpeedProfiler;', [StringComparison]::Ordinal) -or
+   -not $runnerText.Contains('ApplyQualifiedSafety(Qualified);', [StringComparison]::Ordinal) -or
+   -not $runnerText.Contains('Profiler.DumpReport;', [StringComparison]::Ordinal)){
+ throw 'PENTADI|HOLD|profiler_not_wired_or_source_drift'
+}
+Write-Host 'PENTADI_PROFILER|HISTORICAL_KEEP_PASS=SEALED|SAFETY_OVERRIDE=WIRED|TIMING=MEASURE_ONLY|RELEASE=HOLD'
 $hashes=[regex]::Matches($pascalText,'Hash16:\$[0-9A-Fa-f]{4};')
 if($hashes.Count -ne 16){throw 'PENTADI|HOLD|hash_partition_count'}
 $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
@@ -128,6 +142,7 @@ if($DelphiDcc32Path -or $DelphiDcc32Sha256){
  [IO.Directory]::CreateDirectory($srcDir)|Out-Null
  Copy-Item -LiteralPath $unit -Destination (Join-Path $srcDir 'BranchPinToTsht.pas')
  Copy-Item -LiteralPath $program -Destination (Join-Path $srcDir 'Delphi007PinPipe.dpr')
+ Copy-Item -LiteralPath $profiler -Destination (Join-Path $srcDir 'BuildSpeedProfiler.pas')
  $outputExe=Join-Path $ev 'Delphi007PinPipe.exe'
  Push-Location $srcDir
  try {
