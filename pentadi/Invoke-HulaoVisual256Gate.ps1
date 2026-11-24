@@ -106,7 +106,27 @@ if($svg.DocumentElement.LocalName -cne 'svg' -or
 $md=[IO.File]::ReadAllText($paths[2],[Text.Encoding]::UTF8)
 $rootReadme=[IO.File]::ReadAllText($paths[3],[Text.Encoding]::UTF8)
 if(([regex]::Matches($md,'\[Lap [0-9]{3} · ')).Count -ne 255 -or
-   ([regex]::Matches($md,'<details>')).Count -ne 16 -or
+   ([regex]::Matches($md,'(?m)^\s*<details>\s*
+   -not $md.Contains('](pentapi_hulao_gate.svg)',[StringComparison]::Ordinal) -or
+   -not $md.Contains('PentaPi_Hulao_256.xhtml',[StringComparison]::Ordinal) -or
+   -not $rootReadme.Contains('docs/PENTAPI_HULAO_GATE_255.md',
+                               [StringComparison]::Ordinal) -or
+   -not $rootReadme.Contains('docs/pentapi_hulao_gate.svg',
+                               [StringComparison]::Ordinal)){
+ throw 'HULAO_VISUAL|FAIL|markdown_or_readme_links'
+}
+for($i=0;$i -lt $paths.Count;$i++){
+ if($hashes[$i] -cne (Get-FileHash -LiteralPath $paths[$i] -Algorithm SHA256).Hash){
+  throw 'HULAO_VISUAL|FAIL|source_mutation'
+ }
+}
+$hash=(Get-FileHash -LiteralPath $paths[0] -Algorithm SHA256).Hash.ToLowerInvariant()
+Write-Host ('HULAO_VISUAL|XHTML_1_0_STRICT_DOCTYPE=PASS|XML_WELLFORMED=PASS'+
+ '|PROFILE_ELEMENTS=PASS|HELL_LAPS='+$hell+
+ '|FICTIONAL_FINAL=1|NEXT_LINKS=256|MARKDOWN_LAP_LINKS=255'+
+ '|SVG=PASS|README_EMBED=PASS|DTD_VALIDATION=NOT_PROVEN'+
+ '|SOURCE_UNCHANGED=PASS|XHTML_SHA256='+$hash+'|RELEASE=HOLD')
+)).Count -ne 16 -or
    -not $md.Contains('](pentapi_hulao_gate.svg)',[StringComparison]::Ordinal) -or
    -not $md.Contains('PentaPi_Hulao_256.xhtml',[StringComparison]::Ordinal) -or
    -not $rootReadme.Contains('docs/PENTAPI_HULAO_GATE_255.md',
