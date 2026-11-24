@@ -84,6 +84,12 @@ This *literal text* is not valid as an automatically meaningful C++20 synchroniz
 - [Precision policy](../shared/precision_rounding_policy_001.hpp): existing Q62 scalar round-first ties-to-odd with complete 128-bit product and signed residual.
 - [Existing width and guard core](../shared/slipslidingtoolong.hpp): `GUARDMEMORYGUARD`, `GLINTING`, `GLIZZING`, `MXRING`, no claim of native 512-bit hardware scalar arithmetic.
 
-**Qualification register:** this report is a *protocol plus exact expected data*. The actual CI run ID, commit SHA, and compiler result must be appended only after that source revision completes its workflow. No speed test is performed by these compile-time assertions, and no engineering document here certifies ballistics or economics timing.
+**Qualification register (executed):** [QUADDI NI workflow run #45315833046](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45315833046) completed **SUCCESS** against tested source commit `bb6ad1136872a64f61aca7ef6e204f6ddbe6d786`, with native MSVC /O2 compile-time assertion and runtime gate output:
+
+```text
+FUDGELESSSLIPPINGTOOLONG|1D_TO_12D=PASS|LEVEL_9=DECIMAL_CHUNK|FAST9_SLOW9=EXACT_MATCH|BITS_12D=353|GLINTING_384=PASS|MIDPOINT_ODD=PASS|NO_SPEED_CLAIM|RELEASE=HOLD
+```
+
+[DIAERY XHTML Strict run #45315833073](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45315833073) also completed **SUCCESS** against that code revision. The report/documentation commit comes afterward and is not part of those compiled artifacts. The result establishes exact numerical and guard checks, NOT a speed benchmark, physical dimensionality, thread or memory barrier, or real-time ballistics/economics capability. `RELEASE=HOLD`.
 
 **Finish line:** two independent lanes, one exact result, twelve visible stages, all decimal tails retained, and no premature victory lap. 🚀 | 🏎️
