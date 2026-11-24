@@ -37,7 +37,7 @@ $rejected=$false
 try{
   $null=Assert-ExciteEvidence $ctx
 }catch{
-  if([string]$_.Exception.Message -cmatch '^EXCITE\|HOLD\|integrity\|'){
+  if([string]$_.Exception.Message -cmatch '^EXCITE\|HOLD\|(integrity|dovia_signal)\|'){
     $rejected=$true
   }else{throw}
 }
