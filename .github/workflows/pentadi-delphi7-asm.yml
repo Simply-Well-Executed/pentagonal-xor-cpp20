@@ -70,6 +70,14 @@ jobs:
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pentadi-root.txt'))
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-PentaPiLapAudit.ps1') -RepositoryRoot $root -PentaDiEvidenceDirectory (Join-Path $env:RUNNER_TEMP 'pentadi-asm-evidence') -TcpEvidenceDirectory (Join-Path $env:RUNNER_TEMP 'pentapi-tcp255-evidence') -AuditDirectory (Join-Path $env:RUNNER_TEMP 'pentapi-lap001-evidence')
           if($LASTEXITCODE -ne 0){throw 'PENTAPI|FAIL|five_gate_lap_audit'}
+      - name: Hulao Gate | 255 simulated chaos laps and recovery receipts
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pentadi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-HulaoChaos255.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'hulao-chaos255-evidence') -Rounds 255
+          if($LASTEXITCODE -ne 0){throw 'HULAO_CHAOS|FAIL|255_models_or_recovery'}
       - name: PentaDi provenance and release gate
         if: always()
         shell: pwsh
