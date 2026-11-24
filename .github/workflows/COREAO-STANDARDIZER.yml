@@ -46,14 +46,19 @@ jobs:
           $candidates=@($open | Where-Object {
             $_.head.sha -ceq $env:PR_HEAD_SHA -and
             $_.head.ref -ceq $branch -and
-            $_.head.repo.full_name -ceq $repo
+            $_.head.repo.full_name -ceq $repo -and
+            $_.base.repo.full_name -ceq $repo -and
+            $_.state -ceq 'open'
           })
           if($candidates.Count -ne 1){throw 'STANDARDIZER|HOLD|PR_BRANCH_NOT_UNIQUE'}
           $env:PR_NUMBER=[string]$candidates[0].number
-          $pr=Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo+'/pulls/'+$env:PR_NUMBER) -Headers $headers
-          if($pr.state -cne 'open' -or $pr.head.sha -cne $env:PR_HEAD_SHA -or
-             $pr.head.repo.full_name -cne $repo -or $pr.base.repo.full_name -cne $repo){
-            throw 'STANDARDIZER|HOLD|PR_REF_OR_IDENTITY_MOVED'
+          # PR list binds the unique open PR number, branch, repository and HEAD.
+          # Independently verify the live Git branch ref, not a possibly cached
+          # single-PR projection during rapid synchronize events.
+          $refUri='https://api.github.com/repos/'+$repo+'/branches/'+[uri]::EscapeDataString($branch)
+          $liveBranch=Invoke-RestMethod -Uri $refUri -Headers $headers
+          if($liveBranch.commit.sha -cne $env:PR_HEAD_SHA){
+            throw 'STANDARDIZER|HOLD|LIVE_GIT_BRANCH_SHA_MOVED'
           }
           $zip=Join-Path $env:RUNNER_TEMP 'standardizer-exact-pr-head.zip'
           $folder=Join-Path $env:RUNNER_TEMP 'standardizer-exact-pr-head'
