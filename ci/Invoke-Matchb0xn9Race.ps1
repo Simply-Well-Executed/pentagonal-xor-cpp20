@@ -81,7 +81,7 @@ if($Mode -ceq 'SELFTEST'){
   # A 10th independent circuit must always be rejected, no fallback.
   $bad=[Collections.Generic.List[string]]::new()
   for([int]$i=1;$i -le 10;$i++){
-    $bad.Add($i+[char]9+('a'*40)+[char]9+('b'*64)+[char]9+('c'*64))
+    $bad.Add(([string]$i)+[char]9+('a'*40)+[char]9+('b'*64)+[char]9+('c'*64))
   }
   $ten=Join-Path $out 'ten-circuits.tsv'
   [IO.File]::WriteAllText($ten,([string]::Join([string][char]10,$bad)+[char]10),$utf8)

@@ -215,7 +215,7 @@ foreach($pr in $chain){
     $holds.Add(('PR'+$number+'|'+$errorClass))
     Write-Host ('MATCHB0Xn9|PR='+$number+'|HOLD|REASON='+$errorClass+'|NO_BYPASS|RELEASE=HOLD')
   }
-  $receiptLine=$number+[char]9+$sha+[char]9+$custodySha+[char]9+$receiptSha
+  $receiptLine=([string]$number)+[char]9+$sha+[char]9+$custodySha+[char]9+$receiptSha
   if($status -ceq 'PASS'){$manifest.Add($receiptLine)}
   # Per-PR supervising signal uses one canonical source; not a second camera.
   $sourceMarker=[Convert]::ToHexString([Security.Cryptography.SHA256]::HashData(
