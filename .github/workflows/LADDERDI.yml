@@ -47,6 +47,32 @@ jobs:
             throw 'LADDERDI|HOLD|source_incomplete'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'ladderdi-root.txt'),$roots[0].FullName)
+      - name: Pre-lab provision official Google Go 1.27.4, verify archive, never vendor
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $source='https://dl.google.com/go/go1.27.4.windows-amd64.zip'
+          $expected='178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1e7e'
+          $zip=Join-Path $env:RUNNER_TEMP 'google-official-go1.27.4.windows-amd64.zip'
+          $directory=Join-Path $env:RUNNER_TEMP 'google-official-go1.27.4'
+          # Network boundary: CI provisioning, before OFFLINE runtime qualification.
+          # No GitHub/third-party Go installer, module resolver or go install.
+          Invoke-WebRequest -Uri $source -OutFile $zip -MaximumRedirection 0
+          $actual=(Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($actual -cne $expected){throw 'DECADI|HOLD|GOOGLE_ARCHIVE_DIGEST_MISMATCH'}
+          Expand-Archive -LiteralPath $zip -DestinationPath $directory
+          $exe=Join-Path $directory 'go/bin/go.exe'
+          if(-not [IO.File]::Exists($exe)){throw 'DECADI|HOLD|GOOGLE_GO_BINARY_MISSING'}
+          $version=@(& $exe version)
+          if($LASTEXITCODE -ne 0 -or $version.Count -ne 1 -or
+             $version[0] -cnotmatch '^go version go1[.]27[.]4 windows/amd64'){
+            throw 'DECADI|HOLD|OFFICIAL_GO_VERSION'
+          }
+          [IO.File]::AppendAllText($env:GITHUB_ENV,('DECADI_GO_EXE='+$exe+[char]10+
+             'DECADI_GO_OFFICIAL_ARCHIVE='+$zip+[char]10))
+          Write-Host ('DECADI|PRELAB|SOURCE=dl.google.com|VERSION=1.27.4|ZIP_SHA256='+$actual+
+            '|LOCAL_RUNTIME_STAGED=YES|NO_REPOSITORY_VENDORING|RELEASE=HOLD')
       - name: Evaluate all lanes with locally provisioned toolchains
         shell: pwsh
         run: |
