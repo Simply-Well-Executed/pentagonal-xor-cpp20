@@ -13,3 +13,8 @@ Testing/
 *.pdb
 *.dSYM/
 .DS_Store
+# Local-only audit records, not source files
+.iron-native-evidence.json
+.magic-comb-audit.json
+.iron-t-cross-diff.yml
+.iron-std-free-inventory.yml

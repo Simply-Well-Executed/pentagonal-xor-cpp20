@@ -1,4 +1,9 @@
-# COREAO: Triℼ I → Triℼ II → Triℼ III → one scalar
+# COREAO: Triπ I → Triπ II → Triπ III → one scalar
+
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
 
 **Status:** experimental, source-preserving MAT.RECYCLE algebra audit.
 **License:** 0BSD. This feature is independent of the Pentagonal XOR CLI.
@@ -14,14 +19,14 @@ The calculations never modify the original trace.
 
 ## The three linked inspections
 
-1. **Triℼ I, forward:** derive fresh stages `F[0..10]` from the original
+1. **Triπ I, forward:** derive fresh stages `F[0..10]` from the original
    source operand using the DecaSigma operations
    `R,S,R,T,R,S,R,T,R,R`. The given trace is *not* trusted as its own proof.
-2. **Triℼ II, reverse:** fill `B[10]` from `F[10]`, then reconstruct all
+2. **Triπ II, reverse:** fill `B[10]` from `F[10]`, then reconstruct all
    earlier `B[i-1]` by applying each operation in reverse order.
    `R(x)=1/x`, `S(x)=1-x`, and `T(x)=x/(x-1)` are involutions on their
    stated real domains.
-3. **Triℼ III, Z-fold:** compare each supplied `s[i]` against both
+3. **Triπ III, Z-fold:** compare each supplied `s[i]` against both
    `F[i]` and `B[i]` in visit order
    `0,1,3,2,4,5,7,6,8,9,10`, then check the seven cross-fold pairs
    `(0,4),(4,8),(8,10),(1,5),(5,9),(2,6),(3,7)`.

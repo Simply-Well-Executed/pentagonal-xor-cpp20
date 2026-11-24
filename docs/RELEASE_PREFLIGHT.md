@@ -1,5 +1,13 @@
 # Release pre-flight: no paused code and usable audit APIs
 
+
+**CURRENT release rule (PR #20):** The [local GAMP4 Docker/native release procedure](GAMP4_DOCKER_RELEASE.md) requires full CTest and twelve independent GAMP4-style URS records per native OS/CPU target, exact source-SHA receipts, native Apple/Windows evidence, and 13 verified package manifests. The previous text about Actions jobs and artifact uploads is retained as historical context only. The new candidate remains **STAGED_NOT_PUBLISHED only after those checks**; as authored, it is **NOT TESTED / RELEASE HOLD** and has no regulatory QA/PQ approval.
+
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** active release validation, not a rewriting of prior results.
 
 ## Scope
@@ -39,7 +47,7 @@ failures without pausing the released executable. These remain permitted.
 
 ## The shipped, callable audit APIs
 
-Before this review, the Triℼ and COREAO algorithms were compile-tested
+Before this review, the Triπ and COREAO algorithms were compile-tested
 but their public headers were missing from the installed release package.
 That was a **distribution gap**, not a runtime debugger breakpoint.
 
@@ -59,7 +67,7 @@ parity CLI mode or needing a separately built audit runtime binary.
 Every root build matrix job stages its package, compiles an independent
 consumer in `tests/consumer` **against the installed target and
 headers**, then executes the example. The consumer checks the original
-DecaSigma return witnesses, the three Triℼ route inspections, COREAO's
+DecaSigma return witnesses, the three Triπ route inspections, COREAO's
 single scalar, and the public parity API.
 
 ## Local reproduction in PowerShell 7
@@ -82,7 +90,7 @@ On other platforms, CMake's native generator is used.
 
 - The production Pentagonal XOR executable has **one closed-form
   calculation**, not a switchable parity engine or debug-only branch.
-- DecaSigma, Triℼ, and COREAO are shipped as usable header-only APIs
+- DecaSigma, Triπ, and COREAO are shipped as usable header-only APIs
   and keep their own domain checks.
 - CORE remains the original source. Derived routes are read-only audits,
   not a new source of identity, authority, or cryptographic assurance.
@@ -110,3 +118,12 @@ alongside all seven C++ archives. Neither this debug build nor the numeric
 Stability score proves word recognition, production Android signing or
 a speech-to-text model. Evidence is per commit, failures must remain in
 Actions history, and no new release tag is created before verification.
+
+
+## Compile-time negative witnesses and fail-closed policy (2026-11-16)
+
+Review of the feature/pentagonal-gates-cor-vista-20261116 CI history identified a shared release gate blocker: two opt-in, deliberately unsafe Windows API no-op stub declarations and one unevaluated C++20 requires expression were mistaken for runtime pauses. They are retained as historical negative-test evidence, not authorized production Windows APIs or a performance optimization.
+
+The checker now recognizes only those three exact full source statements at three exact paths for the explicit-pause rule. Every other line, unexpected signature or code addition is rejected. No folders, source files or other rules are excluded. In particular a real pause, debugger trap, disabled source block or an extra executable API call still fails closed. The canonical source mathematics are untouched.
+
+Run ci/Test-ReleaseSafetyPolicy.ps1 for a PowerShell 7 isolated regression: it tests all three known witnesses and multiple real rejected cases in a temporary sandbox, then removes the synthetic files. CTest invokes this check on hosts with PowerShell 7, and the standalone Android workflow invokes it directly. Historical cancelled runs remain evidence, not proof of an actual source defect.

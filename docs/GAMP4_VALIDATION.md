@@ -1,5 +1,13 @@
 # GAMP 4-style automated validation and Docker build custody
 
+
+**CURRENT continuation (PR #20):** [GAMP4-gated local Docker release policy](GAMP4_DOCKER_RELEASE.md) supersedes references below to now-removed GitHub Actions runner workflows. Historical observations, old Docker Hub image digests and failed checks remain evidence of their original commits. The current release candidate uses an explicit operator-authorized local Docker exception, native macOS/Windows validators, twelve exact URS supplier checks and a fail-closed 13-profile source-SHA/checksum assembler. No new Docker test or GitHub release has yet passed or published; **HOLD**.
+
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Scope:** `.github/workflows/shared-guard.yml`, experimental Pentagonal XOR
 C++20/C11, Coreo audio statistics, Android offline acoustic study and
 source-only Docker Hub image `paulcheek/android-source-study-v1`.
@@ -156,3 +164,22 @@ Review of a GPL/LGPL package permits distribution *subject to its
 license*, but does not change the project's authored source from 0BSD.
 If the requirement is zero copyleft **inside the container**, do not
 approve or publish an openSUSE base that includes copyleft OS packages.
+
+
+## Pentagonal-COR new supplier-side requirements (URS-11 through URS-22)
+
+This whole-repository GAMP4-style matrix is extended, not replaced, by
+[the Pentagonal gate-specific validation plan](PENTAGONAL_GAMP4_VALIDATION.md).
+The added C++20 `pentagonal_gamp4_validation_test` records twelve
+named URS checks covering all 32 gate truth states, 30 single-bit
+ruptures, 64-bit register packing and bypass, non-destructive source
+handling, six-step FLOP closure, independent VISTA display, NOP, invalid
+ligands and the externally supplied witness limitation.
+
+The `ship.yml` multi-platform CTest runs this test, and its
+PowerShell-only evidence step `ci/Invoke-PentagonalGamp4.ps1` checks
+exactly one PASS witness per URS ID and retains execution logs and
+SHA-256 hashes. The existing GAMP4 guarded-workflow custody remains
+in effect for the wider original project. CI pass is supplier
+verification, not formal regulated installation/operational/
+performance qualification or a claim of GxP/Part 11 approval.

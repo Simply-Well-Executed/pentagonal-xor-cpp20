@@ -3,9 +3,12 @@
 # Public 'source' stage: SDK-free, Gradle-free Android source-study.
 # Project source is 0BSD; third-party image layers retain their own licenses.
 # Private 'validation' stage: SDK is present only in disposable CI.
-FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS source
+ARG DOTNET_SDK_BASE=mcr.microsoft.com/dotnet/sdk:10.0-noble
+FROM ${DOTNET_SDK_BASE} AS source
+ARG SOURCE_REVISION=unverified-source
 
 LABEL org.opencontainers.image.title="Android source study v1 (SDK-free)" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
       org.opencontainers.image.description="0BSD offline acoustic source and Java17/PowerShell build harness" \
       org.opencontainers.image.source="https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20"
 
@@ -21,8 +24,20 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     useradd --uid 10001 --create-home --shell /usr/sbin/nologin swebuild
 
+# Python is forbidden in the Android/Linux source-study runtime, including
+# transitive base-image packages. Purge only package-manager-owned Python
+# packages; never silently delete arbitrary OS files or bypass a failed test.
+RUN set -eu; \
+    installed="$(dpkg-query -W -f='${binary:Package} ${db:Status-Abbrev}\n' | \
+      awk '$2 == "ii" && $1 ~ /^(python([0-9.]|-)|libpython[0-9.]|pypy|pipx)(:|$)/ {print $1}')"; \
+    if test -n "$installed"; then \
+      apt-get purge --yes --auto-remove $installed; \
+    fi; \
+    rm -rf /var/lib/apt/lists/*
+
 WORKDIR /study
 COPY --chown=10001:10001 . /study/
+RUN /bin/sh /study/ci/Assert-AndroidLinux-NoPython.sh image
 RUN chown -R 10001:10001 /study
 USER 10001:10001
 ENTRYPOINT ["pwsh", "-NoLogo", "-NoProfile"]

@@ -1,0 +1,137 @@
+name: GitHub Container Registry source study + Python-free Android/Linux candidate
+
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
+# Explicitly requested cloud-only path. No user-local or self-hosted compute.
+# This is independent of Docker Hub :latest and full 13-profile release QA.
+on:
+  push:
+    branches:
+      - feat/github-package-source-study-20261120
+
+permissions:
+  contents: read
+  packages: write
+  statuses: write
+
+concurrency:
+  group: ghcr-android-linux-cloud-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  mirror-historical:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
+    name: Exact historical Docker Hub image to repository-linked GHCR package
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Require GitHub-hosted runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          test "$(uname -m)" = x86_64
+          docker info
+      - name: Fetch exact Git revision without marketplace or Node actions
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/swe-verified-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: Publish historical digest to GHCR, verify package provenance
+        id: mirror
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          /bin/sh "$RUNNER_TEMP/swe-verified-source/ci/Mirror-AndroidSourceStudy-GHCR.sh"
+      - name: Record exact mirror outcome on GitHub commit
+        if: always()
+        shell: bash
+        env:
+          MIRROR_OUTCOME: ${{ steps.mirror.outcome }}
+        run: |
+          set -euo pipefail
+          case "$MIRROR_OUTCOME" in
+            success) state=success; detail='Docker Hub historical manifest mirrored to GHCR and digest verified' ;;
+            failure) state=failure; detail='GHCR historical mirror failed or GHCR package not verified' ;;
+            *) state=error; detail='GHCR mirror did not execute' ;;
+          esac
+          jq -nc --arg state "$state" --arg target "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg desc "$detail" --arg context 'swe/ghcr-historical-source-image' '{state:$state,target_url:$target,description:$desc,context:$context}' > "$RUNNER_TEMP/ghcr-status.json"
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data-binary "@$RUNNER_TEMP/ghcr-status.json" >/dev/null
+
+  python-free-candidate:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
+    name: Rebuild Android/Linux with Python removed, native CTest and Java checks
+    needs: mirror-historical
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Require GitHub-hosted runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          docker info
+      - name: Checkout source commit using Git (no Node actions)
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/swe-verified-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: Build and verify Python-free Android/Linux candidate
+        id: candidate
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          /bin/sh "$RUNNER_TEMP/swe-verified-source/ci/Build-GitHubCloud-AndroidLinux-NoPython.sh"
+      - name: Record native source, container and GHCR candidate outcome
+        if: always()
+        shell: bash
+        env:
+          CANDIDATE_OUTCOME: ${{ steps.candidate.outcome }}
+        run: |
+          set -euo pipefail
+          case "$CANDIDATE_OUTCOME" in
+            success) state=success; detail='Python-free image candidate published and verified with CTest and Java' ;;
+            failure) state=failure; detail='Python-free build, runtime test or GHCR candidate failed' ;;
+            *) state=error; detail='Python-free candidate job skipped or did not complete' ;;
+          esac
+          jq -nc --arg state "$state" --arg target "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --arg desc "$detail" --arg context 'swe/ghcr-python-free-android-linux-candidate' '{state:$state,target_url:$target,description:$desc,context:$context}' > "$RUNNER_TEMP/python-free-status.json"
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data-binary "@$RUNNER_TEMP/python-free-status.json" >/dev/null

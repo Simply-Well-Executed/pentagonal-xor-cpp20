@@ -1,4 +1,9 @@
-# Triℼ: three inspection routes for a DecaSigma trace
+# Triπ: three inspection routes for a DecaSigma trace
+
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
 
 **Status:** experimental, source-preserving MAT.RECYCLE audit. Not a claim about
 historical mathematics, built-in calculator keys, cryptography, or identity.
@@ -67,9 +72,9 @@ cryptographic strength.
 ## Unified COREAO scalar
 
 [COREAO](COREAO.md) composes the three routes:
-Triℼ I computes the forward trace from source CORE, Triℼ II
-reconstructs the reverse path from Triℼ I's final state, and
-Triℼ III compares those paths with the unchanged record in Z-fold order.
+Triπ I computes the forward trace from source CORE, Triπ II
+reconstructs the reverse path from Triπ I's final state, and
+Triπ III compares those paths with the unchanged record in Z-fold order.
 Rather than treating three Boolean reports as independent evidence,
 COREAO returns one normalized **maximum discrepancy scalar** with a
 separate admissibility flag. This scalar is an audit diagnostic, not a
@@ -85,4 +90,4 @@ ctest --test-dir build -C Release --output-on-failure
 ```
 
 The executable `pentagonal_xor` retains its **one fast production path**.
-Triℼ adds no runtime flag, optional parity mode, or runtime minterm walk.
+Triπ adds no runtime flag, optional parity mode, or runtime minterm walk.

@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: 0BSD
+cmake_minimum_required(VERSION 3.23)
+if(NOT CMAKE_HOST_WIN32)
+  message(FATAL_ERROR "TRIFORCE|HOLD|native_Windows_MSVC_only")
+endif()
+project(SWETriforceHeadTail LANGUAGES CXX)
+if(NOT MSVC OR NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  message(FATAL_ERROR "TRIFORCE|HOLD|native_MSVC_not_clang_cl")
+endif()
+add_executable(triforce_native_gate ../../tests/triforce_native_gate_test.cpp)
+set_target_properties(triforce_native_gate PROPERTIES
+  CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(triforce_native_gate PRIVATE /O2 /W4 /permissive-)
+enable_testing()
+add_test(NAME triforce_toolong_q62_headtail COMMAND triforce_native_gate)

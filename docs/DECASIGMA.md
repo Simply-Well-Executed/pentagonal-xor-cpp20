@@ -1,5 +1,10 @@
 # DecaSigma: ten-step reversible algebra witness
 
+> **Document status: DUE FOR UPDATE (2026-11-19).** Verify claims against code and tests; sharpen active verbs; check copyright, project-mark language, accessibility, and 0BSD scope. This mark is not a failure verdict. See [DOCUMENT_REVIEW_REGISTER.md](DOCUMENT_REVIEW_REGISTER.md) and [LICENSE_AND_MARKS.md](LICENSE_AND_MARKS.md).
+>
+> **Original contributions:** Copyright (c) 2026 Paul Allen Cheek · SPDX-License-Identifier: 0BSD. Third-party material and marks retain their respective rights; no registered mark is asserted.
+
+
 **Status:** experimental MAT.RECYCLE construction, separate from Pentagonal XOR.
 **License:** 0BSD, consistent with the containing repository.
 
@@ -82,9 +87,9 @@ independent source of truth.
 
 There is no dependency from DecaSigma into the Pentagonal XOR engine.
 
-## Triℼ inspection routes
+## Triπ inspection routes
 
-Three read-only inspection routes are implemented in [Triℼ](TRI_PI.md):
+Three read-only inspection routes are implemented in [Triπ](TRI_PI.md):
 **forward** transition checks, **reverse** reconstruction, and **Z-fold**
 cross-stage comparisons. `shared/tri_pi.hpp` inspects a unchanged DecaSigma
 trace and reports each result separately. No special names are assigned to

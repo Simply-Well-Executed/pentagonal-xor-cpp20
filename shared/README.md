@@ -103,7 +103,7 @@ License: [0BSD](../LICENSE). Copyright (c) Paul Allen Cheek.
 
 ## Public audit headers in the release package
 
-DecaSigma, Triℼ and COREAO are shipped as standard C++20 header-only
+DecaSigma, Triπ and COREAO are shipped as standard C++20 header-only
 APIs, with the public C11 parity header. Build a release package from the
 repository root and use the installed `swe::swe_audit_headers` CMake
 interface target with `#include <swe/coreao.hpp>`. The root CI matrix

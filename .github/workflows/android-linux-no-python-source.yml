@@ -1,0 +1,85 @@
+name: Android/Linux no-Python source guard (PowerShell)
+
+# ISSUE-29: native Windows source-only scan. No GNU, POSIX shell, Node or Python execution.
+# NOT a statement that a compiler, runner, image, or third party is compliant.
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - 29-exc-gnu-linux-001-prefer-mit-oracle-lgpl-21-forbid-lgpl-3-gpl-eupl-epl-release-hold
+
+permissions:
+  contents: read
+
+jobs:
+  prohibit-python:
+    name: Static Python exclusion on exact GitHub source snapshot
+    runs-on: windows-2025
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Verify hosted runner and fetch exact commit (no checkout action)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_ENVIRONMENT -cne 'github-hosted') { throw 'IRON|HOLD|runner_identity' }
+          if ($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$') { throw 'IRON|HOLD|commit_identity' }
+          $zip = Join-Path $env:RUNNER_TEMP 'issue29-source.zip'
+          $dest = Join-Path $env:RUNNER_TEMP 'issue29-source'
+          Invoke-WebRequest -Uri ('https://api.github.com/repos/' + $env:GITHUB_REPOSITORY + '/zipball/' + $env:GITHUB_SHA) -OutFile $zip -MaximumRedirection 5 -Headers @{
+            Authorization = 'Bearer ' + $env:GH_TOKEN
+            Accept = 'application/vnd.github+json'
+            'User-Agent' = 'issue29-native-source-guard'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          }
+          Expand-Archive -LiteralPath $zip -DestinationPath $dest
+          $dirs = @(Get-ChildItem -LiteralPath $dest -Directory)
+          if ($dirs.Count -ne 1 -or -not [IO.File]::Exists((Join-Path $dirs[0].FullName 'ci/Build-Android.ps1'))) { throw 'IRON|HOLD|source_archive_layout' }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'issue29-source-path.txt'),$dirs[0].FullName)
+          Write-Output 'IRON|SOURCE|HEAD|GITHUB_SHA_snapshot'
+      - name: Scan tracked paths and Python execution references
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'issue29-source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-python_guard') -Operation 'python_guard_02' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|python_guard_02|HEAD'}
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'issue29-source-path.txt'))
+          $utf8 = [Text.UTF8Encoding]::new($false,$true)
+          $files = @(Get-ChildItem -LiteralPath $src -Recurse -Force -File)
+          $pathPattern = '(?i)(^|/)__pycache__(/|$)|(^|/)([^/]+\.py[ic]?|[^/]+\.whl|requirements([-.][^/]*)?\.txt|pyproject\.toml|pipfile(\.lock)?|poetry\.lock|setup\.py)$'
+          foreach ($f in $files) {
+            $rel = [IO.Path]::GetRelativePath($src,$f.FullName).Replace('\','/')
+            if ([regex]::IsMatch($rel,$pathPattern)) { throw "IRON|PYTHON|HOLD|path=$rel" }
+          }
+          $entrypoints = @('ci/Build-Android.ps1','ci/Build-AndroidUnsigned.ps1','ci/Initialize-AndroidRuntime.ps1','ci/Initialize-AndroidSdk.ps1','ci/Invoke-AndroidDockerValidation.ps1','ci/Invoke-LinuxDockerValidation.ps1','ci/docker/Build-Android-NDK.sh')
+          $executionPattern = '(?im)^\s*(&\s*)?([./a-z0-9_-]+/)?(python([0-9.]+)?|pip([0-9.]+)?|pypy[0-9.]*|conda|poetry|pytest)([\s;|&)]|$)'
+          foreach ($rel in $entrypoints) {
+            $f = Join-Path $src ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            if (-not [IO.File]::Exists($f)) { throw "IRON|PYTHON|HOLD|missing=$rel" }
+            if ([regex]::IsMatch($utf8.GetString([IO.File]::ReadAllBytes($f)),$executionPattern)) { throw "IRON|PYTHON|HOLD|exec=$rel" }
+          }
+          $cmakePattern = '(?i)find_package\(\s*Python[0-9.]*|Python[0-9.]*_EXECUTABLE|PYTHON_EXECUTABLE'
+          foreach ($rel in @('CMakeLists.txt','shared/CMakeLists.txt')) {
+            $f = Join-Path $src ($rel.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            if ([IO.File]::Exists($f) -and [regex]::IsMatch($utf8.GetString([IO.File]::ReadAllBytes($f)),$cmakePattern)) { throw "IRON|PYTHON|HOLD|cmake=$rel" }
+          }
+          $android = Join-Path $src 'android/app/src'
+          if ([IO.Directory]::Exists($android)) {
+            $runtimePattern = '(?i)(^|[^a-z])(python([0-9.]*)?|pip([0-9.]*)?|pypy[0-9.]*|pytest)([^a-z]|$)'
+            foreach ($f in Get-ChildItem -LiteralPath $android -Recurse -File -Force) {
+              if ([regex]::IsMatch($utf8.GetString([IO.File]::ReadAllBytes($f.FullName)),$runtimePattern)) { throw "IRON|PYTHON|HOLD|android=$($f.FullName)" }
+            }
+          }
+          Write-Output "IRON|SOURCE|PYTHON_FREE|PASS|files=$($files.Count)|image_not_audited"
+
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-python_guard') -Operation 'python_guard_02' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|python_guard_02|TAIL'}

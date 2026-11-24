@@ -1,0 +1,229 @@
+# SPDX-License-Identifier: 0BSD
+# Native T-CROSS policy manifest. Never place this under .github/workflows.
+# Execution source is POSIX sh; the external Task CLI is optional, not required.
+# Canonical local invocation: sh ci/t-cross-posix.sh
+version: '3'
+
+vars:
+  BUILD_DIR: build
+  BUILD_TYPE: Release
+  # Reviewed operator assertions; not an automatically detected latest release.
+  EXPECTED_PWSH_VERSION: '7.7.0'
+  EXPECTED_CMAKE_VERSION: '3.30.0'
+  T_CROSS_BASE_SHA: '313e25251243b85fb79f10c04236eb355beca1ce'
+
+env:
+  BUILD_DIR: '{{.BUILD_DIR}}'
+  BUILD_TYPE: '{{.BUILD_TYPE}}'
+  EXPECTED_PWSH_VERSION: '{{.EXPECTED_PWSH_VERSION}}'
+  EXPECTED_CMAKE_VERSION: '{{.EXPECTED_CMAKE_VERSION}}'
+  T_CROSS_BASE_SHA: '{{.T_CROSS_BASE_SHA}}'
+
+tasks:
+  default:
+    desc: 'Run all strict, ordered, local T-CROSS gates without hosted runners'
+    cmds:
+      - task: emit-diff-yaml
+      - task: emit-std-inventory-yaml
+      - task: gate-no-remote-git
+      - task: gate-no-github-workflows
+      - task: gate-no-live-rest
+      - task: gate-no-std-throughput
+      - task: gate-suite-no-comments
+      - task: gate-no-std-repository
+      - task: gate-no-residual-surfaces
+      - task: gate-pinned-versions
+      - task: build-cpp20
+      - task: gate-zero-function-calls
+      - task: gate-zero-network-imports
+      - task: gate-no-std-binary
+      - task: test-ctest
+
+  gate-no-remote-git:
+    desc: 'Reject configured remotes and dirty tracked files; no Git fetch'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-remote-git
+
+  gate-no-github-workflows:
+    desc: 'Reject active .github/workflows YAML runners'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-github-workflows
+
+  gate-no-live-rest:
+    desc: 'Reject network API/download candidates in CI, tools and CMake'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-live-rest
+
+  gate-no-std-throughput:
+    desc: 'Require no STD headers or namespaces in twelve native sources including experimental exact-symbol lexicon and tests'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-std-throughput
+
+  gate-suite-no-comments:
+    desc: 'Reject comment tokens in three Pentagonal Suite C++20 source files'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-suite-no-comments
+
+  gate-no-std-repository:
+    desc: 'Strict red gate until all legacy C/C++ tracked sources are STD-free'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-std-repository
+
+  gate-no-residual-surfaces:
+    desc: 'Reject retained Java, Docker and Android manual-use directories'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-residual-surfaces
+
+  gate-pinned-versions:
+    desc: 'Require pinned local CMake; check PowerShell version only when pwsh is installed'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-pinned-versions
+
+  build-cpp20:
+    desc: 'Configure ISO C++20 with approved compiler, O2 only; Clang prohibited (HOLD)'
+    cmds:
+      - sh ci/t-cross-posix.sh build-cpp20
+
+  gate-zero-function-calls:
+    desc: 'Inspect optimized canonical parity object only; do not claim zero CLI calls'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-zero-function-calls
+
+  gate-zero-network-imports:
+    desc: 'Inspect canonical parity and three native CLIs for known network imports'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-zero-network-imports
+
+  gate-no-std-binary:
+    desc: 'Inspect STD-free parity, throughput and Suite CLI C/C++ runtime imports'
+    cmds:
+      - sh ci/t-cross-posix.sh gate-no-std-binary
+
+  test-ctest:
+    desc: 'Run parity, SWAR, suite operations and native CLI CTests locally'
+    cmds:
+      - sh ci/t-cross-posix.sh test-ctest
+
+  emit-std-inventory-yaml:
+    desc: 'Derive non-mutating per-file STD reference inventory from tracked Git source'
+    cmds:
+      - sh ci/Export-StdFreeInventory.sh > .iron-std-free-inventory.yml
+
+  emit-diff-yaml:
+    desc: 'Derive a fresh +/-DIFF YAML audit from frozen base SHA and local Git HEAD'
+    cmds:
+      - sh ci/t-cross-posix.sh emit-diff-yaml > .iron-t-cross-diff.yml
+
+  # Local-only platform builds. Each command receives a fixed whitelist ID.
+  # No Task CLI or YAML interpreter is required when invoking sh directly.
+  matrix-macos-arm64:
+    desc: 'Build local native STD-free core archive: macos-arm64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh macos-arm64
+
+  matrix-macos-x86_64:
+    desc: 'Build local native STD-free core archive: macos-x86_64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh macos-x86_64
+
+  matrix-macos-universal:
+    desc: 'Build local native STD-free core archive: macos-universal; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh macos-universal
+
+  matrix-linux-x86_64:
+    desc: 'Build local native STD-free core archive: linux-x86_64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh linux-x86_64
+
+  matrix-linux-arm64:
+    desc: 'Build local native STD-free core archive: linux-arm64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh linux-arm64
+
+  matrix-linux-x86:
+    desc: 'Build local native STD-free core archive: linux-x86; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh linux-x86
+
+  matrix-android-arm64-v8a:
+    desc: 'Build local native STD-free core archive: android-arm64-v8a; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-arm64-v8a
+
+  matrix-android-armeabi-v7a:
+    desc: 'Build local native STD-free core archive: android-armeabi-v7a; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-armeabi-v7a
+
+  matrix-android-x86:
+    desc: 'Build local native STD-free core archive: android-x86; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-x86
+
+  matrix-android-x86_64:
+    desc: 'Build local native STD-free core archive: android-x86_64; no binary execution proof'
+    cmds:
+      - sh ci/Build-PlatformMatrix.sh android-x86_64
+
+  matrix-windows-info:
+    desc: 'Windows x86/x64/AMD64/ARM64 uses PowerShell with independently reviewed latest release'
+    cmds:
+      - pwsh -NoLogo -NoProfile -Command "Write-Host 'Run ci/Build-PlatformMatrix.ps1 with Profile, LatestStablePowerShellVersion and ReleaseEvidenceUri'"
+
+  # Explicit local Docker exception. These tasks are never in the default gate.
+  gamp4-docker-linux-amd64:
+    desc: 'Local pinned Linux amd64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-amd64
+
+  gamp4-docker-linux-arm64:
+    desc: 'Local pinned Linux arm64 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-arm64
+
+  gamp4-docker-linux-x86:
+    desc: 'Local pinned Linux i386 GAMP4 full CTest + 12 URS; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh linux-x86
+
+  gamp4-docker-android-arm64-v8a:
+    desc: 'NDK arm64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-arm64-v8a
+
+  gamp4-docker-android-armeabi-v7a:
+    desc: 'NDK armv7 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-armeabi-v7a
+
+  gamp4-docker-android-x86:
+    desc: 'NDK x86 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-x86
+
+  gamp4-docker-android-x86_64:
+    desc: 'NDK x86_64 archive, gated by Linux GAMP4 receipt; no pull or remote publisher'
+    cmds:
+      - sh ci/Invoke-LocalDocker-Gamp4.sh android-x86_64
+
+  gamp4-assemble-release:
+    desc: 'Require all 13 source-matched platform receipts and package SHA256 files'
+    cmds:
+      - sh ci/Assemble-Gamp4-Release.sh
+
+  gamp4-local-oci-payload:
+    desc: 'Pack staged release files into a local scratch OCI transport only'
+    cmds:
+      - sh ci/Build-Release-OciPayload.sh
+
+  dockerhub-source-study-inspect:
+    desc: 'Operator-invoked registry read-only check of sha-07eb2a4561f0 versus pinned digest; no push'
+    cmds:
+      - pwsh -NoLogo -NoProfile -File ci/Publish-AndroidSourceStudy.ps1
+
+  dockerhub-source-study-policy-negative-tests:
+    desc: 'Mock-only negative controls for legacy publishing, digest mismatch, absent approval and multi-platform image index'
+    cmds:
+      - pwsh -NoLogo -NoProfile -File ci/Test-DockerPublishPolicy.ps1
+
