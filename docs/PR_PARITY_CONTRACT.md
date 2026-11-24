@@ -37,6 +37,8 @@ Coverage is reported separately from actual native execution.
 Every missing or failed requirement is recorded in one TSV audit,
 then returns failure. Source and build artifacts are segregated.
 
+The workflow is triggered by PR synchronization and by direct branch pushes, including PRs whose synthetic merge cannot be built. Push tests the exact head commit; PR events test GitHub's synthetic merge commit. The native MSVC generator is selected from the installed toolchain rather than hardcoded to VS 2022, and the Release cache must confirm /O2 without /Od or -O0.
+
 The workflow uses read-only contents/PR permissions, PowerShell only
 and no Node checkout/actions. The source bootstrap uses GitHub's
 event commit, never a hardcoded snapshot hash. Neither workflow
