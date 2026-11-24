@@ -262,3 +262,23 @@ The following are real repository declarations but **not interchangeable with Q6
 Historical or retired sources under `Archive/Retired` remain history, not CURRENT authority. This note is a focused **canonical-stack** audit. Discovering additional prior values requires explicit provenance and review; guessing a missing constant or equating similar labels would violate source custody.
 
 **Status:** recorded mathematical equalities and static-checkable conversions are proven only to their named input protocol. Cross-language agreement or run time acceleration is a separate claim requiring the actual CI witness. No automatic merge or release.
+
+
+## 8. Forward precision policy: never silently truncate
+
+**Status: explicitly requested forward policy, 2026-11-23.** Preserve every original canonical source record and its historical derived output as evidence. For **new** Q62-to-decimal conversions, do not discard significant digits/bits by using the lower integer neighbor as a final result. Use **nearest integer, ties to even**, and retain the exact 128-bit numerator and Q62 remainder as a witness. Exact-to-narrower register projection still **rejects loss**, not rounds, unless the caller explicitly requests a numerical conversion with a named scale and rounding mode.
+
+New implementation: [shared/precision_rounding_policy_001.hpp](../shared/precision_rounding_policy_001.hpp), and compile-time C++20 test in [quaddi-ni/SlipSlidingToolongTest.cpp](../quaddi-ni/SlipSlidingToolongTest.cpp). Neither file replaces the historical Q62 arithmetic function, original output fields, or the 21-record registry. No includes, STL, or compiler-specific 128-bit integer are required by this new header. Multiplication retains exact high/low 64-bit product words. Any result beyond unsigned long long returns valid=false. The remainder is exposed rather than hidden.
+
+| Existing source (Q62 word) | Decimal scale | New nearest/ties-even result | Exact Q62 remainder | Historical lower-integer result |
+|---|---:|---:|---:|---:|
+| Euler 12535862302449814170 | 10^17 | 271828182845904524 | 2403300696930910208 | 271828182845904523 |
+| π 14488038916154245685 | 10^17 | 314159265358979324 | 3925840205563691008 | 314159265358979323 |
+| Intensity 315868046760674477 | 10^17 | 6849296450333523 | 1790435901504094208 | 6849296450333523 |
+| Euler | 10^18 | 2718281828459045235 | 974576877172162560 | 2718281828459045235 |
+| π | 10^18 | 3141592653589793239 | 2364913908217806848 | 3141592653589793238 |
+| Intensity | 10^18 | 68492964503335234 | 4069300959758778368 | 68492964503335233 |
+
+The **historical** intensity x10^18 value 68492964503335230 resulted from multiplying a previously reduced x10^17 value by ten. The **new** direct nearest/ties-even x10^18 value is 68492964503335234, four integer units higher. Do not label either a source mutation: they follow different derivations. Likewise the π source Q62 word ending 685 and the mathematically lower neighbor ending 684 differ by one binary Q62 unit; preserve the source and name the comparison.
+
+**Scope of no truncation:** source data stays exact as (source_word × decimal_scale) / 2^62, with the numerator and remainder retained. A fixed-width user-facing numeric rendering is explicitly rounded. For irrational π and e, **no finite 64-bit representation is itself exact**. Use symbolic/exact multi-limb formulations if exactness is required. RELEASE=HOLD, draft PR; no automatic endorsement and no retroactive claims about earlier CI runs.
