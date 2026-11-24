@@ -53,7 +53,13 @@ jobs:
           $pr=Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo+'/pulls/'+$env:PR_NUMBER) -Headers $headers
           if($pr.state -cne 'open' -or $pr.head.sha -cne $env:PR_HEAD_SHA -or
              $pr.head.repo.full_name -cne $repo -or $pr.base.repo.full_name -cne $repo){
-            throw 'STANDARDIZER|HOLD|PR_REF_OR_IDENTITY_MOVED'
+            $mismatch=@(
+              ('state='+[string]($pr.state -cne 'open'))
+              ('head='+[string]($pr.head.sha -cne $env:PR_HEAD_SHA))
+              ('headrepo='+[string]($pr.head.repo.full_name -cne $repo))
+              ('baserepo='+[string]($pr.base.repo.full_name -cne $repo))
+            )
+            throw ('STANDARDIZER|HOLD|PR_REF_OR_IDENTITY_MOVED|'+($mismatch -join '|'))
           }
           $zip=Join-Path $env:RUNNER_TEMP 'standardizer-exact-pr-head.zip'
           $folder=Join-Path $env:RUNNER_TEMP 'standardizer-exact-pr-head'
