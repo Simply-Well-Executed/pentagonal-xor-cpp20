@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: 0BSD
 # EXCITED v2: native C++20 A* after EXCITE success, no standard C++ headers,
 # Python, JSON, Bash, Ubuntu, Node checkout or Node artifact upload.
-name: EXCITED | Sovieta Diao Xian ^.^ A-star x SPT Finland v2
+name: EXCITED | Sovieta Diao Xian ^.^ A-star x SPT Finland x DOVIA COREAO v3
 on:
   workflow_call:
     inputs:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 jobs:
   excited-a-star:
-    name: Native C++20 A* and SPT cross-verified Markdown
+    name: Native C++20 A* x SPT x RUSPT DOVIA* cross-verified
     runs-on: windows-2025
     timeout-minutes: 15
     permissions:
@@ -50,7 +50,7 @@ jobs:
             throw 'EXCITED|HOLD|source_incomplete'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'excited-root.txt'),$roots[0].FullName)
-      - name: Compile ISO C++20 /O2 A* plus SPT Finland and generate Markdown
+      - name: Compile ISO C++20 /O2 A* x SPT x DOVIA and generate Markdown
         shell: pwsh
         env:
           SOURCE_SHA: ${{ inputs.source_sha }}
@@ -84,7 +84,7 @@ jobs:
             }
           }
           $sha=(Get-FileHash -LiteralPath $doc -Algorithm SHA256).Hash.ToLowerInvariant()
-          if($fields['schema'] -cne 'EXCITED-STAR-002' -or
+          if($fields['schema'] -cne 'EXCITED-STAR-003' -or
              $fields['source_sha'] -cne $env:SOURCE_SHA -or
              $fields['markdown_sha256'] -cne $sha -or
              $fields['route'] -cne 'Overview>Security>Summary' -or
@@ -93,13 +93,20 @@ jobs:
              $fields['spt_verified'] -cne 'YES' -or
              $fields['spt_vertex_costs'] -cne '0,2,4,5,6' -or
              $fields['spt_parent_nodes'] -cne '-1,0,0,1,2' -or
+             $fields['dovia_yang'] -cne 'RFC2328_1998_SECTION16_1_BASE_NO_ERRATA' -or
+             $fields['dovia_yin'] -cne 'RUSPT_ROOT_GUARD_ASTAR' -or
+             $fields['dovia_verified'] -cne 'YES' -or
+             $fields['dovia_vlan_range'] -cne '1-4094' -or
+             $fields['dovia_root'] -cne 'DSW-RING1' -or
+             $fields['dovia_rotation_degrees'] -cne '180' -or
+             $fields['dovia_policy_negative_ctest'] -cne 'PASS' -or
              $fields['compiler'] -cne 'MSVC_CXX20_O2' -or
              $fields['no_std_in_source'] -cne 'YES' -or
              $fields['no_json'] -cne 'YES' -or
              $fields['release'] -cne 'HOLD'){
             throw 'EXCITED|HOLD|TSV_receipt_mismatch'
           }
-          Write-Host ('EXCITED|V2|SPT_VERIFIED|MARKDOWN_SHA256='+$sha+'|RELEASE=HOLD')
+          Write-Host ('EXCITED|V3|SPT_DOVIA_RUSPT_VERIFIED|MARKDOWN_SHA256='+$sha+'|RELEASE=HOLD')
       - name: No automatic API exposure or repository writes
         if: always()
         shell: pwsh

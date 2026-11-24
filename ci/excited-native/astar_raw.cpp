@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: 0BSD
 // EXCITED-STAR-002: raw C++20 A*, no headers or C++ standard library.
+#include "dovia_star.hpp"
 // Win32 native stdout replaces the sample's Linux POSIX file descriptors.
 extern "C" __declspec(dllimport) void* __stdcall GetStdHandle(unsigned long);
 extern "C" __declspec(dllimport) int __stdcall WriteFile(
@@ -220,6 +221,26 @@ bool markdown(const int (&path)[count],int depth,int total,Text& out) noexcept {
          out.append(names[spt_finland.parent[i]])) ||
        !out.append("\n")) return false;
   }
+  dovia::Proof dovia_proof{};
+  if(!dovia::dovia_star(dovia::baseline,dovia_proof)) return false;
+  if(!out.append("\n## DOVIA* COREAO YANG x YIN optimizer\n\n") ||
+     !out.append("**DOVIA YANG and RUSPT YIN verified**\n") ||
+     !out.append("**YANG:** original RFC 2328 (April 1998), Section 16.1, ") ||
+     !out.append("SPF shortest-path principle; no errata applied.\n") ||
+     !out.append("**YIN:** root-guarded A* on the verified tree; ") ||
+     !out.append("Cisco Catalyst 3650 security-policy simulation.\n") ||
+     !out.append("**DOVIA root:** DSW-RING1 (modeled priority 24576)\n") ||
+     !out.append("**DOVIA VLAN range:** 1-4094 (4096 rejected)\n") ||
+     !out.append("**DOVIA selected route:** Overview -> Security -> Summary\n") ||
+     !out.append("**DOVIA protected path cost:** ") ||
+     !out.numeral(static_cast<unsigned int>(dovia_proof.total)) ||
+     !out.append("\n**COREAO orientation:** 3 x 45 + 1 x 45 = ") ||
+     !out.numeral(static_cast<unsigned int>(dovia_proof.orientation_octant*45)) ||
+     !out.append(" degrees (exact octant arithmetic).\n") ||
+     !out.append("**Protection:** unique root, designated Root Guard, ") ||
+     !out.append("edge PortFast/BPDU Guard and EtherChannel consistency.\n") ||
+     !out.append("**Scope:** offline graph proof only; no OSPF, STP, ") ||
+     !out.append("GPS, live map, traffic, location or switch I/O.\n")) return false;
   return out.append(
     "\n## COREAO code-block completion\n\n"
     "EXCITE qualifies the file and subproject circuits before this builder "

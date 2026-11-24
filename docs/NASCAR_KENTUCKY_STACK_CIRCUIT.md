@@ -126,3 +126,76 @@ receipts in `excited-receipt.tsv`. No JSON is used by this v2 builder or
 its TSV validation step; the wider EXCITE evidence ledger still uses JSONL,
 which is not silently changed or reclassified. These algorithms do not
 prove radiation physics, switch-port loop prevention, or release eligibility.
+
+### DOVIA* COREAO (DOVIA-STAR-001)
+
+The user-proposed **DOVIA*** means a freely chosen, protected pathfinder
+pipeline: **YANG** = a deterministic shortest-path-first (Dijkstra) tree,
+**YIN** = **RUSPT** root-guarded A* restricted to tree forwarding edges,
+and **COREAO** = a fail-closed agreement between both. The asterisk is
+an algorithm-name symbol, not a wildcard or hidden hardware instruction.
+Its three successive 45-degree turns followed by one more 45-degree
+turn are modeled as exact discrete octants: 135 then 180 degrees.
+This is a symmetry/invariance witness, not geometric GPS rotation,
+faster routing by itself, or altered source bytes.
+
+YANG is based specifically on the **original April 1998 RFC 2328,
+Section 16.1**, its shortest-path-first concept, not a later corrected
+version or errata. RFC 2328 specifies OSPFv2 and also needs LSA inputs,
+reciprocal link checks, network/router vertices, equal-cost next hops,
+and routing-table procedures. This bounded five-node graph does not
+implement the OSPF protocol, claim strict RFC conformance, or import
+errata. Ethernet Spanning Tree remains IEEE 802.1D/802.1Q, distinct
+from OSPF shortest-path-first. Cisco's CLI is not an IEEE/IETF standard.
+
+YIN applies the following *offline policy equivalents*, never live
+Cisco commands:
+
+- **Unique root**: DSW-RING1 (graph node 0) is the lowest-priority
+  modeled bridge; it is verified as root, with unique bridge IDs.
+  The example base priority 24576 is **not** a hardcoded emulation of
+  the dynamic IOS `spanning-tree vlan ... root primary` command.
+- **Valid VLANs**: exact supported range `1-4094`. The user-supplied
+  `1-4096` is deliberately rejected rather than silently narrowed.
+  This model uses one shared configured bridge-priority vector for its
+  entire VLAN range; it is not a per-VLAN PVST/MST engine.
+- **Root Guard**: required on chosen *designated downstream*
+  switch-facing tree ports, **not** root-facing uplinks. A modeled
+  superior BPDU changes that port to `root_inconsistent` and blocks
+  route approval.
+- **PortFast + BPDU Guard**: required together on modeled client-edge
+  ports. Any observed edge BPDU changes that port to
+  `error_disabled` and blocks the route.
+- **EtherChannel misconfiguration guard**: flag required; two modeled
+  members must agree on group, peer, speed, trunk and VLAN bounds.
+  The model does not implement LACP/PAgP or physically configure
+  EtherChannel.
+
+The chosen YANG SPF tree distances are `0,2,4,5,6`, with
+parents `-1,0,0,1,2`. Only policy-approved forwarding tree links
+enter the YIN A* search. The admitted path is
+`Overview -> Security -> Summary`, cost `6`, exactly matching
+the original-SPF conceptual witness. Negative constexpr assertions
+and a standalone MSVC /O2 CTest cover a false root, VLAN 4096,
+missing Root Guard, stray Root Guard on a root uplink, removed PortFast,
+BPDU violations, missing/mismatched EtherChannel configuration,
+duplicate bridge identifiers and failure recovery to the baseline.
+Any invalid/blocked topology returns **HOLD**, not an automatically
+invented detour.
+
+Implementation: `ci/excited-native/dovia_star.hpp`,
+`ci/excited-native/dovia_policy_test.cpp`; EXCITED's existing C++20
+Markdown path now embeds DOVIA's proof. The schema-bound TSV receipt
+is `EXCITED-STAR-003` and the reusable Windows workflow validates it.
+These changes are a **read-only, fixed-graph experimental pathfinder
+proof**, not a GPS navigator, map sorter with coordinates, live road
+speeds, global optimal algorithm, actual switch operation or
+authorization to release. To implement real GPS navigation, road-network
+input schemas, positioning, travel-time costs, dynamic restrictions,
+turn penalties, and geodesic heuristics require separate definitions.
+
+Sources (exact version basis):
+- RFC 2328 original text: https://www.rfc-editor.org/rfc/rfc2328.html#section-16.1
+- Cisco Catalyst 3650 STP: https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3650/software/release/37e/consolidated_guide/b_37e_consolidated_3650_cg/configuring_spanning_tree_protocol.html
+- Cisco Catalyst 3650 optional STP safeguards: https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3650/software/release/3e/layer2/configuration_guide/b_layer2_3e_3650_cg/b_layer2_3e_3650_cg_chapter_011.html
+- Ansible Cisco IOS L2 interface arguments: https://docs.ansible.com/projects/ansible/latest/collections/cisco/ios/ios_l2_interfaces_module.html

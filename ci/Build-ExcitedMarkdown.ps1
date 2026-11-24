@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: 0BSD
-# EXCITED-STAR-002: build/run C++20 A* plus SPT Finland verification, MSVC /O2.
+# EXCITED-STAR-003: A* + SPT Finland + DOVIA* RUSPT COREAO, MSVC /O2.
 # Only source bootstrap contacts GitHub; this stage compiles offline.
 [CmdletBinding()]
 param(
@@ -20,6 +20,8 @@ $required=@(
   'ci/Invoke-RepositoryCircuit.ps1',
   'ci/Excite-Coreao.ps1',
   'ci/excited-native/astar_raw.cpp',
+  'ci/excited-native/dovia_star.hpp',
+  'ci/excited-native/dovia_policy_test.cpp',
   'ci/excited-native/CMakeLists.txt',
   '.github/workflows/EXCITE.yml',
   '.github/workflows/EXCITED.yml'
@@ -36,9 +38,9 @@ $build=Join-Path $out 'build'
 $cmake=(Get-Command cmake -ErrorAction Stop).Source
 & $cmake -S (Join-Path $root 'ci/excited-native') -B $build -DBUILD_TESTING=ON
 if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|cmake_configure'}
-& $cmake --build $build --config Release --target swe_excited_astar --parallel 1
+& $cmake --build $build --config Release --target swe_excited_astar swe_dovia_policy --parallel 1
 if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|msvc_o2_build'}
-& ctest --test-dir $build -C Release --output-on-failure -R '^excited_(astar_exact_path|spt_finland_verifier)$'
+& ctest --test-dir $build -C Release --output-on-failure -R '^excited_'
 if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|astar_ctest'}
 $binary=''
 foreach($candidate in @(
@@ -74,6 +76,10 @@ if($markdown.Length -lt 500 -or $markdown.Length -gt 4096 -or
    -not $markdown.Contains('## SPT Finland shortest-path tree cross-check') -or
    -not $markdown.Contains('**SPT total goal cost:** 6') -or
    -not $markdown.Contains('Summary: cost 6, parent Security') -or
+   -not $markdown.Contains('**DOVIA YANG and RUSPT YIN verified**') -or
+   -not $markdown.Contains('**DOVIA VLAN range:** 1-4094 (4096 rejected)') -or
+   -not $markdown.Contains('**DOVIA protected path cost:** 6') -or
+   -not $markdown.Contains('3 x 45 + 1 x 45 = 180 degrees') -or
    -not $markdown.Contains('**RELEASE=HOLD**')){
   throw 'EXCITED|HOLD|native_markdown_or_route_invalid'
 }
@@ -87,7 +93,7 @@ $after=(Get-FileHash -LiteralPath $code -Algorithm SHA256).Hash.ToLowerInvariant
 if($sourceDigest -cne $after){throw 'EXCITED|HOLD|source_mutated_after_build'}
 # Intentionally TSV rather than JSON, with no user-controlled fields.
 $rows=@(
-  'schema'+"`t"+'EXCITED-STAR-002',
+  'schema'+"`t"+'EXCITED-STAR-003',
   'source_sha'+"`t"+$SourceSha,
   'native_source_sha256'+"`t"+$sourceDigest,
   'native_binary_sha256'+"`t"+$binSha,
@@ -99,6 +105,13 @@ $rows=@(
   'spt_verified'+"`t"+'YES',
   'spt_vertex_costs'+"`t"+'0,2,4,5,6',
   'spt_parent_nodes'+"`t"+'-1,0,0,1,2',
+  'dovia_yang'+"\`t"+'RFC2328_1998_SECTION16_1_BASE_NO_ERRATA',
+  'dovia_yin'+"\`t"+'RUSPT_ROOT_GUARD_ASTAR',
+  'dovia_verified'+"\`t"+'YES',
+  'dovia_vlan_range'+"\`t"+'1-4094',
+  'dovia_root'+"\`t"+'DSW-RING1',
+  'dovia_rotation_degrees'+"\`t"+'180',
+  'dovia_policy_negative_ctest'+"\`t"+'PASS',
   'compiler'+"`t"+'MSVC_CXX20_O2',
   'no_std_in_source'+"`t"+'YES',
   'no_json'+"`t"+'YES',
