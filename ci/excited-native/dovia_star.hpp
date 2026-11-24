@@ -6,45 +6,49 @@
 // Ethernet STP itself is IEEE 802.1D/802.1Q, NOT the SPF algorithm.
 #pragma once
 namespace dovia {
-// VIEW-001: one logical observer, not an actual camera or GPS.
-// Exact integer centidegrees: front aperture +/-1500 (30 total),
-// rear aperture +/-600 (12 total). Blind regions are unknown, not clear.
+// VIEW-002: one logical observation source. The exact half-apertures
+// are sqrt(15) degrees in front and sqrt(6) degrees in rear.
+// Integer centidegree input is a stated measurement resolution,
+// NOT a rounded representation of either irrational root.
+// Compare (centidegrees)^2 <= (radicand)*10000 exactly.
 enum class ViewSide {front,rear};
 struct SingleView {
   unsigned observer_count;
-  int front_total_centidegrees,rear_total_centidegrees;
+  int front_half_radicand,rear_half_radicand;
 };
-inline constexpr SingleView single_view{1u,3000,1200};
+inline constexpr SingleView single_view{1u,15,6};
 constexpr bool valid_single_view(const SingleView& v) noexcept {
   return v.observer_count==1u &&
-         v.front_total_centidegrees==3000 &&
-         v.rear_total_centidegrees==1200;
+         v.front_half_radicand==15 &&
+         v.rear_half_radicand==6;
 }
 constexpr bool inside_single_view(const SingleView& v,
                                   ViewSide side,int signed_offset_centidegrees) noexcept {
   if(!valid_single_view(v)) return false;
+  // All allowed angles are inside [-4,+4] degrees; bound before square.
+  if(signed_offset_centidegrees < -400 ||
+     signed_offset_centidegrees > 400) return false;
+  const long long offset=signed_offset_centidegrees;
+  const long long square=offset*offset;
   if(side==ViewSide::front)
-    return signed_offset_centidegrees>=-1500 &&
-           signed_offset_centidegrees<=1500;
+    return square <= 15ll*10000ll;
   if(side==ViewSide::rear)
-    return signed_offset_centidegrees>=-600 &&
-           signed_offset_centidegrees<=600;
+    return square <= 6ll*10000ll;
   return false;
 }
 static_assert(valid_single_view(single_view));
 static_assert(inside_single_view(single_view,ViewSide::front,0));
-static_assert(inside_single_view(single_view,ViewSide::front,-1500));
-static_assert(inside_single_view(single_view,ViewSide::front,1500));
-static_assert(!inside_single_view(single_view,ViewSide::front,1501));
-static_assert(!inside_single_view(single_view,ViewSide::front,-1501));
-static_assert(inside_single_view(single_view,ViewSide::rear,-600));
-static_assert(inside_single_view(single_view,ViewSide::rear,600));
-static_assert(!inside_single_view(single_view,ViewSide::rear,601));
-static_assert(!inside_single_view(single_view,ViewSide::rear,-601));
-static_assert(!valid_single_view(SingleView{2u,3000,1200}));
-static_assert(!valid_single_view(SingleView{1u,3001,1200}));
-static_assert(!valid_single_view(SingleView{1u,3000,1201}));
-
+static_assert(inside_single_view(single_view,ViewSide::front,-387));
+static_assert(inside_single_view(single_view,ViewSide::front,387));
+static_assert(!inside_single_view(single_view,ViewSide::front,388));
+static_assert(!inside_single_view(single_view,ViewSide::front,-388));
+static_assert(inside_single_view(single_view,ViewSide::rear,-244));
+static_assert(inside_single_view(single_view,ViewSide::rear,244));
+static_assert(!inside_single_view(single_view,ViewSide::rear,245));
+static_assert(!inside_single_view(single_view,ViewSide::rear,-245));
+static_assert(!valid_single_view(SingleView{2u,15,6}));
+static_assert(!valid_single_view(SingleView{1u,16,6}));
+static_assert(!valid_single_view(SingleView{1u,15,7}));
 constexpr int nodes=5,root=0,goal=4,infinity=999999,port_count=10;
 struct Edge {int source,target,weight;};
 inline constexpr Edge graph[]={

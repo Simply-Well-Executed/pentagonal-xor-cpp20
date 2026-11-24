@@ -267,7 +267,7 @@ rather than granting a silent PASS. No file inside the checkout is
 changed by the runner; failure remains HOLD. The previous failed
 job remains historical evidence and is not reclassified as PASS.
 
-### DOVIA one-observer FOV revision (DOVIA.VIEW.1 / SIGNAL.2)
+### Historical: DOVIA one-observer FOV revision (DOVIA.VIEW.1 / SIGNAL.2, superseded by radical-angle revision)
 
 This version corrects the proposed internal-autopilot *visibility*
 contract, not earlier immutable source or earlier test history.
@@ -305,3 +305,42 @@ evidence streams, sequence 0, and a fresh 64-zero QCODE genesis, not
 deleting historical Git revisions or CI evidence. The ordered
 FILE -> SUBPROJECT -> REPOSITORY -> EXCITED circuit stays intact,
 with RELEASE=HOLD throughout.
+
+### CURRENT: DOVIA radical-angle single-view revision (DOVIA.VIEW.2 / SIGNAL.3)
+
+This new experimental visibility contract replaces the prior +/-15 degree
+front and +/-6 degree rear **half angles**. The single logical observer
+has **front half-aperture sqrt(15) degrees** and **rear half-aperture
+sqrt(6) degrees**. Those correspond to total angles 2*sqrt(15)
+degrees and 2*sqrt(6) degrees, respectively. The roots are **exact
+symbolic mathematical values**, not silently rounded decimals.
+
+Admission is checked by comparing squares rather than evaluating a
+floating point square root: for forward offset theta, theta*theta <= 15
+in squared-degree units; for rear offset phi, phi*phi <= 6.
+Checks are inclusive. The PowerShell verifier uses exact decimal
+input. Independent native ISO C++20 uses exact integer centidegrees
+for its explicitly bounded *input resolution*; it tests
+offset_centidegrees squared <= 150000 (front) or <= 60000 (rear).
+No irrational boundary is truncated to centidegrees. Tests verify
+3.872 degrees inside and 3.873 outside front, and 2.449 inside and
+2.450 outside rear; native tests verify 387/388 and 244/245
+centidegrees on the corresponding sides. Out-of-view remains UNKNOWN
+and cannot be promoted into a claim of safety or visibility.
+
+Only one logical observer and one authoritative canonical source are
+allowed per vehicle; no camera fusion, extra lookahead, fabricated
+side visibility or automatic rewriting of QCHAIN. The later SIGNAL.3
+receipt is derived from the same canonical input, not a rival source
+of truth. The changed rulebook, root expressions, and signal schema
+are bound into per-stage SHA-256 chains, checked by independent
+deterministic replay. The older SIGNAL.1 and SIGNAL.2 receipts
+are retained as history rather than retroactively relabeled.
+
+Negative selftests reject unauthorized observer counts, wider
+radicands, out-of-view front/rear transitions, illegal stage jumps,
+and corrupted synthetic signal receipts. The full circuit starts
+with a new scratch-pad-point0 (empty temporary evidence streams and
+zero QCODE genesis) without erasing prior tests or Git history.
+RELEASE=HOLD remains invariant; this is symbolic per-stage field of
+view, not a physical camera, GPS, or empirical navigation model.

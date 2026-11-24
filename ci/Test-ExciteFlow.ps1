@@ -49,35 +49,36 @@ $lines[0]=$lines[0].Replace('EXCITE.QLAM.2','EXCITE.QLAM.1')
 if((Assert-ExciteEvidence $ctx) -cne $expected){
   throw 'DOVIA|HOLD|restored_ledger_not_verified'
 }
-# One observer and exact inclusive aperture edges, never fused views.
-foreach($offset in @([decimal]-15,[decimal]0,[decimal]15)){
+# Exact radical half-angle guard: theta^2 <= 15 front, <= 6 rear.
+# Decimal probes are exact finite rationals; roots are never approximated.
+foreach($offset in @([decimal]-3.872,[decimal]0,[decimal]3.872)){
   if(-not (Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees $offset)){
-    throw 'DOVIA|HOLD|front_edge_false_negative'
+    throw 'DOVIA|HOLD|front_radical_inside_false_negative'
   }
 }
-foreach($offset in @([decimal]-6,[decimal]0,[decimal]6)){
+foreach($offset in @([decimal]-2.449,[decimal]0,[decimal]2.449)){
   if(-not (Test-DoviaFieldOfView -Direction REAR -OffsetDegrees $offset)){
-    throw 'DOVIA|HOLD|rear_edge_false_negative'
+    throw 'DOVIA|HOLD|rear_radical_inside_false_negative'
   }
 }
-foreach($offset in @([decimal]-15.01,[decimal]15.01)){
+foreach($offset in @([decimal]-3.873,[decimal]3.873,[decimal]-4,[decimal]4)){
   if(Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees $offset){
-    throw 'DOVIA|HOLD|front_outside_accepted'
+    throw 'DOVIA|HOLD|front_radical_outside_accepted'
   }
 }
-foreach($offset in @([decimal]-6.01,[decimal]6.01)){
+foreach($offset in @([decimal]-2.450,[decimal]2.450,[decimal]-4,[decimal]4)){
   if(Test-DoviaFieldOfView -Direction REAR -OffsetDegrees $offset){
-    throw 'DOVIA|HOLD|rear_outside_accepted'
+    throw 'DOVIA|HOLD|rear_radical_outside_accepted'
   }
 }
 if((Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees 0 -CameraCount 2) -or
-   (Test-DoviaFieldOfView -Direction REAR -OffsetDegrees 0 -RearTotalDegrees 13) -or
-   (Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees 0 -FrontTotalDegrees 31)){
-  throw 'DOVIA|HOLD|multiple_or_unbounded_view_accepted'
+   (Test-DoviaFieldOfView -Direction REAR -OffsetDegrees 0 -RearHalfAngleRadicand 7) -or
+   (Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees 0 -FrontHalfAngleRadicand 16)){
+  throw 'DOVIA|HOLD|multiple_or_widened_radical_view_accepted'
 }
 foreach($scenario in @(
-  @{direction='FRONT';expected='FRONT_FOV_30_TOTAL';front=[decimal]15.01;rear=[decimal]0},
-  @{direction='REAR';expected='REAR_FOV_12_TOTAL';front=[decimal]0;rear=[decimal]-6.01}
+  @{direction='FRONT';expected='FRONT_HALF_SQRT15_DEGREES';front=[decimal]3.873;rear=[decimal]0},
+  @{direction='REAR';expected='REAR_HALF_SQRT6_DEGREES';front=[decimal]0;rear=[decimal]-2.450}
 )){
   $observed=$false
   try {
@@ -88,10 +89,9 @@ foreach($scenario in @(
       $observed=$true
     }else{throw}
   }
-  if(-not $observed){throw ('DOVIA|HOLD|missed_field_boundary|'+$scenario.direction)}
+  if(-not $observed){throw ('DOVIA|HOLD|missed_radical_boundary|'+$scenario.direction)}
 }
-Write-Host 'DOVIA|FOV_SELFTEST|ONE_OBSERVER=PASS|FRONT=30|REAR=12|OUTSIDE=REJECTED|NO_SIDE_VIEW|RELEASE=HOLD'
-
+Write-Host 'DOVIA|RADICAL_FOV_SELFTEST|ONE_OBSERVER=PASS|FRONT_HALF=SQRT15|REAR_HALF=SQRT6|SQUARE_COMPARE=EXACT|OUTSIDE=REJECTED|RELEASE=HOLD'
 # A train attempting to jump straight from QCHART to QGRAPH meets RED.
 $redObserved=$false
 try {
@@ -106,7 +106,7 @@ if(-not $redObserved){throw 'DOVIA|HOLD|illegal_transition_accepted'}
 # a SIGNAL_RECEIPT_OR_PROVENANCE_TAMPER, not silently accept a green light.
 $signalPath=Join-Path $evidence 'signal.jsonl'
 $signalLines=[IO.File]::ReadAllLines($signalPath,[Text.UTF8Encoding]::new($false,$true))
-$signalLines[0]=$signalLines[0].Replace('DOVIA.SIGNAL.2','DOVIA.SIGNAL.9')
+$signalLines[0]=$signalLines[0].Replace('DOVIA.SIGNAL.3','DOVIA.SIGNAL.9')
 [IO.File]::WriteAllText($signalPath,
   ([string]::Join([char]10,$signalLines)+[char]10),
   [Text.UTF8Encoding]::new($false))

@@ -26,7 +26,7 @@ if($excite.Sequence -ne 0 -or $excite.PreviousCodeSha -cne ('0'*64)){
   throw 'EXCITE|HOLD|scratch_pad_point0_not_clean'
 }
 Write-Host ('EXCITE|SCRATCH_PAD_POINT0|SEQUENCE=0|QCODE_GENESIS='+$excite.PreviousCodeSha+
-            '|VIEW=ONE|FRONT_TOTAL=30|REAR_TOTAL=12|RELEASE=HOLD')
+            '|VIEW=ONE|FRONT_HALF=SQRT15_DEGREES|REAR_HALF=SQRT6_DEGREES|RELEASE=HOLD')
 $manifest=[Collections.Generic.List[object]]::new()
 $stages=[Collections.Generic.List[object]]::new()
 $failedSubprojects=[Collections.Generic.List[string]]::new()
@@ -179,10 +179,10 @@ try{
   }
   $receipt=[ordered]@{
     protocol='NASCAR-KENTUCKY-001'
-    vehicle_signal_protocol='DOVIA.SIGNAL.2'
-    vehicle_view_protocol='DOVIA.VIEW.1'
-    vehicle_front_total_degrees=30
-    vehicle_rear_total_degrees=12
+    vehicle_signal_protocol='DOVIA.SIGNAL.3'
+    vehicle_view_protocol='DOVIA.VIEW.2'
+    vehicle_front_half_angle_radicand=15
+    vehicle_rear_half_angle_radicand=6
     vehicle_observer_count=1
     vehicle_signal_scope='PER_VEHICLE_NOT_CIRCUIT_SCHEDULER'
     workflow_sha=$env:GITHUB_SHA
