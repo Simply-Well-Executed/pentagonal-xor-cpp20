@@ -59,7 +59,7 @@ function Verify([string]$left,[string]$right,[int]$power,[string]$lines,[string]
    if($af[0] -ceq 'ROW' -and $j -in @(6,7,8,9,10,11) -and $af[$j] -cne 'NA' -and $bf[$j] -cne 'NA'){
     $x=[double]::Parse($af[$j],$culture);$y=[double]::Parse($bf[$j],$culture)
     if(-not [double]::IsFinite($x) -or -not [double]::IsFinite($y)){throw 'QUADDI|HOLD|nonfinite_result'}
-    $tol=1e-11*[Math]::Max(1,[Math]::Max([Math]::Abs($x),[Math]::Abs($y)))
+    $tol=1e-11*[Math]::Max(1.0,[Math]::Max([Math]::Abs($x),[Math]::Abs($y)))
     if([Math]::Abs($x-$y) -gt $tol){throw ('QUADDI|HOLD|numerical_parity|'+$i+'|'+$j)}
    }elseif($af[$j] -cne $bf[$j]){throw ('QUADDI|HOLD|source_or_identity_parity|'+$i+'|'+$j)}
   }
