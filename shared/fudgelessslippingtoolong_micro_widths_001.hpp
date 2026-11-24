@@ -208,7 +208,7 @@ struct Audit {
  unsigned widths,stage_projections,accepted,rejected;
  unsigned routes,route_passes,route_rejections;
  unsigned nobit_zero_controls,nop_stages;
- bool core_unchanged,roundtrip_100d,64_bit_parity;
+ bool core_unchanged,roundtrip_100d,limb64_parity;
 };
 [[nodiscard]] inline Audit run() noexcept {
  if(!matches_core()||!tiny_controls())return {};
