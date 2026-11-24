@@ -11,22 +11,22 @@ PR #3 uses a 64-bit integer seed multiplied in a 128-bit intermediate, then shif
 
 A number greater than one (e = 2.718...) cannot be encoded directly as an unsigned 64-bit Q64 fraction. Therefore encode **e/4** as a Q64 fraction and multiply by **4 * 10^17** and divide by 2^64 using **round-to-nearest, ties-to-even**:
 
-\`\`\`cpp
+```cpp
 const __uint128_t numerator =
     (__uint128_t)12535862302449814170ULL * 400000000000000000ULL;
 const __uint128_t denominator = (__uint128_t)1 << 64;
 const unsigned long long result =
     swe::euler_native::round_nearest_even(numerator, denominator);
 // Output: 271828182845904524
-\`\`\`
+```
 
 Explicit decimal placement: 2.71828182845904524 (18 significant digits, rounded nearest ties-even). The prior truncated value 271828182845904523 and its nonzero remainder remain in source assertions as labeled provenance.
 
-The Q62 and Q64 rescalings retain the same rational value when the numerator and denominator are both scaled exactly; the old truncated integer must not be reused as the rounded v4 result. That mathematical equivalence does not erase the correction: **the active Euler implementation shifts by 64**, and the deprecated Q62 implementation is retained only in Git history.
+The Q62 and Q64 rescalings retain the same rational value when the numerator and denominator are both scaled exactly; the old truncated integer must not be reused as the rounded v4 result. That mathematical equivalence does not erase the correction: **the active Euler implementation divides by exactly 2^64**, and the deprecated Q62 implementation is retained only in Git history.
 
 ## Source and validation
 
-- `shared/euler_native.hpp` implements only the native 128-bit multiply/shift path with compile-time exact quotient, remainder, rounded-value and ties-even assertions.
+- `shared/euler_native.hpp` implements only the native 128-bit multiply/divide/remainder path with compile-time exact quotient, remainder, rounded-value and ties-even assertions.
 - `tests/euler_native_test.cpp` checks the rounded output and ties-even boundaries in CTest.
 - The seed 12535862302449814170 was independently checked using the Euler factorial series; it is an encoded rational approximation, not an infinitely precise e.
 - No 32-bit limb decomposition, no 64-bit-limb fallback, no POSIX, Python, Node, network fetch, standard-library header, or runtime library is introduced in this implementation.
