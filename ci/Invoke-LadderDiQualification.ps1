@@ -25,11 +25,11 @@ function Record([string]$lane,[string]$status,[string]$version,[string]$source,[
  if($status -cne 'PASS'){$script:failure++}
 }
 function Hash([string]$path){return (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()}
-function Run([string]$lane,[string]$tool,[string[]]$args){
+function Run([string]$lane,[string]$tool,[string[]]$arguments){
  $stdout=Join-Path $out ($lane+'.stdout.txt')
  $stderr=Join-Path $out ($lane+'.stderr.txt')
  # Arguments are passed as an array directly; no shell or expression evaluation.
- $output=@(& $tool @args 2>&1)
+ $output=@(& $tool @arguments 2>&1)
  $status=$LASTEXITCODE
  [IO.File]::WriteAllText($stdout,([string]::Join([string][char]10,$output)+[char]10),$utf8)
  [IO.File]::WriteAllText($stderr,('exit='+$status+[char]10),$utf8)
@@ -42,9 +42,10 @@ function Find([string]$environment,[string]$executable){
   if([IO.File]::Exists($full)){return $full}
   return $null
  }
- $candidate=Get-Command $executable -CommandType Application -ErrorAction SilentlyContinue
- if($null -eq $candidate){return $null}
- return $candidate.Source
+ $candidates=@(Get-Command $executable -CommandType Application -ErrorAction SilentlyContinue)
+ if($candidates.Count -eq 0){return $null}
+ # Pin the single first resolved executable, never concatenate PATH matches.
+ return [string]$candidates[0].Source
 }
 $definitions=[ordered]@{
  HeptaDi='heptadi/HeptaDiLua3L.lua'
