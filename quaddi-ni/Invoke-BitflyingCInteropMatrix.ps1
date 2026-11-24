@@ -47,16 +47,32 @@ function Test-Mode {
  )
  $exe=Join-Path $ev ($Label+'.exe')
  $obj=Join-Path $ev ($Label+'.obj')
- $flags=@('/nologo','/O2','/W4')
+ $flags=[System.Collections.Generic.List[string]]::new()
+ $flags.Add('/nologo')
+ $flags.Add('/O2')
+ $flags.Add('/W4')
  if($Mode -ceq 'C11'){
-  $flags+=@('/TC','/std:c11')
+  $flags.Add('/TC')
+  $flags.Add('/std:c11')
  }else{
-  $flags+=@('/TP','/std:c++20','/permissive-','/Zc:__cplusplus','/EHsc')
+  $flags.Add('/TP')
+  $flags.Add('/std:c++20')
+  $flags.Add('/permissive-')
+  $flags.Add('/Zc:__cplusplus')
+  $flags.Add('/EHsc')
  }
- $flags+=@('/Fo:'+$obj,'/Fe:'+$exe,$Source)
- # Native compile failures are expected in two explicitly negative probes.
+ $flags.Add('/Fo'+$obj)
+ $flags.Add('/Fe'+$exe)
+ $flags.Add([string]$Source)
+ $argsList=$flags.ToArray()
+ if($argsList.Count -lt 7 -or $argsList[-1] -cne [string]$Source -or
+    -not [IO.File]::Exists($argsList[-1])){
+  throw ('BITFLYING|HOLD|source_argument_missing|'+$Label)
+ }
+ Write-Host ('BITFLYING_COMPILER_ARGV|'+$Label+'|MODE='+$Mode+
+             '|COUNT='+$argsList.Count+'|SOURCE='+$argsList[-1])
  $PSNativeCommandUseErrorActionPreference=$false
- $diagnostics=@(& $cl @flags 2>&1 | ForEach-Object{[string]$_})
+ $diagnostics=@(& $cl @argsList 2>&1 | ForEach-Object{[string]$_})
  $exit=[int]$LASTEXITCODE
  [IO.File]::WriteAllLines((Join-Path $ev ($Label+'.compiler.txt')),$diagnostics)
  if($ExpectCompile){
