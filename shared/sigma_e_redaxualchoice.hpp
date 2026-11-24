@@ -21,7 +21,7 @@ inline constexpr u64 Q = 1ULL << 62u;
 // This is finite source E = F1*F2*F3 = 3/128 in the frozen sample.
 inline constexpr u64 expected_e = 3ULL * Q / 128ULL;
 inline constexpr u64 expected_term = 3ULL * Q / 256ULL;
-inline constexpr u64 expected_sigma = 21ULL * Q / 256ULL;
+inline constexpr u64 expected_sigma = 21ULL * (Q / 256ULL);
 
 struct EquivalentRatio {
     int index;
