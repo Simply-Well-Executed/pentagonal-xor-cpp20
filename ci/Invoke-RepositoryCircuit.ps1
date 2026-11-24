@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: 0BSD
-# Single-runner serial circuit. File checks do not imply every file compiles alone.
+# EXCITE serial file/subproject/whole-repo circuit with COREAO evidence after each lap.
+# File custody checks do not mean an individual file compiles.
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)][string]$RepositoryRoot,
@@ -15,9 +16,17 @@ if($LASTEXITCODE -ne 0 -or [IO.Directory]::Exists($out)){
   throw 'REPO_CIRCUIT|HOLD|evidence_path_not_fresh_or_safe'
 }
 [void][IO.Directory]::CreateDirectory($out)
+# Trusted repository-owned function file. No user-controlled code or workflow downloads.
+. (Join-Path $root 'ci/Excite-Coreao.ps1')
+& pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Test-ExciteFlow.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $out 'excite-selftest')
+if($LASTEXITCODE -ne 0){throw 'EXCITE|HOLD|selftest_failed'}
+$excite=Initialize-ExciteEvidence (Join-Path $out 'excite')
 $manifest=[Collections.Generic.List[object]]::new()
 $stages=[Collections.Generic.List[object]]::new()
 $failedSubprojects=[Collections.Generic.List[string]]::new()
+$failedFiles=[Collections.Generic.List[string]]::new()
+$exciteAudit='HOLD'
+$exciteHead=''
 $phase='FILE_LAPS'
 $status='HOLD'
 $failure=''
@@ -53,6 +62,13 @@ function Invoke-Lap([string]$name,[string]$relative,[string[]]$arguments){
     elapsed_ms=$timer.ElapsedMilliseconds
     status=if($exitCode -eq 0){'PASS'}else{'HOLD'}
   }
+  $sha=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+  $vehicleKind=if($name -ceq 'KENTUCKY_DERBY'){'REPOSITORY'}else{'SUBPROJECT'}
+  $entry.qcode_sha256=Add-ExciteVehicle -Context $excite -Kind $vehicleKind `
+    -Label $name -SourceSha $sha `
+    -Status $(if($exitCode -eq 0){'PASS'}else{'HOLD'}) `
+    -ElapsedMs $timer.ElapsedMilliseconds -Bytes ([IO.FileInfo]$source).Length `
+    -Detail ('native_exit_code='+$exitCode)
   $stages.Add($entry)
   Write-Host ('NASCAR|FINISH|'+$name+'|EXIT='+$exitCode+'|MS='+$timer.ElapsedMilliseconds)
   Assert-SourceStable $name
@@ -71,26 +87,45 @@ try{
     if($relative -match '[\r\n\t|]' -or $file.Length -gt 67108864){
       throw 'REPO_CIRCUIT|HOLD|unrepresentable_or_oversize_source'
     }
+    $fileTimer=[Diagnostics.Stopwatch]::StartNew()
     $digest=(Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
     $cold=$relative.StartsWith('Archive/Retired/',[StringComparison]::OrdinalIgnoreCase)
     $kind=if($cold){'RETIRED_CUSTODY_ONLY'}else{'FINGERPRINT_ONLY'}
+    $lapStatus='PASS'
     if(-not $cold -and $relative -match '[.](ps1|psm1|psd1)$'){
       $tokens=$null;$parseErrors=$null
       $null=[Management.Automation.Language.Parser]::ParseFile(
         $file.FullName,[ref]$tokens,[ref]$parseErrors)
       if(@($parseErrors).Count -gt 0){
-        throw ('REPO_CIRCUIT|HOLD|powershell_parse|'+$relative)
-      }
-      $kind='POWERSHELL_SYNTAX_PASS'
+        $kind='POWERSHELL_SYNTAX_HOLD'
+        $lapStatus='HOLD'
+      }else{$kind='POWERSHELL_SYNTAX_PASS'}
     }elseif(-not $cold -and $relative -match '[.](cpp|hpp|h|c|java|pas|dpr|asm|yml|yaml|xhtml|xml|svg|tsv|md|txt)$'){
-      [void]$utf8.GetString([IO.File]::ReadAllBytes($file.FullName))
-      $kind='UTF8_CUSTODY_PASS_NOT_COMPILE'
+      try {
+        [void]$utf8.GetString([IO.File]::ReadAllBytes($file.FullName))
+        $kind='UTF8_CUSTODY_PASS_NOT_COMPILE'
+      }catch [Text.DecoderFallbackException]{
+        $kind='INVALID_UTF8_HOLD'
+        $lapStatus='HOLD'
+      }
     }
-    $manifest.Add([ordered]@{path=$relative;sha256=$digest;bytes=$file.Length;validation=$kind})
-    Write-Host ('FILE_LAP|'+$relative+'|'+$kind+'|SHA256='+$digest)
+    $fileTimer.Stop()
+    # Each source vehicle enters COREAO immediately, regardless of PASS/HOLD.
+    $qcodeSha=Add-ExciteVehicle -Context $excite -Kind FILE `
+      -Label $relative -SourceSha $digest -Status $lapStatus `
+      -ElapsedMs $fileTimer.ElapsedMilliseconds -Bytes $file.Length -Detail $kind
+    $manifest.Add([ordered]@{path=$relative;sha256=$digest;bytes=$file.Length;validation=$kind;status=$lapStatus;qcode_sha256=$qcodeSha})
+    if($lapStatus -ceq 'HOLD'){$failedFiles.Add($relative)}
+    Write-Host ('FILE_LAP|'+$relative+'|'+$kind+'|SHA256='+$digest+'|QCODE='+$qcodeSha)
   }
   Assert-SourceStable 'FILE_LAPS'
-  $stages.Add([ordered]@{lane='FILE_LAPS';status='PASS';files=$manifest.Count})
+  $null=Assert-ExciteEvidence $excite
+  $stages.Add([ordered]@{
+    lane='FILE_LAPS'
+    status=if($failedFiles.Count -eq 0){'PASS'}else{'HOLD'}
+    files=$manifest.Count
+    failures=$failedFiles.Count
+  })
   # Stage 2: actual native validators for known subproject contracts.
   # Each writes unique evidence OUTSIDE the checkout and runs in isolation.
   $phase='SUBPROJECT_LAPS'
@@ -106,8 +141,10 @@ try{
     $evidence=Join-Path $out ('module-'+$lane.name.ToLowerInvariant())
     Invoke-Lap $lane.name $lane.path @('-RepositoryRoot',$root,'-EvidenceDirectory',$evidence)
   }
-  if($failedSubprojects.Count -gt 0){
-    throw ('REPO_CIRCUIT|HOLD|subprojects_failed|'+($failedSubprojects -join ','))
+  $null=Assert-ExciteEvidence $excite
+  if($failedFiles.Count -gt 0 -or $failedSubprojects.Count -gt 0){
+    throw ('EXCITE|HOLD|file_failures='+$failedFiles.Count+
+           '|subproject_failures='+($failedSubprojects -join ','))
   }
   # Stage 3: entire build/install/CTest/normal app and consumer together.
   $phase='KENTUCKY_DERBY'
@@ -124,6 +161,15 @@ try{
   throw
 }finally{
   $stopwatch.Stop()
+  try {
+    $exciteHead=Assert-ExciteEvidence $excite
+    $exciteAudit='PASS'
+  }catch{
+    $exciteAudit='HOLD'
+    $status='HOLD'
+    $failure += '|excite_audit='+[string]$_.Exception.Message
+    Write-Host ('EXCITE|HOLD|AUDIT|'+[string]$_.Exception.Message)
+  }
   $receipt=[ordered]@{
     protocol='NASCAR-KENTUCKY-001'
     workflow_sha=$env:GITHUB_SHA
@@ -134,6 +180,10 @@ try{
     file_count=$manifest.Count
     stages=@($stages.ToArray())
     subproject_failures=@($failedSubprojects.ToArray())
+    file_failures=@($failedFiles.ToArray())
+    excite_vehicles=$excite.Sequence
+    excite_qcode_head=$exciteHead
+    excite_chain_audit=$exciteAudit
     release='HOLD'
   }
   $manifestPath=Join-Path $out 'file-laps.json'
@@ -143,10 +193,13 @@ try{
   $mh=(Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash.ToLowerInvariant()
   $rh=(Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant()
   Write-Host ('NASCAR|MANIFEST_SHA256='+$mh+'|COUNT='+$manifest.Count)
-  Write-Host ('KENTUCKY_DERBY|RECEIPT_SHA256='+$rh+'|RESULT='+$status+'|RELEASE=HOLD')
+  Write-Host ('KENTUCKY_DERBY|RECEIPT_SHA256='+$rh+'|RESULT='+$status+
+              '|EXCITE_QCODE_SHA256='+$exciteHead+'|RELEASE=HOLD')
   if(-not [string]::IsNullOrEmpty($env:GITHUB_STEP_SUMMARY)){
     Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value (
       'NASCAR/Kentucky: '+$status+'; file count '+$manifest.Count+
-      '; receipt SHA-256 '+$rh+'; release HOLD.')
+      '; receipt SHA-256 '+$rh+'; EXCITE QCODE SHA-256 '+$exciteHead+
+      '; release HOLD.')
   }
+  if($exciteAudit -cne 'PASS'){throw 'EXCITE|HOLD|final_chain_verification'}
 }

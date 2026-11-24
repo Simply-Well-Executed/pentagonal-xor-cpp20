@@ -30,3 +30,64 @@ At the audited November 23, 2026 snapshot, 60 open issues (#35–#94) were gener
 
 ## Interpretation
 `FILE_LAPS=PASS` means custody/parse success, not that all translations compiled. `SUBPROJECT_LAPS=PASS` means the six named validators executed successfully. `KENTUCKY_DERBY=PASS` means the full-source *native scope* passed. No outcome certifies unsupported platforms or grants release. Any failed lap retains HOLD.
+
+## EXCITE / EXCITED successor architecture
+
+The NASCAR / Kentucky Derby implementation is renamed to
+`.github/workflows/EXCITE.yml`. The older workflow file is removed from
+the current tree so two identical racing runs do not compete for resources.
+It remains recoverable in Git history. The source-custody logic and
+`RELEASE=HOLD` remain authoritative.
+
+EXCITE requires every enumerated source file vehicle (542 in the previous
+run, but not hardcoded as the target), including a failure witness, to enter
+a deterministic COREAO pipeline **immediately after its own lap**:
+
+`QCHART -> QLAM -> QGRAPH -> inverse-square rational witnesses -> FRESH HAODA -> QCODE`.
+
+These are **new evidence-envelope definitions**, not claims about preexisting
+QCHART/QLAM/QGRAPH/QCODE mathematics. QCHART carries source SHA-256, validation,
+duration and byte count. QLAM references the chart and the previous QCODE digest.
+QGRAPH records directed provenance edges with zero graph cycles. The
+inverse-square witness lists the dimensionless, exact rational values
+`1/1`, `1/4`, and `1/9` for radii `1`, `2`, and `3`. These do
+not infer electromagnetic exposure or physical radiation. FRESH HAODA NFKC
+normalizes **display labels only**; canonical source bytes, names, and file
+identity are unchanged. QCODE wraps those records with a chained SHA-256
+digest; the end-to-end verifier checks every predecessor and coordinate,
+including deliberately corrupted synthetic test data.
+
+All six independent native subprojects enter the **same** chain after their
+own tests, PASS or HOLD. Passing subprojects do not erase failed ones.
+Only after file and subproject integrity passes can the whole-repository
+Kentucky Derby enter as the final vehicle. No job silently treats a fingerprint
+as successful C++ translation or promotes a green result to release approval.
+
+`.github/workflows/EXCITED.yml` is a **reusable workflow** reached only
+through `needs: stack-circuit` in EXCITE. Thus on PRs, EXCITED starts
+**only if EXCITE passed**, without waiting for a default-branch
+`workflow_run` trigger. It executes a deterministic A* path over a small
+fixed nonnegative graph using PowerShell on `windows-2025`, publishes
+the generated `Sovieta Diao Xian ^.^` Markdown to the GitHub job summary,
+and verifies SHA-256. There is no Python, Bash, Ubuntu, Node-based checkout,
+or Node-based artifact upload. The Markdown also exists as a file in the
+runner's external temporary evidence directory, which is ephemeral;
+the job summary is its persistent, user-visible record. EXCITED does not
+commit, publish, or merge code.
+
+### Optional local read-only Markdown API
+
+The native PowerShell application `ci/Serve-ExcitedMarkdown.ps1` is **not**
+launched in GitHub CI. Once a Markdown file has been generated locally,
+it can expose precisely that file on **127.0.0.1 only**, at
+`GET /v1/markdown` (with `GET /healthz`), for up to 9 requests:
+
+```powershell
+pwsh -NoLogo -NoProfile -NonInteractive -File ci/Serve-ExcitedMarkdown.ps1 -MarkdownPath "C:\evidence\sovieta-diao-xian-excited.md" -Port 8179 -MaxRequests 9
+```
+
+No public bind, remote execution, filesystem browse endpoint, API writes,
+or unreviewed release. The local API is an opt-in preview, not an external
+network deployment. The developer supplies the Markdown file path manually.
+The HTTP server merely serves its **unchanged bytes**; it neither retrieves
+nor mutates repository source.

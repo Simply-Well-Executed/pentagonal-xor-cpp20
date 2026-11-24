@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: 0BSD
+# EXCITED is callable only after EXCITE succeeds; no Node, Python, Bash or Ubuntu.
+name: EXCITED | Sovieta Diao Xian ^.^ A-star Markdown
+on:
+  workflow_call:
+    inputs:
+      source_sha:
+        description: Exact already-qualified EXCITE source revision
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  excited-a-star:
+    name: A* Markdown from fully completed EXCITE circuit
+    runs-on: windows-2025
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Bootstrap pinned qualified source (PowerShell only)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_ACTIONS -cne 'true' -or
+             $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:SOURCE_SHA -cnotmatch '^[a-f0-9]{40}$' -or
+             $env:SOURCE_SHA -cne $env:GITHUB_SHA){
+            throw 'EXCITED|HOLD|revision_or_runner_mismatch'
+          }
+          $uri='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:SOURCE_SHA
+          $zip=Join-Path $env:RUNNER_TEMP 'excited-exact-source.zip'
+          $stage=Join-Path $env:RUNNER_TEMP 'excited-exact-source'
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-excited-a-star'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $stage
+          $roots=@(Get-ChildItem -LiteralPath $stage -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Build-ExcitedMarkdown.ps1'))){
+            throw 'EXCITED|HOLD|source_incomplete'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'excited-root.txt'),$roots[0].FullName)
+      - name: A* find deterministic docs and produce Sovieta Diao Xian guide
+        shell: pwsh
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'excited-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Build-ExcitedMarkdown.ps1') `
+            -RepositoryRoot $root `
+            -OutputDirectory (Join-Path $env:RUNNER_TEMP 'excited-docs') `
+            -SourceSha $env:SOURCE_SHA
+          if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|A_star_markdown_failed'}
+      - name: Verify generated Markdown and receipt without upload-artifact
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $folder=Join-Path $env:RUNNER_TEMP 'excited-docs'
+          $doc=Join-Path $folder 'sovieta-diao-xian-excited.md'
+          $receipt=Join-Path $folder 'excited-receipt.json'
+          if(-not [IO.File]::Exists($doc) -or -not [IO.File]::Exists($receipt)){
+            throw 'EXCITED|HOLD|markdown_or_receipt_absent'
+          }
+          $r=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($receipt)) -Depth 9
+          $sha=(Get-FileHash -LiteralPath $doc -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($r.markdown_sha256 -cne $sha -or $r.release -cne 'HOLD'){
+            throw 'EXCITED|HOLD|receipt_hash_mismatch'
+          }
+          Write-Host ('EXCITED|VERIFIED|MARKDOWN_SHA256='+$sha+'|RELEASE=HOLD')
+      - name: No automatic API exposure or repository writes
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'EXCITED|API=LOOPBACK_OPT_IN_ONLY|NO_PUBLIC_SERVER|RELEASE=HOLD'
