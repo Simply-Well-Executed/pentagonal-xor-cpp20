@@ -3,9 +3,7 @@ name: TRIFORCE ΣΣΣ native TOOLONG HEAD and TAIL
 # Every stage AFTER exact-source bootstrap runs owner Q62 checks at HEAD and TAIL.
 # This workflow is validation only; never grants release or third-party license approval.
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
   push:
     branches:
       - main
@@ -26,6 +24,9 @@ jobs:
     timeout-minutes: 50
     permissions:
       contents: read
+    env:
+      MSBUILDDISABLENODEREUSE: '1'
+      DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
     steps:
       - name: Bootstrap exact SHA source via PowerShell (no Node actions)
         shell: pwsh
@@ -79,3 +80,31 @@ jobs:
         run: |
           Write-Host 'TRIFORCE|RELEASE=HOLD|HUMAN_APPROVAL=NOT_ASSUMED'
           Write-Host 'TRIFORCE|CI_PASSED_IS_NOT_MERGE_OR_PUBLICATION_APPROVAL'
+          $audits=Join-Path $env:RUNNER_TEMP 'triforce-evidence/jstar-process'
+          if([IO.Directory]::Exists($audits)) {
+            foreach($audit in Get-ChildItem -LiteralPath $audits -Filter '*-process-audit.json' -File) {
+              Write-Host ('JSTAR|PROCESS_EVIDENCE|FILE='+$audit.Name+'|SHA256='+
+                (Get-FileHash -LiteralPath $audit.FullName -Algorithm SHA256).Hash.ToLowerInvariant())
+            }
+          } else {
+            Write-Host 'JSTAR|PROCESS_EVIDENCE|NOT_REACHED|RELEASE=HOLD'
+          }
+          $atomixRoot=Join-Path $env:RUNNER_TEMP 'triforce-evidence'
+          if([IO.Directory]::Exists($atomixRoot)){
+            $atomixAudits=@(Get-ChildItem -LiteralPath $atomixRoot -Filter 'atomix-audit.json' -File -Recurse)
+            foreach($item in $atomixAudits){
+              $digest=(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+              Write-Host ('ATOMIX|LOCAL_AUDIT_PRESENT|SHA256='+$digest+'|RELEASE=HOLD')
+              $summary=@(
+                '### Atomix / Pinoy Half-Phiping local audit'
+                ('Evidence digest: '+$digest)
+                'Protocol: ATOMIX-PINOY-HALF-PHIPING-PR34-001'
+                '[Research and backport custody](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/blob/feat/jstar-msvc-process-provenance-20261121/docs/ATOMIX_PR34_BACKPORT.md)'
+                'Experimental local proof only. JSTAR and downstream C++ failure remain independent HOLD gates.'
+              )
+              Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value ($summary -join [Environment]::NewLine)
+            }
+            if($atomixAudits.Count -eq 0){
+              Write-Host 'ATOMIX|LOCAL_AUDIT|NOT_REACHED|RELEASE=HOLD'
+            }
+          }

@@ -7,9 +7,7 @@ on:
     branches:
       - feat/fresh-artistic-eye-chain-20261120
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
 permissions:
   contents: read
   packages: write
@@ -85,6 +83,9 @@ jobs:
     timeout-minutes: 80
     permissions:
       contents: read
+    env:
+      MSBUILDDISABLENODEREUSE: '1'
+      DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
     steps:
       - name: Fetch exact complete GitHub source without Node actions
         shell: pwsh
@@ -144,6 +145,15 @@ jobs:
           Write-Host 'AUTOSTART|CUSTODY|ROOT_SHARED_CONSUMER_CTEST_NOT_ALL_ANDROID_JAVA_DEVICE_TESTS'
           Write-Host 'AUTOSTART|CUSTODY|EXISTING_GNU_POSIX_LICENSE_AND_NATIVE_OPENBSD_HOLD_UNCHANGED'
           Write-Host 'AUTOSTART|CUSTODY|EXISTING_OPENBSD1_2_3_EVIDENCE_IMAGES_UNTOUCHED'
+          $auditDir=Join-Path $env:RUNNER_TEMP 'autostart-results/jstar-process'
+          if([IO.Directory]::Exists($auditDir)) {
+            foreach($audit in Get-ChildItem -LiteralPath $auditDir -Filter '*-process-audit.json' -File) {
+              Write-Host ('JSTAR|PROCESS_EVIDENCE|FILE='+$audit.Name+'|SHA256='+
+                (Get-FileHash -LiteralPath $audit.FullName -Algorithm SHA256).Hash.ToLowerInvariant())
+            }
+          } else {
+            Write-Host 'JSTAR|PROCESS_EVIDENCE|NOT_REACHED|RELEASE=HOLD'
+          }
   gated-docker:
     name: Full-source Docker tests plus pinned autostart / ${{ matrix.profile }}
     needs: native-full-source

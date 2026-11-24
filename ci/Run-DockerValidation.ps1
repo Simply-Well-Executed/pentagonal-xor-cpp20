@@ -93,16 +93,7 @@ if ($Mode -eq 'Publish') {
                 $expectedLicenseSha.Length -ne 64 -or
                 $expectedLicenseSha -notmatch '^[a-fA-F0-9]{64}$' -or
                 $actualLicenseSha -cne $expectedLicenseSha.ToLowerInvariant()) {
-                $publishOpenSUSE = $false
-                $opensuseSkipReason = if (
-                    [string]::IsNullOrWhiteSpace($expectedLicenseSha) -or
-                    $expectedLicenseSha -notmatch '^[a-fA-F0-9]{64}$'
-                ) {
-                    'OS package license manifest approval is missing or invalid.'
-                } else {
-                    "OS package license manifest changed; observed SHA256 $actualLicenseSha."
-                }
-                Write-Host "SKIP: $leapLatest will not be published: $opensuseSkipReason"
+                throw "Unapproved or changed OS package license manifest: $actualLicenseSha"
             }
         } else {
             Write-Host "SKIP: $leapLatest requires separate third-party license review."
