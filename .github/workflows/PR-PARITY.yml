@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: 0BSD
 # Same exact workflow blob is installed on every open PR branch.
 # Read-only, native Windows PowerShell, no checkout/Node action.
-name: PR-PARITY | common #34 + #95 native and safety contract
+name: PR-PARITY | common native and safety contract
 on:
+  push:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
   workflow_dispatch:
