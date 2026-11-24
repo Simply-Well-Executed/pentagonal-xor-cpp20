@@ -18,6 +18,9 @@ if($ev -ceq $root -or $ev.StartsWith($root+[IO.Path]::DirectorySeparatorChar,[St
 $sources=@(
  (Join-Path $root 'shared/slipslidingtoolong.hpp'),
  (Join-Path $root 'shared/toolong_q62_core.hpp'),
+ (Join-Path $root 'shared/constant_formats_register_001.hpp'),
+ (Join-Path $root 'shared/eulers_jig_canonical.hpp'),
+ (Join-Path $root 'shared/slidingtoolong.hpp'),
  (Join-Path $root 'quaddi-ni/SlipSlidingToolongTest.cpp'),
  (Join-Path $root 'quaddi-ni/SlipSlidingToolongOracle.java'),
  $PSCommandPath
@@ -56,7 +59,8 @@ $javaOutput=@(& $java '-Dfile.encoding=UTF-8' -cp $classes SlipSlidingToolongOra
 if($LASTEXITCODE -ne 0){throw 'SLIPSLIDINGTOOLONG|HOLD|Oracle_test_failed'}
 $expected='SLIPSLIDINGTOOLONG|WIDTHS=10|PAIRS=100|GLINTING=45|GLIZZING=45|EQUAL=10|PASS'
 $loss='SLIPSLIDINGTOOLONG|NARROWING_LOSS_REJECTED=45|Q62_128_TO_64=PASS|32BIT_LOSS_REJECTED=PASS'
-if($nativeOutput.Count -lt 4 -or $javaOutput.Count -lt 4 -or $nativeOutput[0] -cne $expected -or $javaOutput[0] -cne $expected -or $nativeOutput[1] -cne $loss -or $javaOutput[1] -cne $loss){
+$formatResult='CONSTANT_FORMATS|RECORDS=21|U64=PASS|LONG16=PASS|U32_PAIRS=PASS|WIDE_ROUTES=PASS|RELEASE=HOLD'
+if($nativeOutput.Count -lt 4 -or $javaOutput.Count -lt 4 -or $nativeOutput[0] -cne $expected -or $javaOutput[0] -cne $expected -or $nativeOutput[1] -cne $loss -or $javaOutput[1] -cne $loss -or $nativeOutput.Count -lt 5 -or $nativeOutput[4] -cne $formatResult){
  throw 'SLIPSLIDINGTOOLONG|HOLD|independent_width_or_Q62_disagreement'
 }
 foreach($line in $nativeOutput){Write-Host $line}
