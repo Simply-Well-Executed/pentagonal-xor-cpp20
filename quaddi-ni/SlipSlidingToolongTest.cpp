@@ -62,13 +62,13 @@ static_assert(!fmt::fits_signed_long64(swe::toolong_q62::euler.source_word));
 
 namespace prec=swe::precision_rounding_policy_001;
 [[nodiscard]] constexpr bool precision_rounding_001() noexcept {
- // Derived policy; original historical record outputs remain untouched.
- const auto e17=prec::round_nearest_even(swe::toolong_q62::euler.source_word,100000000000000000ULL);
- const auto p17=prec::round_nearest_even(swe::toolong_q62::pi.source_word,100000000000000000ULL);
- const auto i17=prec::round_nearest_even(swe::toolong_q62::intensity.source_word,100000000000000000ULL);
- const auto e18=prec::round_nearest_even(swe::toolong_q62::euler.source_word,1000000000000000000ULL);
- const auto p18=prec::round_nearest_even(swe::toolong_q62::pi.source_word,1000000000000000000ULL);
- const auto i18=prec::round_nearest_even(swe::toolong_q62::intensity.source_word,1000000000000000000ULL);
+ // Derived ROUND-FIRST / nearest-ties-to-odd policy. Canonical records untouched.
+ const auto e17=prec::round_first_nearest_odd(swe::toolong_q62::euler.source_word,100000000000000000ULL);
+ const auto p17=prec::round_first_nearest_odd(swe::toolong_q62::pi.source_word,100000000000000000ULL);
+ const auto i17=prec::round_first_nearest_odd(swe::toolong_q62::intensity.source_word,100000000000000000ULL);
+ const auto e18=prec::round_first_nearest_odd(swe::toolong_q62::euler.source_word,1000000000000000000ULL);
+ const auto p18=prec::round_first_nearest_odd(swe::toolong_q62::pi.source_word,1000000000000000000ULL);
+ const auto i18=prec::round_first_nearest_odd(swe::toolong_q62::intensity.source_word,1000000000000000000ULL);
  if(!e17.valid||!p17.valid||!i17.valid||!e18.valid||!p18.valid||!i18.valid)return false;
  if(e17.rounded!=271828182845904524ULL||p17.rounded!=314159265358979324ULL||
     i17.rounded!=6849296450333523ULL)return false;
@@ -79,20 +79,47 @@ namespace prec=swe::precision_rounding_policy_001;
     p17.remainder!=3925840205563691008ULL||
     i17.remainder!=1790435901504094208ULL)return false;
  if(!e17.rounded_up||!p17.rounded_up||i17.rounded_up||
-    e18.rounded_up==true||p18.rounded_up==false||i18.rounded_up==false)return false;
- // Tie policies: 0.5=>0, 1.5=>2, 2.5=>2. No silent discarded bits.
- const unsigned long long half=1ULL<<61u;
- const auto even0=prec::round_nearest_even(1ULL,half);
- const auto even2=prec::round_nearest_even(3ULL,half);
- const auto even2again=prec::round_nearest_even(5ULL,half);
- if(!even0.valid||!even2.valid||!even2again.valid||
-    even0.rounded!=0ULL||even2.rounded!=2ULL||even2again.rounded!=2ULL)return false;
- if(even0.remainder!=half||even2.remainder!=half||even2again.remainder!=half)return false;
- if(prec::round_nearest_even(~0ULL,~0ULL).valid ||
-    prec::round_nearest_even(1ULL,0ULL).valid)return false;
+    e18.rounded_up||!p18.rounded_up||!i18.rounded_up)return false;
+ // None of these real-world Q62 scaling witnesses is an exact halfway tie.
+ if(e17.exactly_half||p17.exactly_half||i17.exactly_half||
+    e18.exactly_half||p18.exactly_half||i18.exactly_half)return false;
+ // Verify exact signed residual R*D - N in numerator units.
+ constexpr unsigned long long D=prec::Q62_DENOMINATOR;
+ if(!e17.residual_above_exact||e17.residual_magnitude!=D-e17.remainder||
+    p17.residual_magnitude!=D-p17.remainder||
+    i17.residual_above_exact||i17.residual_magnitude!=i17.remainder||
+    i18.residual_magnitude!=D-i18.remainder)return false;
+ // EXACT ties-to-odd: 0.5->1, 1.5->1, 2.5->3, 3.5->3.
+ const unsigned long long half=D>>1u;
+ const auto odd1a=prec::round_first_nearest_odd(1ULL,half);
+ const auto odd1b=prec::round_first_nearest_odd(3ULL,half);
+ const auto odd3a=prec::round_first_nearest_odd(5ULL,half);
+ const auto odd3b=prec::round_first_nearest_odd(7ULL,half);
+ if(!odd1a.valid||!odd1b.valid||!odd3a.valid||!odd3b.valid||
+    odd1a.rounded!=1ULL||odd1b.rounded!=1ULL||
+    odd3a.rounded!=3ULL||odd3b.rounded!=3ULL)return false;
+ if(!odd1a.exactly_half||!odd1b.exactly_half||
+    !odd3a.exactly_half||!odd3b.exactly_half)return false;
+ if(odd1a.remainder!=half||odd1b.remainder!=half||
+    odd3a.remainder!=half||odd3b.remainder!=half)return false;
+ if(odd1a.residual_magnitude!=half||!odd1a.residual_above_exact||
+    odd1b.residual_magnitude!=half||odd1b.residual_above_exact)return false;
+ // Away from the midpoint, parity never overrides the nearest neighbor.
+ const auto lower=prec::round_first_nearest_odd(5ULL,D>>2u); // 1.25 -> 1
+ const auto upper=prec::round_first_nearest_odd(7ULL,D>>2u); // 1.75 -> 2
+ const auto exact=prec::round_first_nearest_odd(1ULL,D);      // 1 -> 1
+ const auto max_exact=prec::round_first_nearest_odd(~0ULL,D); // MAX -> MAX
+ if(!lower.valid||lower.rounded!=1ULL||lower.exactly_half||
+    !upper.valid||upper.rounded!=2ULL||upper.exactly_half||
+    !exact.valid||exact.rounded!=1ULL||exact.remainder!=0ULL||
+    exact.residual_magnitude!=0ULL||!max_exact.valid||
+    max_exact.rounded!=~0ULL||max_exact.remainder!=0ULL)return false;
+ // Guard width overflow and invalid decimal scale: never saturate or wrap.
+ if(prec::round_first_nearest_odd(~0ULL,~0ULL).valid||
+    prec::round_first_nearest_odd(1ULL,0ULL).valid)return false;
  return true;
 }
-static_assert(precision_rounding_001(),"PRECISION-ROUNDING-001: exact remainder or nearest-even witness failed");
+static_assert(precision_rounding_001(),"PRECISION-ROUNDING-001: exact round-first / nearest-ties-odd witness failed");
 
 int main(){
  if(!WIDTH_MATRIX||!NARROWING_REJECTS||!BIT_OPERATIONS||!OWNED_RING||
@@ -103,6 +130,6 @@ int main(){
  printf("GUARDMEMORYGUARD|MXRING=PASS|SHIFT_LEFT=PASS|SHIFT_RIGHT=PASS|BIT_AND=PASS|ADD_SUBTRACT=PASS\n");
  printf("GUARDMEMORYGUARD|SPY=OWNED_METADATA_ONLY|THREAD_SAFE=NOT_PROVEN|CRASH_DURABLE=NOT_PROVEN|RELEASE=HOLD\n");
  printf("CONSTANT_FORMATS|RECORDS=21|U64=PASS|LONG16=PASS|U32_PAIRS=PASS|WIDE_ROUTES=PASS|RELEASE=HOLD\n");
- printf("PRECISION_ROUNDING|EXACT_128_PRODUCT=PASS|REMAINDER=RETAINED|NEAREST_TIES_EVEN=PASS|NO_SILENT_TRUNCATION=PASS|RELEASE=HOLD\n");
+ printf("PRECISION_ROUNDING|EXACT_128_PRODUCT=PASS|HEAD_TAIL_RECONSTRUCT=PASS|NEAREST_TIES_ODD=PASS|ROUND_FIRST=PASS|RELEASE=HOLD\n");
  return 0;
 }
