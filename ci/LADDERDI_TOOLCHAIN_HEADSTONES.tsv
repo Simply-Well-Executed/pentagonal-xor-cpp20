@@ -1,0 +1,10 @@
+lane	original_project	publisher_author_credit	version	official_source	official_download_or_provision_reference	upstream_license_notice	archive_sha256_or_local_required	execution_policy
+HeptaDi	Lua 3	Lua team at PUC-Rio	3.2.2	https://www.lua.org/	https://www.lua.org/ftp/	REVIEW_HISTORICAL_LUA_LICENSE	LOCAL_DIGEST_REQUIRED	LOCAL_ONLY_NO_GLOBALS_LEGACY_HOLD
+OctaDi_Python2	CPython	Python Software Foundation and original contributors	2.7.18	https://www.python.org/	https://www.python.org/downloads/release/python-2718/	VERIFY_PSF_RELEASE_NOTICES	LOCAL_DIGEST_REQUIRED	NO_INSTALL_UNSUPPORTED_LEGACY
+OctaDi_Python3	CPython	Python Software Foundation and original contributors	OBSERVED_VERSION_REQUIRED	https://www.python.org/	https://www.python.org/downloads/	VERIFY_PSF_RELEASE_NOTICES	LOCAL_DIGEST_REQUIRED	NO_SILENT_SUBSTITUTION
+NonaDi	Node.js npm	OpenJS Foundation and npm project contributors	SELF_EXCLUDE	https://nodejs.org/	NO_DOWNLOAD	NOT_APPLICABLE_NO_COMPONENT	NOT_APPLICABLE	SELF_EXCLUDE
+EnneaDi	Rust compiler	Rust Project and Rust Foundation contributors	1.100.0	https://www.rust-lang.org/	https://static.rust-lang.org/dist/	VERIFY_DISTRIBUTION_NOTICES	LOCAL_DIGEST_REQUIRED	NATIVE_ONLY_NO_CARGO_REGISTRY
+DecaDi	Go compiler	Google Go team and project contributors	1.27.4	https://go.dev/	https://dl.google.com/go/go1.27.4.windows-amd64.zip	VERIFY_GO_DISTRIBUTION_NOTICES	178ab98950ac69ab25069307dc6ade79f3816e414cce95b4da166a115cde1e7e	GOOGLE_DOMAIN_ONLY_OFFLINE_RUNTIME
+UnDecaDi	Microsoft Macro Assembler MASM x64	Microsoft Corporation	LOCALLY_INSTALLED_MSVC_ML64	https://learn.microsoft.com/en-us/cpp/assembler/masm/masm-for-x64-ml64-exe	SEPARATELY_LICENSED_VISUAL_STUDIO_BUILD_TOOLS	VERIFY_MSVC_LICENSE_NOTICES	LOCAL_DIGEST_REQUIRED	DIRECT_MASM_X64_ONLY
+DoDecaDi	Perl	Larry Wall and Perl development team	5.44.0	https://www.perl.org/	https://www.perl.org/get.html	VERIFY_ARTISTIC_OR_GPL_COMPONENT_NOTICES	LOCAL_DIGEST_REQUIRED	NO_EXTERNAL_MODULES
+TriDecaDi	OCaml	Inria and OCaml development team	5.5.2	https://ocaml.org/	https://ocaml.org/releases	VERIFY_OCAML_RELEASE_NOTICES	LOCAL_DIGEST_REQUIRED	NATIVE_OCAMLOPT_NO_OPAM
