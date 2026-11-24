@@ -31,7 +31,7 @@ inline constexpr unsigned TOTAL_STAGE_WIDTH_CASES=century::STAGES*WIDTH_COUNT;
 inline constexpr unsigned EXPECTED_ACCEPTED=89u;
 inline constexpr unsigned EXPECTED_REJECTED=911u;
 inline constexpr unsigned L64=century::LIMBS/2u;
-static_assert(L64==48u && 2u*L64*64u==6144u);
+static_assert(L64==48u && L64*64u==3072u);
 static_assert(century::LIMBS*32u==3072u);
 [[nodiscard]] constexpr bool width_registry_matches() noexcept {
  for(unsigned i=0u;i<WIDTH_COUNT;++i)
@@ -213,7 +213,7 @@ struct Audit {
  unsigned accepted;
  unsigned rejected;
  unsigned rocket_matches;
- unsigned 64_roundtrips;
+ unsigned limb64_roundtrips;
  unsigned highest_bits;
  bool baseline_512_and_512_to_128;
  bool exact_roundtrip;
@@ -222,7 +222,28 @@ struct Audit {
 // allocations. All results are checked, no default PASS.
 [[nodiscard]] inline Audit run() noexcept {
  if(!width_registry_matches() ||
+    !original::WIDTH_MATRIX || !original::NARROWING_REJECTS ||
     !zero_512_baseline_and_512_to_128())return {};
+ // Explicit 10x10 baseline routing; verify every source/destination pair.
+ const auto source=century::seed();
+ if(!source.valid)return {};
+ unsigned routes=0u,downs=0u,ups=0u,equals=0u;
+ for(unsigned i=0u;i<WIDTH_COUNT;++i){
+  const Narrow initial=from32(source.value,BITS[i]);
+  if(initial.status!=Result::PASS)return {};
+  for(unsigned j=0u;j<WIDTH_COUNT;++j){
+   const auto projected=original::project(initial.value,BITS[j]);
+   if(projected.status!=Result::PASS)return {};
+   const auto restored=original::project(projected.value,BITS[i]);
+   if(restored.status!=Result::PASS||
+      !original::same(restored.value,initial.value))return {};
+   ++routes;
+   if(BITS[j]<BITS[i])++downs;
+   else if(BITS[j]>BITS[i])++ups;
+   else ++equals;
+  }
+ }
+ if(routes!=100u||downs!=45u||ups!=45u||equals!=10u)return {};
  const auto original_seed=century::seed();
  if(!original_seed.valid)return {};
  const Checked64 first64=pack64(original_seed.value);
@@ -287,7 +308,7 @@ struct Audit {
   walker=step.head;
  }
  if(!century::same(walker,original_seed.value))return {};
- return {true,WIDTH_COUNT,WIDTH_COUNT*WIDTH_COUNT,century::STAGES,
+ return {true,WIDTH_COUNT,routes,century::STAGES,
          accepted,rejected,matches,roundtrips,2984u,true,true};
 }
 } // namespace swe::fudgelessslippingtoolong_width_matrix_001
