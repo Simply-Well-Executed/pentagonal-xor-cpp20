@@ -1,0 +1,100 @@
+name: GitHub cloud Docker Hub same-digest re-push (authorized)
+
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
+# Publication scope: ONLY re-push the already-published verified digest.
+# Never promote unvalidated new source or replace latest with different bytes.
+# Only an owner-controlled branch push triggers this workflow.
+on:
+  push:
+    branches:
+      - feat/cloud-dockerhub-repush-20261120
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: dockerhub-same-digest-repush
+  cancel-in-progress: false
+
+jobs:
+  verify-and-repush:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
+    name: GitHub-hosted exact-manifest Docker Hub latest re-push
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    permissions:
+      contents: read
+      statuses: write
+    steps:
+      - name: Verify hosted compute and Docker availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          test "$(uname -m)" = x86_64
+          docker info
+          docker buildx version
+      - name: Record exact cloud publication run as pending
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data "{\"state\":\"pending\",\"target_url\":\"https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"Exact-digest Docker Hub re-push running in GitHub cloud\",\"context\":\"swe/dockerhub-idempotent-latest-push\"}" >/dev/null
+      - name: Obtain exact immutable workflow source without Node actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/approved-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: Live registry validation and authorized idempotent Docker push
+        id: publish
+        shell: bash
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          /bin/sh "$RUNNER_TEMP/approved-source/ci/Cloud-Repush-AndroidSourceStudy.sh"
+      - name: Record real push result against source SHA
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+        run: |
+          set -euo pipefail
+          case "$PUBLISH_OUTCOME" in
+            success) state=success; description='Docker Hub latest push and remote digest verified; no new release qualification' ;;
+            failure) state=failure; description='Docker Hub push held or failed; no verified publication in this job' ;;
+            *) state=error; description='Docker Hub promotion not completed or skipped' ;;
+          esac
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data "{\"state\":\"$state\",\"target_url\":\"https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"$description\",\"context\":\"swe/dockerhub-idempotent-latest-push\"}" >/dev/null
+      - name: Report release boundary
+        if: always()
+        shell: bash
+        run: |
+          echo 'No user-local compute was used.'
+          echo 'This workflow only re-pushes an already matching Docker Hub manifest.'
+          echo 'It does not authorize new image content, GAMP4 QA, PQ, or 13-profile releases.'

@@ -1,0 +1,14 @@
+{
+  "schema": "SWE-ANDROID-DOCKERHUB-PROMOTION-APPROVAL-v1",
+  "source_commit": "07eb2a4561f0f5e82db4668d2b4fa453e2a4d733",
+  "source_tag": "paulcheek/android-source-study-v1:sha-07eb2a4561f0",
+  "target_tag": "paulcheek/android-source-study-v1:latest",
+  "manifest_digest": "sha256:5791dcef8beb3704f58346e79af0ec5313f0599c2320b204939cf29aeda6ad30",
+  "gamp4_report_sha256": "NOT_REVIEWED",
+  "ctest_log_sha256": "NOT_REVIEWED",
+  "operator_approved": false,
+  "qa_release_approved": false,
+  "license_reviewed": false,
+  "sbom_reviewed": false,
+  "image_origin_reviewed": false
+}

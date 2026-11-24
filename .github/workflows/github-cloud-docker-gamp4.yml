@@ -1,0 +1,89 @@
+name: GitHub-hosted isolated Docker GAMP4 (manual-source branch)
+
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
+# Explicit exception requested by repository owner: this job is run on GitHub.com,
+# never on their local or self-hosted compute. No marketplace actions/Node.
+# Push to the dedicated branch is the trigger; workflow_dispatch not required.
+on:
+  push:
+    branches:
+      - feat/cloud-gamp4-docker-on-github-20261120
+
+permissions:
+  contents: read
+  statuses: write
+
+concurrency:
+  group: github-cloud-gamp4-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  linux-amd64-gamp4:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
+    name: Native hosted Linux amd64 Docker full CTest + URS-11..22
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    permissions:
+      contents: read
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify the compute is GitHub-hosted
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          test "$(uname -m)" = x86_64
+          docker info
+      - name: Mark exact source Git commit as cloud validation pending
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data "{\"state\":\"pending\",\"target_url\":\"https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"GitHub-hosted Linux GAMP4 Docker running; not release-qualified\",\"context\":\"swe/github-cloud-gamp4-linux-amd64\"}" >/dev/null
+      - name: Fetch the event commit using Git only (no Node checkout action)
+        id: validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/gamp4-exact-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+          /bin/sh "$src/ci/Run-GitHubCloud-Gamp4.sh"
+      - name: Report actual validation result to commit status
+        if: always()
+        shell: bash
+        env:
+          VALIDATION_OUTCOME: ${{ steps.validation.outcome }}
+        run: |
+          set -euo pipefail
+          case "$VALIDATION_OUTCOME" in
+            success) state=success; description='GitHub-hosted Linux/amd64 Docker CTest and URS passed; not QA release' ;;
+            failure) state=failure; description='GitHub-hosted Linux/amd64 Docker validation failed' ;;
+            *) state=error; description='GitHub cloud Docker validation not completed' ;;
+          esac
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data "{\"state\":\"$state\",\"target_url\":\"https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID\",\"description\":\"$description\",\"context\":\"swe/github-cloud-gamp4-linux-amd64\"}" >/dev/null
+      - name: Final release-boundary notice
+        if: always()
+        shell: bash
+        run: |
+          echo 'GitHub cloud Docker validation only; no Docker Hub push.'
+          echo 'Only Linux amd64 tested in this job; other 12 profiles remain unverified.'
+          echo 'QA, PQ, external registry publication and GitHub release remain on HOLD.'

@@ -1,0 +1,155 @@
+name: Publish verified Python-free Android/Linux image to Docker Hub candidate
+
+# CURRENT: ISSUE-29 legacy Bash jobs are deliberately non-executable.
+# No release or GNU/POSIX exception is granted by retaining this source.
+
+# Explicit user request, cloud-only; GHCR source was independently tested.
+# No Node checkout/upload actions, no Python or npm, no user-local compute.
+# A GitHub Actions environment creates an authentic GitHub Deployment record.
+on:
+  push:
+    branches:
+      - feat/dockerhub-pythonfree-candidate-deployment-20261120
+    paths:
+      - .github/workflows/dockerhub-pythonfree-candidate-deployment.yml
+      - ci/Promote-VerifiedAndroidLinux-ToDockerHub.sh
+
+permissions:
+  contents: read
+  packages: read
+  deployments: write
+  statuses: write
+
+concurrency:
+  group: swe-dockerhub-pythonfree-candidate
+  cancel-in-progress: false
+
+jobs:
+  publish-candidate:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
+    name: Verify and push exact tested image to Docker Hub
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    environment:
+      name: dockerhub-python-free-candidate
+      url: https://hub.docker.com/r/paulcheek/android-source-study-v1/tags?name=python-free-candidate-ed28e0544042
+    permissions:
+      contents: read
+      packages: read
+      deployments: write
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Verify GitHub-hosted cloud, never local or self-hosted
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${GITHUB_ACTIONS:-}" = true
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          test "$(uname -m)" = x86_64
+          docker info
+          docker buildx version
+      - name: Fetch exact committed deploy script with Git, no Node action
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/swe-verified-promotion-source"
+          git init -q "$src"
+          git -C "$src" remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -C "$src" -c credential.helper='!f() { printf "username=x-access-token\npassword=%s\n" "$GH_TOKEN"; }; f' fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -C "$src" checkout --detach FETCH_HEAD
+          test "$(git -C "$src" rev-parse HEAD)" = "$GITHUB_SHA"
+          test -z "$(git -C "$src" status --porcelain --untracked-files=all)"
+      - name: Publish Docker Hub candidate with source matched GAMP4 holds
+        id: publish
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          /bin/sh "$RUNNER_TEMP/swe-verified-promotion-source/ci/Promote-VerifiedAndroidLinux-ToDockerHub.sh"
+      - name: Write exact GitHub commit status for real Docker Hub result
+        if: always()
+        shell: bash
+        env:
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+        run: |
+          set -euo pipefail
+          case "$PUBLISH_OUTCOME" in
+            success) state=success; detail='Docker Hub Python-free candidate published and digest verified; not production release' ;;
+            failure) state=failure; detail='Docker Hub candidate publication blocked or verification failed' ;;
+            *) state=error; detail='Candidate Docker Hub publication did not complete' ;;
+          esac
+          jq -nc --arg state "$state" \
+            --arg target "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --arg desc "$detail" \
+            --arg context 'swe/dockerhub-pythonfree-candidate-publish' \
+            '{state:$state,target_url:$target,description:$desc,context:$context}' > "$RUNNER_TEMP/candidate-status.json"
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data-binary "@$RUNNER_TEMP/candidate-status.json" >/dev/null
+      - name: Preserve QA and runtime release boundary
+        if: always()
+        shell: bash
+        run: |
+          echo 'This GitHub Deployment targets Docker Hub image candidate registry availability, not a running Android app.'
+          echo 'Docker Hub latest remains pinned to its historical manifest.'
+          echo 'GAMP4 production QA, 13-profile validation and Android device OQ remain NOT APPROVED.'
+
+  audit-github-deployment:
+    if: ${{ false }} # ISSUE-29: historical GNU/POSIX execution denied; preserve evidence.
+    name: Verify GitHub Deployment record and success status
+    needs: publish-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      deployments: read
+      statuses: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Confirm GitHub Actions deployment exists and is successful
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${RUNNER_ENVIRONMENT:-}" = github-hosted
+          test "$GITHUB_REPOSITORY" = Simply-Well-Executed/pentagonal-xor-cpp20
+          api="https://api.github.com/repos/$GITHUB_REPOSITORY"
+          auth=(-H "Authorization: Bearer $GH_TOKEN" -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28')
+          d=$(curl --fail-with-body --silent --show-error --retry 2 "${auth[@]}" \
+            "$api/deployments?environment=dockerhub-python-free-candidate&sha=$GITHUB_SHA&per_page=15")
+          depid=$(printf '%s' "$d" | jq -er --arg sha "$GITHUB_SHA" \
+            '[.[] | select(.sha==$sha and .environment=="dockerhub-python-free-candidate")][0].id // empty')
+          test -n "$depid"
+          statuses=$(curl --fail-with-body --silent --show-error --retry 2 "${auth[@]}" \
+            "$api/deployments/$depid/statuses?per_page=10")
+          status=$(printf '%s' "$statuses" | jq -er '.[0].state // empty')
+          test "$status" = success
+          printf 'IRON|GITHUB_DEPLOYMENTS|SUCCESS|id=%s|ref=%s|environment=dockerhub-python-free-candidate\n' "$depid" "$GITHUB_SHA"
+      - name: Report independently verified GitHub Deployment to commit
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUDIT_OUTCOME: ${{ job.status }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "$AUDIT_OUTCOME" in
+            success) state=success; detail='GitHub Deployment created and success status independently verified' ;;
+            *) state=failure; detail='GitHub Deployment record or success status unverified' ;;
+          esac
+          jq -nc --arg state "$state" \
+            --arg target "https://github.com/$GITHUB_REPOSITORY/deployments" \
+            --arg desc "$detail" --arg context 'swe/github-dockerhub-candidate-deployment' \
+            '{state:$state,target_url:$target,description:$desc,context:$context}' > "$RUNNER_TEMP/deployment-status.json"
+          curl --fail-with-body --silent --show-error --retry 2 \
+            -X POST -H "Authorization: Bearer $GH_TOKEN" \
+            -H 'Accept: application/vnd.github+json' -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            --data-binary "@$RUNNER_TEMP/deployment-status.json" >/dev/null

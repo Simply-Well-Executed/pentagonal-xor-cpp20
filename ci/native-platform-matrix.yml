@@ -1,0 +1,118 @@
+schema: SWE-IRON-PLATFORM-MATRIX-v1
+version: 1
+policy:
+  executor: local-only
+  execution: explicit-operator-request
+  download: forbidden
+  network_fetch: forbidden
+  hosted_runner: forbidden
+  self_hosted_actions_runner: forbidden
+  container: opt-in-local-digest-pinned-gamp4-gated
+  container_policy_document: docs/GAMP4_DOCKER_RELEASE.md
+  compose_definition: docker/compose.release.yml
+  docker_release_external_publication: forbidden_without_review
+  docker_native_macos_runtime: unsupported
+  windows_docker_native_abi_build: requires_matching_Windows_host
+  node_and_package_managers: forbidden
+  source_language: ISO-C++20
+  cxx_extensions: OFF
+  core_profile: SWE_STD_FREE_CORE_ONLY=ON
+  audit: fail-closed
+  default_result: NOT_TESTED
+  portable_artifact: static-archive-and-public-headers
+  runtime_binary_free_of_libc_guarantee: false
+profiles:
+  macos-arm64:
+    host: macos
+    arch: arm64
+    build: core-archive
+    toolchain: HOLD-no-approved-nonclang-compiler
+    verified: NOT_TESTED
+  macos-x86_64:
+    host: macos
+    arch: x86_64
+    build: core-archive
+    toolchain: HOLD-no-approved-nonclang-compiler
+    verified: NOT_TESTED
+  macos-universal:
+    host: macos
+    arch: arm64+x86_64
+    build: universal-core-archive
+    toolchain: HOLD-no-approved-nonclang-compiler
+    verified: NOT_TESTED
+  macos-i386:
+    host: macos
+    arch: i386
+    build: unavailable-on-modern-macos
+    reason: Catalina-10.15-and-later-do-not-run-32-bit-apps
+    verified: UNSUPPORTED
+  windows-x86:
+    host: windows
+    arch: x86
+    build: core-archive
+    toolchain: installed-Visual-Studio-MSVC
+    verified: NOT_TESTED
+  windows-x64:
+    host: windows
+    arch: x86_64
+    build: core-archive
+    toolchain: installed-Visual-Studio-MSVC
+    verified: NOT_TESTED
+  windows-x86-64:
+    host: windows
+    arch: x86_64
+    alias_of: windows-x64
+    verified: NOT_TESTED
+  windows-amd64:
+    host: windows
+    arch: x86_64
+    alias_of: windows-x64
+    verified: NOT_TESTED
+  windows-arm64:
+    host: windows
+    arch: arm64
+    build: core-archive
+    toolchain: installed-Visual-Studio-MSVC-ARM64-components
+    verified: NOT_TESTED
+  linux-x86_64:
+    host: linux
+    arch: x86_64
+    build: core-archive
+    toolchain: reviewed-explicit-nonclang-C++20-compiler
+    verified: NOT_TESTED
+  linux-arm64:
+    host: linux
+    arch: aarch64
+    build: core-archive
+    toolchain: reviewed-explicit-nonclang-C++20-compiler
+    verified: NOT_TESTED
+  linux-x86:
+    host: linux
+    arch: i386
+    build: core-archive
+    toolchain: installed-32-bit-C++20-compiler
+    verified: NOT_TESTED
+  android-arm64-v8a:
+    host: ndk-cross
+    abi: arm64-v8a
+    api_level: 24
+    build: core-archive
+    verified: NOT_TESTED
+  android-armeabi-v7a:
+    host: ndk-cross
+    abi: armeabi-v7a
+    api_level: 24
+    build: core-archive
+    verified: NOT_TESTED
+  android-x86:
+    host: ndk-cross
+    abi: x86
+    api_level: 24
+    build: core-archive
+    verified: NOT_TESTED
+  android-x86_64:
+    host: ndk-cross
+    abi: x86_64
+    api_level: 24
+    build: core-archive
+    verified: NOT_TESTED
