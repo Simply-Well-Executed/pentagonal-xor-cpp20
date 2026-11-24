@@ -21,7 +21,7 @@ Every source-tree file is walked one at a time, sorted by path; size and SHA-256
 These are existing reviewable test scripts; no source is evaluated from an issue or external message. External Oracle parity, proprietary Delphi compilation, Android physical-device tests and intentionally retired code remain separate qualifications, not assumed by this race.
 
 ## Kentucky Derby
-Only after all six lanes pass, run the existing full-source autostart suite: root/shared/consumer CMake + CTest, install, native program startup and project security/output contracts. Source files are verified again. All builds remain serial (/O2, C++20, no extensions); source bootstrap is the only remote source acquisition in this pipeline.
+All six subprojects are attempted in sequence even if an earlier one fails, preserving independent evidence; any HOLD blocks the final derby. Only after all six lanes pass, run the existing full-source autostart suite: root/shared/consumer CMake + CTest, install, native program startup and project security/output contracts. Source files are verified again. All builds remain serial (/O2, C++20, no extensions); source bootstrap is the only remote source acquisition in this pipeline.
 
 ## Issue solver
 `.github/workflows/issue-solver-jig.yml` uses `issues: opened, reopened` to inspect the issue as **untrusted data**. It recognizes only scoped INCEPTION receipts and reads exact source revisions. It records a digest and diagnostic comment, without source writes, automatic acknowledgment or closure. GitHub only activates the issue trigger once this workflow is present on the default branch.

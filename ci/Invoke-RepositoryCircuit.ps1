@@ -17,6 +17,7 @@ if($LASTEXITCODE -ne 0 -or [IO.Directory]::Exists($out)){
 [void][IO.Directory]::CreateDirectory($out)
 $manifest=[Collections.Generic.List[object]]::new()
 $stages=[Collections.Generic.List[object]]::new()
+$failedSubprojects=[Collections.Generic.List[string]]::new()
 $phase='FILE_LAPS'
 $status='HOLD'
 $failure=''
@@ -55,7 +56,10 @@ function Invoke-Lap([string]$name,[string]$relative,[string[]]$arguments){
   $stages.Add($entry)
   Write-Host ('NASCAR|FINISH|'+$name+'|EXIT='+$exitCode+'|MS='+$timer.ElapsedMilliseconds)
   Assert-SourceStable $name
-  if($exitCode -ne 0){throw ('REPO_CIRCUIT|HOLD|subproject_failed|'+$name)}
+  if($exitCode -ne 0){
+    $failedSubprojects.Add($name)
+    Write-Host ('NASCAR|SUBPROJECT_HOLD|'+$name+'|CONTINUING_INDEPENDENT_LAPS')
+  }
 }
 try{
   # Stage 1: enumerate EVERY file, including documentation and cold-retired
@@ -102,6 +106,9 @@ try{
     $evidence=Join-Path $out ('module-'+$lane.name.ToLowerInvariant())
     Invoke-Lap $lane.name $lane.path @('-RepositoryRoot',$root,'-EvidenceDirectory',$evidence)
   }
+  if($failedSubprojects.Count -gt 0){
+    throw ('REPO_CIRCUIT|HOLD|subprojects_failed|'+($failedSubprojects -join ','))
+  }
   # Stage 3: entire build/install/CTest/normal app and consumer together.
   $phase='KENTUCKY_DERBY'
   Invoke-Lap 'KENTUCKY_DERBY' 'ci/Invoke-FullSourceAutostartNativeSuite.ps1' @(
@@ -126,6 +133,7 @@ try{
     elapsed_ms=$stopwatch.ElapsedMilliseconds
     file_count=$manifest.Count
     stages=@($stages.ToArray())
+    subproject_failures=@($failedSubprojects.ToArray())
     release='HOLD'
   }
   $manifestPath=Join-Path $out 'file-laps.json'

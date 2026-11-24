@@ -16,7 +16,7 @@ inline constexpr double largest_double = 1.7976931348623157e308;
 [[nodiscard]] constexpr bool finite(double x) noexcept {
     return x == x && x >= -largest_double && x <= largest_double;
 }
-[[nodiscard]] constexpr bool near(double a, double b, double tolerance) noexcept {
+[[nodiscard]] constexpr bool near_scalar(double a, double b, double tolerance) noexcept {
     return finite(a) && finite(b) && finite(tolerance) &&
            tolerance >= 0.0 && absolute(a - b) <= tolerance;
 }
@@ -146,7 +146,7 @@ struct Pinhole { double fx; double fy; double cx; double cy; };
         !finite(light.z)) return {0.0,false};
     const double nn = normal.x*normal.x + normal.y*normal.y + normal.z*normal.z;
     const double ll = light.x*light.x + light.y*light.y + light.z*light.z;
-    if (!near(nn,1.0,1e-9) || !near(ll,1.0,1e-9))
+    if (!near_scalar(nn,1.0,1e-9) || !near_scalar(ll,1.0,1e-9))
         return {0.0,false};
     const double dot = normal.x*light.x + normal.y*light.y +
                        normal.z*light.z;
