@@ -9,6 +9,8 @@
 #include "../shared/fudgelessslippingtoolong_12d.hpp"
 #include "../shared/fudgelessslippingtoolong_100d.hpp"
 #include "../shared/fudgelessslippingtoolong_width_matrix_001.hpp"
+// Micro widths are additive: NOBIT means zero-capacity, NOP is guarded identity.
+// This dedicated native qualification never rewrites the original core registry.
 #include "../shared/fudgelessslippingtoolong_micro_widths_001.hpp"
 #include <stdio.h>
 using namespace swe::slipslidingtoolong;
