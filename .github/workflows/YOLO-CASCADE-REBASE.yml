@@ -1,0 +1,187 @@
+# SPDX-License-Identifier: 0BSD
+# One-shot native git cascading rebase. The source runner is a pre-lab Git operation.
+name: YOLO | native Git cascading rebase with lease and ancestry custody
+on:
+  push:
+    branches:
+      - ops/yolo-cascade-rebase-20261124
+permissions:
+  contents: write
+  pull-requests: read
+concurrency:
+  group: yolo-cascade-20261124
+  cancel-in-progress: false
+jobs:
+  rebase:
+    runs-on: windows-2025
+    timeout-minutes: 90
+    steps:
+      - name: Rebase in dependency order, preserve old refs, fail closed at conflicts
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_CONTROL_SHA: ${{ github.sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $PSNativeCommandUseErrorActionPreference=$false
+          $env:GIT_TERMINAL_PROMPT='0'
+          $env:GIT_LFS_SKIP_SMUDGE='1'
+          $env:GIT_MERGE_AUTOEDIT='no'
+          $env:GIT_EDITOR='true'
+          $env:GIT_SEQUENCE_EDITOR='true'
+          $repo='Simply-Well-Executed/pentagonal-xor-cpp20'
+          $expectedMain='6d4081bbd7e22d7a519d49423047d9d267d8f55b'
+          $control='ops/yolo-cascade-rebase-20261124'
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne $repo -or
+             $env:GITHUB_REF -cne ('refs/heads/'+$control) -or
+             $env:GITHUB_SHA -cne $env:EXPECTED_CONTROL_SHA){
+            throw 'YOLO|HOLD|UNEXPECTED_RUNNER_OR_COMMIT'
+          }
+          $heads=[ordered]@{
+            '34'=@{branch='feat/jstar-msvc-process-provenance-20261121'; sha='90b1b0a99ded688e5806d0a70d0b5344c4b3b753'}
+            '95'=@{branch='feat/quaddi-ni-oracle-cpp20-20261123'; sha='0179dc7de04c74637bfcf3d8da39b2d7fc0ef16f'}
+            '97'=@{branch='audit/minza-dual-rendition-2026-11-19'; sha='13e2e56274b18228c9d7383b8187c42aa2507a8e'}
+            '99'=@{branch='evidence/jstar-oracle27-20261121'; sha='63fed5dc87d6f07698713b65498fcaf313526c9a'}
+            '100'=@{branch='experiment/oracle-jdk27-vcxproj-diagnostics-20261121'; sha='bd1514023f5e566cd6c7c768dd06bb878dc9d89a'}
+            '101'=@{branch='feat/exploratory-quantum-operand-lexicon-20261119'; sha='45b47869975db30e2796f9a420d467a327690840'}
+            '103'=@{branch='feature/native-euler-factorial-20261121'; sha='a81376baf169eaeaeddb1d2ae0339e7bb7de93d0'}
+          }
+          $originalNull=@{
+            '.github/workflows/NULL-OPTIMIZER.yml'='4005caa28683ce559b70ba7e6b96ee7886fd934c'
+            'ci/Invoke-NullOptimizer.ps1'='b26a3f44713c6c5be1875da49ba1a1efe1fa78a6'
+            'docs/NULL_OPTIMIZER_001.md'='db6ed131772df1625a8eaf20c1467de9b0695f80'
+          }
+          $work=Join-Path $env:RUNNER_TEMP 'yolo-git-native'
+          if([IO.Directory]::Exists($work)){throw 'YOLO|HOLD|WORKTREE_NOT_FRESH'}
+          & gh auth setup-git
+          if($LASTEXITCODE -ne 0){throw 'YOLO|HOLD|GH_GIT_AUTH'}
+          & git init -q $work
+          if($LASTEXITCODE -ne 0){throw 'YOLO|HOLD|GIT_INIT'}
+          Push-Location $work
+          try {
+            & git config core.autocrlf false
+            & git config core.longpaths true
+            & git config user.name 'github-actions[bot]'
+            & git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            & git config commit.gpgsign false
+            & git remote add origin ('https://github.com/'+$repo+'.git')
+            $refs=[Collections.Generic.List[string]]::new()
+            $refs.Add('+refs/heads/main:refs/remotes/origin/main')
+            foreach($key in $heads.Keys){
+              $h=$heads[$key]
+              $refs.Add('+refs/heads/'+$h.branch+':refs/remotes/origin/'+$h.branch)
+              $backup='safety/pre-yolo-rebase-pr'+$key+'-20261124'
+              $refs.Add('+refs/heads/'+$backup+':refs/remotes/origin/'+$backup)
+            }
+            & git fetch --no-tags --filter=blob:none origin @refs
+            if($LASTEXITCODE -ne 0){throw 'YOLO|HOLD|GIT_FETCH'}
+            $actualMain=(& git rev-parse refs/remotes/origin/main).Trim()
+            if($actualMain -cne $expectedMain){throw ('YOLO|HOLD|MAIN_MOVED|'+$actualMain)}
+            foreach($key in $heads.Keys){
+              $h=$heads[$key]
+              $observed=(& git rev-parse ('refs/remotes/origin/'+$h.branch)).Trim()
+              $saved=(& git rev-parse ('refs/remotes/origin/safety/pre-yolo-rebase-pr'+$key+'-20261124')).Trim()
+              if($observed -cne $h.sha -or $saved -cne $h.sha){
+                throw ('YOLO|HOLD|BRANCH_OR_BACKUP_MOVED|PR='+$key)
+              }
+            }
+            Write-Host ('YOLO|HEAD|SOURCE_CUSTODY=PASS|MAIN='+$expectedMain+'|BACKUPS=7')
+            $new34=$null
+            $records=[Collections.Generic.List[string]]::new()
+            foreach($key in $heads.Keys){
+              $h=$heads[$key]
+              $branch=$h.branch
+              $oldTip=$h.sha
+              $target=$expectedMain
+              $forkSource=$expectedMain
+              if($key -ceq '95'){
+                if([string]::IsNullOrEmpty($new34)){
+                  $records.Add('PR95|HOLD|PR34_BASE_NOT_REBASED')
+                  Write-Host 'YOLO|PR=95|HOLD|UPSTREAM_34_NOT_REBASED'
+                  continue
+                }
+                $target=$new34
+                $forkSource=$heads['34'].sha
+              }
+              & git rebase --abort 2>$null
+              & git reset --hard HEAD 2>$null
+              & git clean -fd 2>$null
+              $scratch='yolo-cascade-pr'+$key
+              & git checkout --force -B $scratch ('refs/remotes/origin/'+$branch)
+              if($LASTEXITCODE -ne 0){
+                $records.Add('PR'+$key+'|HOLD|CHECKOUT_FAILED')
+                continue
+              }
+              $fork=(& git merge-base $forkSource $oldTip).Trim()
+              if($LASTEXITCODE -ne 0 -or $fork -notmatch '^[a-f0-9]{40}$'){
+                $records.Add('PR'+$key+'|HOLD|NO_MERGE_BASE')
+                continue
+              }
+              $oldCountRaw=(& git rev-list --count ($fork+'..'+$oldTip))
+              [int]$oldCount=[int]$oldCountRaw
+              Write-Host ('YOLO|PR='+$key+'|START|OLD='+$oldTip+'|FORK='+$fork+'|TARGET='+$target+'|OLD_NON_MERGE_PLUS_MERGE='+$oldCount)
+              & git -c rebase.updateRefs=false rebase --rebase-merges --reapply-cherry-picks --empty=keep --onto $target $fork $scratch
+              if($LASTEXITCODE -ne 0){
+                Write-Host ('YOLO|PR='+$key+'|HOLD|REAL_GIT_REBASE_CONFLICT_OR_ERROR|NO_PUSH')
+                & git rebase --abort
+                $records.Add('PR'+$key+'|HOLD|GIT_REBASE_FAILED')
+                continue
+              }
+              $newTip=(& git rev-parse HEAD).Trim()
+              & git merge-base --is-ancestor $target $newTip
+              if($LASTEXITCODE -ne 0){
+                $records.Add('PR'+$key+'|HOLD|NEW_TIP_NOT_DESCENDANT_OF_TARGET')
+                continue
+              }
+              $newCountRaw=(& git rev-list --count ($target+'..'+$newTip))
+              [int]$newCount=[int]$newCountRaw
+              if($newCount -lt $oldCount){
+                Write-Host ('YOLO|PR='+$key+'|HOLD|COMMIT_COUNT_SHRANK|OLD='+$oldCount+'|NEW='+$newCount)
+                $records.Add('PR'+$key+'|HOLD|COMMIT_COUNT_SHRANK')
+                continue
+              }
+              $nullOK=$true
+              foreach($path in $originalNull.Keys){
+                $treeLookup='HEAD:'+($path.Replace([char]92,[char]47))
+                $blob=(& git rev-parse $treeLookup 2>$null)
+                if($LASTEXITCODE -ne 0 -or $blob.Trim() -cne $originalNull[$path]){
+                  $nullOK=$false
+                  Write-Host ('YOLO|PR='+$key+'|NULL_BLOB_MISMATCH|'+$path)
+                }
+              }
+              if(-not $nullOK){
+                $records.Add('PR'+$key+'|HOLD|NULL_BLOB_CHANGED')
+                continue
+              }
+              $dirty=(& git status --porcelain)
+              if($LASTEXITCODE -ne 0 -or $dirty){
+                $records.Add('PR'+$key+'|HOLD|DIRTY_GIT_STATE')
+                continue
+              }
+              $lease=('--force-with-lease=refs/heads/'+$branch+':'+$oldTip)
+              $destination=('HEAD:refs/heads/'+$branch)
+              & git push $lease origin $destination
+              if($LASTEXITCODE -ne 0){
+                $records.Add('PR'+$key+'|HOLD|LEASE_OR_PUSH_REJECTED')
+                Write-Host ('YOLO|PR='+$key+'|HOLD|LEASE_OR_PUSH_REJECTED')
+                continue
+              }
+              $verify=(& git ls-remote origin ('refs/heads/'+$branch))
+              if($LASTEXITCODE -ne 0 -or $verify -notmatch ('^'+$newTip)){
+                $records.Add('PR'+$key+'|HOLD|REMOTE_POST_PUSH_NOT_VERIFIED')
+                continue
+              }
+              $records.Add('PR'+$key+'|REBASED|'+$oldTip+'|'+$newTip)
+              Write-Host ('YOLO|PR='+$key+'|REBASED|OLD='+$oldTip+'|NEW='+$newTip+'|BACKUP=safety/pre-yolo-rebase-pr'+$key+'-20261124|RELEASE=HOLD')
+              if($key -ceq '34'){$new34=$newTip}
+            }
+            Write-Host 'YOLO|TAIL|BEGIN'
+            foreach($rec in $records){Write-Host ('YOLO|TAIL|'+$rec)}
+            Write-Host 'YOLO|TAIL|END|NO_MAIN_MUTATION|NO_AUTO_MERGE|RELEASE=HOLD'
+            if($records.Count -ne 7){throw 'YOLO|HOLD|MISSING_LANE_RECEIPTS'}
+            if(@($records | Where-Object { $_ -match '[|]HOLD[|]' }).Count -gt 0){
+              throw 'YOLO|HOLD|ONE_OR_MORE_REBASE_ATTEMPTS_BLOCKED'
+            }
+          }finally{Pop-Location}
