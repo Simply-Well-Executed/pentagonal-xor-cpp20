@@ -190,6 +190,35 @@ $oct=Join-Path $root 'octadi/Invoke-OctaDiGTable.ps1'
 $octResult=Run 'octadi-subgate' (Get-Command pwsh).Source @('-NoLogo','-NoProfile','-NonInteractive','-File',$oct,
  '-RepositoryRoot',$root,'-EvidenceDirectory',(Join-Path $out 'octadi-evidence'))
 Record 'OctaDi' $(if($octResult.Exit -eq 0){'PASS'}else{'HOLD'}) 'PY2_2.7.18_PLUS_PY3' (Hash $oct) 'NOT_BUNDLED' ('exit='+$octResult.Exit)
+
+# HENDECA-RSTAR-001: separately provisioned interpreter; no installation.
+$han=Join-Path $root 'hendecadi/HenDecaDi.R'
+$fixture=Join-Path $root 'pentadi/PentaDiC11BranchRecords.reference.tsv'
+$rscript=Find 'HENDECADI_RSCRIPT_EXE' 'Rscript.exe'
+if(-not [IO.File]::Exists($han) -or -not [IO.File]::Exists($fixture)){
+ Record 'HenDecaDi' 'HOLD' 'RSTAR' 'NONE' 'NONE' 'canonical_source_or_fixture_missing'
+}elseif($null -eq $rscript){
+ Record 'HenDecaDi' 'HOLD' 'R_4.6.2_UNAVAILABLE' (Hash $han) 'NONE' 'separately_provisioned_runtime_required'
+}else{
+ $hanHash=Hash $han
+ $fixtureHash=Hash $fixture
+ $hanOut=Join-Path $out 'hendecadi-receipt.tsv'
+ $q=Run 'hendeca-test' $rscript @('--vanilla',$han,$fixture,$hanOut)
+ $ok=$false
+ $digest='NONE'
+ if([IO.File]::Exists($hanOut)){
+  $digest=Hash $hanOut
+  $rows=@(Get-Content -LiteralPath $hanOut)
+  $ok=($q.Exit -eq 0 -and $q.Text.Contains('RSTAR|PASS|R=4.6.2|BASE_ONLY=YES|LAPS=255|OR_CANARY=PASS') -and $rows.Count -eq 256 -and (Hash $han) -ceq $hanHash -and (Hash $fixture) -ceq $fixtureHash)
+  if($ok){
+   for($i=1;$i -le 255;$i++){
+    $cols=$rows[$i].Split([char]9)
+    if($cols.Count -ne 8 -or $cols[0] -cne [string]$i -or $cols[1] -cne [string]((($i-1)%9)+1) -or $cols[7] -cne 'PASS'){$ok=$false;break}
+   }
+  }
+ }
+ Record 'HenDecaDi' $(if($ok){'PASS'}else{'HOLD'}) 'R_4.6.2' $hanHash (Hash $rscript) ('fixture_sha256='+$fixtureHash+'|receipt_sha256='+$digest+'|exit='+$q.Exit)
+}
 $receipt=Join-Path $out 'ladderdi-qualification.tsv'
 [IO.File]::WriteAllLines($receipt,$items,$utf8)
 Write-Host ('LADDERDI|SUMMARY|PASS='+($items.Count-1-$failure)+'|HOLD='+$failure+
