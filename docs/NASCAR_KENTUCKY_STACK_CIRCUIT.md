@@ -199,3 +199,46 @@ Sources (exact version basis):
 - Cisco Catalyst 3650 STP: https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3650/software/release/37e/consolidated_guide/b_37e_consolidated_3650_cg/configuring_spanning_tree_protocol.html
 - Cisco Catalyst 3650 optional STP safeguards: https://www.cisco.com/c/en/us/td/docs/switches/lan/catalyst3650/software/release/3e/layer2/configuration_guide/b_layer2_3e_3650_cg/b_layer2_3e_3650_cg_chapter_011.html
 - Ansible Cisco IOS L2 interface arguments: https://docs.ansible.com/projects/ansible/latest/collections/cisco/ios/ios_l2_interfaces_module.html
+
+### DOVIA in-vehicle railroad autopilot (DOVIA.SIGNAL.1)
+
+The central **signal rules** are fixed in \`ci/Excite-Coreao.ps1\`,
+not a central circuit scheduler. **Every** file, six subproject lanes,
+and whole-repository vehicle independently travels:
+
+\`HEAD -> QCHART -> QLAM -> QGRAPH -> INVERSE_SQUARE -> FRESH_HAODA -> QCODE\`.
+
+Each transition checks the exact next stage, source/label identity,
+QCHART/QLAM digest linkage, graph acyclicity, exact dimensionless
+1/1, 1/4, 1/9 rational witnesses, display-only normalization,
+and the final QCODE source/status/release/parent linkage. Each stage
+earns a SHA-256 checkpoint; the vehicle produces a standalone
+\`signal.jsonl\` entry containing six stage signals plus a chained head.
+The full-stream verifier independently replays the deterministic policy,
+including every earlier source vehicle. It rejects missing or tampered
+signal entries. The original JSONL QCHAIN is preserved; no historical
+record or source identity is silently modified.
+
+- **GREEN**: the vehicle's *input validation status* is PASS and its
+  six-stage signal evidence is internally consistent. It does not mean
+  all repository compilation or external scientific claims passed.
+- **AMBER**: the vehicle brought an upstream HOLD. The vehicle still
+  records evidence, but a signal-inspector diagnostic explicitly says
+  \`UPSTREAM_HOLD\` and forbids promotion.
+- **RED**: invalid next-stage transition, contradictory source/proof
+  linkage, malformed inverse-square witness or tampered signal stream.
+  Signal bots emit deterministic lines
+  \`DOVIA|SIGNAL_BOT|RED|VEHICLE=...|STAGE=...|RULE=...|ACTION=HOLD_REVIEW_NO_AUTOFIX\`
+  and the affected operation throws. These are **software diagnostics**,
+  not physical robots, simulated people, penalties or actual railway
+  signaling. No auto-fixing, bypassing, reordering, release or merging.
+
+The offline negative selftest creates two vehicles (one PASS, one
+upstream HOLD), then deliberately tampers with a synthetic QLAM
+receipt, restores it, attempts to jump directly from QCHART to QGRAPH,
+and deliberately corrupts its synthetic \`signal.jsonl\`. Each must be
+rejected and explained by the inspector. Tests and output stay outside
+the repository checkout. Real-world signal aspects, rail block systems,
+Cisco switch state, and radiation physics are not being modeled.
+A zero-failure promise cannot be made; this is **fail-closed on
+checked rules**, with reviewable evidence rather than assumed perfection.

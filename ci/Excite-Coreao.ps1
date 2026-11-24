@@ -12,11 +12,155 @@ function Get-ExciteDigest([string]$value) {
 function ConvertTo-ExciteJson([object]$value) {
   return (ConvertTo-Json -InputObject $value -Compress -Depth 9 -WarningAction Stop)
 }
+
+# DOVIA railway autopilot: centrally frozen stage order; each vehicle's
+# witnesses independently earn a GREEN (PASS input) or AMBER (HOLD input).
+# RED means a stage-rule violation, never a silently repaired vehicle.
+function Stop-DoviaSignal {
+  param([string]$Rule,[string]$Stage,[long]$Ordinal,[string]$Expected)
+  # Diagnostic "tiny robot": explain the violated rule with no user payload,
+  # external side effects or authority over the originating evidence.
+  Write-Host ('DOVIA|SIGNAL_BOT|RED|VEHICLE='+$Ordinal+
+    '|STAGE='+$Stage+'|RULE='+$Rule+'|EXPECTED='+$Expected+
+    '|ACTION=HOLD_REVIEW_NO_AUTOFIX|RELEASE=HOLD')
+  throw ('EXCITE|HOLD|dovia_signal|ordinal='+$Ordinal+
+    '|stage='+$Stage+'|rule='+$Rule)
+}
+function Assert-DoviaRailTransition {
+  param(
+    [Parameter(Mandatory=$true)][string]$From,
+    [Parameter(Mandatory=$true)][string]$To,
+    [Parameter(Mandatory=$true)][long]$Ordinal
+  )
+  $next=switch -CaseSensitive ($From) {
+    'HEAD' {'QCHART'}
+    'QCHART' {'QLAM'}
+    'QLAM' {'QGRAPH'}
+    'QGRAPH' {'INVERSE_SQUARE'}
+    'INVERSE_SQUARE' {'FRESH_HAODA'}
+    'FRESH_HAODA' {'QCODE'}
+    default {''}
+  }
+  if($next -cne $To){
+    Stop-DoviaSignal -Rule 'STAGE_ORDER' -Stage $To -Ordinal $Ordinal -Expected $next
+  }
+}
+function New-DoviaVehicleSignals {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)][object]$Chart,
+    [Parameter(Mandatory=$true)][object]$Lam,
+    [Parameter(Mandatory=$true)][object]$Graph,
+    [Parameter(Mandatory=$true)][object]$Code,
+    [Parameter(Mandatory=$true)][string]$ChartJson,
+    [Parameter(Mandatory=$true)][string]$LamJson,
+    [Parameter(Mandatory=$true)][string]$GraphJson,
+    [Parameter(Mandatory=$true)][string]$CodeJson
+  )
+  $ordinal=[long]$Chart.ordinal
+  $aspects=if($Chart.status -ceq 'PASS'){'GREEN'}elseif($Chart.status -ceq 'HOLD'){'AMBER'}else{'RED'}
+  if($aspects -ceq 'RED') {
+    Stop-DoviaSignal -Rule 'INPUT_STATUS' -Stage 'QCHART' -Ordinal $ordinal -Expected 'PASS_OR_HOLD'
+  }
+  $chartSha=Get-ExciteDigest $ChartJson
+  $lamSha=Get-ExciteDigest $LamJson
+  $graphSha=Get-ExciteDigest $GraphJson
+  $inverseJson=ConvertTo-ExciteJson $Code.inverse_square_exact
+  $freshJson=ConvertTo-ExciteJson $Code.fresh_haoda
+  $codeSha=Get-ExciteDigest $CodeJson
+  $radii=@($Code.inverse_square_exact)
+  $inverseOK=($radii.Count -eq 3)
+  if($inverseOK){
+    for([int]$r=1;$r -le 3;$r++){
+      $w=$radii[$r-1]
+      if($w.radius -cne [string]$r -or $w.numerator -cne '1' -or
+         $w.denominator -cne [string]($r*$r)){$inverseOK=$false;break}
+    }
+  }
+  $tests=@(
+    [pscustomobject]@{
+      stage='QCHART';rule='IMMUTABLE_SOURCE_AND_STATUS';proof=$chartSha
+      valid=($Chart.source_sha256 -cmatch '^[a-f0-9]{64}$' -and
+        $Chart.label_sha256 -ceq (Get-ExciteDigest $Chart.label) -and
+        $Chart.kind -cin @('FILE','SUBPROJECT','REPOSITORY'))
+    },
+    [pscustomobject]@{
+      stage='QLAM';rule='CANONICAL_HASH_AND_PREDECESSOR';proof=$lamSha
+      valid=($Lam.chart_sha256 -ceq $chartSha -and
+        $Lam.immutable_input_sha256 -ceq $Chart.source_sha256 -and
+        $Lam.previous_qcode_sha256 -cmatch '^[a-f0-9]{64}$')
+    },
+    [pscustomobject]@{
+      stage='QGRAPH';rule='ACYCLIC_DIRECTED_WITNESS';proof=$graphSha
+      valid=($Graph.chart_sha256 -ceq $chartSha -and
+        $Graph.lam_sha256 -ceq $lamSha -and
+        $Graph.cycle_count -eq 0 -and
+        @($Graph.directed_edges).Count -eq 2 -and
+        $Graph.directed_edges[0] -ceq 'QCHART>QLAM' -and
+        $Graph.directed_edges[1] -ceq 'QLAM>QGRAPH')
+    },
+    [pscustomobject]@{
+      stage='INVERSE_SQUARE';rule='EXACT_RATIONAL_1_4_9';proof=(Get-ExciteDigest $inverseJson)
+      valid=$inverseOK
+    },
+    [pscustomobject]@{
+      stage='FRESH_HAODA';rule='NFKC_DISPLAY_ONLY';proof=(Get-ExciteDigest $freshJson)
+      valid=($Code.fresh_haoda.policy -ceq 'NFKC_DISPLAY_ONLY' -and
+        $Code.fresh_haoda.canonical_label_sha256 -ceq $Chart.label_sha256 -and
+        $Code.fresh_haoda.canonical_source_sha256 -ceq $Chart.source_sha256 -and
+        $Code.fresh_haoda.source_mutated -eq $false -and
+        $Code.fresh_haoda.normalized_display_label -ceq
+          $Chart.label.Normalize([Text.NormalizationForm]::FormKC))
+    },
+    [pscustomobject]@{
+      stage='QCODE';rule='HEAD_TAIL_SOURCE_STATUS_AND_RELEASE';proof=$codeSha
+      valid=($Code.graph_sha256 -ceq $graphSha -and
+        $Code.previous_qcode_sha256 -ceq $Lam.previous_qcode_sha256 -and
+        $Code.kind -ceq $Chart.kind -and $Code.status -ceq $Chart.status -and
+        $Code.ordinal -eq $ordinal -and $Code.release -ceq 'HOLD')
+    }
+  )
+  $before='HEAD'
+  $signalSha=$Lam.previous_qcode_sha256
+  $signals=[Collections.Generic.List[object]]::new()
+  foreach($checkpoint in $tests){
+    Assert-DoviaRailTransition -From $before -To $checkpoint.stage -Ordinal $ordinal
+    if(-not $checkpoint.valid){
+      Stop-DoviaSignal -Rule $checkpoint.rule -Stage $checkpoint.stage -Ordinal $ordinal -Expected 'VALID_WITNESS'
+    }
+    $signalSha=Get-ExciteDigest ('DOVIA.SIGNAL.1|'+$ordinal+'|'+
+      $Chart.kind+'|'+$aspects+'|'+$before+'>'+ $checkpoint.stage+'|'+
+      $checkpoint.proof+'|'+$signalSha)
+    $signals.Add([ordered]@{
+      stage=$checkpoint.stage
+      aspect=$aspects
+      rule=$checkpoint.rule
+      proof_sha256=$checkpoint.proof
+      signal_sha256=$signalSha
+    })
+    $before=$checkpoint.stage
+  }
+  return [ordered]@{
+    schema='DOVIA.SIGNAL.1'
+    ordinal=$ordinal
+    kind=$Chart.kind
+    input_status=$Chart.status
+    aspect=$aspects
+    input_sha256=$Chart.source_sha256
+    previous_qcode_sha256=$Lam.previous_qcode_sha256
+    stages=@($signals.ToArray())
+    stage_count=$signals.Count
+    head_sha256=$signalSha
+    decision=if($aspects -ceq 'GREEN'){'EVIDENCE_READY'}else{'UPSTREAM_HOLD_NOT_PROMOTED'}
+    release='HOLD'
+  }
+}
+
 function Initialize-ExciteEvidence([string]$directory) {
   $directory=[IO.Path]::GetFullPath($directory)
   if([IO.Directory]::Exists($directory)) {throw 'EXCITE|HOLD|existing_evidence'}
   [void][IO.Directory]::CreateDirectory($directory)
-  foreach($name in @('qchart','qlam','qgraph','qcode')) {
+  foreach($name in @('qchart','qlam','qgraph','qcode','signal')) {
     [IO.File]::WriteAllText((Join-Path $directory ($name+'.jsonl')),'',
       [Text.UTF8Encoding]::new($false))
   }
@@ -111,11 +255,15 @@ function Add-ExciteVehicle {
   }
   $codeJson=ConvertTo-ExciteJson $qcode
   $codeSha=Get-ExciteDigest $codeJson
+  # Vehicle-local rail autopilot checks ALL six stages before writing evidence.
+  $signals=New-DoviaVehicleSignals -Chart $qchart -Lam $qlam -Graph $qgraph -Code $qcode `
+    -ChartJson $chartJson -LamJson $lamJson -GraphJson $graphJson -CodeJson $codeJson
+  $signalJson=ConvertTo-ExciteJson $signals
   $utf8=[Text.UTF8Encoding]::new($false)
   # QCODE is appended last; a partial write is detected by the final audit.
   foreach($pair in @(
     @('qchart',$chartJson),@('qlam',$lamJson),
-    @('qgraph',$graphJson),@('qcode',$codeJson))) {
+    @('qgraph',$graphJson),@('qcode',$codeJson),@('signal',$signalJson))) {
     [IO.File]::AppendAllText(
       (Join-Path $Context.Directory ($pair[0]+'.jsonl')),
       ($pair[1]+[char]10),$utf8)
@@ -126,6 +274,12 @@ function Add-ExciteVehicle {
     'FILE' {$Context.FileCount++}
     'SUBPROJECT' {$Context.SubprojectCount++}
     'REPOSITORY' {$Context.RepositoryCount++}
+  }
+  Write-Host ('DOVIA|RAIL_AUTOPILOT|VEHICLE='+$ordinal+'|ASPECT='+$signals.aspect+
+    '|STAGES='+$signals.stage_count+'|HEAD='+$signals.head_sha256+'|RELEASE=HOLD')
+  if($signals.aspect -ceq 'AMBER'){
+    Write-Host ('DOVIA|SIGNAL_BOT|AMBER|VEHICLE='+$ordinal+
+      '|STAGE=INPUT|RULE=UPSTREAM_HOLD|EXPECTED=INDEPENDENT_REVIEW|ACTION=KEEP_EVIDENCE_NO_PROMOTION')
   }
   Write-Host ('EXCITE|COREAO|'+$Kind+'|'+$ordinal+'|'+$Status+
               '|QCODE_SHA256='+$codeSha+'|RELEASE=HOLD')
@@ -147,7 +301,16 @@ function Assert-ExciteEvidence([object]$Context) {
     $lam=ConvertFrom-Json -InputObject $tables['qlam'][$i] -AsHashtable -Depth 9
     $graph=ConvertFrom-Json -InputObject $tables['qgraph'][$i] -AsHashtable -Depth 9
     $code=ConvertFrom-Json -InputObject $tables['qcode'][$i] -AsHashtable -Depth 9
+    $signal=ConvertFrom-Json -InputObject $tables['signal'][$i] -AsHashtable -Depth 9
     $number=$i+1
+    # Independent replay of the frozen central signal rules for this vehicle.
+    $expectedSignal=New-DoviaVehicleSignals -Chart $chart -Lam $lam -Graph $graph -Code $code `
+      -ChartJson $tables['qchart'][$i] -LamJson $tables['qlam'][$i] `
+      -GraphJson $tables['qgraph'][$i] -CodeJson $tables['qcode'][$i]
+    if((ConvertTo-ExciteJson $expectedSignal) -cne $tables['signal'][$i]){
+      Stop-DoviaSignal -Rule 'SIGNAL_RECEIPT_OR_PROVENANCE_TAMPER' -Stage 'QCODE' `
+        -Ordinal $number -Expected 'EXACT_RECOMPUTED_SIGNAL_STREAM'
+    }
     if($chart.schema -cne 'EXCITE.QCHART.1' -or
        $lam.schema -cne 'EXCITE.QLAM.1' -or
        $graph.schema -cne 'EXCITE.QGRAPH.1' -or
@@ -174,15 +337,21 @@ function Assert-ExciteEvidence([object]$Context) {
        $graph.directed_edges[1] -cne 'QLAM>QGRAPH' -or
        $code.kind -cne $chart.kind -or $code.status -cne $chart.status -or
        $code.release -cne 'HOLD') {
+      Write-Host ('DOVIA|SIGNAL_BOT|RED|VEHICLE='+$number+
+        '|STAGE=QCHAIN|RULE=CHAIN_INTEGRITY|ACTION=HOLD_REVIEW_NO_AUTOFIX')
       throw ('EXCITE|HOLD|integrity|ordinal='+$number)
     }
     if(@($code.inverse_square_exact).Count -ne 3){
+      Write-Host ('DOVIA|SIGNAL_BOT|RED|VEHICLE='+$number+
+        '|STAGE=INVERSE_SQUARE|RULE=WITNESS_COUNT|ACTION=HOLD_REVIEW_NO_AUTOFIX')
       throw ('EXCITE|HOLD|inverse_square_count|ordinal='+$number)
     }
     for([int]$r=1;$r -le 3;$r++){
       $w=$code.inverse_square_exact[$r-1]
       if($w.radius -cne [string]$r -or $w.numerator -cne '1' -or
          $w.denominator -cne [string]($r*$r)){
+        Write-Host ('DOVIA|SIGNAL_BOT|RED|VEHICLE='+$number+
+          '|STAGE=INVERSE_SQUARE|RULE=RATIONAL_WITNESS|ACTION=HOLD_REVIEW_NO_AUTOFIX')
         throw ('EXCITE|HOLD|inverse_square|ordinal='+$number)
       }
     }

@@ -120,6 +120,7 @@ try{
   }
   Assert-SourceStable 'FILE_LAPS'
   $null=Assert-ExciteEvidence $excite
+  Write-Host ('DOVIA|RAIL_AUTOPILOT|CHECKPOINT=FILE_LAPS|VEHICLES='+$excite.Sequence+'|RULEBOOK=FROZEN|NO_OVERRIDES')
   $stages.Add([ordered]@{
     lane='FILE_LAPS'
     status=if($failedFiles.Count -eq 0){'PASS'}else{'HOLD'}
@@ -172,6 +173,8 @@ try{
   }
   $receipt=[ordered]@{
     protocol='NASCAR-KENTUCKY-001'
+    vehicle_signal_protocol='DOVIA.SIGNAL.1'
+    vehicle_signal_scope='PER_VEHICLE_NOT_CIRCUIT_SCHEDULER'
     workflow_sha=$env:GITHUB_SHA
     status=$status
     failed_phase=if($status -ceq 'PASS'){''}else{$phase}
