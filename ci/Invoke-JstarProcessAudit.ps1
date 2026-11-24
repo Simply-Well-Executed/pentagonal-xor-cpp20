@@ -143,11 +143,38 @@ try {
             }elseif($active.Contains($observedPid)){
                 'build_descendant'
             }else{'host_sample'}
+            # CIM can omit the image path of a short-lived descendant.
+            # Try an independent LIVE process API, but accept it only after
+            # confirming the same PID, creation time and executable filename.
+            # Never infer a binary location from process name or installed PATH.
             $observedPath=[string]$p.ExecutablePath
-            if($scope -ceq 'build_root' -and
-               [string]::IsNullOrWhiteSpace($observedPath)){
+            $pathSource=if([string]::IsNullOrWhiteSpace($observedPath)){
+                'UNVERIFIED'
+            }else{'CIM_PROCESS_EXECUTABLE_PATH'}
+            if($pathSource -ceq 'UNVERIFIED' -and
+               $scope -ceq 'build_descendant' -and
+               $null -ne $p.CreationDate){
+                try{
+                    $live=Get-Process -Id $observedPid -ErrorAction Stop
+                    $liveBirth=([DateTimeOffset]$live.StartTime).ToUniversalTime()
+                    $cimBirth=([DateTimeOffset]$p.CreationDate).ToUniversalTime()
+                    $candidate=[string]$live.Path
+                    if([Math]::Abs(($liveBirth-$cimBirth).TotalMilliseconds) -le 1000 -and
+                       [IO.Path]::IsPathFullyQualified($candidate) -and
+                       [IO.File]::Exists($candidate) -and
+                       [string]::Equals([IO.Path]::GetFileName($candidate),[string]$p.Name,
+                                        [StringComparison]::OrdinalIgnoreCase)){
+                        $observedPath=$candidate
+                        $pathSource='LIVE_PROCESS_PID_BIRTH_NAME_VERIFIED'
+                    }
+                }catch{
+                    # The process may already have exited; keep JSTAR HOLD.
+                }
+            }
+            if($scope -ceq 'build_root' -and $pathSource -ceq 'UNVERIFIED'){
                 # Exact binary was started via ProcessStartInfo by this script.
                 $observedPath=$exe
+                $pathSource='OWNED_PROCESS_START_INFO'
             }
             $observed.Add([pscustomobject]@{
                 pid=$observedPid
@@ -155,6 +182,7 @@ try {
                 name=[string]$p.Name
                 created_utc=$birth
                 executable_path=$observedPath
+                executable_path_source=$pathSource
                 command_line=[string]$p.CommandLine
                 scope=$scope
             })
