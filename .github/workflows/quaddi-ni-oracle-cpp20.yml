@@ -65,10 +65,189 @@ jobs:
           $ErrorActionPreference='Stop'
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
           $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
-          if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_not_nonnegative_integer'}
-          $value=[long]::Parse($text)
-          if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
-          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-NativeQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-native-evidence') -Power ([int]$value)
+          if($text -cnotmatch '^[0-9]+
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_qualification_failed'}
+      - name: SLIDINGTOOLONGA | exact arbitrary-power origin, bigint oracle and XHTML
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+          if($text -cnotmatch '^[0-9]+
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          if([string]::IsNullOrWhiteSpace($env:ORACLE_JDK_HOME)){
+            Write-Host 'QUADDI|JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED|NATIVE_QUALIFICATION_SEPARATE'
+          }else{
+            $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+            if($text -cnotmatch '^[0-9]+
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+){throw 'QUADDI|HOLD|seed_power_not_nonnegative_integer'}
+          $value=[Numerics.BigInteger]::Parse($text)
+          # Original floating-point baseline only validates 0..6.
+          # Beyond 6, exact SLIDINGTOOLONGA evaluates the requested power.
+          $baseline=if($value -gt 6){0}else{[int]$value}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-NativeQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-native-evidence') -Power $baseline
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_qualification_failed'}
+      - name: Oracle Java status explicit | exact vendor/version or HOLD
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          if([string]::IsNullOrWhiteSpace($env:ORACLE_JDK_HOME)){
+            Write-Host 'QUADDI|JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED|NATIVE_QUALIFICATION_SEPARATE'
+          }else{
+            $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+            if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_invalid'}
+            $value=[long]::Parse($text)
+            if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
+            & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power ([int]$value)
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+){throw 'SLIDINGTOOLONGA|HOLD|nonnegative_power_required'}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-SlidingToolongAQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'slidingtoolonga-evidence') -Exponent $text -OracleJdkHome $env:ORACLE_JDK_HOME
+          if($LASTEXITCODE -ne 0){throw 'SLIDINGTOOLONGA|HOLD|exact_qualification_failed'}
+      - name: Oracle Java status explicit | exact vendor/version or HOLD
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          if([string]::IsNullOrWhiteSpace($env:ORACLE_JDK_HOME)){
+            Write-Host 'QUADDI|JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED|NATIVE_QUALIFICATION_SEPARATE'
+          }else{
+            $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+            if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_invalid'}
+            $value=[long]::Parse($text)
+            if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
+            & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power ([int]$value)
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+){throw 'QUADDI|HOLD|seed_power_not_nonnegative_integer'}
+          $value=[Numerics.BigInteger]::Parse($text)
+          # Original floating-point baseline only validates 0..6.
+          # Beyond 6, exact SLIDINGTOOLONGA evaluates the requested power.
+          $baseline=if($value -gt 6){0}else{[int]$value}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-NativeQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-native-evidence') -Power $baseline
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_qualification_failed'}
+      - name: Oracle Java status explicit | exact vendor/version or HOLD
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          if([string]::IsNullOrWhiteSpace($env:ORACLE_JDK_HOME)){
+            Write-Host 'QUADDI|JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED|NATIVE_QUALIFICATION_SEPARATE'
+          }else{
+            $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+            if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_invalid'}
+            $value=[long]::Parse($text)
+            if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
+            & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power ([int]$value)
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+){throw 'QUADDI|HOLD|seed_power_invalid'}
+            $value=[Numerics.BigInteger]::Parse($text)
+            $baseline=if($value -gt 6){0}else{[int]$value}
+            & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power $baseline
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+){throw 'QUADDI|HOLD|seed_power_not_nonnegative_integer'}
+          $value=[Numerics.BigInteger]::Parse($text)
+          # Original floating-point baseline only validates 0..6.
+          # Beyond 6, exact SLIDINGTOOLONGA evaluates the requested power.
+          $baseline=if($value -gt 6){0}else{[int]$value}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-NativeQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-native-evidence') -Power $baseline
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_qualification_failed'}
+      - name: Oracle Java status explicit | exact vendor/version or HOLD
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          if([string]::IsNullOrWhiteSpace($env:ORACLE_JDK_HOME)){
+            Write-Host 'QUADDI|JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED|NATIVE_QUALIFICATION_SEPARATE'
+          }else{
+            $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+            if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_invalid'}
+            $value=[long]::Parse($text)
+            if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
+            & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power ([int]$value)
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+){throw 'SLIDINGTOOLONGA|HOLD|nonnegative_power_required'}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-SlidingToolongAQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'slidingtoolonga-evidence') -Exponent $text -OracleJdkHome $env:ORACLE_JDK_HOME
+          if($LASTEXITCODE -ne 0){throw 'SLIDINGTOOLONGA|HOLD|exact_qualification_failed'}
+      - name: Oracle Java status explicit | exact vendor/version or HOLD
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          if([string]::IsNullOrWhiteSpace($env:ORACLE_JDK_HOME)){
+            Write-Host 'QUADDI|JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED|NATIVE_QUALIFICATION_SEPARATE'
+          }else{
+            $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+            if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_invalid'}
+            $value=[long]::Parse($text)
+            if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
+            & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power ([int]$value)
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+){throw 'QUADDI|HOLD|seed_power_not_nonnegative_integer'}
+          $value=[Numerics.BigInteger]::Parse($text)
+          # Original floating-point baseline only validates 0..6.
+          # Beyond 6, exact SLIDINGTOOLONGA evaluates the requested power.
+          $baseline=if($value -gt 6){0}else{[int]$value}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-NativeQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-native-evidence') -Power $baseline
           if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_qualification_failed'}
       - name: Oracle Java status explicit | exact vendor/version or HOLD
         shell: pwsh

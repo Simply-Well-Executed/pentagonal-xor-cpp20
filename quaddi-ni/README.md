@@ -56,3 +56,21 @@ On parity, Invoke-Render.ps1 produces a **read-only, scriptless XHTML5** report 
 ## Power-68 example and numerical honesty
 
 Selecting power **68** is a valid *nonnegative-integer request*, but it does **not** imply the current finite-double engine can evaluate every default X value or determine a nearest prime degree exactly. For the default intercept -3, `(-3)^68` already exceeds the exact-integer range used by the prime-degree check. The application must report **HOLD** rather than approximate an unverified prime, truncate samples, or quietly alter the user's exponent. No such HOLD changes the mathematical domain of the underlying polynomial.
+
+## SLIDINGTOOLONGA-001 exact seed, 646/647 and inverse-window graph
+
+The new **SLIDINGTOOLONGA** engine takes the user's nonnegative decimal exponent text without the old 32-bit exponent cap and computes the seed **exactly at X=0**, using independent dynamic base-1e9 limbs in native C++20 and BigInteger in Oracle Java 27.0.1.1. Both preserve the independent NAME, SLOPE and INTERCEPT source records. The output is a signed exact integer mantissa with an exact decimal scale. For all three default sources the intercept is exactly -3, so their origin seeds happen to coincide; this is *not* identity merging or a claim about their distinct slopes.
+
+The DIAERY-derived workflow runs native exact qualification for power **0, 646, 647, and the selected user exponent**. A separate PowerShell/.NET BigInteger oracle recalculates every exact result, including full mantissa and scale. If the exact Oracle JDK is provisioned, C++20 and Java must also produce byte-identical source witnesses, or the gate fails. With Oracle absent, Java parity remains **HOLD**, never PASS. All experiments retain `RELEASE=HOLD`.
+
+The signed origin result of `(-3)^647` has **309 decimal digits**, and is not mathematically infinite. The older binary-double implementation cannot represent it. For selected powers above 6, the old floating-point six-state gate remains a **power-0 baseline**, while the exact SLIDINGTOOLONGA gate evaluates the requested exponent; this is explicitly disclosed, not an automatic substitution or inherited pass.
+
+`Invoke-SlidingToolongARender.ps1` produces scriptless XHTML with native fold/unfold pages, exact raw mantissa, one page-indexed ruler register, labeled Cartesian origin (0,0), and a fixed **[-2,2] X and [-2,2] Y** viewing window with equal units (80 SVG units per mathematical unit). It reconstructs visible segments by approximate inverse-power sampling, avoiding direct floating-point overflow. This is a **visual approximation only**, not an arbitrary-precision graph sample, and clipping or viewport constraints are *not mathematical restrictions*. It does not apply logarithmic axes, hidden fitting, or normalization.
+
+**Boundary:** exact large-exponent polynomial seeds at arbitrary X, nearest-prime certification for a very large origin, and full six-state complex results are **not yet verified**. The exact origin is authoritative, while the prime-root-dependent QuadDi states remain symbolic/HOLD. This must not be described as proof of infinite computing, physical gamma emission, or that conventional Euler's constant is invalid. Inverse-square `1/r^2` is a distinct rule with a singularity at `r=0`, not a substitute for `(mx+b)^p`.
+
+Manually run the exact qualification on Windows with:
+
+    pwsh -NoLogo -NoProfile -NonInteractive -File quaddi-ni/Invoke-SlidingToolongAQualification.ps1 -RepositoryRoot ROOT -EvidenceDirectory OUTSIDE_REPO -Exponent 647
+
+The separate optional `-OracleJdkHome` may be provided to require tandem Oracle parity.
