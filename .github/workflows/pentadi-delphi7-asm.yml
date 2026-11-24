@@ -78,6 +78,14 @@ jobs:
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pentadi-root.txt'))
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-HulaoChaos255.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'hulao-chaos255-evidence') -Rounds 255
           if($LASTEXITCODE -ne 0){throw 'HULAO_CHAOS|FAIL|255_models_or_recovery'}
+      - name: Hulao Gate | XHTML 1.0 Strict 256-lap visual and Markdown embed
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pentadi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-HulaoVisual256Gate.ps1') -RepositoryRoot $root
+          if($LASTEXITCODE -ne 0){throw 'HULAO_VISUAL|FAIL|xhtml_svg_markdown_gate'}
       - name: PentaDi provenance and release gate
         if: always()
         shell: pwsh
