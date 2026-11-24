@@ -9,6 +9,7 @@
 #include "../shared/fudgelessslippingtoolong_12d.hpp"
 #include "../shared/fudgelessslippingtoolong_100d.hpp"
 #include "../shared/fudgelessslippingtoolong_width_matrix_001.hpp"
+#include "../shared/fudgelessslippingtoolong_micro_widths_001.hpp"
 #include <stdio.h>
 using namespace swe::slipslidingtoolong;
 namespace fmt=swe::constant_formats_register_001;
@@ -125,6 +126,14 @@ namespace prec=swe::precision_rounding_policy_001;
 static_assert(precision_rounding_001(),"PRECISION-ROUNDING-001: exact round-first / nearest-ties-odd witness failed");
 
 int main(){
+ const auto micro=swe::fudgelessslippingtoolong_micro_widths_001::run();
+ if(!micro.valid||micro.widths!=16u||
+    micro.stage_projections!=1600u||micro.accepted!=89u||
+    micro.rejected!=1511u||micro.routes!=256u||
+    micro.route_passes!=136u||micro.route_rejections!=120u||
+    micro.nobit_zero_controls!=1u||micro.nop_stages!=100u||
+    !micro.core_unchanged||!micro.roundtrip_100d||
+    !micro.limb64_parity)return 1;
  const auto width_matrix=swe::fudgelessslippingtoolong_width_matrix_001::run();
  if(!width_matrix.valid||width_matrix.widths!=10u||
     width_matrix.routes!=100u||width_matrix.checked_stages!=100u||
@@ -153,5 +162,6 @@ int main(){
  printf("FUDGELESSSLIPPINGTOOLONG|1D_TO_100D_TO_1D=PASS|UP=99|DOWN=99|BITS_100D=2984|LIMBS=96|ROCKET_LEFT=CAR_RIGHT|DIRECT_HOP_WITNESS=PASS|OPERATORS_12_REPLAY_2=ORDERED_METADATA_ONLY|DOMAIN_HOLDS=8|NO_SPEED_CLAIM|RELEASE=HOLD\n");
  printf("OPERATOR_REPLAY|BIDI=METADATA|TRIDI=METADATA|PIDI=SOURCE_REFERENCE|PIPI=SYMBOLIC|REPLAY_PASSES=2|TOKENS_PER_PASS=12|NEEDS_DOMAIN=8|RELEASE=HOLD\n");
  printf("SOVIETA_WIDTHS|32_64_128_192_224_256_384_448_480_512=PASS|PAIR_ROUTES=100|STAGE_PROJECTIONS=1000|LOSSLESS=89|LOSS_REJECTED=911|512_TO_128=PASS_OR_REJECT_LOSS|512_BASELINE=PASS|LIMB32_LIMB64_PARITY=PASS|100D_ROUNDTRIP=PASS|NO_SPEED_CLAIM|RELEASE=HOLD\n");
+ printf("SOVIETA_MICRO_WIDTHS|NOBIT_1_2_4_8_16_32_64_128_192_224_256_384_448_480_512=PASS|NUMERIC_WIDTHS=16|ROUTES=256|ROUTE_PASS=136|ROUTE_REJECT_LOSS=120|STAGE_PROJECTIONS=1600|LOSSLESS=89|REJECT_LOSS=1511|NOP_IDENTITY=100|LIMB32_LIMB64=PASS|100D_ROUNDTRIP=PASS|NO_SPEED_CLAIM|RELEASE=HOLD\n");
  return 0;
 }
