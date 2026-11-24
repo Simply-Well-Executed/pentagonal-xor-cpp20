@@ -146,11 +146,11 @@ if($DelphiDcc32Path -or $DelphiDcc32Sha256){
    throw 'PENTADI|HOLD|Delphi7_disassembly_not_generated'
   }
   $header=[string[]]@(
-   '; SPDX-License-Identifier: 0BSD',
+   '; PROPRIETARY_COMPILER_DERIVED_DISASSEMBLY_NOT_0BSD',
    '; Produced by dumpbin DISASM of verified Delphi7 executable',
    '; NOT assembler source emitted directly by dcc32; no EXE delivered'
   )
-  [IO.File]::WriteAllLines($delphiAsm,($header+$disassembly),[Text.Encoding]::ASCII)
+  [IO.File]::WriteAllLines($delphiAsm,[string[]]($header+$disassembly),[Text.Encoding]::ASCII)
   $delphiRan=$true
  }finally{
   Pop-Location
@@ -158,7 +158,7 @@ if($DelphiDcc32Path -or $DelphiDcc32Sha256){
    Remove-Item -LiteralPath $outputExe -Force
   }
  }
- Write-Host 'PENTADI|DELPHI7=PASS|VERIFIED_LICENSED_BINARY=HASH_PINNED|PIPE=PASS|ASSEMBLY=DUMPBIN_DISASSEMBLY|EXE_DELETED=PASS|RELEASE=HOLD'
+ Write-Host 'PENTADI|DELPHI7=PASS|USER_PROVISIONED_DCC32=HASH_PINNED|PIPE=PASS|ASSEMBLY=DUMPBIN_DISASSEMBLY|EXE_DELETED=PASS|RELEASE=HOLD'
 }else{
  Write-Host 'PENTADI|DELPHI7=HOLD_LICENSED_DCC32_UNAVAILABLE|NO_UNVERIFIED_DOWNLOAD|NOT_TESTED|RELEASE=HOLD'
  if($RequireDelphiCompiler){
@@ -173,5 +173,5 @@ for($i=0;$i -lt $sources.Count;$i++){
 }
 $asmHash=(Get-FileHash -LiteralPath $listing -Algorithm SHA256).Hash.ToLowerInvariant()
 $inputHash=(Get-FileHash -LiteralPath $tsv -Algorithm SHA256).Hash.ToLowerInvariant()
-Write-Host ('PENTADI|FIVE_LANE_PREFLIGHT=PASS|C11_ASM_SHA256='+$asmHash+'|PIPE_SHA256='+$inputHash+'|DELPHI7='+
- (if($delphiRan){'VERIFIED'}else{'HOLD'})+'|NO_EXE_DELIVERABLE|RELEASE=HOLD')
+$delphiStatus=if($delphiRan){'VERIFIED'}else{'HOLD'}
+Write-Host ('PENTADI|FIVE_LANE_PREFLIGHT=PASS|C11_ASM_SHA256='+$asmHash+'|PIPE_SHA256='+$inputHash+'|DELPHI7='+$delphiStatus+'|NO_EXE_DELIVERABLE|RELEASE=HOLD')
