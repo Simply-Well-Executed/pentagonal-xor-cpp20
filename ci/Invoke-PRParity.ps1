@@ -40,6 +40,7 @@ $required=[ordered]@{
  'EXCITE_REPOSITORY'=@('.github/workflows/EXCITE.yml','ci/Invoke-RepositoryCircuit.ps1','ci/Excite-Coreao.ps1')
  'DOVIA_NATIVE'=@('.github/workflows/DOVIA.yml','ci/excited-native/CMakeLists.txt')
  'QUADDI_NATIVE'=@('.github/workflows/quaddi-ni-oracle-cpp20.yml','quaddi-ni/QuadDiNI.cpp')
+ 'HEXADI_CORE_PWSH_CSHARP'=@('.github/workflows/HEXA-DI.yml','ci/Install-HexaDiPowerShell.ps1','ci/Invoke-HexaDiQualification.ps1','pentadi/Invoke-PentaDiQualification.ps1','pentadi/PentaDiC11BranchRecords.reference.tsv')
  'MATCHB0XN9'=@('.github/workflows/MATCHB0Xn9.yml','ci/Invoke-Matchb0xn9Race.ps1')
  'FESTIVAL'=@('.github/workflows/MATCHB0Xn9-Festival.yml','ci/Invoke-Matchb0xn9Festival256.ps1')
 }
