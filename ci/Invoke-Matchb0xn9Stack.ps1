@@ -286,7 +286,7 @@ foreach($pr in $chain){
 }
 if($lineageDrift.Count -ne 0){
   throw ('MATCHB0Xn9|HOLD|STACK_ANCESTRY_REVIEW_REQUIRED|'+
-         [string]::Join(';',@($lineageDrift.ToArray()))+
+         [string]::Join(';',@($lineageDrift))+
          '|NO_UNATTENDED_BRANCH_MERGE')
 }
 if($holds.Count -ne 0 -or $manifest.Count -ne $chain.Count){
