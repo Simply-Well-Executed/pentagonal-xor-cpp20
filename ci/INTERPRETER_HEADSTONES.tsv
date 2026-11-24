@@ -1,0 +1,13 @@
+family	runtime	publisher_or_author	version	official_source	download_reference	license_expression	package_sha256	provisioning_status
+powershell	PowerShell Core	Microsoft and PowerShell contributors	7.7.0	https://github.com/PowerShell/PowerShell	https://github.com/PowerShell/PowerShell/releases/tag/v7.7.0	MIT	7c74e03b20a75b59715847439d046a6214b1863ee79b187872980f139bb4a05f	VERIFIED_RELEASE_NOT_LAB_INSTALL
+r	R interpreter	R Core Team and R Foundation	4.6.2	https://www.r-project.org/	https://cran.r-project.org/bin/windows/base/	GPL-2.0-only OR GPL-3.0-only	LAB_SUPPLIED_REQUIRED	NOT_BUNDLED_REVIEW
+shell	POSIX shell implementation	IMPLEMENTATION_DEPENDENT	PIN_REQUIRED	IMPLEMENTATION_DEPENDENT	LOCAL_ONLY_NOT_PROVISIONED	NEEDS_REVIEW	LAB_SUPPLIED_REQUIRED	NOT_APPROVED
+lua3	Lua 3 historical interpreter	Lua project contributors	3.2.2	https://www.lua.org/	https://www.lua.org/ftp/	VERIFY_HISTORICAL_DISTRIBUTION	LAB_SUPPLIED_REQUIRED	UNSUPPORTED_LEGACY_HOLD
+python2	CPython 2 historical interpreter	Python Software Foundation and contributors	2.7.18	https://www.python.org/	https://www.python.org/downloads/release/python-2718/	VERIFY_RELEASE_NOTICES	LAB_SUPPLIED_REQUIRED	UNSUPPORTED_LEGACY_HOLD
+python3	CPython 3 interpreter	Python Software Foundation and contributors	PIN_REQUIRED	https://www.python.org/	https://www.python.org/downloads/	VERIFY_RELEASE_NOTICES	LAB_SUPPLIED_REQUIRED	REVIEW
+python_auto	Unversioned Python script	UNKNOWN	UNRESOLVED	UNRESOLVED	NOT_PERMITTED_USE_DOT_PY2_OR_DOT_PY3	NEEDS_REVIEW	UNVERIFIED	HOLD
+perl	Perl interpreter	Perl project contributors	PIN_REQUIRED	https://www.perl.org/	https://www.perl.org/get.html	VERIFY_ARTISTIC_GPL_ALTERNATIVES	LAB_SUPPLIED_REQUIRED	REVIEW
+php	PHP interpreter	PHP project contributors	PIN_REQUIRED	https://www.php.net/	https://www.php.net/downloads.php	VERIFY_RELEASE_NOTICES	LAB_SUPPLIED_REQUIRED	REVIEW
+ruby	Ruby interpreter	Ruby project contributors	PIN_REQUIRED	https://www.ruby-lang.org/	https://www.ruby-lang.org/en/downloads/	VERIFY_RELEASE_NOTICES	LAB_SUPPLIED_REQUIRED	REVIEW
+tcl	Tcl interpreter	Tcl project contributors	PIN_REQUIRED	https://www.tcl-lang.org/	https://www.tcl-lang.org/software/tcltk/	VERIFY_RELEASE_NOTICES	LAB_SUPPLIED_REQUIRED	REVIEW
+node	Node and npm	OpenJS Foundation and Node.js contributors	SELF_EXCLUDE	https://nodejs.org/	NO_DOWNLOAD_NODE_NPM_SELF_EXCLUDE	NOT_APPROVED	NOT_APPLICABLE	SELF_EXCLUDE

@@ -40,6 +40,7 @@ $required=[ordered]@{
  'EXCITE_REPOSITORY'=@('.github/workflows/EXCITE.yml','ci/Invoke-RepositoryCircuit.ps1','ci/Excite-Coreao.ps1')
  'DOVIA_NATIVE'=@('.github/workflows/DOVIA.yml','ci/excited-native/CMakeLists.txt')
  'QUADDI_NATIVE'=@('.github/workflows/quaddi-ni-oracle-cpp20.yml','quaddi-ni/QuadDiNI.cpp')
+ 'INTERPRETER_AIRGAP_HEADSTONES'=@('ci/Invoke-InterpreterCustodyAudit.ps1','ci/Test-InterpreterCustodyAudit.ps1','ci/INTERPRETER_HEADSTONES.tsv','docs/INTERPRETER_AIRGAP_HEADSTONES.md','hendecadi/HenDecaDi.R')
  'HEXADI_CORE_PWSH_CSHARP'=@('.github/workflows/HEXA-DI.yml','ci/Install-HexaDiPowerShell.ps1','ci/Invoke-HexaDiQualification.ps1','pentadi/Invoke-PentaDiQualification.ps1','pentadi/PentaDiC11BranchRecords.reference.tsv')
  'MATCHB0XN9'=@('.github/workflows/MATCHB0Xn9.yml','ci/Invoke-Matchb0xn9Race.ps1')
  'FESTIVAL'=@('.github/workflows/MATCHB0Xn9-Festival.yml','ci/Invoke-Matchb0xn9Festival256.ps1')
@@ -90,6 +91,18 @@ Audit 'POWERSHELL_SYNTAX' {
    throw ('invalid_powershell|'+[IO.Path]::GetRelativePath($root,$script.FullName))
   }
  }
+}
+Audit 'INTERPRETER_HEADSTONE_NEGATIVE_CANARIES' {
+ $test=Join-Path $root 'ci/Test-InterpreterCustodyAudit.ps1'
+ if(-not [IO.File]::Exists($test)){throw 'HEADSTONE_selftest_missing'}
+ & pwsh -NoLogo -NoProfile -NonInteractive -File $test -RepositoryRoot $root -EvidenceDirectory (Join-Path $out 'interpreter-selftest')
+ if($LASTEXITCODE -ne 0){throw 'HEADSTONE_negative_controls_failed'}
+}
+Audit 'INTERPRETER_AIRGAP_STATIC_CUSTODY' {
+ $gate=Join-Path $root 'ci/Invoke-InterpreterCustodyAudit.ps1'
+ if(-not [IO.File]::Exists($gate)){throw 'HEADSTONE_audit_missing'}
+ & pwsh -NoLogo -NoProfile -NonInteractive -File $gate -RepositoryRoot $root -EvidenceDirectory (Join-Path $out 'interpreter-headstones') -FailOnHold
+ if($LASTEXITCODE -ne 0){throw 'HEADSTONE_legacy_interpreted_sources_not_all_offline'}
 }
 # All build outputs are outside source custody. Native Release MSVC uses
 # default /O2; no Debug, /Od or -O0 configuration is requested.
