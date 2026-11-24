@@ -100,8 +100,15 @@ foreach($f in $originalFiles){
 }
 Audit 'ROOT_MSVC_CXX20_RELEASE_BUILD' {
  $build=Join-Path $out 'root-msvc'
- & cmake -S $root -B $build -G 'Visual Studio 17 2022' -A x64 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF
+ & cmake -S $root -B $build -A x64 -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DCMAKE_CXX_EXTENSIONS=OFF
  if($LASTEXITCODE -ne 0){throw 'CMake_configure_failed'}
+ $cache=Join-Path $build 'CMakeCache.txt'
+ if(-not [IO.File]::Exists($cache)){throw 'CMAKE_CACHE_MISSING'}
+ $flags=[IO.File]::ReadAllText($cache,$utf8)
+ if($flags -cnotmatch '(?m)^CMAKE_CXX_FLAGS_RELEASE:STRING=.*\/O2' -or
+    $flags -cmatch '(?m)^CMAKE_CXX_FLAGS_RELEASE:STRING=.*(\/Od|-O0)'){
+  throw 'MSVC_RELEASE_OPTIMIZATION_NOT_O2'
+ }
  & cmake --build $build --config Release --parallel 1
  if($LASTEXITCODE -ne 0){throw 'MSVC_CXX20_Release_build_failed'}
  & ctest --test-dir $build -C Release --output-on-failure
@@ -127,8 +134,15 @@ Audit 'DOVIA_NATIVE_CTEST' {
  $src=Join-Path $root 'ci/excited-native'
  if(-not [IO.File]::Exists((Join-Path $src 'CMakeLists.txt'))){throw 'DOVIA_native_project_unavailable'}
  $build=Join-Path $out 'dovia-msvc'
- & cmake -S $src -B $build -G 'Visual Studio 17 2022' -A x64 -DBUILD_TESTING=ON
+ & cmake -S $src -B $build -A x64 -DBUILD_TESTING=ON
  if($LASTEXITCODE -ne 0){throw 'DOVIA_CMake_configure_failed'}
+ $cache=Join-Path $build 'CMakeCache.txt'
+ if(-not [IO.File]::Exists($cache)){throw 'CMAKE_CACHE_MISSING'}
+ $flags=[IO.File]::ReadAllText($cache,$utf8)
+ if($flags -cnotmatch '(?m)^CMAKE_CXX_FLAGS_RELEASE:STRING=.*\/O2' -or
+    $flags -cmatch '(?m)^CMAKE_CXX_FLAGS_RELEASE:STRING=.*(\/Od|-O0)'){
+  throw 'MSVC_RELEASE_OPTIMIZATION_NOT_O2'
+ }
  & cmake --build $build --config Release --parallel 1
  if($LASTEXITCODE -ne 0){throw 'DOVIA_native_build_failed'}
  & ctest --test-dir $build -C Release --output-on-failure
