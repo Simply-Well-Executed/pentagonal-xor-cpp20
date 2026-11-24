@@ -1,0 +1,87 @@
+# SPDX-License-Identifier: 0BSD
+# HEXADI-001: fifth native PentaDi and sixth pinned PowerShell + C#.
+name: HEXADI | PentaDi plus pinned PowerShell Core CSharp
+on:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hexadi-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  hexadi:
+    name: Fifth C11 PentaDi and sixth PowerShell7 embedded CSharp
+    runs-on: windows-2025
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: Download exact SHA source with native PowerShell
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:GITHUB_SHA -cnotmatch '^[a-f0-9]{40}$'){
+            throw 'HEXADI|HOLD|unexpected_runner_or_source'
+          }
+          $zip=Join-Path $env:RUNNER_TEMP 'hexadi-pinned-source.zip'
+          $stage=Join-Path $env:RUNNER_TEMP 'hexadi-source'
+          $uri='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:GITHUB_SHA
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-hexadi-exact-source'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $stage
+          $roots=@(Get-ChildItem -LiteralPath $stage -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Install-HexaDiPowerShell.ps1')) -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Invoke-HexaDiQualification.ps1')) -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'pentadi/Invoke-PentaDiQualification.ps1'))){
+            throw 'HEXADI|HOLD|incomplete_five_six_lane_source'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'hexadi-source-root.txt'),$roots[0].FullName)
+      - name: Verify official PowerShell 7.7.0 stable archive from GitHub
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'hexadi-source-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Install-HexaDiPowerShell.ps1') -DestinationDirectory (Join-Path $env:RUNNER_TEMP 'hexadi-pwsh')
+          if($LASTEXITCODE -ne 0){throw 'HEXADI|HOLD|official_powershell_digest_or_version'}
+      - name: Run embedded CSharp sixth lane with 255 witnesses
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'hexadi-source-root.txt'))
+          $pwsh=Join-Path $env:RUNNER_TEMP 'hexadi-pwsh/extracted/pwsh.exe'
+          if(-not [IO.File]::Exists($pwsh)){throw 'HEXADI|HOLD|pinned_pwsh_missing'}
+          & $pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-HexaDiQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'hexadi-sixth-evidence')
+          if($LASTEXITCODE -ne 0){throw 'HEXADI|HOLD|embedded_CSharp_or_witness_failed'}
+      - name: Qualify preserved fifth PentaDi native lane
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'hexadi-source-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-PentaDiQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'hexadi-fifth-evidence')
+          if($LASTEXITCODE -ne 0){throw 'HEXADI|HOLD|PentaDi_native_fifth_failed'}
+      - name: Preserve human approval and custody safeguards
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'HEXADI|SIXTH=POWERSHELL7_7_0_EMBEDDED_CSHARP'
+          Write-Host 'HEXADI|FIFTH=PENTADI_NATIVE|DELPHI7=OPTIONAL_NOT_ASSUMED'
+          Write-Host 'HEXADI|ATMOSECONDS=MODEL_NOT_ELAPSED_TIME'
+          Write-Host 'HEXADI|NO_AUTO_MERGE|NO_RELEASE|RELEASE=HOLD'
