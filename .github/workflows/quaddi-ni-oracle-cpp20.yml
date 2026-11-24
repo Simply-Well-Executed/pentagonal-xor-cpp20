@@ -12,6 +12,10 @@ on:
     paths:
       - 'quaddi-ni/**'
       - 'shared/**'
+      - 'tests/minza_*'
+      - 'ci/Invoke-MinzaTopologyQualification.ps1'
+      - 'docs/MINZA_NINZA_PING_TOPOLOGY_DESIGN.md'
+      - 'CMakeLists.txt'
       - '.github/workflows/quaddi-ni-oracle-cpp20.yml'
       - '.github/workflows/pentadi-delphi7-asm.yml'
       - 'pentadi/**'
@@ -60,6 +64,22 @@ jobs:
             throw 'QUADDI|HOLD|incomplete_exact_source'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'),$roots[0].FullName)
+      - name: Atomix HEAD AIRGAP TAIL on exact source
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-AtomixHalfPhiping.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'minza-atomix-evidence')
+          if($LASTEXITCODE -ne 0){throw 'MINZA_TOPOLOGY|HOLD|atomix_failed'}
+      - name: MINZA topology and byte-lane native C++20 tests
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-MinzaTopologyQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'minza-topology-evidence')
+          if($LASTEXITCODE -ne 0){throw 'MINZA_TOPOLOGY|HOLD|native_tests_failed'}
       - name: Provision Oracle JDK 27.0.1.1 from official pinned archive
         shell: pwsh
         run: |
