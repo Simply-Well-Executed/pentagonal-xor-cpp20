@@ -52,6 +52,11 @@ try {
  $client=[Net.Sockets.Socket]::new([Net.Sockets.AddressFamily]::InterNetwork,
                                     [Net.Sockets.SocketType]::Stream,
                                     [Net.Sockets.ProtocolType]::Tcp)
+ if($client.AddressFamily -ne [Net.Sockets.AddressFamily]::InterNetwork -or
+    $client.SocketType -ne [Net.Sockets.SocketType]::Stream -or
+    $client.ProtocolType -ne [Net.Sockets.ProtocolType]::Tcp){
+  throw 'PENTAPI_TCP|FAIL|non_tcp_or_non_ipv4_socket'
+ }
  # Set IP TTL BEFORE connection, not after successful TCP connect.
  $client.Ttl=[short]$InitialIPv4Ttl
  if([int]$client.Ttl -ne $InitialIPv4Ttl){
