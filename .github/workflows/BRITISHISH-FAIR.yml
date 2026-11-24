@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: 0BSD
+# BRITISH = FAIR
+name: BRITISHISH FAIR | Trihorn 255 synthetic adversarial ranking trials
+on:
+  push:
+    branches-ignore:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: britishish-fair-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  fairness:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - name: Fetch exact commit source with PowerShell, no Node actions
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_SHA -cnotmatch '^[a-f0-9]{40}$'){
+             throw 'BRITISHISH|HOLD|INVALID_SOURCE_CONTEXT'
+          }
+          $zip=Join-Path $env:RUNNER_TEMP 'britishish-source.zip'
+          $stage=Join-Path $env:RUNNER_TEMP 'britishish-source'
+          Invoke-WebRequest -Uri ('https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:GITHUB_SHA) -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-britishish-fair'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $stage
+          $roots=@(Get-ChildItem -LiteralPath $stage -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Invoke-BritishFairness.ps1'))){
+             throw 'BRITISHISH|HOLD|SOURCE_MISSING'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'britishish-root.txt'),$roots[0].FullName)
+      - name: Validate three equality lines and disclosed ranking intervention
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'britishish-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-BritishFairness.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'britishish-evidence') -SourceSha $env:GITHUB_SHA
+          if($LASTEXITCODE -ne 0){throw 'BRITISHISH|HOLD|TRIHORN_FAILED'}
+      - name: Preserve release hold
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'BRITISHISH|THREE_EQUALITY_LINES|NO_HISTORICAL_REWRITE|NO_AUTO_MERGE|RELEASE=HOLD'
