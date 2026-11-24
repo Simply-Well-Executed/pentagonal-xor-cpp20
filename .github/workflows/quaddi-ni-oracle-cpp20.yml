@@ -13,6 +13,8 @@ on:
       - 'quaddi-ni/**'
       - 'shared/**'
       - '.github/workflows/quaddi-ni-oracle-cpp20.yml'
+      - '.github/workflows/pentadi-delphi7-asm.yml'
+      - 'pentadi/**'
 permissions:
   contents: read
 concurrency:
@@ -145,3 +147,11 @@ jobs:
         run: |
           Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
           Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'
+
+  pentadi-fifth-lane:
+    name: PentaDi fifth lane only after full QuadDi success
+    needs: quaddi-concurrence
+    if: ${{ needs.quaddi-concurrence.result == 'success' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/pentadi-delphi7-asm.yml
