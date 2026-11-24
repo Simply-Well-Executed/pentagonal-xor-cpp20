@@ -8,23 +8,8 @@ on:
     branches:
       - feat/fresh-artistic-eye-chain-20261120
   workflow_dispatch:
-  pull_request:
-    branches:
-      - main
-    paths:
-      - .github/workflows/openbsd-serial-coreao.yml
-      - ci/OPENBSD_SERIAL_COREAO.tsv
-      - ci/Invoke-OpenBSDSerialCoreao.ps1
-      - ci/Test-OpenBSDSerialCoreao.ps1
-      - ci/OPENBSD_80_SOURCE_LOCK.tsv
-      - ci/OPENBSD_79_SOURCE_LOCK.tsv
-      - ci/OPENBSD_SERIAL_NATIVE_EVIDENCE.tsv
-      - ci/Test-OpenBSDNativeEvidence.ps1
-      - docs/OPENBSD_NATIVE_EVIDENCE_V1.md
-      - CMakeLists.txt
-      - include/**
-      - shared/**
-      - tests/std_free_portable_probe.cpp
+  # Checks preserves the PR path filter when calling this workflow.
+  workflow_call:
 
 permissions:
   contents: read

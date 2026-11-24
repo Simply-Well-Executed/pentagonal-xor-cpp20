@@ -5,9 +5,7 @@ name: Canonical LICENSES custody and zero-POSIX/GNU policy hold (PowerShell)
 # The previous pipeline is preserved in the commit history for forensic review.
 # An unapproved dependency is a HOLD, not a build-only exception.
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
   push:
     branches:
       - main
