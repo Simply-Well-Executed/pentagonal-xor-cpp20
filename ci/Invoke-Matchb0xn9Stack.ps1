@@ -28,11 +28,21 @@ $headers=@{
  'User-Agent'='swe-matchb0xn9-sha-pinned'
 }
 $baseUri='https://api.github.com/repos/'+$repo
-$open=@(Invoke-RestMethod -Uri ($baseUri+'/pulls?state=open&per_page=100') -Headers $headers)
+# Invoke-RestMethod can emit the JSON array as one pipeline object.
+# Explicitly enumerate its materialized collection; do not confuse an
+# entire PR array with one PR or silently skip stack participants.
+$response=Invoke-RestMethod -Uri ($baseUri+'/pulls?state=open&per_page=100') -Headers $headers
+$open=[Collections.Generic.List[object]]::new()
+foreach($item in $response){
+  if($null -eq $item -or $null -eq $item.number){throw 'MATCHB0Xn9|HOLD|invalid_pr_list_shape'}
+  $open.Add($item)
+}
 if($open.Count -eq 0 -or $open.Count -ge 100){
   throw 'MATCHB0Xn9|HOLD|open_pr_inventory_missing_or_paginated'
 }
-$target=@($open|Where-Object {$_.number -eq 95})
+$target=@($open.ToArray()|Where-Object {$_.number -eq 95})
+Write-Host ('MATCHB0Xn9|PR_INVENTORY|OPEN_COUNT='+$open.Count+
+  '|PR95_CANDIDATES='+$target.Count+'|RELEASE=HOLD')
 if($target.Count -ne 1 -or $target[0].head.sha -cne $ExpectedTopSha){
   throw 'MATCHB0Xn9|HOLD|PR95_head_or_inventory_mismatch'
 }
@@ -144,7 +154,7 @@ foreach($pr in $chain){
         if($LASTEXITCODE -ne 0){throw 'EXCITE_full_circuit_failed'}
         $receipt=Join-Path $evidence 'race-receipt.json'
         if(-not [IO.File]::Exists($receipt)){throw 'EXCITE_receipt_missing'}
-        $proof=ConvertFrom-Json -InputObject [IO.File]::ReadAllText($receipt,$utf8) -AsHashtable -Depth 9
+        $proof=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($receipt,$utf8)) -AsHashtable -Depth 9
         if($proof.status -cne 'PASS' -or $proof.excite_chain_audit -cne 'PASS' -or
            $proof.vehicle_signal_protocol -cne 'DOVIA.SIGNAL.3' -or
            $proof.vehicle_observer_count -ne 1 -or $proof.release -cne 'HOLD'){
