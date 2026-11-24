@@ -1,133 +1,117 @@
 # SPDX-License-Identifier: 0BSD
-# EXCITED-STAR-001: deterministic A* markdown, exact integer edge weights.
-# All input edges, heuristics, and canonical labels are fixed by source.
+# EXCITED-STAR-002: build/run C++20 A* plus SPT Finland verification, MSVC /O2.
+# Only source bootstrap contacts GitHub; this stage compiles offline.
 [CmdletBinding()]
 param(
   [Parameter(Mandatory=$true)][string]$RepositoryRoot,
   [Parameter(Mandatory=$true)][string]$OutputDirectory,
-  [Parameter(Mandatory=$true)][ValidatePattern('^[0-9a-f]{40}$')][string]$SourceSha
+  [Parameter(Mandatory=$true)][ValidatePattern('^[a-f0-9]{40}$')][string]$SourceSha
 )
 Set-StrictMode -Version 2.0
 $ErrorActionPreference='Stop'
+if(-not $IsWindows) {throw 'EXCITED|HOLD|Windows_required'}
 $root=[IO.Path]::GetFullPath($RepositoryRoot)
 $out=[IO.Path]::GetFullPath($OutputDirectory)
 & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Assert-ExternalEvidencePath.ps1') -RepositoryRoot $root -EvidencePath $out
 if($LASTEXITCODE -ne 0 -or [IO.Directory]::Exists($out)){
   throw 'EXCITED|HOLD|unsafe_or_existing_output'
 }
-foreach($path in @('ci/Invoke-RepositoryCircuit.ps1','ci/Excite-Coreao.ps1',
-                   '.github/workflows/EXCITE.yml',
-                   '.github/workflows/EXCITED.yml')){
-  if(-not [IO.File]::Exists((Join-Path $root $path))){
-    throw ('EXCITED|HOLD|missing_source|'+$path)
+$required=@(
+  'ci/Invoke-RepositoryCircuit.ps1',
+  'ci/Excite-Coreao.ps1',
+  'ci/excited-native/astar_raw.cpp',
+  'ci/excited-native/CMakeLists.txt',
+  '.github/workflows/EXCITE.yml',
+  '.github/workflows/EXCITED.yml'
+)
+foreach($relative in $required){
+  if(-not [IO.File]::Exists((Join-Path $root $relative))){
+    throw ('EXCITED|HOLD|missing_source|'+$relative)
   }
 }
+$code=Join-Path $root 'ci/excited-native/astar_raw.cpp'
+$sourceDigest=(Get-FileHash -LiteralPath $code -Algorithm SHA256).Hash.ToLowerInvariant()
 [void][IO.Directory]::CreateDirectory($out)
-$graph=[ordered]@{
-  Overview=@(@{to='Architecture';cost=2},@{to='Security';cost=4})
-  Architecture=@(@{to='Benchmarks';cost=3},@{to='Summary';cost=5})
-  Security=@(@{to='Summary';cost=2})
-  Benchmarks=@(@{to='Summary';cost=1})
-  Summary=@()
+$build=Join-Path $out 'build'
+$cmake=(Get-Command cmake -ErrorAction Stop).Source
+& $cmake -S (Join-Path $root 'ci/excited-native') -B $build -DBUILD_TESTING=ON
+if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|cmake_configure'}
+& $cmake --build $build --config Release --target swe_excited_astar --parallel 1
+if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|msvc_o2_build'}
+& ctest --test-dir $build -C Release --output-on-failure -R '^excited_(astar_exact_path|spt_finland_verifier)$'
+if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|astar_ctest'}
+$binary=''
+foreach($candidate in @(
+  (Join-Path $build 'Release/swe_excited_astar.exe'),
+  (Join-Path $build 'swe_excited_astar.exe')
+)){
+  if([IO.File]::Exists($candidate)){$binary=$candidate;break}
 }
-# Lower bounds to Summary; admissible and consistent for this graph.
-$heuristic=@{Overview=4;Architecture=3;Security=2;Benchmarks=1;Summary=0}
-$best=@{Overview=[long]0}
-$paths=@{Overview=@('Overview')}
-$frontier=[Collections.Generic.List[object]]::new()
-$frontier.Add([pscustomobject]@{node='Overview';g=[long]0;f=[long]4;path='Overview'})
-$visited=[Collections.Generic.List[string]]::new()
-$goal=$null
-while($frontier.Count -gt 0){
-  # Small fixed graph: stable, deterministic priority order (f, g, node).
-  $candidate=@($frontier | Sort-Object -Property f,g,node | Select-Object -First 1)[0]
-  $frontier.Remove($candidate) | Out-Null
-  $node=[string]$candidate.node
-  if($candidate.g -ne $best[$node]){continue}
-  if($node -ceq 'Summary'){$goal=$node;break}
-  $visited.Add($node)
-  foreach($edge in $graph[$node]){
-    $next=[string]$edge.to
-    $weight=[long]$edge.cost
-    if($weight -lt 0 -or $candidate.g -gt ([long]::MaxValue-$weight)){
-      throw 'EXCITED|HOLD|edge_cost_overflow'
-    }
-    $newCost=[long]$candidate.g+$weight
-    if(-not $best.ContainsKey($next) -or $newCost -lt $best[$next]){
-      $best[$next]=$newCost
-      $paths[$next]=@($paths[$node])+@($next)
-      $frontier.Add([pscustomobject]@{
-        node=$next
-        g=$newCost
-        f=$newCost+[long]$heuristic[$next]
-        path=([string]::Join('>',$paths[$next]))
-      })
-    }
+if(-not $binary){throw 'EXCITED|HOLD|native_executable_missing'}
+$start=[Diagnostics.ProcessStartInfo]::new($binary)
+$start.UseShellExecute=$false
+$start.RedirectStandardOutput=$true
+$start.RedirectStandardError=$true
+$start.StandardOutputEncoding=[Text.UTF8Encoding]::new($false,$true)
+$start.StandardErrorEncoding=[Text.UTF8Encoding]::new($false,$true)
+$process=[Diagnostics.Process]::Start($start)
+if($null -eq $process){throw 'EXCITED|HOLD|native_process_start'}
+try{
+  $markdown=$process.StandardOutput.ReadToEnd()
+  $stderr=$process.StandardError.ReadToEnd()
+  if(-not $process.WaitForExit(15000)){
+    $process.Kill($true)
+    throw 'EXCITED|HOLD|native_timeout'
   }
+  if($process.ExitCode -ne 0 -or $stderr.Length -gt 0){
+    throw ('EXCITED|HOLD|native_exit='+$process.ExitCode)
+  }
+}finally{$process.Dispose()}
+if($markdown.Length -lt 500 -or $markdown.Length -gt 4096 -or
+   -not $markdown.StartsWith('# Sovieta Diao Xian ^.^ | EXCITED v2 A* Markdown') -or
+   -not $markdown.Contains('**Optimal path:** Overview -> Security -> Summary') -or
+   -not $markdown.Contains('**Total path cost:** 6') -or
+   -not $markdown.Contains('## SPT Finland shortest-path tree cross-check') -or
+   -not $markdown.Contains('**SPT total goal cost:** 6') -or
+   -not $markdown.Contains('Summary: cost 6, parent Security') -or
+   -not $markdown.Contains('**RELEASE=HOLD**')){
+  throw 'EXCITED|HOLD|native_markdown_or_route_invalid'
 }
-if($goal -cne 'Summary' -or $best['Summary'] -ne 6){
-  throw 'EXCITED|HOLD|Astar_path_or_cost'
-}
-$route=@($paths['Summary'])
-if($route.Count -lt 2 -or $route[0] -cne 'Overview' -or
-   $route[-1] -cne 'Summary'){
-  throw 'EXCITED|HOLD|Astar_route_unbounded'
-}
-# A* chooses a documentation selection, NOT a replacement for actual checks.
-$lines=[Collections.Generic.List[string]]::new()
-$lines.Add('# Sovieta Diao Xian ^.^ | EXCITED A* Markdown')
-$lines.Add('')
-$lines.Add('**Input:** successful EXCITE job on source SHA `'+$SourceSha+'`.')
-$lines.Add('**Shortest cost:** '+$best['Summary']+' (dimensionless documentation edge weights).')
-$lines.Add('**Chosen path:** '+([string]::Join(' → ',$route))+'.')
-$lines.Add('**Scope:** the A* path assembles a guide. It does not certify source or release.')
-$lines.Add('')
-$lines.Add('## Sections')
-$i=0
-foreach($section in $route){
-  $i++
-  $lines.Add(('{0}. **{1}**: selected by deterministic A*.' -f $i,$section))
-}
-$lines.Add('')
-$lines.Add('## COREAO code-block completion')
-$lines.Add('')
-$lines.Add('EXCITE processes each enumerated file, each of six independent subprojects, and the final repository sprint through QCHART → QLAM → QGRAPH → exact inverse-square witnesses → FRESH HAODA display metadata → QCODE.')
-$lines.Add('The inverse-square witnesses are unitless fractions (1/1, 1/4, 1/9), not physical radiation measurements. Q-prefixed operations are experimental evidence envelopes rather than an established algorithm.')
-$lines.Add('')
-$lines.Add('## Verification and release')
-$lines.Add('')
-$lines.Add('- This guide is generated only by EXCITED after the upstream EXCITE job succeeds.')
-$lines.Add('- A success does not create an INCEPTION acknowledgment, close an issue, merge a PR, or authorize release.')
-$lines.Add('- **RELEASE=HOLD** unless separately reviewed and explicitly authorized.')
-$lines.Add('')
-$outPath=Join-Path $out 'sovieta-diao-xian-excited.md'
-[IO.File]::WriteAllText($outPath,([string]::Join([char]10,$lines)+[char]10),
-  [Text.UTF8Encoding]::new($false))
-$markdown=[IO.File]::ReadAllText($outPath,[Text.Encoding]::UTF8)
-if($markdown.Length -lt 500 -or
-   $markdown -cnotmatch '^# Sovieta Diao Xian' -or
-   $markdown -cnotmatch 'RELEASE=HOLD'){
-  throw 'EXCITED|HOLD|generated_markdown_invalid'
-}
-$hash=(Get-FileHash -LiteralPath $outPath -Algorithm SHA256).Hash.ToLowerInvariant()
-$receipt=[ordered]@{
-  schema='EXCITED-STAR-001'
-  source_sha=$SourceSha
-  markdown_sha256=$hash
-  relative_markdown='sovieta-diao-xian-excited.md'
-  selected_nodes=@($route)
-  total_cost=[long]$best['Summary']
-  engine='PowerShell A* fixed nonnegative graph'
-  promotion='NO'
-  release='HOLD'
-}
-[IO.File]::WriteAllText((Join-Path $out 'excited-receipt.json'),
-  (ConvertTo-Json -InputObject $receipt -Compress -Depth 9 -WarningAction Stop),
+# Metadata is added by the trusted orchestrator, not inferred by the A* graph.
+$markdown += [char]10+'**EXCITE source revision:** `'+$SourceSha+'`.'+[char]10
+$path=Join-Path $out 'sovieta-diao-xian-excited.md'
+[IO.File]::WriteAllText($path,$markdown,[Text.UTF8Encoding]::new($false))
+$mdSha=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+$binSha=(Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+$after=(Get-FileHash -LiteralPath $code -Algorithm SHA256).Hash.ToLowerInvariant()
+if($sourceDigest -cne $after){throw 'EXCITED|HOLD|source_mutated_after_build'}
+# Intentionally TSV rather than JSON, with no user-controlled fields.
+$rows=@(
+  'schema'+"`t"+'EXCITED-STAR-002',
+  'source_sha'+"`t"+$SourceSha,
+  'native_source_sha256'+"`t"+$sourceDigest,
+  'native_binary_sha256'+"`t"+$binSha,
+  'markdown_file'+"`t"+'sovieta-diao-xian-excited.md',
+  'markdown_sha256'+"`t"+$mdSha,
+  'route'+"`t"+'Overview>Security>Summary',
+  'path_cost'+"`t"+'6',
+  'spt_protocol'+"`t"+'SHORTEST_PATH_TREE_NOT_ETHERNET_STP',
+  'spt_verified'+"`t"+'YES',
+  'spt_vertex_costs'+"`t"+'0,2,4,5,6',
+  'spt_parent_nodes'+"`t"+'-1,0,0,1,2',
+  'compiler'+"`t"+'MSVC_CXX20_O2',
+  'no_std_in_source'+"`t"+'YES',
+  'no_json'+"`t"+'YES',
+  'promotion'+"`t"+'NO',
+  'release'+"`t"+'HOLD'
+)
+$tsv=Join-Path $out 'excited-receipt.tsv'
+[IO.File]::WriteAllText($tsv,([string]::Join([char]10,$rows)+[char]10),
   [Text.UTF8Encoding]::new($false))
 if(-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)){
   [IO.File]::AppendAllText($env:GITHUB_STEP_SUMMARY,
-    ($markdown+[char]10+'EXCITED Markdown SHA-256: `'+$hash+'`'+[char]10),
+    ($markdown+[char]10+'EXCITED v2 Markdown SHA-256: `'+$mdSha+'`'+[char]10),
     [Text.UTF8Encoding]::new($false))
 }
-Write-Host ('EXCITED|A_STAR=PASS|COST='+$best['Summary']+
-            '|MARKDOWN_SHA256='+$hash+'|RELEASE=HOLD')
+Write-Host ('EXCITED|V2|NATIVE_ASTAR_SPT_PASS|COST=6|MARKDOWN_SHA256='+$mdSha+
+            '|BINARY_SHA256='+$binSha+'|RELEASE=HOLD')

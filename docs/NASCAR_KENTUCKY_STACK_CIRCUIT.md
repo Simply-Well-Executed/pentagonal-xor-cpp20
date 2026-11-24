@@ -91,3 +91,38 @@ or unreviewed release. The local API is an opt-in preview, not an external
 network deployment. The developer supplies the Markdown file path manually.
 The HTTP server merely serves its **unchanged bytes**; it neither retrieves
 nor mutates repository source.
+
+### EXCITED v2 native A* plus SPT Finland
+
+EXCITED's Markdown generator is implemented in `ci/excited-native/astar_raw.cpp`
+as a separately compiled, header-free, no-`std::` C++20 program. It uses
+raw fixed arrays, explicitly bounded work, native Windows `WriteFile` to
+standard output, and an MSVC `/O2` build with C++ extensions disabled.
+PowerShell is the orchestration wrapper, not the A* implementation. No
+Python, g++, Bash, Ubuntu runner, JavaScript/Node checkout, or artifact-upload
+action is used. The generated file and TSV receipt live outside the checkout;
+the Markdown is copied into the Actions run summary.
+
+**SPT Finland** is the user-chosen label for an additional **Shortest Path
+Tree**, computed with an independent deterministic Dijkstra pass over the
+same fixed weighted graph. It is not the Ethernet **Spanning Tree Protocol
+(STP)**, and no attribution of the protocol to Finland is asserted. The
+SPT validator ensures all five nodes are reachable, every nonroot vertex
+has a parent, every parent chain reaches the unique root without cycles,
+and the Bellman inequality holds for every directed edge. Compile-time
+assertions fix the expected distances `0,2,4,5,6` and parents
+`-1,0,0,1,2` from `Overview` to `Summary`.
+
+A* independently selects `Overview -> Security -> Summary` with cost
+`6`. Both equal-cost routes are valid, but this bounded implementation's
+stable tie-breaking selects the one through Security. The runtime validator
+checks that every edge of the selected A* route exists and that its sum
+equals the SPT goal distance. CTest separately checks the A* and SPT
+Markdown witnesses. A failed cross-check aborts EXCITED; it does not change
+EXCITE's earlier source evidence.
+
+EXCITED v2's generated Markdown and native executable each receive SHA-256
+receipts in `excited-receipt.tsv`. No JSON is used by this v2 builder or
+its TSV validation step; the wider EXCITE evidence ledger still uses JSONL,
+which is not silently changed or reclassified. These algorithms do not
+prove radiation physics, switch-port loop prevention, or release eligibility.

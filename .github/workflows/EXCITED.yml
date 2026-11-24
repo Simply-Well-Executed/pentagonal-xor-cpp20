@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: 0BSD
-# EXCITED is callable only after EXCITE succeeds; no Node, Python, Bash or Ubuntu.
-name: EXCITED | Sovieta Diao Xian ^.^ A-star Markdown
+# EXCITED v2: native C++20 A* after EXCITE success, no standard C++ headers,
+# Python, JSON, Bash, Ubuntu, Node checkout or Node artifact upload.
+name: EXCITED | Sovieta Diao Xian ^.^ A-star x SPT Finland v2
 on:
   workflow_call:
     inputs:
@@ -12,7 +13,7 @@ permissions:
   contents: read
 jobs:
   excited-a-star:
-    name: A* Markdown from fully completed EXCITE circuit
+    name: Native C++20 A* and SPT cross-verified Markdown
     runs-on: windows-2025
     timeout-minutes: 15
     permissions:
@@ -49,7 +50,7 @@ jobs:
             throw 'EXCITED|HOLD|source_incomplete'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'excited-root.txt'),$roots[0].FullName)
-      - name: A* find deterministic docs and produce Sovieta Diao Xian guide
+      - name: Compile ISO C++20 /O2 A* plus SPT Finland and generate Markdown
         shell: pwsh
         env:
           SOURCE_SHA: ${{ inputs.source_sha }}
@@ -62,23 +63,43 @@ jobs:
             -OutputDirectory (Join-Path $env:RUNNER_TEMP 'excited-docs') `
             -SourceSha $env:SOURCE_SHA
           if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|A_star_markdown_failed'}
-      - name: Verify generated Markdown and receipt without upload-artifact
+      - name: Verify Markdown and immutable TSV receipt without Node upload
         shell: pwsh
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           Set-StrictMode -Version 2.0
           $ErrorActionPreference='Stop'
           $folder=Join-Path $env:RUNNER_TEMP 'excited-docs'
           $doc=Join-Path $folder 'sovieta-diao-xian-excited.md'
-          $receipt=Join-Path $folder 'excited-receipt.json'
+          $receipt=Join-Path $folder 'excited-receipt.tsv'
           if(-not [IO.File]::Exists($doc) -or -not [IO.File]::Exists($receipt)){
-            throw 'EXCITED|HOLD|markdown_or_receipt_absent'
+            throw 'EXCITED|HOLD|markdown_or_TSV_receipt_absent'
           }
-          $r=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($receipt)) -Depth 9
+          $fields=[Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+          foreach($line in [IO.File]::ReadAllLines($receipt,[Text.Encoding]::UTF8)){
+            $pair=$line.Split([char]9)
+            if($pair.Count -ne 2 -or -not $fields.TryAdd($pair[0],$pair[1])){
+              throw 'EXCITED|HOLD|invalid_or_duplicate_receipt_field'
+            }
+          }
           $sha=(Get-FileHash -LiteralPath $doc -Algorithm SHA256).Hash.ToLowerInvariant()
-          if($r.markdown_sha256 -cne $sha -or $r.release -cne 'HOLD'){
-            throw 'EXCITED|HOLD|receipt_hash_mismatch'
+          if($fields['schema'] -cne 'EXCITED-STAR-002' -or
+             $fields['source_sha'] -cne $env:SOURCE_SHA -or
+             $fields['markdown_sha256'] -cne $sha -or
+             $fields['route'] -cne 'Overview>Security>Summary' -or
+             $fields['path_cost'] -cne '6' -or
+             $fields['spt_protocol'] -cne 'SHORTEST_PATH_TREE_NOT_ETHERNET_STP' -or
+             $fields['spt_verified'] -cne 'YES' -or
+             $fields['spt_vertex_costs'] -cne '0,2,4,5,6' -or
+             $fields['spt_parent_nodes'] -cne '-1,0,0,1,2' -or
+             $fields['compiler'] -cne 'MSVC_CXX20_O2' -or
+             $fields['no_std_in_source'] -cne 'YES' -or
+             $fields['no_json'] -cne 'YES' -or
+             $fields['release'] -cne 'HOLD'){
+            throw 'EXCITED|HOLD|TSV_receipt_mismatch'
           }
-          Write-Host ('EXCITED|VERIFIED|MARKDOWN_SHA256='+$sha+'|RELEASE=HOLD')
+          Write-Host ('EXCITED|V2|SPT_VERIFIED|MARKDOWN_SHA256='+$sha+'|RELEASE=HOLD')
       - name: No automatic API exposure or repository writes
         if: always()
         shell: pwsh
