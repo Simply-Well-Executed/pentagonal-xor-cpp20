@@ -29,8 +29,9 @@ $unit=Join-Path $root 'pentadi/BranchPinToTsht.pas'
 $program=Join-Path $root 'pentadi/Delphi007PinPipe.dpr'
 $profiler=Join-Path $root 'pentadi/BuildSpeedProfiler.pas'
 $profilerSource=Join-Path $root 'pentadi/keep.pass'
+$canonical=Join-Path $root 'pentadi/PentaDiC11BranchRecords.reference.tsv'
 $reference=Join-Path $root 'pentadi/PentaDiRel8_reference.asm'
-$sources=@($csrc,$unit,$program,$profiler,$profilerSource,$reference,
+$sources=@($csrc,$unit,$program,$profiler,$profilerSource,$canonical,$reference,
  (Join-Path $root 'shared/bitflying_c_abi_001.h'),$PSCommandPath)
 foreach($src in $sources){
  if(-not [IO.File]::Exists($src)){throw ('PENTADI|HOLD|missing_source|'+$src)}
@@ -71,17 +72,11 @@ $cobj=Join-Path $ev 'PentaDi_C11.obj'
 $masmObj=Join-Path $ev 'PentaDiRel8_reference.obj'
 $transient=Join-Path $ev 'PentaDi_C11_TEMP_EXECUTE_ONLY.exe'
 $tsv=Join-Path $ev 'PentaDi_C11_to_Delphi7.tsv'
-$expected=[string[]]@(
- '1|7|10|LOOP7|SHORT|2|1000|1070',
- '2|7|10|LOOP7|LONG|5|1000|1070',
- '3|7|10|LOOP7|SHORT|2|1000|1070',
- '1|8|20|OVER8|SHORT|2|100|500',
- '1|9|21|PLUS127|SHORT|2|100|227',
- '1|10|22|MINUS128|SHORT|2|228|100',
- '1|11|23|PLUS128|SHORT|2|100|228',
- '1|12|24|MINUS129|SHORT|2|229|100',
- '1|13|25|NO_WRAP|SHORT|2|65530|3'
-)
+$expected=[string[]]@(Get-Content -LiteralPath $canonical -Encoding ASCII)
+if($expected.Count -ne 9 -or @($expected|Where-Object{$_ -cnotmatch '^[0-9]+\|[0-9]+\|[0-9]+\|[A-Z0-9_]+\|(SHORT|LONG)\|[0-9]+\|[0-9]+\|[0-9]+$'}).Count -gt 0){
+ throw 'PENTADI|HOLD|canonical_branch_records_invalid'
+}
+
 # /FA is an actual compiler-generated textual assembly listing,
 # not a renamed EXE, OBJ, guessed IR, or unreviewed Delphi output.
 & $cl /nologo /TC /std:c11 /O2 /W4 /c /FA ('/Fa'+$listing) ('/Fo'+$cobj) $csrc
