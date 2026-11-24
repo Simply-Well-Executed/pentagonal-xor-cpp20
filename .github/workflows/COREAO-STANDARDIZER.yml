@@ -2,13 +2,13 @@
 # Identical per-PR source, native PowerShell only, no Node actions.
 name: COREAO STANDARDIZER | XOR-OR-XOR | 255 executions
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches-ignore: [main]
 permissions:
   contents: read
   pull-requests: read
 concurrency:
-  group: coreao-standardizer-pr-${{ github.event.pull_request.number }}
+  group: coreao-standardizer-head-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   standardizer:
@@ -23,14 +23,14 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ''
+          PR_HEAD_SHA: ${{ github.sha }}
         run: |
           Set-StrictMode -Version 2.0
           $ErrorActionPreference='Stop'
           $repo='Simply-Well-Executed/pentagonal-xor-cpp20'
           if($env:RUNNER_OS -cne 'Windows' -or $env:GITHUB_REPOSITORY -cne $repo -or
-             $env:PR_NUMBER -notmatch '^[1-9][0-9]{0,8}$' -or
+             $env:GITHUB_REF -notmatch '^refs/heads/.+' -or
              $env:PR_HEAD_SHA -cnotmatch '^[a-f0-9]{40}$'){
             throw 'STANDARDIZER|HOLD|UNEXPECTED_EVENT'
           }
@@ -40,6 +40,16 @@ jobs:
             'X-GitHub-Api-Version'='2022-11-28'
             'User-Agent'='swe-coreao-standardizer'
           }
+          $branch=$env:GITHUB_REF.Substring('refs/heads/'.Length)
+          $open=@(Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo+'/pulls?state=open&per_page=100') -Headers $headers)
+          if($open.Count -ge 100){throw 'STANDARDIZER|HOLD|PR_LIST_PAGINATION_REQUIRED'}
+          $candidates=@($open | Where-Object {
+            $_.head.sha -ceq $env:PR_HEAD_SHA -and
+            $_.head.ref -ceq $branch -and
+            $_.head.repo.full_name -ceq $repo
+          })
+          if($candidates.Count -ne 1){throw 'STANDARDIZER|HOLD|PR_BRANCH_NOT_UNIQUE'}
+          $env:PR_NUMBER=[string]$candidates[0].number
           $pr=Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo+'/pulls/'+$env:PR_NUMBER) -Headers $headers
           if($pr.state -cne 'open' -or $pr.head.sha -cne $env:PR_HEAD_SHA -or
              $pr.head.repo.full_name -cne $repo -or $pr.base.repo.full_name -cne $repo){
@@ -55,17 +65,19 @@ jobs:
             throw 'STANDARDIZER|HOLD|SOURCE_INCOMPLETE'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'coreao-root.txt'),$dirs[0].FullName)
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'coreao-pr-number.txt'),$env:PR_NUMBER)
           Write-Host ('STANDARDIZER|PR='+$env:PR_NUMBER+'|EXACT_HEAD='+$env:PR_HEAD_SHA)
       - name: 255 fresh processes, independent SHA-256 witnesses, TAIL
         shell: pwsh
         env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ''
+          PR_HEAD_SHA: ${{ github.sha }}
         run: |
           Set-StrictMode -Version 2.0
           $ErrorActionPreference='Stop'
           $utf8=[Text.UTF8Encoding]::new($false,$true)
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'coreao-root.txt'))
+          $prNumber=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'coreao-pr-number.txt'))
           $script=Join-Path $root 'ci/Invoke-CoreaoStandardizer.ps1'
           $cmake=Join-Path $root 'CMakeLists.txt'
           $scriptHash=(Get-FileHash -LiteralPath $script -Algorithm SHA256).Hash
@@ -103,7 +115,7 @@ jobs:
           $ledger=Join-Path $out 'COREAO_255.tsv'
           [IO.File]::WriteAllText($ledger,([string]::Join([string][char]10,$rows)+[char]10),$utf8)
           $digest=(Get-FileHash -LiteralPath $ledger -Algorithm SHA256).Hash.ToLowerInvariant()
-          Write-Host ('STANDARDIZER|PASS|PR='+$env:PR_NUMBER+'|HEAD='+$env:PR_HEAD_SHA+'|INDEPENDENT_EXECUTIONS=255|SHA256='+$digest+'|RELEASE=HOLD')
+          Write-Host ('STANDARDIZER|PASS|PR='+$prNumber+'|HEAD='+$env:PR_HEAD_SHA+'|INDEPENDENT_EXECUTIONS=255|SHA256='+$digest+'|RELEASE=HOLD')
       - name: Preserve native-build and release separation
         if: always()
         shell: pwsh
