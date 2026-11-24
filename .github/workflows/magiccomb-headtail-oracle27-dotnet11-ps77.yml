@@ -1,0 +1,684 @@
+name: Canonical LICENSES custody and zero-POSIX/GNU policy hold (PowerShell)
+
+# CURRENT: native PowerShell on GitHub-hosted Windows; no authored POSIX shell.
+# Prior Linux/Docker/GNU jobs are retired from active workflow source.
+# The previous pipeline is preserved in the commit history for forensic review.
+# An unapproved dependency is a HOLD, not a build-only exception.
+on:
+  workflow_call:
+  push:
+    branches:
+      - main
+      - 29-exc-gnu-linux-001-prefer-mit-oracle-lgpl-21-forbid-lgpl-3-gpl-eupl-epl-release-hold
+      - feat/magiccomb-license-oracle27-dotnet11-ps77-20261120
+    paths:
+      - .github/workflows/magiccomb-headtail-oracle27-dotnet11-ps77.yml
+      - LICENSE
+      - LICENSES/**
+      - ci/Assert-LocalLicenseRegistry.ps1
+      - .github/workflows/**
+      - docs/ISSUE_29_REMEDIATION.md
+      - ci/**
+      - docker/**
+      - docs/MAGICCOMB_LICENSE_SECURITY_EXCEPTION_LEDGER.md
+      - docs/LOCALITY_FIRST_SOURCE_CUSTODY.md
+      - README.md
+      - .gitattributes
+
+permissions:
+  contents: read
+
+jobs:
+  native-pwsh-license-custody:
+    name: Exact local LICENSES verification and legacy-script quarantine
+    runs-on: windows-2025
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Retrieve exact commit snapshot using PowerShell (no checkout action)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted') {
+            throw 'LOCAL_LICENSE|HOLD|unexpected_runner'
+          }
+          if (-not [StringComparer]::Ordinal.Equals($env:GITHUB_REPOSITORY,'Simply-Well-Executed/pentagonal-xor-cpp20')) {
+            throw 'LOCAL_LICENSE|HOLD|unexpected_repository'
+          }
+          if ($env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'LOCAL_LICENSE|HOLD|invalid_commit'
+          }
+          $zip = Join-Path $env:RUNNER_TEMP 'source-at-exact-commit.zip'
+          $dest = Join-Path $env:RUNNER_TEMP 'source-at-exact-commit'
+          $uri = 'https://api.github.com/repos/' + $env:GITHUB_REPOSITORY + '/zipball/' + $env:GITHUB_SHA
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization = 'Bearer ' + $env:GH_TOKEN
+            Accept = 'application/vnd.github+json'
+            'User-Agent' = 'swe-pwsh-license-custody'
+            'X-GitHub-Api-Version' = '2022-11-28'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $dest
+          $dirs = @(Get-ChildItem -LiteralPath $dest -Directory)
+          if ($dirs.Count -ne 1 -or -not [IO.File]::Exists((Join-Path $dirs[0].FullName 'LICENSES/LOCK.tsv'))) {
+            throw 'LOCAL_LICENSE|HOLD|untrusted_archive_layout'
+          }
+          $sourceRoot = $dirs[0].FullName
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'),$sourceRoot)
+          Write-Host 'LOCAL_LICENSE|HEAD|PINNED_COMMIT|RETRIEVED'
+      - name: Verify complete SPDX/Oracle registry and root 0BSD at HEAD and TAIL
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_02' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_02|HEAD'}
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $gate = Join-Path $src 'ci/Assert-LocalLicenseRegistry.ps1'
+          if (-not [IO.File]::Exists($gate)) { throw 'LOCAL_LICENSE|HOLD|missing_gate' }
+          $head = Join-Path $env:RUNNER_TEMP 'license-head.jsonl'
+          $tail = Join-Path $env:RUNNER_TEMP 'license-tail.jsonl'
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $head
+          if ($LASTEXITCODE -ne 0) { throw 'LOCAL_LICENSE|HOLD|HEAD_failed' }
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $tail
+          if ($LASTEXITCODE -ne 0) { throw 'LOCAL_LICENSE|HOLD|TAIL_failed' }
+          if (-not [StringComparer]::Ordinal.Equals([IO.File]::ReadAllText($head),[IO.File]::ReadAllText($tail))) {
+            throw 'LOCAL_LICENSE|HOLD|HEAD_TAIL_changed'
+          }
+          Write-Host 'LOCAL_LICENSE|HEAD_TAIL|PASS|exact_legal_reference_bytes'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_02' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_02|TAIL'}
+      - name: Verify OpenBSD 8.0 release source pins at MagicComb HEAD and TAIL
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_03' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_03|HEAD'}
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $gate = Join-Path $src 'ci/Assert-OpenBSD80SourceLock.ps1'
+          if (-not [IO.File]::Exists($gate)) { throw 'OPENBSD|HOLD|missing_source_pin_gate' }
+          $head = Join-Path $env:RUNNER_TEMP 'openbsd-source-head.txt'
+          $tail = Join-Path $env:RUNNER_TEMP 'openbsd-source-tail.txt'
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $head
+          if ($LASTEXITCODE -ne 0) { throw 'OPENBSD|HOLD|HEAD_failed' }
+          & pwsh -NoLogo -NoProfile -File $gate -RepositoryRoot $src -ReportPath $tail
+          if ($LASTEXITCODE -ne 0) { throw 'OPENBSD|HOLD|TAIL_failed' }
+          if (-not [StringComparer]::Ordinal.Equals([IO.File]::ReadAllText($head),
+                                                   [IO.File]::ReadAllText($tail))) {
+            throw 'OPENBSD|HOLD|HEAD_TAIL_drift'
+          }
+          Write-Host 'OPENBSD|8.0|HEAD_TAIL_SOURCE_LOCK_PASS|NO_NETWORK|SOURCE_BUILD_UNVERIFIED|STABLE_PATCH_PIN_PENDING|HOLD'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_03' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_03|TAIL'}
+      - name: Verify serial OpenBSD COREAO stage ledger at MagicComb HEAD and TAIL
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_04' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_04|HEAD'}
+          $ErrorActionPreference='Stop'
+          $src=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $dir=Join-Path $env:RUNNER_TEMP 'openbsd-serial-headtail'
+          & pwsh -NoLogo -NoProfile -File (Join-Path $src 'ci/Test-OpenBSDSerialCoreao.ps1') -RepositoryRoot $src -TemporaryDirectory $dir
+          if($LASTEXITCODE -ne 0){throw 'OPENBSD|SERIAL|HOLD|magiccomb_head_tail_or_negative_test_failed'}
+          Write-Host 'OPENBSD|COREAO|HEAD_TAIL_PASS|CORE=OPENBSD2|YIN_YANG_DISTINCT|NATIVE_LEGACY_HOLD'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_04' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_04|TAIL'}
+      - name: Verify FRESH source custody and variable-free terminal without shell execution
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_05' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_05|HEAD'}
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference = 'Stop'
+          $root = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $utf8 = [Text.UTF8Encoding]::new($false,$true)
+          $manifestPath = Join-Path $root 'Archive/Retired/ISSUE_29_LEGACY_SHELLS.tsv'
+          if (-not [IO.File]::Exists($manifestPath)) { throw 'FRESH|HOLD|missing_archive_manifest' }
+          $records = [IO.File]::ReadAllLines($manifestPath,$utf8)
+          $header = @('original_path','archive_path','original_git_blob_sha1','original_size_bytes','custody_state') -join [char]9
+          if ($records.Length -ne 18 -or -not [StringComparer]::Ordinal.Equals($records[0],$header)) {
+            throw 'FRESH|HOLD|archive_manifest_schema'
+          }
+          $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+          foreach ($row in $records[1..17]) {
+            $f = $row.Split([char]9)
+            if ($f.Length -ne 5) { throw 'FRESH|HOLD|archive_record_columns' }
+            $original,$archived,$sha,$byteCount,$state = $f
+            if ($original -cnotmatch '^ci/(?:docker/)?[A-Za-z0-9.-]+[.]sh$' -or -not $seen.Add($original)) {
+              throw 'FRESH|HOLD|invalid_original_path'
+            }
+            if (-not [StringComparer]::Ordinal.Equals($archived,('Archive/Retired/' + $original + '.txt')) -or
+                -not [StringComparer]::Ordinal.Equals($state,'RETIRED_HISTORY_ONLY') -or
+                $sha -cnotmatch '^[0-9a-f]{40}$' -or $byteCount -cnotmatch '^[0-9]+$') {
+              throw ('FRESH|HOLD|invalid_record|' + $original)
+            }
+            $archivedFile = Join-Path $root ($archived.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            if (-not [IO.File]::Exists($archivedFile)) { throw ('FRESH|HOLD|missing_archive|' + $original) }
+            if (((Get-Item -LiteralPath $archivedFile -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+              throw ('FRESH|HOLD|archive_symlink|' + $original)
+            }
+            $bytes = [IO.File]::ReadAllBytes($archivedFile)
+            if ($bytes.Length -ne [long]$byteCount) { throw ('FRESH|HOLD|archive_size_drift|' + $original) }
+            $prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $bytes.Length) + [char]0)
+            $blob = [byte[]]::new($prefix.Length + $bytes.Length)
+            [Array]::Copy($prefix,0,$blob,0,$prefix.Length)
+            [Array]::Copy($bytes,0,$blob,$prefix.Length,$bytes.Length)
+            $actualSha = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($blob)).ToLowerInvariant()
+            if (-not [StringComparer]::Ordinal.Equals($actualSha,$sha)) {
+              throw ('FRESH|HOLD|archive_blob_drift|' + $original)
+            }
+            $wrapperFile = Join-Path $root ($original.Replace('/',[IO.Path]::DirectorySeparatorChar))
+            if (-not [IO.File]::Exists($wrapperFile)) { throw ('FRESH|HOLD|missing_wrapper|' + $original) }
+            if (((Get-Item -LiteralPath $wrapperFile -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+              throw ('FRESH|HOLD|wrapper_symlink|' + $original)
+            }
+            $wrapper = $utf8.GetString([IO.File]::ReadAllBytes($wrapperFile))
+            $expected = @(
+              '#!/bin/sh'
+              '# SPDX-License-Identifier: 0BSD'
+              '# ISSUE-29: retired legacy entrypoint; original exact bytes archived in Git.'
+              ('# Archive: Archive/Retired/' + $original + '.txt')
+              '# FRESH GammaGamma fixed control transfer; no original release operation.'
+              '# REQUIRES repository root as working directory; experimental only.'
+              ("echo 'FRESH|ENTRY|" + $original + "|RETIRED|HOLD'")
+              'exec sh ./ci/FRESH-GammaGamma.sh'
+              'exit 42'
+            )
+            if (-not [StringComparer]::Ordinal.Equals($wrapper,(($expected -join [char]10) + [char]10)) -or
+                $wrapper.Contains([char]36) -or $wrapper.Contains([char]37)) {
+              throw ('FRESH|HOLD|wrapper_drift_or_variable|' + $original)
+            }
+          }
+          $shells = @(Get-ChildItem -LiteralPath (Join-Path $root 'ci') -Filter '*.sh' -File -Recurse -Force)
+          if ($shells.Count -ne 18) { throw "FRESH|HOLD|unreviewed_shell_count|$($shells.Count)" }
+          foreach ($file in $shells) {
+            $relative = [IO.Path]::GetRelativePath($root,$file.FullName).Replace('\','/')
+            if (-not $seen.Contains($relative) -and -not [StringComparer]::Ordinal.Equals($relative,'ci/FRESH-GammaGamma.sh')) {
+              throw ('FRESH|HOLD|unreviewed_shell_path|' + $relative)
+            }
+          }
+          $gammaPath = Join-Path $root 'ci/FRESH-GammaGamma.sh'
+          $gamma = $utf8.GetString([IO.File]::ReadAllBytes($gammaPath))
+          if ($gamma.Contains([char]36) -or $gamma.Contains([char]37)) { throw 'FRESH|HOLD|gamma_variable_or_format' }
+          $commands = @([IO.File]::ReadAllLines($gammaPath,$utf8) | Where-Object {
+            $_.Length -gt 0 -and -not $_.StartsWith('#')
+          })
+          if ($commands.Count -lt 25 -or $commands[$commands.Count-2] -cne "echo 'ItWasOnlyOnceILookedInTheirEye'" -or
+              $commands[$commands.Count-1] -cne 'exit 42') { throw 'FRESH|HOLD|exact_terminal_drift' }
+          foreach ($line in $commands[0..($commands.Count-2)]) {
+            if ($line -cnotmatch '^echo ''[^'']*''$') { throw 'FRESH|HOLD|nonliteral_gamma_action' }
+          }
+          foreach ($tag in @('FRESH|GAMMA_ONE|EGRESSING','FRESH|GAMMA_TWO|EGRESSING','BIDI|YIN','BIDI|YANG',
+                             'TRIDI|YIN','TRIDI|YANG','TRIDI|AIRGAP',
+                             'SIGMADI|FIRST TWIRL','SIGMADI|SECOND TWIRL','SIGMADI|BUTTERFLY')) {
+            if (-not $gamma.Contains($tag)) { throw ('FRESH|HOLD|missing_phase|' + $tag) }
+          }
+          # Artistic-lineage check is SOURCE ONLY. Never invoke the unapproved sh interpreter.
+          # The old DOOM-pattern witness is preserved in historical Git records and docs.
+          # The current display is a new, explicit derivation from the exact final plain-text witness.
+          $expectedEye = 'ItWasOnlyOnceILookedInTheirEye'
+          # v1 uses the frozen (=) artwork; v4 uses (s) without rewriting the v1 reference.
+          $expectedArtV4 = 'X_~' + (($expectedEye.ToCharArray()) -join '~') + '(s)'
+          if (-not [StringComparer]::Ordinal.Equals($expectedArtV4, 'X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(s)')) { throw 'FRESH|PING_V4|HOLD|poetic_s_mapping_drift' }
+          $expectedArt = 'X_~' + (($expectedEye.ToCharArray()) -join '~') + '(=)'
+          if (-not [StringComparer]::Ordinal.Equals($expectedArt, 'X_~I~t~W~a~s~O~n~l~y~O~n~c~e~I~L~o~o~k~e~d~I~n~T~h~e~i~r~E~y~e(=)')) {
+            throw 'FRESH|HOLD|poetic_codepoint_mapping_drift'
+          }
+          # Explicit ordered egress/orientation anchors, independently verified below.
+          $expectedHops = @(
+            'GAMMA_ONE|UP',
+            'GAMMA_TWO|DOWN',
+            'BIDI_YIN|UP',
+            'BIDI_YANG|DOWN',
+            'TRIDI_YIN|UP',
+            'TRIDI_YANG|TURN',
+            'TRIDI_AIRGAP|DOWN',
+            'SIGMADI_FIRST|UP',
+            'SIGMADI_q1_q3|UP',
+            'SIGMADI_q1_q2|UP',
+            'SIGMADI_q4_q2|DOWN',
+            'SIGMADI_q4_q3|DOWN',
+            'SIGMADI_SECOND|DOWN',
+            'FRESH_TERMINAL|DOWN'
+          )
+          if ($expectedHops.Count -ne 14 -or @($expectedHops | Select-Object -Unique).Count -ne 14) {
+            throw 'FRESH|GAMME_V5|HOLD|hop_inventory'
+          }
+          # v2 PING: frozen FRESH-ART-EYE-v1 bytes remain reference, never silently mutated.
+          # Each original stdout line receives a preceding fixed, literal PING annotation.
+          # PING records are symbolic observations, NOT ICMP/network operations.
+          $frozenPath = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-v1.sh.txt'
+          if (-not [IO.File]::Exists($frozenPath)) { throw 'FRESH|PING|HOLD|missing_frozen_v1' }
+          if (((Get-Item -LiteralPath $frozenPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|PING|HOLD|frozen_v1_symlink'
+          }
+          $frozenBytes = [IO.File]::ReadAllBytes($frozenPath)
+          $frozenPrefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $frozenBytes.Length) + [char]0)
+          $frozenGitBlob = [byte[]]::new($frozenPrefix.Length + $frozenBytes.Length)
+          [Array]::Copy($frozenPrefix,0,$frozenGitBlob,0,$frozenPrefix.Length)
+          [Array]::Copy($frozenBytes,0,$frozenGitBlob,$frozenPrefix.Length,$frozenBytes.Length)
+          $frozenId = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($frozenGitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($frozenId,'670ec9d5e1ce0f9e3f815df63ebbb883b37d4fca')) {
+            throw 'FRESH|PING|HOLD|frozen_v1_blob_drift'
+          }
+          $expectedPingLines = [Collections.Generic.List[string]]::new()
+          $pingSequence = 0
+          $doubleGroups = 0
+          $singleGroups = 0
+          $emptyGroups = 0
+          foreach ($sourceLine in [IO.File]::ReadAllLines($frozenPath,$utf8)) {
+            $outMatch = [regex]::Match($sourceLine,"^echo '([^']*)'$")
+            if ($outMatch.Success) {
+              $pingSequence++
+              $pairGroups = @([regex]::Matches($outMatch.Groups[1].Value,'\(([^()]*)\)'))
+              if ($pairGroups.Count -gt 2) { throw 'FRESH|PING|HOLD|unsupported_group_depth' }
+              $leftRole = 'NONE'
+              $rightRole = 'NONE'
+              if ($pairGroups.Count -eq 2) {
+                $leftRole = $pairGroups[0].Groups[1].Value
+                $rightRole = $pairGroups[1].Groups[1].Value
+                $doubleGroups++
+              } elseif ($pairGroups.Count -eq 1) {
+                $rightRole = $pairGroups[0].Groups[1].Value
+                $singleGroups++
+              } else {
+                $emptyGroups++
+              }
+              $sequenceLabel = $pingSequence.ToString('D3',[Globalization.CultureInfo]::InvariantCulture)
+              $expectedPingLines.Add(("echo 'PING|" + $sequenceLabel + '|YANG|' + $leftRole + '|YING|' + $rightRole + "'"))
+            }
+            $expectedPingLines.Add($sourceLine)
+          }
+          if ($pingSequence -ne 66 -or $doubleGroups -ne 36 -or $singleGroups -ne 14 -or $emptyGroups -ne 16) {
+            throw 'FRESH|PING|HOLD|frozen_v1_group_inventory'
+          }
+          $expectedPingScript = ($expectedPingLines -join [char]10) + [char]10
+          # v2 remains a frozen, independently hashed source artifact. Projection
+          # tests must never reinterpret v2 output as if it were v3.
+          $v2Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v2.sh.txt'
+          if (-not [IO.File]::Exists($v2Path)) { throw 'FRESH|PING_V3|HOLD|missing_frozen_v2' }
+          if (((Get-Item -LiteralPath $v2Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|PING_V3|HOLD|frozen_v2_symlink'
+          }
+          $v2Bytes = [IO.File]::ReadAllBytes($v2Path)
+          $v2Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v2Bytes.Length) + [char]0)
+          $v2GitBlob = [byte[]]::new($v2Prefix.Length + $v2Bytes.Length)
+          [Array]::Copy($v2Prefix,0,$v2GitBlob,0,$v2Prefix.Length)
+          [Array]::Copy($v2Bytes,0,$v2GitBlob,$v2Prefix.Length,$v2Bytes.Length)
+          $v2Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v2GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v2Id,'f1870c1169ccdbb72f39a917dfa292a1b53c3f59')) {
+            throw 'FRESH|PING_V3|HOLD|frozen_v2_git_blob_drift'
+          }
+          $frozenV2 = $utf8.GetString($v2Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($frozenV2,$expectedPingScript)) {
+            throw 'FRESH|PING_V3|HOLD|v1_to_v2_projection_drift'
+          }
+          # Only YING-only records gain AIRGAP as an explicitly separate partner.
+          # Preserve YANG=NONE; do not invent an absent parenthesized witness.
+          $expectedV3 = [Collections.Generic.List[string]]::new()
+          $airgapPairs = 0
+          foreach ($v2Line in [IO.File]::ReadAllLines($v2Path,$utf8)) {
+            $rightOnly = [regex]::Match($v2Line,"^echo 'PING\|[0-9]{3}\|YANG\|NONE\|YING\|([^'|]+)'$")
+            if ($rightOnly.Success -and $rightOnly.Groups[1].Value -cne 'NONE') {
+              $airgapPairs++
+              $expectedV3.Add(($v2Line.Substring(0,$v2Line.Length - 1) + "|PAIR|AIRGAP'"))
+            } else {
+              $expectedV3.Add($v2Line)
+            }
+          }
+          if ($airgapPairs -ne 14) { throw 'FRESH|PING_V3|HOLD|unexpected_ying_airgap_inventory' }
+          $v3Source = ($expectedV3 -join [char]10) + [char]10
+          # v3 is a frozen independent source artifact. Verify its exact Git bytes
+          # and the entire v2→v3 derivation before checking the deliberate v4 delta.
+          $v3Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v3.sh.txt'
+          if (-not [IO.File]::Exists($v3Path)) { throw 'FRESH|PING_V4|HOLD|missing_frozen_v3' }
+          if (((Get-Item -LiteralPath $v3Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|PING_V4|HOLD|frozen_v3_symlink'
+          }
+          $v3Bytes = [IO.File]::ReadAllBytes($v3Path)
+          $v3Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v3Bytes.Length) + [char]0)
+          $v3GitBlob = [byte[]]::new($v3Prefix.Length + $v3Bytes.Length)
+          [Array]::Copy($v3Prefix,0,$v3GitBlob,0,$v3Prefix.Length)
+          [Array]::Copy($v3Bytes,0,$v3GitBlob,$v3Prefix.Length,$v3Bytes.Length)
+          $v3Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v3GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v3Id,'0efd33eb495d951137e7181d44f659a447067110')) {
+            throw 'FRESH|PING_V4|HOLD|frozen_v3_git_blob_drift'
+          }
+          $v3Archive = $utf8.GetString($v3Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($v3Archive,$v3Source)) {
+            throw 'FRESH|PING_V4|HOLD|v2_to_v3_projection_drift'
+          }
+          # v4 replaces only the 14 paired right-hand '=' witnesses and their
+          # corresponding 14 eye-art '(=)' suffixes; all other bytes are frozen.
+          $oldRight = 'YING|=|PAIR|AIRGAP'
+          $newRight = 'YING|s|PAIR|AIRGAP'
+          $oldArt = $expectedArt
+          $newArt = $expectedArtV4
+          $pingReplacements = [regex]::Matches($v3Archive,[regex]::Escape($oldRight)).Count
+          $artReplacements = [regex]::Matches($v3Archive,[regex]::Escape($oldArt)).Count
+          if ($pingReplacements -ne 14 -or $artReplacements -ne 14) {
+            throw 'FRESH|PING_V4|HOLD|unexpected_s_substitution_count'
+          }
+          $expectedV4 = $v3Archive.Replace($oldRight,$newRight).Replace($oldArt,$newArt)
+          # A new protocol version: freeze exact v4 before deriving GAMME-v5.
+          # GAMMA_ONE/TWO are EGRESSING; GAMME_ONE..NINE are INGRESSING.
+          # Each GAMME phase is a fixed literal witness, never a network PING.
+          $v4Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-ping-v4.sh.txt'
+          if (-not [IO.File]::Exists($v4Path)) { throw 'FRESH|GAMME_V5|HOLD|missing_frozen_v4' }
+          if (((Get-Item -LiteralPath $v4Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|GAMME_V5|HOLD|v4_archive_symlink'
+          }
+          $v4Bytes = [IO.File]::ReadAllBytes($v4Path)
+          $v4Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v4Bytes.Length) + [char]0)
+          $v4GitBlob = [byte[]]::new($v4Prefix.Length + $v4Bytes.Length)
+          [Array]::Copy($v4Prefix,0,$v4GitBlob,0,$v4Prefix.Length)
+          [Array]::Copy($v4Bytes,0,$v4GitBlob,$v4Prefix.Length,$v4Bytes.Length)
+          $v4Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v4GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v4Id,'804472e09d501d3357a652f94d790c28135f30a3')) {
+            throw 'FRESH|GAMME_V5|HOLD|v4_blob_drift'
+          }
+          $v4Archive = $utf8.GetString($v4Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($v4Archive,$expectedV4)) {
+            throw 'FRESH|GAMME_V5|HOLD|v3_to_v4_projection_drift'
+          }
+          $phaseNames = @('ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE')
+          $expectedV5 = [Collections.Generic.List[string]]::new()
+          $v4Lines = [IO.File]::ReadAllLines($v4Path,$utf8)
+          $actualHops = [Collections.Generic.List[string]]::new()
+          $phaseCount = 0
+          $flopCount = 0
+          $flipCount = 0
+          $egressCount = 0
+          $eyeArtBase = $expectedArtV4.Substring(0,$expectedArtV4.Length - 3)
+          for ($index = 0; $index -lt $v4Lines.Length; $index++) {
+            $v4Line = $v4Lines[$index]
+            if ([StringComparer]::Ordinal.Equals($v4Line,"echo 'FRESH|GAMMA ONE|HEAD'")) {
+              $expectedV5.Add("echo 'FRESH|GAMMA_ONE|EGRESSING|HEAD'")
+              $egressCount++
+              continue
+            }
+            if ([StringComparer]::Ordinal.Equals($v4Line,"echo 'FRESH|GAMMA TWO|TAIL'")) {
+              $expectedV5.Add("echo 'FRESH|GAMMA_TWO|EGRESSING|TAIL'")
+              $egressCount++
+              continue
+            }
+            $paired = [regex]::Match($v4Line,"^echo 'PING\|([0-9]{3})\|YANG\|NONE\|YING\|s\|PAIR\|AIRGAP'$")
+            if (-not $paired.Success) {
+              $expectedV5.Add($v4Line)
+              continue
+            }
+            if ($index + 1 -ge $v4Lines.Length) { throw 'FRESH|GAMME_V5|HOLD|orphan_ying_ping' }
+            $nextArt = [regex]::Match($v4Lines[$index + 1],"^echo 'ART\|([A-Za-z0-9_]+)\|(UP|DOWN|TURN)\|(.+)\(s\)'$")
+            if (-not $nextArt.Success -or -not [StringComparer]::Ordinal.Equals($nextArt.Groups[3].Value,$eyeArtBase)) {
+              throw 'FRESH|GAMME_V5|HOLD|missing_matching_art'
+            }
+            $actualHops.Add(($nextArt.Groups[1].Value + '|' + $nextArt.Groups[2].Value))
+            for ($phase = 0; $phase -lt 9; $phase++) {
+              $name = 'GAMME_' + $phaseNames[$phase]
+              if (($phase % 2) -eq 0) {
+                $role = 'FLOP'
+                $witness = '='
+                $flopCount++
+              } else {
+                $role = 'FLIP'
+                $witness = 's'
+                $flipCount++
+              }
+              $expectedV5.Add(("echo 'PING|" + $paired.Groups[1].Value + '|' + $name +
+                '|INGRESSING|' + $role + '|YANG|NONE|YING|' + $witness + "|PAIR|AIRGAP'"))
+              $expectedV5.Add(("echo 'ART|" + $nextArt.Groups[1].Value + '|' +
+                $nextArt.Groups[2].Value + '|' + $name + '|INGRESSING|' + $role +
+                '|' + $eyeArtBase + '(' + $witness + ")'"))
+              $phaseCount++
+            }
+            $index++
+          }
+          if ($actualHops.Count -ne 14 -or $egressCount -ne 2 -or $phaseCount -ne 126 -or
+              $flopCount -ne 70 -or $flipCount -ne 56) {
+            throw 'FRESH|GAMME_V5|HOLD|unexpected_phase_counts'
+          }
+          for ($hopIndex = 0; $hopIndex -lt $expectedHops.Count; $hopIndex++) {
+            if (-not [StringComparer]::Ordinal.Equals($actualHops[$hopIndex],$expectedHops[$hopIndex])) {
+              throw 'FRESH|GAMME_V5|HOLD|hop_order_or_direction_drift'
+            }
+          }
+          $expectedV5Text = ($expectedV5 -join [char]10) + [char]10
+          # Freeze exact v5 source; v6 is a NEW version with corrected 9-phase
+          # parity: odd GAMMA=EGRESSING=REST=FLOP='='; even GAMME=INGRESSING=WORK=FLIP='s'.
+          # The separate two egress HEADER passes remain scoped as headers.
+          $v5Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-gamme-v5.sh.txt'
+          if (-not [IO.File]::Exists($v5Path)) { throw 'FRESH|ALTERNATION_V6|HOLD|missing_frozen_v5' }
+          if (((Get-Item -LiteralPath $v5Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|frozen_v5_symlink'
+          }
+          $v5Bytes = [IO.File]::ReadAllBytes($v5Path)
+          $v5Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v5Bytes.Length) + [char]0)
+          $v5GitBlob = [byte[]]::new($v5Prefix.Length + $v5Bytes.Length)
+          [Array]::Copy($v5Prefix,0,$v5GitBlob,0,$v5Prefix.Length)
+          [Array]::Copy($v5Bytes,0,$v5GitBlob,$v5Prefix.Length,$v5Bytes.Length)
+          $v5Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v5GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v5Id,'128eded7189fae4842e997b81686a33968f95035')) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|frozen_v5_blob_drift'
+          }
+          $frozenV5 = $utf8.GetString($v5Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($frozenV5,$expectedV5Text)) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|v4_to_v5_projection_drift'
+          }
+          $expectedV6 = $frozenV5
+          $restOccurrences = 0
+          $workOccurrences = 0
+          for ($phaseIndex = 0; $phaseIndex -lt $phaseNames.Count; $phaseIndex++) {
+            $phaseWord = $phaseNames[$phaseIndex]
+            if (($phaseIndex % 2) -eq 0) {
+              $before = '|GAMME_' + $phaseWord + '|INGRESSING|FLOP|'
+              $after = '|GAMMA_' + $phaseWord + '|EGRESSING|REST|FLOP|'
+              $restOccurrences += 28
+            } else {
+              $before = '|GAMME_' + $phaseWord + '|INGRESSING|FLIP|'
+              $after = '|GAMME_' + $phaseWord + '|INGRESSING|WORK|FLIP|'
+              $workOccurrences += 28
+            }
+            if ([regex]::Matches($expectedV6,[regex]::Escape($before)).Count -ne 28) {
+              throw ('FRESH|ALTERNATION_V6|HOLD|phase_source_count|' + $phaseWord)
+            }
+            $expectedV6 = $expectedV6.Replace($before,$after)
+          }
+          if ($restOccurrences -ne 140 -or $workOccurrences -ne 112) {
+            throw 'FRESH|ALTERNATION_V6|HOLD|phase_parity_count'
+          }
+          # Freeze exact v6 before adding the COREAO/HEART interior bridge in v7.
+          $v6Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.art-eye-alternation-v6.sh.txt'
+          if (-not [IO.File]::Exists($v6Path)) { throw 'FRESH|COREAO_V7|HOLD|missing_frozen_v6' }
+          if (((Get-Item -LiteralPath $v6Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|COREAO_V7|HOLD|v6_archive_symlink'
+          }
+          $v6Bytes = [IO.File]::ReadAllBytes($v6Path)
+          $v6Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v6Bytes.Length) + [char]0)
+          $v6GitBlob = [byte[]]::new($v6Prefix.Length + $v6Bytes.Length)
+          [Array]::Copy($v6Prefix,0,$v6GitBlob,0,$v6Prefix.Length)
+          [Array]::Copy($v6Bytes,0,$v6GitBlob,$v6Prefix.Length,$v6Bytes.Length)
+          $v6Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v6GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v6Id,'1fd7aa477c470e8ea3c79f71f8e23bd37cc653b4')) {
+            throw 'FRESH|COREAO_V7|HOLD|frozen_v6_blob_drift'
+          }
+          $frozenV6 = $utf8.GetString($v6Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($frozenV6,$expectedV6)) {
+            throw 'FRESH|COREAO_V7|HOLD|v5_to_v6_projection_drift'
+          }
+          if ([regex]::Matches($frozenV6,"(?m)^echo 'PING\|").Count -ne 178 -or
+              [regex]::Matches($frozenV6,"(?m)^echo 'ART\|").Count -ne 126) {
+            throw 'FRESH|COREAO_V7|HOLD|frozen_v6_inventory'
+          }
+          # Original v6 PING and ART lines are byte-identical ordered subsequences.
+          # HEART is a separate source-local, symbolic bridge, not ICMP or an agent.
+          $expectedV7 = [Collections.Generic.List[string]]::new()
+          $v6Lines = [IO.File]::ReadAllLines($v6Path,$utf8)
+          $restHeart = 0
+          $funHeart = 0
+          for ($heartIndex = 0; $heartIndex -lt $v6Lines.Length; $heartIndex++) {
+            $original = $v6Lines[$heartIndex]
+            $expectedV7.Add($original)
+            $phaseMatch = [regex]::Match($original,
+              "^echo 'PING\|([0-9]{3})\|(GAMMA|GAMME)_([A-Z]+)\|(EGRESSING|INGRESSING)\|(REST|WORK)\|(FLOP|FLIP)\|YANG\|NONE\|YING\|(=|s)\|PAIR\|AIRGAP'$")
+            if (-not $phaseMatch.Success) { continue }
+            if ($heartIndex + 1 -ge $v6Lines.Length) { throw 'FRESH|COREAO_V7|HOLD|missing_art_boundary' }
+            $phase = $phaseMatch.Groups[2].Value + '_' + $phaseMatch.Groups[3].Value
+            $direction = $phaseMatch.Groups[4].Value
+            $outside = $phaseMatch.Groups[5].Value
+            $motion = $phaseMatch.Groups[6].Value
+            $symbol = $phaseMatch.Groups[7].Value
+            $isRest = ($phaseMatch.Groups[2].Value -ceq 'GAMMA' -and $direction -ceq 'EGRESSING' -and
+                       $outside -ceq 'REST' -and $motion -ceq 'FLOP' -and $symbol -ceq '=')
+            $isWork = ($phaseMatch.Groups[2].Value -ceq 'GAMME' -and $direction -ceq 'INGRESSING' -and
+                       $outside -ceq 'WORK' -and $motion -ceq 'FLIP' -and $symbol -ceq 's')
+            if (-not $isRest -and -not $isWork) { throw 'FRESH|COREAO_V7|HOLD|invalid_phase_duality' }
+            $artLine = $v6Lines[$heartIndex + 1]
+            $expectedPhase = '|' + $phase + '|' + $direction + '|' + $outside + '|' + $motion + '|'
+            if (-not $artLine.StartsWith("echo 'ART|",[StringComparison]::Ordinal) -or
+                -not $artLine.Contains($expectedPhase,[StringComparison]::Ordinal) -or
+                -not $artLine.EndsWith(('(' + $symbol + ")'"),[StringComparison]::Ordinal)) {
+              throw 'FRESH|COREAO_V7|HOLD|art_phase_pair_drift'
+            }
+            if ($isRest) {
+              $interior = 'WORK|PAIR|YIN|YANG'
+              $restHeart++
+            } else {
+              $interior = 'FUN|PAIR|YING|YAN'
+              $funHeart++
+            }
+            $expectedV7.Add(("echo 'COREAO|HEART|EVENT|" + $phaseMatch.Groups[1].Value +
+              '|PHASE|' + $phase + '|OUTSIDE|' + $outside + '|INSIDE|' +
+              $interior + "|AIRGAP|PRESERVED'"))
+          }
+          if ($restHeart -ne 70 -or $funHeart -ne 56 -or
+              [regex]::Matches($gamma,"(?m)^echo 'COREAO\|HEART\|").Count -ne 126 -or
+              [regex]::Matches($gamma,"(?m)^echo 'PING\|").Count -ne 178 -or
+              [regex]::Matches($gamma,"(?m)^echo 'ART\|").Count -ne 126) {
+            throw 'FRESH|COREAO_V7|HOLD|unexpected_bridge_counts'
+          }
+          $expectedV7Text = ($expectedV7 -join [char]10) + [char]10
+          $v7Path = Join-Path $root 'Archive/Retired/ci/FRESH-GammaGamma.coreao-heart-v7.sh.txt'
+          if (-not [IO.File]::Exists($v7Path)) { throw 'FRESH|SIGMAPI_V8|HOLD|missing_frozen_v7' }
+          if (((Get-Item -LiteralPath $v7Path -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'FRESH|SIGMAPI_V8|HOLD|v7_symlink'
+          }
+          $v7Bytes = [IO.File]::ReadAllBytes($v7Path)
+          $v7Prefix = [Text.Encoding]::ASCII.GetBytes(('blob ' + $v7Bytes.Length) + [char]0)
+          $v7GitBlob = [byte[]]::new($v7Prefix.Length + $v7Bytes.Length)
+          [Array]::Copy($v7Prefix,0,$v7GitBlob,0,$v7Prefix.Length)
+          [Array]::Copy($v7Bytes,0,$v7GitBlob,$v7Prefix.Length,$v7Bytes.Length)
+          $v7Id = [Convert]::ToHexString([Security.Cryptography.SHA1]::HashData($v7GitBlob)).ToLowerInvariant()
+          if (-not [StringComparer]::Ordinal.Equals($v7Id,'6e6cbbfaa17f72f8b14dd387b57e49c7efaffe4c')) {
+            throw 'FRESH|SIGMAPI_V8|HOLD|frozen_v7_blob_drift'
+          }
+          $frozenV7 = $utf8.GetString($v7Bytes)
+          if (-not [StringComparer]::Ordinal.Equals($frozenV7,$expectedV7Text)) {
+            throw 'FRESH|SIGMAPI_V8|HOLD|v6_to_v7_projection_drift'
+          }
+          $oldHeart = '|OUTSIDE|REST|INSIDE|WORK|PAIR|YIN|YANG|'
+          $newHeart = '|OUTSIDE|REST|INSIDE|GLEE|PAIR|YIN|YANG|'
+          if ([regex]::Matches($frozenV7,[regex]::Escape($oldHeart)).Count -ne 70) {
+            throw 'FRESH|SIGMAPI_V8|HOLD|glee_count'
+          }
+          $expectedV8 = $frozenV7.Replace($oldHeart,$newHeart)
+          if (-not [StringComparer]::Ordinal.Equals($gamma,$expectedV8) -or
+              [regex]::Matches($gamma,"(?m)^echo 'COREAO\|HEART\|").Count -ne 126 -or
+              [regex]::Matches($gamma,"(?m)^echo 'PING\|").Count -ne 178 -or
+              [regex]::Matches($gamma,"(?m)^echo 'ART\|").Count -ne 126) {
+            throw 'FRESH|SIGMAPI_V8|HOLD|source_not_exact_projection'
+          }
+          Write-Host 'FRESH|COREAO_V7|ARCHIVED_PASS|FROZEN_V7_AND_V6_TO_V7_VERIFIED'
+          Write-Host 'FRESH|SIGMAPI_V8|STATIC_PASS|GLEE=70|OUTER_WORK_INNER_FUN=56|HEART=126|PING=178|ART=126|NO_NETWORK|exit=42'
+          if (-not $gamma.EndsWith(("echo 'PING|066|YANG|NONE|YING|NONE'" + [char]10 +
+                                   "echo 'ItWasOnlyOnceILookedInTheirEye'" + [char]10 +
+                                   'exit 42' + [char]10),[StringComparison]::Ordinal)) {
+            throw 'FRESH|PING|HOLD|terminal_boundary'
+          }
+          Write-Host 'FRESH|PING|STATIC_PASS|events=66|yang_ying_pairs=36|ying_only=14|none=16|no_network|exit=42'
+          Write-Host 'FRESH|ART_CHAIN|STATIC_PASS|GAMMA_BIDI_TRIDI_SIGMADI_BUTTERFLY|UP_DOWN|exit=42'
+          Write-Host ('FRESH|STATIC_PASS|exact_archives=' + $seen.Count + '|zero_variable_wrappers=17|harness=1|terminal=EXACT|exit=42')
+          Write-Host 'FRESH|LIMIT|SOURCE_ONLY|NO_SHELL_EXECUTION|RELEASE_HOLD'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_05' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_05|TAIL'}
+      - name: Verify HANDI SigmaPi and ROT triad with native C++20 MSVC O2
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_06' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_06|HEAD'}
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          # Scan all non-archived active code for wasteful unnormalized
+          # alphabetic ROT42/ROT36 spellings. Historical docs are not mutated.
+          $scanned = 0
+          $sourceExtensions = @('.cpp','.c','.h','.hpp','.ps1','.cs','.java','.js','.ts','.xhtml')
+          foreach ($f in (Get-ChildItem -LiteralPath $src -File -Recurse -Force)) {
+            $relative = [IO.Path]::GetRelativePath($src,$f.FullName).Replace('\','/')
+            if ($relative.StartsWith('Archive/',[StringComparison]::OrdinalIgnoreCase) -or
+                $relative.StartsWith('LICENSES/text/',[StringComparison]::OrdinalIgnoreCase) -or
+                -not ($sourceExtensions -contains $f.Extension)) { continue }
+            $body = [IO.File]::ReadAllText($f.FullName)
+            $scanned++
+            if ([regex]::IsMatch($body,'(?i)\bROT(?:42|36)\b') -or
+                [regex]::IsMatch($body,'(?i)\brotate\s*\([^\r\n,]+,\s*(?:42|36)u?\s*\)')) {
+              throw ('HANDI|ROT|HOLD|noncanonical_alphabetic_turn|' + $relative)
+            }
+          }
+          if ($scanned -lt 40) { throw 'HANDI|ROT|HOLD|incomplete_repository_scan' }
+          Write-Host ('HANDI|ROT|SOURCE_AUDIT_PASS|files=' + $scanned + '|reduced_shift=16_10_16|historical_docs_untouched')
+          $build = Join-Path $env:RUNNER_TEMP 'swe-sigmapi-native'
+          cmake -S $src -B $build -G 'Visual Studio 18 2026' -A x64 -DBUILD_TESTING=ON
+          if ($LASTEXITCODE -ne 0) { throw 'HANDI|SIGMAPI|HOLD|cmake_configure' }
+          cmake --build $build --config Release --target handi_sigmapi_test
+          if ($LASTEXITCODE -ne 0) { throw 'HANDI|SIGMAPI|HOLD|native_build' }
+          ctest --test-dir $build -C Release -R '^handi_sigmapi_observation_not_automatic_pass$' --output-on-failure
+          if ($LASTEXITCODE -ne 0) { throw 'HANDI|SIGMAPI|HOLD|native_test' }
+          Write-Host 'HANDI|SIGMAPI|NATIVE_PASS|CXX20|MSVC_O2|READ_ONLY|NO_AUTO_APPROVAL|ROT16_10_16'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_06' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_06|TAIL'}
+      - name: Block project-authored POSIX scripts and unapproved GNU build inputs
+        shell: pwsh
+        run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_07' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_07|HEAD'}
+          $ErrorActionPreference = 'Stop'
+          $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'source-path.txt'))
+          $scripts = @(Get-ChildItem -LiteralPath $src -Filter '*.sh' -File -Recurse -Force)
+          foreach ($item in $scripts) {
+            Write-Host ('POLICY|POSIX|UNAPPROVED|' + $item.FullName.Substring($src.Length + 1))
+          }
+          $docker = Join-Path $src 'docker/MagicComb-Oracle27-DotNet11-PowerShell77.Probe.Dockerfile'
+          $legacyWorkflows = @('cloud-dockerhub-repush.yml','cloud-ghcr-android-no-python.yml','dockerhub-pythonfree-candidate-deployment.yml','github-cloud-docker-gamp4.yml')
+          foreach ($name in $legacyWorkflows) {
+            $wf = Join-Path (Join-Path $src '.github/workflows') $name
+            if (-not [IO.File]::Exists($wf)) { throw ('POLICY|HOLD|missing_workflow|' + $name) }
+            $body = [IO.File]::ReadAllText($wf)
+            $jobsBlock = [regex]::Match($body,'(?ms)^jobs:\r?\n(?<entries>.*)$')
+            if (-not $jobsBlock.Success) { throw ('POLICY|HOLD|missing_jobs|' + $name) }
+            $count = [regex]::Matches($jobsBlock.Groups['entries'].Value,'(?m)^  [a-z0-9_-]+:\s*$').Count
+            $blocked = [regex]::Matches($body,'(?m)^    if: \$\{\{ false \}\}').Count
+            if ($count -eq 0 -or $count -ne $blocked) {
+              throw ('POLICY|HOLD|legacy_workflow_executable|' + $name + '|jobs=' + $count + '|blocked=' + $blocked)
+            }
+            Write-Host ('POLICY|WORKFLOW|FROZEN|' + $name + '|jobs=' + $blocked)
+          }
+          $gnuTooling = $false
+          if ([IO.File]::Exists($docker)) {
+            $line = [IO.File]::ReadAllText($docker)
+            $gnuTooling = [regex]::IsMatch($line,'\b(g\+\+|gcc|gawk|make|grep|findutils)\b')
+            if ($gnuTooling) { Write-Host 'POLICY|GNU|UNAPPROVED|experimental_Dockerfile_toolchain' }
+          }
+          if ($scripts.Count -ne 0 -or $gnuTooling) {
+            throw "POLICY|HOLD|posix_scripts=$($scripts.Count)|unapproved_gnu_probe=$gnuTooling|migration_required"
+          }
+          Write-Host 'POLICY|SOURCE_CHECK|PASS|no_known_unapproved_ci_shell_or_probe'
+          Write-Host 'POLICY|LIMIT|source_scan_only|third_party_and_organization_inventory_still_required'
+
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-licenses') -Operation 'licenses_07' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|licenses_07|TAIL'}

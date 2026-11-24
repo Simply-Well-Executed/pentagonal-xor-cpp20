@@ -1,0 +1,91 @@
+# SPDX-License-Identifier: 0BSD
+# Isolated preflight, NOT a bypass of the EXCITE -> EXCITED release gate.
+# Uses original RFC 2328 SPF concepts and a protected RUSPT A* fixture.
+name: DOVIA | Native C++20 RUSPT x RFC2328 SPF Policy Preflight
+on:
+  push:
+    branches:
+      - feat/quaddi-ni-oracle-cpp20-20261123
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dovia-native-policy:
+    name: DOVIA* original SPF YANG and RUSPT YIN COREAO
+    runs-on: windows-2025
+    timeout-minutes: 12
+    steps:
+      - name: Read exact immutable source revision via PowerShell
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          if($env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:SOURCE_SHA -cnotmatch '^[0-9a-f]{40}$'){
+            throw 'DOVIA|HOLD|revision_or_runner_mismatch'
+          }
+          $uri='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:SOURCE_SHA
+          $zip=Join-Path $env:RUNNER_TEMP 'dovia-source.zip'
+          $stage=Join-Path $env:RUNNER_TEMP 'dovia-source'
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-dovia-native-preflight'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $stage
+          $roots=@(Get-ChildItem -LiteralPath $stage -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/excited-native/dovia_star.hpp'))){
+            throw 'DOVIA|HOLD|exact_source_absent'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'dovia-root.txt'),$roots[0].FullName)
+      - name: Compile and execute all four independent native witness tests
+        shell: pwsh
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'dovia-root.txt'))
+          $native=Join-Path $root 'ci/excited-native'
+          $build=Join-Path $env:RUNNER_TEMP 'dovia-build'
+          & cmake -S $native -B $build -DBUILD_TESTING=ON
+          if($LASTEXITCODE -ne 0){throw 'DOVIA|HOLD|cmake_configure'}
+          & cmake --build $build --config Release --target swe_excited_astar swe_dovia_policy --parallel 1
+          if($LASTEXITCODE -ne 0){throw 'DOVIA|HOLD|native_msxx_o2'}
+          & ctest --test-dir $build -C Release --output-on-failure -R '^excited_'
+          if($LASTEXITCODE -ne 0){throw 'DOVIA|HOLD|native_ctest'}
+          $binary=Join-Path $build 'Release/swe_excited_astar.exe'
+          if(-not [IO.File]::Exists($binary)){throw 'DOVIA|HOLD|native_executable_missing'}
+          $output=@(& $binary)
+          if($LASTEXITCODE -ne 0){throw 'DOVIA|HOLD|native_markdown_exit'}
+          $joined=[string]::Join([char]10,$output)
+          if(-not $joined.Contains('**DOVIA YANG and RUSPT YIN verified**') -or
+             -not $joined.Contains('**DOVIA protected path cost:** 6') -or
+             -not $joined.Contains('3 x 45 + 1 x 45 = 180 degrees') -or
+             -not $joined.Contains('**RELEASE=HOLD**')){
+            throw 'DOVIA|HOLD|evidence_fields_invalid'
+          }
+          $digest=(Get-FileHash -LiteralPath (Join-Path $native 'dovia_star.hpp') -Algorithm SHA256).Hash.ToLowerInvariant()
+          $binaryDigest=(Get-FileHash -LiteralPath $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+          $record='DOVIA|YANG=RFC2328_ORIGINAL_SPF|YIN=RUSPT_GUARDED_ASTAR|COREAO=180DEG|TESTS=4_PASS|SOURCE_SHA256='+$digest+'|BINARY_SHA256='+$binaryDigest+'|RELEASE=HOLD'
+          Write-Host $record
+          if(-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)){
+            [IO.File]::AppendAllText($env:GITHUB_STEP_SUMMARY,
+              ('## DOVIA* native policy preflight'+[char]10+[char]10+
+               'Source: '+$env:SOURCE_SHA+[char]10+[char]10+
+               'Four CTests: PASS (if this step is green)'+[char]10+[char]10+
+               'Guard failures: blocked; no switch configuration or GPS data.'+
+               [char]10+[char]10+'**RELEASE=HOLD**'+[char]10),
+              [Text.UTF8Encoding]::new($false))
+          }
+      - name: Keep independent preflight separate from release authority
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'DOVIA|NO_AUTO_MERGE|NO_ISSUE_CLOSE|EXCITE_GATE_UNCHANGED|RELEASE=HOLD'

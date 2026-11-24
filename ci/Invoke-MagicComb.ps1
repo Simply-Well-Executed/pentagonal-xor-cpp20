@@ -37,6 +37,12 @@ if ($Mode -eq 'SelfTest') {
     return
 }
 $root = [IO.Path]::GetFullPath($RepositoryRoot)
+# Externally issued legal texts are canonical bytes, not MagicComb input.
+# Verify the local source-bound registry first; never run NFKC on a legal term.
+$registryGate = Join-Path $root 'ci/Assert-LocalLicenseRegistry.ps1'
+if (-not [IO.File]::Exists($registryGate)) { throw 'MagicComb local license registry checker missing' }
+& $registryGate -RepositoryRoot $root
+
 $start = [Diagnostics.ProcessStartInfo]::new()
 $start.FileName = 'git'
 $start.WorkingDirectory = $root
@@ -84,6 +90,9 @@ foreach ($rel in $paths) {
         throw "NUL byte / binary candidate requires explicit review: $path"
     }
     $scanned++
+    # Byte-exact external license copies are separately hash-pinned.
+    # Applying Unicode normalization here would corrupt legal evidence.
+    if ($path -ceq 'LICENSE' -or $path.StartsWith('LICENSES/text/',[StringComparison]::Ordinal)) { continue }
     $result = Invoke-TextComb $original
     if ($original -cne $result) {
         $oldSha = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
@@ -102,6 +111,7 @@ $audit = [ordered]@{
     powershell_core_version=[string]$PSVersionTable.PSVersion
     nesting_depth=$NestingDepth
     transform='strict UTF-8 decode -> Unicode NFKC -> remove U+200B..U+200D and U+FEFF -> UTF-8 encode'
+    legal_texts='LICENSE and LICENSES/text/** separately verified by standard 0BSD derivation / local Git-blob lock; never NFKC-transformed'
     tracked_files_scanned=$scanned
     files_changed=$changed.Count
     changes=@($changed.ToArray())
