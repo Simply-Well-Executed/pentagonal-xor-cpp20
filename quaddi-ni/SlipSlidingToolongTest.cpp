@@ -6,6 +6,7 @@
 #include "../shared/slidingtoolong.hpp"
 #include "../shared/constant_formats_register_001.hpp"
 #include "../shared/precision_rounding_policy_001.hpp"
+#include "../shared/fudgelessslippingtoolong_12d.hpp"
 #include <stdio.h>
 using namespace swe::slipslidingtoolong;
 namespace fmt=swe::constant_formats_register_001;
@@ -124,12 +125,14 @@ static_assert(precision_rounding_001(),"PRECISION-ROUNDING-001: exact round-firs
 int main(){
  if(!WIDTH_MATRIX||!NARROWING_REJECTS||!BIT_OPERATIONS||!OWNED_RING||
     !intensity_reference()||!requested_width_routes()||
-    !precision_rounding_001())return 1;
+    !precision_rounding_001()||
+    !swe::fudgelessslippingtoolong_12d::SERIES_12_PASS)return 1;
  printf("SLIPSLIDINGTOOLONG|WIDTHS=10|PAIRS=100|GLINTING=45|GLIZZING=45|EQUAL=10|PASS\n");
  printf("SLIPSLIDINGTOOLONG|NARROWING_LOSS_REJECTED=45|Q62_128_TO_64=PASS|32BIT_LOSS_REJECTED=PASS\n");
  printf("GUARDMEMORYGUARD|MXRING=PASS|SHIFT_LEFT=PASS|SHIFT_RIGHT=PASS|BIT_AND=PASS|ADD_SUBTRACT=PASS\n");
  printf("GUARDMEMORYGUARD|SPY=OWNED_METADATA_ONLY|THREAD_SAFE=NOT_PROVEN|CRASH_DURABLE=NOT_PROVEN|RELEASE=HOLD\n");
  printf("CONSTANT_FORMATS|RECORDS=21|U64=PASS|LONG16=PASS|U32_PAIRS=PASS|WIDE_ROUTES=PASS|RELEASE=HOLD\n");
  printf("PRECISION_ROUNDING|EXACT_128_PRODUCT=PASS|HEAD_TAIL_RECONSTRUCT=PASS|NEAREST_TIES_ODD=PASS|ROUND_FIRST=PASS|RELEASE=HOLD\n");
+ printf("FUDGELESSSLIPPINGTOOLONG|1D_TO_12D=PASS|LEVEL_9=DECIMAL_CHUNK|FAST9_SLOW9=EXACT_MATCH|BITS_12D=353|GLINTING_384=PASS|MIDPOINT_ODD=PASS|NO_SPEED_CLAIM|RELEASE=HOLD\n");
  return 0;
 }
