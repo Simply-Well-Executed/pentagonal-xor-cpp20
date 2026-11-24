@@ -16,6 +16,17 @@
 
 </div>
 
+<details>
+<summary>🏁 PentaPi Hulao Gate · 255-lap chaos engineering exhibit · illustrated pentagon</summary>
+
+[![PentaPi Hulao Gate, a five-gate fantasy race circuit and the fictional final sanctuary](docs/pentapi_hulao_gate.svg)](docs/PENTAPI_HULAO_GATE_255.md)
+
+**[Open the 255-lap Markdown exhibit](docs/PENTAPI_HULAO_GATE_255.md)** · **[Explore the standalone 256-lap XHTML source](docs/PentaPi_Hulao_256.xhtml)**
+
+The test is bounded and in-memory, with no real outages or destruction. Lap 256 is fictional; compiler Delphi 7 qualification and all releases remain on HOLD. See the latest PR #95 for the live test evidence.
+
+</details>
+
 ---
 
 ## Local-first evidence and licensing registry
