@@ -1,6 +1,6 @@
 # Native Euler number: Q64 conversion
 
-Status: EXPLORATORY / HOLD. Current protocol EULER-Q64-v3. SPDX-License-Identifier: 0BSD.
+Status: EXPLORATORY / HOLD. Current protocol EULER-Q64-v4. SPDX-License-Identifier: 0BSD.
 
 ## Authority and correction
 
@@ -9,23 +9,25 @@ Authoritative Pi comment (original, unchanged): https://github.com/Simply-Well-E
 The original author character is U+213C (ℼ), not U+03C0 (π).
 PR #3 uses a 64-bit integer seed multiplied in a 128-bit intermediate, then shifted right by **62**. The earlier Euler draft copied that Q62 shift, but the operator has now requested a **64-bit fractional scale**.
 
-A number greater than one (e = 2.718...) cannot be encoded directly as an unsigned 64-bit Q64 fraction. Therefore encode **e/4** as a Q64 fraction and multiply by **4 * 10^17** before shifting 64 bits:
+A number greater than one (e = 2.718...) cannot be encoded directly as an unsigned 64-bit Q64 fraction. Therefore encode **e/4** as a Q64 fraction and multiply by **4 * 10^17** and divide by 2^64 using **round-to-nearest, ties-to-even**:
 
-```cpp
-const unsigned long long result = (unsigned long long)(
-    ((__uint128_t)(unsigned long long)12535862302449814170ULL *
-     400000000000000000ULL) >> 64);
-// Output: 271828182845904523
-```
+\`\`\`cpp
+const __uint128_t numerator =
+    (__uint128_t)12535862302449814170ULL * 400000000000000000ULL;
+const __uint128_t denominator = (__uint128_t)1 << 64;
+const unsigned long long result =
+    swe::euler_native::round_nearest_even(numerator, denominator);
+// Output: 271828182845904524
+\`\`\`
 
-Explicit decimal placement: 2.71828182845904523 (18 significant digits, truncated).
+Explicit decimal placement: 2.71828182845904524 (18 significant digits, rounded nearest ties-even). The prior truncated value 271828182845904523 and its nonzero remainder remain in source assertions as labeled provenance.
 
-Both Q62 and Q64 expressions yield the same 18-digit integer because scaling the multiplier by four and raising the shift by two are algebraically equivalent. That mathematical equivalence does not erase the correction: **the active Euler implementation shifts by 64**, and the deprecated Q62 implementation is retained only in Git history.
+The Q62 and Q64 rescalings retain the same rational value when the numerator and denominator are both scaled exactly; the old truncated integer must not be reused as the rounded v4 result. That mathematical equivalence does not erase the correction: **the active Euler implementation shifts by 64**, and the deprecated Q62 implementation is retained only in Git history.
 
 ## Source and validation
 
-- `shared/euler_native.hpp` implements only the native 128-bit multiply/shift path with one static assertion.
-- `tests/euler_native_test.cpp` checks the output in CTest.
+- `shared/euler_native.hpp` implements only the native 128-bit multiply/shift path with compile-time exact quotient, remainder, rounded-value and ties-even assertions.
+- `tests/euler_native_test.cpp` checks the rounded output and ties-even boundaries in CTest.
 - The seed 12535862302449814170 was independently checked using the Euler factorial series; it is an encoded rational approximation, not an infinitely precise e.
 - No 32-bit limb decomposition, no 64-bit-limb fallback, no POSIX, Python, Node, network fetch, standard-library header, or runtime library is introduced in this implementation.
 - `__uint128_t` is a compiler extension rather than ISO C++20. The header intentionally rejects unsupported compilers, including MSVC, instead of silently changing algorithms. The repository's multi-platform validation therefore remains on HOLD.
@@ -33,7 +35,7 @@ Both Q62 and Q64 expressions yield the same 18-digit integer because scaling the
 
 ## History and release
 
-Prior factorial-series integer-interval work and Q62 draft remain recoverable from Git history, not asserted as the current Euler algorithm. PR #17's 16-digit floating display policy remains separate. The old Pi comment remains authoritative for its own expression and unchanged.
+Prior factorial-series integer-interval work and Q62 draft remain recoverable from Git history, not asserted as the current Euler algorithm. PR #17's 16-digit floating display policy remains separate. The old Pi comment remains authoritative for its own expression and unchanged. EULER-Q64-v3 truncated behavior remains in immutable Git history and is not overwritten as a historical claim. This v4 change does not resolve the existing MSVC compiler incompatibility or other PR-PARITY failures.
 
 Current repository-wide GNU/POSIX and optimization-policy conflicts are unrelated release blockers. Do not merge/publish until requested compatibility and validation decisions are explicitly reviewed.
 
