@@ -36,8 +36,8 @@ inline constexpr char PRE_SHIFT_WHITESPACE[] = "wait()\n (wait)\npause()";
 [[nodiscard]] constexpr bool whitespace_witness() noexcept {
  const char* pointer = PRE_SHIFT_WHITESPACE;
  if(pointer[6]!='\n'||pointer[7]!=' '||pointer[8]!='('||
-    pointer[14]!='\n'||pointer[15]!='p'||pointer[20]!=')'||
-    pointer[21]!='\0')return false;
+    pointer[14]!='\n'||pointer[15]!='p'||pointer[20]!='('||
+    pointer[21]!=')'||pointer[22]!='\0')return false;
  const u32 shifted = static_cast<u32>(pointer[0]) >> 1u;
  return shifted==(static_cast<u32>(pointer[0]) / 2u);
 }
