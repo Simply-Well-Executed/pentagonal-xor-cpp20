@@ -44,6 +44,42 @@ jobs:
             throw 'QUADDI|HOLD|source_incomplete'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'),$roots[0].FullName)
+      - name: C++20 native preflight and XHTML zero-power witness
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          $evidence=Join-Path $env:RUNNER_TEMP 'quaddi-native-preflight'
+          [IO.Directory]::CreateDirectory($evidence)|Out-Null
+          $source=Join-Path $root 'quaddi-ni/QuadDiNI.cpp'
+          $before=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash
+          $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
+          if(-not [IO.File]::Exists($vswhere)){throw 'QUADDI|HOLD|vswhere_missing'}
+          $install=@(& $vswhere -latest -products '*' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -property installationPath)
+          if($install.Count -ne 1){throw 'QUADDI|HOLD|MSVC_missing'}
+          & (Join-Path $install[0] 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          $cl=(Get-Command cl.exe -ErrorAction Stop).Source
+          $exe=Join-Path $evidence 'quaddi-preflight.exe'
+          & $cl /nologo /std:c++20 /O2 /W4 /permissive- /fp:precise /EHsc ('/Fe:'+$exe) $source
+          if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($exe)){throw 'QUADDI|HOLD|native_preflight_compile_failed'}
+          $lines=Join-Path $root 'quaddi-ni/default-lines.tsv'
+          $xs=Join-Path $root 'quaddi-ni/default-xs.tsv'
+          $misc=Join-Path $root 'quaddi-ni/default-misc.tsv'
+          $out=Join-Path $evidence 'seed0-native.tsv'
+          & $exe $lines $xs $misc > $out
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_zero_default_failed'}
+          $rows=[IO.File]::ReadAllLines($out)
+          $expected=[string]::Join([char]9,@('META','1','6','3','1','10','0'))
+          if($rows.Count -lt 100 -or $rows[0] -cne $expected){throw 'QUADDI|HOLD|native_zero_metadata_bad'}
+          $report=Join-Path $evidence 'quaddi-native-zero.xhtml'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-Render.ps1') -WitnessFile $out -Destination $report
+          if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($report)){throw 'QUADDI|HOLD|native_render_failed'}
+          $p6=Join-Path $evidence 'seed6-native.tsv'
+          & $exe $lines $xs 6 $misc > $p6
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_sixth_power_failed'}
+          if($before -cne (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash){throw 'QUADDI|HOLD|source_mutation'}
+          Write-Host 'QUADDI|NATIVE_PREFLIGHT=PASS|SEED_POWER_DEFAULT=0|POWERS=0,6|XHTML=PASS|RELEASE=HOLD'
       - name: Tandem native and Oracle evaluation then scriptless XHTML report
         shell: pwsh
         run: |
