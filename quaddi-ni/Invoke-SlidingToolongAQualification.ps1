@@ -22,7 +22,8 @@ $cpp=Join-Path $root 'quaddi-ni/SlidingToolongA.cpp'
 $javaSrc=Join-Path $root 'quaddi-ni/SlidingToolongA.java'
 $lines=Join-Path $root 'quaddi-ni/default-lines.tsv'
 $render=Join-Path $root 'quaddi-ni/Invoke-SlidingToolongARender.ps1'
-$source=@($cpp,$javaSrc,$lines,$render,$PSCommandPath)
+$misc=Join-Path $root 'quaddi-ni/default-misc.tsv'
+$source=@($cpp,$javaSrc,$lines,$misc,$render,$PSCommandPath)
 foreach($path in $source){if(-not [IO.File]::Exists($path)){throw ('SLIDINGTOOLONGA|HOLD|source_missing|'+$path)}}
 $before=@($source|ForEach-Object{(Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash})
 $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
@@ -130,6 +131,10 @@ if($OracleJdkHome){
 $out=Join-Path $ev 'slidingtoolonga-origin.xhtml'
 & pwsh -NoLogo -NoProfile -NonInteractive -File $render -WitnessFile $chosen -Destination $out
 if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($out)){throw 'SLIDINGTOOLONGA|HOLD|XHTML_failed'}
+$power647Report=Join-Path $ev 'slidingtoolonga-power647.xhtml'
+& pwsh -NoLogo -NoProfile -NonInteractive -File $render -WitnessFile (Join-Path $ev 'power647.tsv') -Destination $power647Report
+if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($power647Report)){throw 'SLIDINGTOOLONGA|HOLD|XHTML647_failed'}
+Write-Host 'SLIDINGTOOLONGA|EXACT_646_647=PASS|XHTML647=PASS|RELEASE=HOLD'
 $after=@($source|ForEach-Object{(Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash})
 for($i=0;$i -lt $source.Count;$i++){if($before[$i] -cne $after[$i]){throw 'SLIDINGTOOLONGA|HOLD|source_mutated'}}
 Write-Host ('SLIDINGTOOLONGA|NATIVE=PASS|XHTML=PASS|SELECTED_POWER='+$canonical+'|SOURCE_SHA256='+$before[0].ToLowerInvariant()+'|RELEASE=HOLD')

@@ -3,7 +3,8 @@
 # inverse-polynomial window. No CSS/JS, no automatic fitting or normalization.
 [CmdletBinding()]
 param([Parameter(Mandatory=$true)][string]$WitnessFile,
-      [Parameter(Mandatory=$true)][string]$Destination)
+      [Parameter(Mandatory=$true)][string]$Destination,
+      [string]$MiscFile='')
 Set-StrictMode -Version Latest
 $ErrorActionPreference='Stop'
 $c=[Globalization.CultureInfo]::InvariantCulture
@@ -40,6 +41,10 @@ foreach($line in $records){
   Sign=[int]$f[5]; Scale=$f[6]; Digits=$f[7]; Mantissa=$f[8]
  })
 }
+if(-not $MiscFile){$MiscFile=Join-Path $PSScriptRoot 'default-misc.tsv'}
+if(-not [IO.File]::Exists($MiscFile)){throw 'SLIDINGTOOLONGA|HOLD|misc_page_file_missing'}
+$miscPages=@([IO.File]::ReadAllLines($MiscFile,[Text.Encoding]::ASCII)|Where-Object{$_ -and -not $_.StartsWith('#')})
+foreach($m in $miscPages){if($m -cnotmatch '^[A-Za-z0-9_.-]+$'){throw 'SLIDINGTOOLONGA|HOLD|unsafe_misc_page_name'}}
 $b=[Text.StringBuilder]::new()
 function Add([string]$s){$null=$b.AppendLine($s)}
 Add '<?xml version="1.0" encoding="UTF-8"?>'
@@ -47,7 +52,7 @@ Add '<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">'
 Add '<head><meta charset="UTF-8" /><title>SLIDINGTOOLONGA | exact origin witness</title></head><body>'
 Add '<h1>SLIDINGTOOLONGA | QuadDi-NI exact origin</h1>'
 Add ('<p>SEED POWER: '+(Escape $powerText)+' | EXACT SEED: TRUE | ORIGIN: (0,0) | RULER REGISTER COUNT: #1 | RELEASE=HOLD</p>')
-Add ('<p>PAGE COUNT: '+(6+$rows.Count)+' | SOURCE COUNT: '+$rows.Count+' | six ordered states remain separate</p>')
+Add ('<p>PAGE COUNT: '+(6+$miscPages.Count+$rows.Count)+' | SOURCE COUNT: '+$rows.Count+' | MISC PAGES: '+$miscPages.Count+' | six ordered states remain separate</p>')
 Add '<p>Source seed is exactly (m*x+b)^p at x=0, using integer mantissa and decimal scale. No floating-point overflow. For large p, nearest-prime root is UNVERIFIED, not declared valid.</p>'
 $names=@('SEED','NEGATIVE_IMAGINARY','PRIME_ROOT','POSITIVE_PI','POSITIVE_IMAGINARY','NEGATIVE_PI')
 $expr=@('S','S - i','S - i + R','S - i + R + pi','S + R + pi','S + R')
@@ -58,8 +63,14 @@ for($page=1;$page -le 6;$page++){
  Add ('<p>State arithmetic status: '+$(if($page -le 2){'EXACT_SYMBOLIC'}else{'PRIME_ROOT_UNRESOLVED'})+'. No implied gamma radiation or physical radioactivity.</p>')
  Add '</details>'
 }
+for($j=0;$j -lt $miscPages.Count;$j++){
+ $miscPage=7+$j
+ Add ('<details><summary>PAGE '+$miscPage+' | MISC '+(Escape $miscPages[$j])+'</summary>')
+ Add '<p>Miscellaneous page retained without mutating any source line, state or ruler. GammGamma prime-root verification remains HOLD if not proved.</p>'
+ Add '</details>'
+}
 foreach($r in $rows){
- $page=6+$r.Ordinal
+ $page=6+$miscPages.Count+$r.Ordinal
  Add ('<details><summary>PAGE '+$page+' | SOURCE #'+$r.Ordinal+' '+(Escape $r.Name)+' | EXACT SEED TRUE</summary>')
  Add ('<p>SOURCE IDENTITY #'+$r.Ordinal+' | slope='+(Escape $r.Slope)+' | intercept='+(Escape $r.Intercept)+'</p>')
  Add ('<p>Original centrix: x = -('+(Escape $r.Intercept)+')/('+(Escape $r.Slope)+') when slope is nonzero. Cartesian origin: (0,0).</p>')
@@ -68,7 +79,8 @@ foreach($r in $rows){
  Add ('<pre>'+(Escape $r.Mantissa)+'</pre></details>')
  Add '<p>Fixed, equal-unit display: X from -2 to +2; Y from -2 to +2. One numerical unit = 80 SVG units on both axes. No fit, normalization or moving ruler.</p>'
  Add '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-label="Finite X/Y polynomial window with both rulers, the (0,0) origin and exact source provenance">'
- Add '<defs><clipPath id="exact-window"><rect x="190" y="185" width="320" height="320"/></clipPath></defs>'
+ $clip='exact-window-'+$r.Ordinal
+ Add ('<defs><clipPath id="'+$clip+'"><rect x="190" y="185" width="320" height="320"/></clipPath></defs>')
  Add '<rect x="190" y="185" width="320" height="320" fill="none" stroke="currentColor"/>'
  foreach($i in @(-2,-1,0,1,2)){
   $xpx=350+$i*80;$ypy=345-$i*80
@@ -113,7 +125,7 @@ foreach($r in $rows){
     $paths.Add(('M'+($points -join ' L')))
    }
   }
-  Add '<g clip-path="url(#exact-window)">'
+  Add ('<g clip-path="url(#'+$clip+')">')
   foreach($d in $paths){
    Add ('<path d="'+$d+'" fill="none" stroke="#9333ea" stroke-width="3" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0"><animate attributeName="stroke-dashoffset" from="1" to="0" dur="1.2s" fill="freeze"/></path>')
   }
@@ -139,4 +151,4 @@ $settings.XmlResolver=$null
 $reader=[Xml.XmlReader]::Create([IO.Path]::GetFullPath($Destination),$settings)
 try{while($reader.Read()){}}
 finally{$reader.Dispose()}
-Write-Host ('SLIDINGTOOLONGA|XHTML=PASS|PAGES='+(6+$rows.Count)+'|POWER='+$powerText)
+Write-Host ('SLIDINGTOOLONGA|XHTML=PASS|PAGES='+(6+$miscPages.Count+$rows.Count)+'|POWER='+$powerText)

@@ -74,3 +74,5 @@ Manually run the exact qualification on Windows with:
     pwsh -NoLogo -NoProfile -NonInteractive -File quaddi-ni/Invoke-SlidingToolongAQualification.ps1 -RepositoryRoot ROOT -EvidenceDirectory OUTSIDE_REPO -Exponent 647
 
 The separate optional `-OracleJdkHome` may be provided to require tandem Oracle parity.
+
+**Expanded XHTML pagination:** SLIDINGTOOLONGA renders the six ordered states, every entry in `default-misc.tsv`, and one separately folded page per named line. Its report now qualifies the exact **Power 647** visualization as a CI canary, even when the selected input defaults to Power 0. Both pages state their exact exponent and disclose that the inverse-power visual path is only approximate. Additional misc labels are accepted through `-MiscFile`; the page count is derived from the input without a fixed page maximum.
