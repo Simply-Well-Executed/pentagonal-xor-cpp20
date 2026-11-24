@@ -8,6 +8,7 @@
 #include "../shared/precision_rounding_policy_001.hpp"
 #include "../shared/fudgelessslippingtoolong_12d.hpp"
 #include "../shared/fudgelessslippingtoolong_100d.hpp"
+#include "../shared/fudgelessslippingtoolong_width_matrix_001.hpp"
 #include <stdio.h>
 using namespace swe::slipslidingtoolong;
 namespace fmt=swe::constant_formats_register_001;
@@ -124,6 +125,15 @@ namespace prec=swe::precision_rounding_policy_001;
 static_assert(precision_rounding_001(),"PRECISION-ROUNDING-001: exact round-first / nearest-ties-odd witness failed");
 
 int main(){
+ const auto width_matrix=swe::fudgelessslippingtoolong_width_matrix_001::run();
+ if(!width_matrix.valid||width_matrix.widths!=10u||
+    width_matrix.routes!=100u||width_matrix.checked_stages!=100u||
+    width_matrix.accepted!=89u||width_matrix.rejected!=911u||
+    width_matrix.rocket_matches!=99u||
+    width_matrix.limb64_roundtrips!=100u||
+    width_matrix.highest_bits!=2984u||
+    !width_matrix.baseline_512_and_512_to_128||
+    !width_matrix.exact_roundtrip)return 1;
  const auto century=swe::fudgelessslippingtoolong_100d::run();
  if(!century.valid||century.ascents!=99u||century.descents!=99u||
     century.highest_bits!=2984u||!century.direct_hop_matches||
@@ -142,5 +152,6 @@ int main(){
  printf("FUDGELESSSLIPPINGTOOLONG|1D_TO_12D=PASS|LEVEL_9=DECIMAL_CHUNK|FAST9_SLOW9=EXACT_MATCH|BITS_12D=353|GLINTING_384=PASS|MIDPOINT_ODD=PASS|NO_SPEED_CLAIM|RELEASE=HOLD\n");
  printf("FUDGELESSSLIPPINGTOOLONG|1D_TO_100D_TO_1D=PASS|UP=99|DOWN=99|BITS_100D=2984|LIMBS=96|ROCKET_LEFT=CAR_RIGHT|DIRECT_HOP_WITNESS=PASS|OPERATORS_12_REPLAY_2=ORDERED_METADATA_ONLY|DOMAIN_HOLDS=8|NO_SPEED_CLAIM|RELEASE=HOLD\n");
  printf("OPERATOR_REPLAY|BIDI=METADATA|TRIDI=METADATA|PIDI=SOURCE_REFERENCE|PIPI=SYMBOLIC|REPLAY_PASSES=2|TOKENS_PER_PASS=12|NEEDS_DOMAIN=8|RELEASE=HOLD\n");
+ printf("SOVIETA_WIDTHS|32_64_128_192_224_256_384_448_480_512=PASS|PAIR_ROUTES=100|STAGE_PROJECTIONS=1000|LOSSLESS=89|LOSS_REJECTED=911|512_TO_128=PASS_OR_REJECT_LOSS|512_BASELINE=PASS|LIMB32_LIMB64_PARITY=PASS|100D_ROUNDTRIP=PASS|NO_SPEED_CLAIM|RELEASE=HOLD\n");
  return 0;
 }
