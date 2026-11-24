@@ -10,7 +10,7 @@ program Delphi007PinPipe;
 {$Q+}
 {$I+}
 
-uses SysUtils, BranchPinToTsht;
+uses SysUtils, BranchPinToTsht, BuildSpeedProfiler;
 
 function SplitPipeLine(const Line:string; var Parts:array of string):Integer;
 var I,StartIdx,FieldIdx:Integer;
@@ -83,10 +83,27 @@ var
  N,PassNum,Id,SrcLine,Width,NextAddr,Target:Word;
  Enc:TBranchEncoding;
  Count:Integer;
+ Profiler:TSpeedProfiler;
+ Proposed,Qualified:TAsmCompilerOptions;
+ ResolvedPath:string;
 begin
  Tracker:=nil;
+ Profiler:=nil;
  try
+   { Preserve user's speed proposal as data, never disable runtime guards. }
+   ConfigureBuildOptions(bpFinal,Proposed);
+   if QualifiedBuildSafe(Proposed) then
+     raise Exception.Create('PENTADI|HOLD|speed_profile_control_drift');
+   Qualified:=Proposed;
+   ApplyQualifiedSafety(Qualified);
+   if not QualifiedBuildSafe(Qualified) then
+     raise Exception.Create('PENTADI|HOLD|qualified_safety_failed');
+   WriteLn('PENTADI_PROFILE|USER_FINAL_SPEED=EXPLORATORY_UNSAFE|QUALIFIED_RANGE_OVERFLOW_IO=PASS|RELEASE=HOLD');
+   Profiler:=TSpeedProfiler.Create(True);
+   Profiler.BeginStage('i3382-DNF-hash-remap');
    ValidateRemap;
+   Profiler.EndStage;
+   Profiler.BeginStage('C11-branch-stream');
    Tracker:=TBranchOptimizerTracker.Create(True);
    Count:=0;
    while not EOF(Input) do begin
@@ -117,7 +134,14 @@ begin
        Enc,Width,2,NextAddr,Target,True);
      Inc(Count);
    end;
+   Profiler.EndStage;
+   if not Profiler.ResolveSearchPath('BranchPinToTsht.pas',
+     [GetCurrentDir],ResolvedPath) then
+     raise Exception.Create('PENTADI|HOLD|profiler_source_probe_failed');
+   Profiler.BeginStage('branch-report');
    Tracker.DumpReport;
+   Profiler.EndStage;
+   Profiler.DumpReport;
    if (Count<>9) or (Tracker.OscillatingCount<>1) or
       (Tracker.PinnedCount<>1) or (Tracker.RangeErrorCount<>4) then
      raise Exception.Create('PENTADI|HOLD|witness_counts');
@@ -125,8 +149,11 @@ begin
  except
    on E:Exception do begin
      WriteLn('PENTADI_DELPHI7|HOLD|'+E.Message);
+     if Profiler<>nil then Profiler.Free;
+     if Tracker<>nil then Tracker.Free;
      Halt(2);
    end;
  end;
+ Profiler.Free;
  Tracker.Free;
 end.
