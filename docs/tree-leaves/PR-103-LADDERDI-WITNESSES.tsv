@@ -1,0 +1,10 @@
+source_commit	workflow_run	lane	job_conclusion	job_id	job_url	scope
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	HeptaDi	HOLD	138624228128	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228128	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	OctaDi	HOLD	138624228653	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228653	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	NonaDi	PASS	138624228735	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228735	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	EnneaDi	PASS	138624228704	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228704	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	DecaDi	PASS	138624228563	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228563	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	UnDecaDi	PASS	138624228754	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228754	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	HenDecaDi	PASS	138624228863	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228863	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	DoDecaDi	HOLD	138624228644	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228644	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
+01ebcaf6fd3a6402fbaefe103d7b5ffb3e2d249d	45444022883	TriDecaDi	HOLD	138624228552	https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45444022883/job/138624228552	HISTORICAL_JOBS_ONLY_RELEASE_HOLD
