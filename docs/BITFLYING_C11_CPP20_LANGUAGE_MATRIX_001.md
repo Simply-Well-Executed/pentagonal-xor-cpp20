@@ -39,4 +39,16 @@ The workflow must finish all positive and expected-negative tests, and the C++20
 
 **Requested release authority:** no silent changes to the original 21 constants, operator definitions, original 10 widths, historical Q62 rounding, or 100D source-ledger data. Changes are additive and reviewable in draft PR #95.
 
-**Qualification status at initial authoring:** the [new four-lane CI run](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/95/checks) must be inspected before replacing PENDING with PASS. The XHTML bounded-profile validator is separate from a full official DTD validator. Any negative test outcome stays recorded as a NOT VALID compiler-mode result rather than erased. `RELEASE=HOLD`.
+**Executed qualification: SUCCESS**, source commit `1b3d8798d4fcab5317936b0a0083c08c45c262ce`. [Four-lane QuadDi run #45320125497](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45320125497) and [DIAERY regression #45320125546](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45320125546) both completed **SUCCESS**.
+
+**C11 and C++20 actual MSVC compiler outcomes:** four positive compiles and runs passed; two cross-language compiles produced expected errors. The runner logged `BITFLYING_COMPILER|SAME_MSVC_CL=PASS|VALID=4|NOT_VALID=2|SOURCE_UNCHANGED=PASS|RELEASE=HOLD`. All six source/mode classifications remain in the table above. An earlier [failed CI run #45319772573](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45319772573) encountered an MSVC invocation error (`D8003 missing source filename`) from the experimental script, and was NOT evidence about C-vs-C++ language compatibility. The script's argv was corrected before the successful run. History preserved.
+
+**Oracle Java:** official pinned 27.0.1.1 vendor and archive SHA-256 `9a2972e8ade166718fdc47e903b10b88e046b9839efb0a5cacb994a4be3266f7` verified; native/Oracle program parity passed for seven baseline powers plus independent source-count test. Vendor-specific license remains external.
+
+**XHTML 1.0 Strict profile:** generated a separate XML document with exact Strict DOCTYPE and XHTML namespace, no SVG/script, and XML well-formedness check. The runner emitted:
+```text
+QUADDI_XHTML10|XML_WELLFORMED=PASS|STRICT_DOCTYPE=PASS|NAMESPACE=PASS|FOUR_LANE_REPORT=PASS|DTD_VALIDATION=NOT_PROVEN|SHA256=1b8a9734e6258c89651a056416f45e1b91b3badded9497185e840ad5f25c8980|RELEASE=HOLD
+```
+**Full external W3C DTD validation is NOT PROVEN.** A Strict DOCTYPE and XML well-formedness are useful necessary checks but do not by themselves establish full DTD conformance. This remains an explicitly scoped limitation, not a hidden PASS or failure of the separate tested profile.
+
+**Release:** HOLD, PR #95 draft. The documentation-only evidence update occurred after the tested source commit. No auto-porting of all C++20 files to C11, no changes to the 21 source constants, no new human authorization.
