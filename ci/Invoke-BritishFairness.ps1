@@ -27,10 +27,10 @@ if($colors.Length -ne 3 -or $baseline.Length -ne 3 -or
   throw 'BRITISHISH|HOLD|THREE_EQUALITY_LINES'
 }
 [void][IO.Directory]::CreateDirectory($out)
-# WHITE is an empty scratchpad AIRGAP, never a competing candidate.
-$white=Join-Path $out 'WHITE-AIRGAP.txt'
-[IO.File]::WriteAllText($white,'',$enc)
-$whiteDigest=(Get-FileHash -LiteralPath $white -Algorithm SHA256).Hash.ToLowerInvariant()
+# ARIRANG is an empty neutral scratchpad, never a competing candidate.
+$arirang=Join-Path $out 'ARIRANG.txt'
+[IO.File]::WriteAllText($arirang,'',$enc)
+$arirangDigest=(Get-FileHash -LiteralPath $arirang -Algorithm SHA256).Hash.ToLowerInvariant()
 $tab=[string][char]9
 $lines=[Collections.Generic.List[string]]::new()
 $lines.Add((@('trial','seed_sha256','red_baseline','green_baseline','blue_baseline',
@@ -78,9 +78,9 @@ for([int]$block=0;$block -lt 85;$block++){
       $predicted,$actual,'PASS') -join $tab))
   }
 }
-if([IO.File]::ReadAllText($white,$enc).Length -ne 0 -or
- (Get-FileHash -LiteralPath $white -Algorithm SHA256).Hash.ToLowerInvariant() -cne $whiteDigest){
- throw 'BRITISHISH|HOLD|WHITE_AIRGAP_MUTATED'
+if([IO.File]::ReadAllText($arirang,$enc).Length -ne 0 -or
+ (Get-FileHash -LiteralPath $arirang -Algorithm SHA256).Hash.ToLowerInvariant() -cne $arirangDigest){
+ throw 'BRITISHISH|HOLD|ARIRANG_MUTATED'
 }
 if($lines.Count -ne 256 -or $counts[0] -ne 85 -or
    $counts[1] -ne 85 -or $counts[2] -ne 85){
@@ -97,4 +97,4 @@ if([IO.File]::ReadAllLines($receipt,$enc).Count -ne 256){
 $sha=(Get-FileHash -LiteralPath $receipt -Algorithm SHA256).Hash.ToLowerInvariant()
 Write-Host ('BRITISHISH|THREE_EQUALITY_LINES=RED_GREEN_BLUE|BASELINE=9_9_9'+
  '|TRIALS=255|ALLOCATIONS=85_85_85|PREDICTION=PASS'+
- '|WHITE=AIRGAP_NONSCORING_EMPTY|SYNTHETIC_BIAS=DISCLOSED|SOURCE_UNCHANGED=YES|SHA256='+$sha+'|RELEASE=HOLD')
+ '|ARIRANG=NONSCORING_EMPTY|SYNTHETIC_BIAS=DISCLOSED|SOURCE_UNCHANGED=YES|SHA256='+$sha+'|RELEASE=HOLD')
