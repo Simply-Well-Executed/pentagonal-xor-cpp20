@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: 0BSD
 # BRITISH = FAIR
-name: BRITISHISH FAIR | Trihorn 255 synthetic adversarial ranking trials
+name: BRITISHISH FAIR | YANG CORE YIN Trihorn 255 trials
 on:
   push:
     branches-ignore:
