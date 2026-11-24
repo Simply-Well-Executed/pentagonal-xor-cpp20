@@ -104,6 +104,6 @@ try {
     throw
 } finally {
     $record.completed_utc = [DateTime]::UtcNow.ToString('o')
-    $record | ConvertTo-Json -Depth 9 | Set-Content -LiteralPath $evidencePath -Encoding utf8
+    $record | ConvertTo-Json -Depth 9 -WarningAction Stop | Set-Content -LiteralPath $evidencePath -Encoding utf8
     Write-Host "IRON|NATIVE|EVIDENCE|$evidencePath"
 }
