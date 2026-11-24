@@ -160,6 +160,12 @@ try{
     '-OutputDirectory',(Join-Path $out 'whole-repository'),
     '-Platform','Windows')
   Assert-SourceStable 'FINAL_POSTFLIGHT'
+  # Invoke-Lap preserves evidence and continues on a nonzero exit.
+  # That diagnostic behavior MUST NOT authorize a final PASS.
+  if($failedSubprojects.Count -ne 0 -or $failedFiles.Count -ne 0){
+    throw ('EXCITE|HOLD|whole_repository_lane_failed|'+
+           ($failedSubprojects -join ','))
+  }
   $status='PASS'
   Write-Host 'KENTUCKY_DERBY|WHOLE_REPOSITORY=PASS|SUBPROJECTS=SERIAL|RELEASE=HOLD'
 }catch{
@@ -168,6 +174,15 @@ try{
   throw
 }finally{
   $stopwatch.Stop()
+  # Clamp any inconsistent receipt to HOLD, even after a code-path error.
+  # Evidence replay PASS is NOT equivalent to successful native tests.
+  if($status -ceq 'PASS' -and
+     ($failedFiles.Count -ne 0 -or $failedSubprojects.Count -ne 0 -or
+      @($stages | Where-Object {$_.status -cne 'PASS'}).Count -ne 0)){
+    $status='HOLD'
+    $failure += '|fail_closed_nonzero_lap'
+    Write-Host 'EXCITE|HOLD|STAGE_LEDGER_CONFLICT|NO_FALSE_PASS|RELEASE=HOLD'
+  }
   try {
     $exciteHead=Assert-ExciteEvidence $excite
     $exciteAudit='PASS'

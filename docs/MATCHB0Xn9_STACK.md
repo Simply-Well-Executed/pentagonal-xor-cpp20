@@ -73,3 +73,22 @@ PR #34 has previously failed some independent license custody and
 native build gates. A complete fresh PR34 whole-circuit test may
 reproduce those failures. The correct outcome would be HOLD, not a
 claim that PR95's successful EXCITE pipeline cleared PR34.
+
+## 2026-11-24 fail-closed hardening
+
+The previous stack run recorded PR #34 HOLD, while PR #95 had a
+KENTUCKY_DERBY build exit of 1 but an incorrectly promoted outer
+PASS receipt. That inconsistency remains historical evidence.
+The circuit now rejects a nonzero final native lane before writing PASS,
+and the receipt writer independently clamps inconsistent status and stage
+ledgers to HOLD. The stack reader separately rejects stage HOLD/nonzero
+exit and any file/subproject failure. A negative synthetic test deliberately
+injects a top-level PASS with a TRIFORCE HOLD and must reject it.
+
+Non-configurable safety: nine is a literal in the capacity bounds and
+nine-scenario tests. The lane uses one fixed literal path singlelane.lock
+with FileShare.None for the full traversal. There are no MaxCircuits
+or SingleLane parameters, environment knobs or manifest-supplied limits.
+Logging uses sealed-policy statements, not mutable configuration.
+RELEASE=HOLD is a fixed output, never a caller parameter.
+No unattended PR merge, branch synchronization or release.

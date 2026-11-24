@@ -72,7 +72,7 @@ if($Mode -ceq 'WORKER'){
       ($Direction+[char]9+$sha+[char]9+'EXCLUSIVE_NO_OVERTAKE'+[char]10),$utf8)
   }finally{$lease.Dispose()}
   Write-Host ('MATCHB0Xn9|'+$Direction+'|LAPS='+$entries.Count+
-              '|SINGLE_LANE=EXCLUSIVE|BIDI=HALF_DUPLEX|RELEASE=HOLD')
+              '|EXCLUSIVE_LOCK=ENFORCED|BIDI=HALF_DUPLEX|RELEASE=HOLD')
   exit 0
 }
 if($Mode -ceq 'SELFTEST'){
@@ -147,7 +147,7 @@ try{
   $forward=(Get-FileHash -LiteralPath (Join-Path $out 'forward.tsv') -Algorithm SHA256).Hash.ToLowerInvariant()
   $reverse=(Get-FileHash -LiteralPath (Join-Path $out 'reverse.tsv') -Algorithm SHA256).Hash.ToLowerInvariant()
   Write-Host ('MATCHB0Xn9|PASS|CIRCUITS='+$entries.Count+
-              '|MAX_CIRCUITS=9|BIDI_WORKERS=2|SINGLE_LANE=EXCLUSIVE'+
+              '|INVARIANTS=CODE_SEALED|BIDI_WORKERS=2|EXCLUSIVE_LOCK=ENFORCED'+
               '|NO_PASSING=YES|FORWARD_SHA256='+$forward+'|REVERSE_SHA256='+$reverse+
               '|MANIFEST_SHA256='+$sha+'|RELEASE=HOLD')
 }finally{

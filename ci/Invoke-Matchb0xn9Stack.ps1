@@ -84,8 +84,50 @@ foreach($pr in $chain){
   }
 }
 Write-Host ('MATCHB0Xn9|STACK_DISCOVERED|PR_COUNT='+$chain.Count+
-  '|MAX_CIRCUITS=9|ORDER='+([string]::Join('>',@($chain|ForEach-Object {$_.number})))+
+  '|INVARIANTS=CODE_SEALED|ORDER='+([string]::Join('>',@($chain|ForEach-Object {$_.number})))+
   '|SOURCE=LIVE_GITHUB_PR_GRAPH|RELEASE=HOLD')
+# A top-level PASS is necessary but not sufficient. Failed-stage evidence
+# remains authoritative, regardless of the outer receipt's status.
+function Test-Matchb0xn9QualifiedReceipt([object]$proof){
+  if($null -eq $proof -or
+     $proof.status -cne 'PASS' -or
+     $proof.excite_chain_audit -cne 'PASS' -or
+     $proof.vehicle_signal_protocol -cne 'DOVIA.SIGNAL.3' -or
+     $proof.vehicle_observer_count -ne 1 -or
+     $proof.release -cne 'HOLD'){return $false}
+  if($null -eq $proof.stages -or
+     @($proof.stages).Count -lt 7 -or
+     @($proof.file_failures).Count -ne 0 -or
+     @($proof.subproject_failures).Count -ne 0){return $false}
+  $kentucky=0
+  foreach($stage in $proof.stages){
+    if($stage.status -cne 'PASS' -or
+       ($null -ne $stage.exit_code -and $stage.exit_code -ne 0)){
+      return $false
+    }
+    if($stage.lane -ceq 'KENTUCKY_DERBY'){$kentucky++}
+  }
+  return ($kentucky -eq 1)
+}
+# Synthetic fail-closed canary: PASS containing a native HOLD must fail.
+$negative=[ordered]@{
+  status='PASS';excite_chain_audit='PASS';vehicle_signal_protocol='DOVIA.SIGNAL.3'
+  vehicle_observer_count=1;release='HOLD';file_failures=@()
+  subproject_failures=@('TRIFORCE')
+  stages=@(
+    @{lane='FILE_LAPS';status='PASS'},
+    @{lane='TRIFORCE';status='HOLD';exit_code=1},
+    @{lane='DIAERY';status='PASS';exit_code=0},
+    @{lane='QUADDI';status='PASS';exit_code=0},
+    @{lane='MINZA_TOPOLOGY';status='PASS';exit_code=0},
+    @{lane='PENTADI';status='PASS';exit_code=0},
+    @{lane='PENTADI_CHAOS';status='PASS';exit_code=0},
+    @{lane='KENTUCKY_DERBY';status='PASS';exit_code=0})
+}
+if(Test-Matchb0xn9QualifiedReceipt $negative){
+  throw 'MATCHB0Xn9|HOLD|false_pass_receipt_canary_accepted'
+}
+Write-Host 'MATCHB0Xn9|RECEIPT_NEGATIVE_CANARY=REJECTED|RELEASE=HOLD'
 # Synthetic tests are never treated as real PR proof.
 $raceDriver=Join-Path $harness 'ci/Invoke-Matchb0xn9Race.ps1'
 $fake=Join-Path $out 'synthetic-input.tsv'
@@ -155,10 +197,8 @@ foreach($pr in $chain){
         $receipt=Join-Path $evidence 'race-receipt.json'
         if(-not [IO.File]::Exists($receipt)){throw 'EXCITE_receipt_missing'}
         $proof=ConvertFrom-Json -InputObject ([IO.File]::ReadAllText($receipt,$utf8)) -AsHashtable -Depth 9
-        if($proof.status -cne 'PASS' -or $proof.excite_chain_audit -cne 'PASS' -or
-           $proof.vehicle_signal_protocol -cne 'DOVIA.SIGNAL.3' -or
-           $proof.vehicle_observer_count -ne 1 -or $proof.release -cne 'HOLD'){
-          throw 'EXCITE_receipt_rejected'
+        if(-not (Test-Matchb0xn9QualifiedReceipt $proof)){
+          throw 'EXCITE_receipt_or_stage_ledger_rejected'
         }
         $nativeBuilder=Join-Path $source 'ci/Build-ExcitedMarkdown.ps1'
         if(-not [IO.File]::Exists($nativeBuilder)){throw 'EXCITED_missing'}
@@ -243,4 +283,4 @@ $manifestFile=Join-Path $out 'qualified-circuits.tsv'
 & pwsh -NoLogo -NoProfile -NonInteractive -File $raceDriver -Mode RACE -ManifestPath $manifestFile -EvidenceDirectory (Join-Path $out 'real-counterflow')
 if($LASTEXITCODE -ne 0){throw 'MATCHB0Xn9|HOLD|real_counterflow_failed'}
 Write-Host ('MATCHB0Xn9|STACK_PASS|CIRCUITS='+$chain.Count+
-  '|OPPOSITE_HEAD_TAIL=VERIFIED|SINGLE_LANE=EXCLUSIVE|RELEASE=HOLD')
+  '|OPPOSITE_HEAD_TAIL=VERIFIED|EXCLUSIVE_LOCK=ENFORCED|RELEASE=HOLD')
