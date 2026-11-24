@@ -1,5 +1,8 @@
 # Local-first licensing reference and evidence registry
 
+**SCOPED INTERPRETER EXCEPTION, 2026-11-24 (CURRENT):** The operator now permits original project-authored **0BSD script source** targeting separately provisioned language runtimes, including a **source-only HenDecaDi/R\***. R itself is NOT bundled or downloaded by the repo's R script. The R runtime's own externally obtained copy retains the actual publisher's license and notices (R Foundation package declaration: GPL-2 | GPL-3), and laboratories must verify distribution/usage obligations separately. This supersedes the prior blanket GNU-runtime prohibition **only for separately provisioned R used to run this source-only script**, not for vendored libraries, redistributed binaries or any other GNU package. No existing failure is waived, and other new interpreter lanes require per-component provenance. See [Interpreter headstones](../docs/INTERPRETER_AIRGAP_HEADSTONES.md).
+
+
 **CURRENT zero-GNU/POSIX decision (2026-11-20, superseding earlier LGPL permission):** Preferred license candidates: **`0BSD` is the ONLY approved BSD-family license**, plus separately approved `MIT`, `MPL-2.0` and `CDDL-1.0`; official Oracle Java remains subject to its exact vendor and bundled third-party terms. **No GNU license, including LGPL-2.1-only/or-later, GNU toolchain or GNU runtime, or authored POSIX shell/dependent execution is approved** in the project, including build and development. Unknown and mixed terms are **HOLD / REVIEW, never inferred consent**. Retain all **33** current reference texts even when forbidden.
 
 ## Identity and custody

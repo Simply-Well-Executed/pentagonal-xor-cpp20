@@ -3,9 +3,7 @@ name: Android/Linux no-Python source guard (PowerShell)
 # ISSUE-29: native Windows source-only scan. No GNU, POSIX shell, Node or Python execution.
 # NOT a statement that a compiler, runner, image, or third party is compliant.
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
   push:
     branches:
       - main

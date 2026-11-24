@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: 0BSD
+# MATCHB0Xn9 Festival: up to nine identities, one exclusive BIDI lane.
+# 255 offline model laps and one native source qualification per candidate.
+# Commit graphs and raw source hashes, never a hardcoded SHA registry.
+name: MATCHB0Xn9 Festival | 255 model laps + 1 native per entrant
+on:
+  push:
+    branches:
+      - feat/quaddi-ni-oracle-cpp20-20261123
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: matchb0xn9-festival-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  festival-batch-001:
+    name: Batch 001 | nine PR circuits | 255+1 each | native BIDI
+    runs-on: windows-2025
+    timeout-minutes: 360
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      MSBUILDDISABLENODEREUSE: '1'
+      DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
+    steps:
+      - name: Bootstrap exact event commit source using native PowerShell
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_ACTIONS -cne 'true' -or
+             $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:GITHUB_REF -cne 'refs/heads/feat/quaddi-ni-oracle-cpp20-20261123' -or
+             $env:GITHUB_SHA -cnotmatch '^[a-f0-9]{40}$'){
+            throw 'FESTIVAL|HOLD|UNEXPECTED_RUNNER_OR_GIT_REF'
+          }
+          $zip=Join-Path $env:RUNNER_TEMP 'festival-exact-source.zip'
+          $dir=Join-Path $env:RUNNER_TEMP 'festival-exact-source'
+          $uri='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:GITHUB_SHA
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-matchb0xn9-festival'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $dir
+          $roots=@(Get-ChildItem -LiteralPath $dir -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Invoke-Matchb0xn9Festival256.ps1')) -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/MATCHB0Xn9_FESTIVAL_CUSTODY.tsv')) -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Invoke-Matchb0xn9Race.ps1'))){
+            throw 'FESTIVAL|HOLD|INCOMPLETE_EVENT_COMMIT_SOURCE'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'festival-source-root.txt'),$roots[0].FullName)
+      - name: Run model laps plus one genuine whole native circuit for each PR
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'festival-source-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-Matchb0xn9Festival256.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'festival-point0') -ExpectedHarnessSha $env:GITHUB_SHA
+          if($LASTEXITCODE -ne 0){throw 'FESTIVAL|HOLD|WHOLE_BATCH_NOT_QUALIFIED'}
+      - name: Preserve invariant and human merge boundary
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'FESTIVAL|INVARIANTS=CODE_LITERAL|MERGE=MANUAL_REVIEW|NO_BRANCH_DELETION|NO_FORCE|RELEASE=HOLD'

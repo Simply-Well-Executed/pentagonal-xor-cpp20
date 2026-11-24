@@ -1,0 +1,88 @@
+# SPDX-License-Identifier: 0BSD
+# Same exact workflow blob is installed on every open PR branch.
+# Read-only, native Windows PowerShell, no checkout/Node action.
+name: PR-PARITY | common native and safety contract
+on:
+  push:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: pr-parity-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+jobs:
+  common-pr-gates:
+    name: Same PR-PARITY source/coverage/native policy, no skip
+    runs-on: windows-2025
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      MSBUILDDISABLENODEREUSE: '1'
+      DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER: '1'
+    steps:
+      - name: Resolve live Git head and obtain exact event-commit source without Node
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $repo='Simply-Well-Executed/pentagonal-xor-cpp20'
+          if($env:GITHUB_ACTIONS -cne 'true' -or
+             $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne $repo -or
+             $env:SOURCE_SHA -cnotmatch '^[a-f0-9]{40}$'){
+            throw 'PR_PARITY|HOLD|INVALID_RUNNER_OR_EVENT_COMMIT'
+          }
+          $headers=@{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-pr-parity-native'
+          }
+          if(-not [string]::IsNullOrWhiteSpace($env:PR_NUMBER)){
+            if($env:PR_NUMBER -cnotmatch '^[1-9][0-9]{0,8}$' -or
+               $env:PR_HEAD_SHA -cnotmatch '^[a-f0-9]{40}$'){
+              throw 'PR_PARITY|HOLD|INVALID_PR_HEAD_IDENTITY'
+            }
+            $pr=Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo+'/pulls/'+$env:PR_NUMBER) -Headers $headers
+            if($pr.state -cne 'open' -or $pr.head.sha -cne $env:PR_HEAD_SHA -or
+               $pr.head.repo.full_name -cne $repo -or
+               $pr.base.repo.full_name -cne $repo){
+              throw 'PR_PARITY|HOLD|PR_HEAD_OR_ORIGIN_MOVED'
+            }
+            Write-Host ('PR_PARITY|LIVE_PR_HEAD|PR='+$env:PR_NUMBER+'|HEAD='+$env:PR_HEAD_SHA+
+                        '|TESTED_GIT_EVENT_COMMIT='+$env:SOURCE_SHA)
+          }
+          $zip=Join-Path $env:RUNNER_TEMP 'pr-parity-exact-event-source.zip'
+          $dest=Join-Path $env:RUNNER_TEMP 'pr-parity-exact-event-source'
+          Invoke-WebRequest -Uri ('https://api.github.com/repos/'+$repo+'/zipball/'+$env:SOURCE_SHA) -Headers $headers -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $dest
+          $roots=@(Get-ChildItem -LiteralPath $dest -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Invoke-PRParity.ps1')) -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName '.github/workflows/PR-PARITY.yml'))){
+            throw 'PR_PARITY|HOLD|INCOMPLETE_EXACT_EVENT_SOURCE'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'pr-parity-source-root.txt'),$roots[0].FullName)
+      - name: Apply identical HEAD TAIL, source, license, native and expanded coverage gates
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pr-parity-source-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-PRParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'pr-parity-evidence')
+          if($LASTEXITCODE -ne 0){throw 'PR_PARITY|HOLD|NOT_ALL_COMMON_GATES_PASSED'}
+      - name: Keep every failure visible and release separate
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'PR_PARITY|CI_ONLY|MISSING_GATE=HOLD|NATIVE_FAILURE=HOLD|HISTORICAL_WORKFLOWS_PRESERVED|NO_AUTO_MERGE|NO_RELEASE|RELEASE=HOLD'

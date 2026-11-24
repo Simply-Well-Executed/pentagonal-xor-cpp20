@@ -1,0 +1,128 @@
+# SPDX-License-Identifier: 0BSD
+# Identical per-PR source, native PowerShell only, no Node actions.
+name: COREAO STANDARDIZER | XOR-OR-XOR | 255 executions
+on:
+  push:
+    branches-ignore: [main]
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: coreao-standardizer-head-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  standardizer:
+    name: 255 independent HEAD / XOR / XOR / OR / TAIL receipts
+    runs-on: windows-2025
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Bootstrap the verified live PR-head commit (no checkout action)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ''
+          PR_HEAD_SHA: ${{ github.sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $repo='Simply-Well-Executed/pentagonal-xor-cpp20'
+          if($env:RUNNER_OS -cne 'Windows' -or $env:GITHUB_REPOSITORY -cne $repo -or
+             $env:GITHUB_REF -notmatch '^refs/heads/.+' -or
+             $env:PR_HEAD_SHA -cnotmatch '^[a-f0-9]{40}$'){
+            throw 'STANDARDIZER|HOLD|UNEXPECTED_EVENT'
+          }
+          $headers=@{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-coreao-standardizer'
+          }
+          $branch=$env:GITHUB_REF.Substring('refs/heads/'.Length)
+          $open=@(Invoke-RestMethod -Uri ('https://api.github.com/repos/'+$repo+'/pulls?state=open&per_page=100') -Headers $headers)
+          if($open.Count -ge 100){throw 'STANDARDIZER|HOLD|PR_LIST_PAGINATION_REQUIRED'}
+          $candidates=@($open | Where-Object {
+            $_.head.sha -ceq $env:PR_HEAD_SHA -and
+            $_.head.ref -ceq $branch -and
+            $_.head.repo.full_name -ceq $repo -and
+            $_.base.repo.full_name -ceq $repo -and
+            $_.state -ceq 'open'
+          })
+          if($candidates.Count -ne 1){throw 'STANDARDIZER|HOLD|PR_BRANCH_NOT_UNIQUE'}
+          $env:PR_NUMBER=[string]$candidates[0].number
+          # PR list binds the unique open PR number, branch, repository and HEAD.
+          # Independently verify the live Git branch ref, not a possibly cached
+          # single-PR projection during rapid synchronize events.
+          $refUri='https://api.github.com/repos/'+$repo+'/branches/'+[uri]::EscapeDataString($branch)
+          $liveBranch=Invoke-RestMethod -Uri $refUri -Headers $headers
+          if($liveBranch.commit.sha -cne $env:PR_HEAD_SHA){
+            throw 'STANDARDIZER|HOLD|LIVE_GIT_BRANCH_SHA_MOVED'
+          }
+          $zip=Join-Path $env:RUNNER_TEMP 'standardizer-exact-pr-head.zip'
+          $folder=Join-Path $env:RUNNER_TEMP 'standardizer-exact-pr-head'
+          Invoke-WebRequest -Uri ('https://api.github.com/repos/'+$repo+'/zipball/'+$env:PR_HEAD_SHA) -Headers $headers -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $folder
+          $dirs=@(Get-ChildItem -LiteralPath $folder -Directory)
+          if($dirs.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $dirs[0].FullName 'ci/Invoke-CoreaoStandardizer.ps1'))){
+            throw 'STANDARDIZER|HOLD|SOURCE_INCOMPLETE'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'coreao-root.txt'),$dirs[0].FullName)
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'coreao-pr-number.txt'),$env:PR_NUMBER)
+          Write-Host ('STANDARDIZER|PR='+$env:PR_NUMBER+'|EXACT_HEAD='+$env:PR_HEAD_SHA)
+      - name: 255 fresh processes, independent SHA-256 witnesses, TAIL
+        shell: pwsh
+        env:
+          PR_NUMBER: ''
+          PR_HEAD_SHA: ${{ github.sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $utf8=[Text.UTF8Encoding]::new($false,$true)
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'coreao-root.txt'))
+          $prNumber=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'coreao-pr-number.txt'))
+          $script=Join-Path $root 'ci/Invoke-CoreaoStandardizer.ps1'
+          $cmake=Join-Path $root 'CMakeLists.txt'
+          $scriptHash=(Get-FileHash -LiteralPath $script -Algorithm SHA256).Hash
+          $cmakeHash=(Get-FileHash -LiteralPath $cmake -Algorithm SHA256).Hash
+          $out=Join-Path $env:RUNNER_TEMP 'coreao-rounds'
+          & pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Mode Preflight -SourceRoot $root -EvidenceDirectory $out
+          if($LASTEXITCODE -ne 0){throw 'STANDARDIZER|HOLD|PREFLIGHT_FAILED'}
+          for([int]$i=1;$i -le 255;$i++){
+            & pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -Mode Round -SourceRoot $root -EvidenceDirectory $out -Round $i
+            if($LASTEXITCODE -ne 0){throw ('STANDARDIZER|HOLD|ROUND_FAILED|'+$i)}
+          }
+          $files=@(Get-ChildItem -LiteralPath $out -File -Filter 'round-*.tsv' | Sort-Object Name)
+          if($files.Count -ne 255){throw 'STANDARDIZER|HOLD|INCOMPLETE_255'}
+          $rows=[Collections.Generic.List[string]]::new()
+          for([int]$i=0;$i -lt 255;$i++){
+            if($files[$i].Name -cne ('round-{0:000}.tsv' -f ($i+1))){
+              throw 'STANDARDIZER|HOLD|ROUND_ORDER_OR_DUPLICATE'
+            }
+            $line=[IO.File]::ReadAllText($files[$i].FullName,$utf8).TrimEnd([char]10)
+            $cols=$line.Split([char]9)
+            if($cols.Count -ne 8 -or $cols[0] -cne ('{0:000}' -f ($i+1)) -or
+               $cols[5] -cne 'OR_MASKED_BUT_XOR_DETECTED' -or $cols[6] -cne 'PASS' -or
+               $cols[7] -cnotmatch '^[0-9a-f]{64}$'){
+              throw ('STANDARDIZER|HOLD|BAD_ROUND_RECEIPT|'+($i+1))
+            }
+            $payload=[string]::Join([string][char]9,$cols[0..6])
+            $hash=[Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($utf8.GetBytes($payload))).ToLowerInvariant()
+            if($hash -cne $cols[7]){throw ('STANDARDIZER|HOLD|HASH_MISMATCH|'+($i+1))}
+            $rows.Add($line)
+          }
+          if((Get-FileHash -LiteralPath $script -Algorithm SHA256).Hash -cne $scriptHash -or
+             (Get-FileHash -LiteralPath $cmake -Algorithm SHA256).Hash -cne $cmakeHash){
+            throw 'STANDARDIZER|HOLD|SOURCE_MUTATION'
+          }
+          $ledger=Join-Path $out 'COREAO_255.tsv'
+          [IO.File]::WriteAllText($ledger,([string]::Join([string][char]10,$rows)+[char]10),$utf8)
+          $digest=(Get-FileHash -LiteralPath $ledger -Algorithm SHA256).Hash.ToLowerInvariant()
+          Write-Host ('STANDARDIZER|PASS|PR='+$prNumber+'|HEAD='+$env:PR_HEAD_SHA+'|INDEPENDENT_EXECUTIONS=255|SHA256='+$digest+'|RELEASE=HOLD')
+      - name: Preserve native-build and release separation
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'STANDARDIZER|NOT_A_CRYPTOSYSTEM|PR_PARITY_NATIVE_REQUIRED_SEPARATELY|NO_MERGE|NO_RELEASE|RELEASE=HOLD'
