@@ -106,7 +106,7 @@ if($svg.DocumentElement.LocalName -cne 'svg' -or
 $md=[IO.File]::ReadAllText($paths[2],[Text.Encoding]::UTF8)
 $rootReadme=[IO.File]::ReadAllText($paths[3],[Text.Encoding]::UTF8)
 if(([regex]::Matches($md,'\[Lap [0-9]{3} · ')).Count -ne 255 -or
-   ([regex]::Matches($md,'(?m)^\s*<details>\s*
+   ([regex]::Matches($md,'(?m)^\s*<details>\s*$')).Count -ne 16 -or
    -not $md.Contains('](pentapi_hulao_gate.svg)',[StringComparison]::Ordinal) -or
    -not $md.Contains('PentaPi_Hulao_256.xhtml',[StringComparison]::Ordinal) -or
    -not $rootReadme.Contains('docs/PENTAPI_HULAO_GATE_255.md',
