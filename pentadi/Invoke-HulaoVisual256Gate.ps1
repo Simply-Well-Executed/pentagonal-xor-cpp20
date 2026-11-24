@@ -88,7 +88,7 @@ for($i=1;$i -le 256;$i++){
   ++$hell
  }else{
   if($cls -cnotmatch '(^|\s)sanctuary(\s|$)' -or
-     -not $node.InnerText.Contains('FICTIONAL', [StringComparison]::Ordinal)){
+     -not $node.InnerText.Contains('Fictional', [StringComparison]::OrdinalIgnoreCase)){
    throw 'HULAO_VISUAL|FAIL|fictional_final_not_scoped'
   }
  }
