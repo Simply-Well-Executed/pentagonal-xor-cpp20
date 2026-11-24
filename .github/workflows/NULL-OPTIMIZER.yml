@@ -1,0 +1,95 @@
+# SPDX-License-Identifier: 0BSD
+# Identical PR-local source qualification, not a release gate bypass.
+name: NULL OPTIMIZER | HEAD BiDi NULL XOR TAIL
+on:
+  push:
+    branches-ignore: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: null-optimizer-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  contract-only:
+    runs-on: windows-2025
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - name: HEAD exact branch commit and source provenance (pre-lab network)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $repo='Simply-Well-Executed/pentagonal-xor-cpp20'
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne $repo -or $env:GITHUB_REF -notmatch '^refs/heads/.+' -or
+             $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$'){
+            throw 'NULL_OPTIMIZER|HOLD|UNEXPECTED_CONTEXT'
+          }
+          $branch=$env:GITHUB_REF.Substring('refs/heads/'.Length)
+          if($branch -ceq 'main'){throw 'NULL_OPTIMIZER|HOLD|MAIN_NOT_EXPERIMENT'}
+          $headers=@{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-null-optimizer'
+          }
+          $uri='https://api.github.com/repos/'+$repo+'/branches/'+[uri]::EscapeDataString($branch)
+          $live=Invoke-RestMethod -Uri $uri -Headers $headers
+          if($live.commit.sha -cne $env:GITHUB_SHA){
+            throw 'NULL_OPTIMIZER|HOLD|BRANCH_MOVED'
+          }
+          $zip=Join-Path $env:RUNNER_TEMP 'null-source.zip'
+          $stage=Join-Path $env:RUNNER_TEMP 'null-source'
+          Invoke-WebRequest -Uri ('https://api.github.com/repos/'+$repo+'/zipball/'+$env:GITHUB_SHA) -Headers $headers -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $stage
+          $roots=@(Get-ChildItem -LiteralPath $stage -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'ci/Invoke-NullOptimizer.ps1')) -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'docs/NULL_OPTIMIZER_001.md'))){
+            throw 'NULL_OPTIMIZER|HOLD|SOURCE_INCOMPLETE'
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'null-root.txt'),$roots[0].FullName)
+          Write-Host ('NULL_OPTIMIZER|HEAD='+$env:GITHUB_SHA+'|BRANCH='+$branch)
+      - name: USE exact 64-cell symbolic matrix plus XOR, NULL and BiDi checks
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $utf8=[Text.UTF8Encoding]::new($false,$true)
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'null-root.txt'),$utf8)
+          $evidence=Join-Path $env:RUNNER_TEMP 'null-optimizer-fresh-evidence'
+          $script=Join-Path $root 'ci/Invoke-NullOptimizer.ps1'
+          $sourceHash=(Get-FileHash -LiteralPath $script -Algorithm SHA256).Hash.ToLowerInvariant()
+          & pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $script -RepositoryRoot $root -EvidenceDirectory $evidence
+          if($LASTEXITCODE -ne 0){throw 'NULL_OPTIMIZER|HOLD|CONTRACT_PROBE_FAILED'}
+          $matrix=Join-Path $evidence 'NULL_OPTIMIZER_MATRIX.tsv'
+          $receipt=Join-Path $evidence 'NULL_OPTIMIZER_HEAD_TAIL.txt'
+          if(-not [IO.File]::Exists($matrix) -or -not [IO.File]::Exists($receipt)){
+            throw 'NULL_OPTIMIZER|HOLD|MISSING_RECEIPT'
+          }
+          $rows=[IO.File]::ReadAllLines($matrix,$utf8)
+          if($rows.Count -ne 65){throw 'NULL_OPTIMIZER|HOLD|CELL_COUNT'}
+          $observed=(Get-FileHash -LiteralPath $matrix -Algorithm SHA256).Hash.ToLowerInvariant()
+          $tail=[IO.File]::ReadAllText($receipt,$utf8)
+          if(-not $tail.Contains('contract=PASS') -or
+             -not $tail.Contains('runtime_matrix=HOLD') -or
+             -not $tail.Contains('node=SELF_EXCLUDE') -or
+             -not $tail.Contains('release=HOLD') -or
+             -not $tail.Contains('matrix_sha256='+$observed) -or
+             -not $tail.Contains('source_sha256='+$sourceHash) -or
+             (Get-FileHash -LiteralPath $script -Algorithm SHA256).Hash.ToLowerInvariant() -cne $sourceHash){
+            throw 'NULL_OPTIMIZER|HOLD|TAIL_MISMATCH'
+          }
+          Write-Host ('NULL_OPTIMIZER|CONTRACT_ONLY_PASS|CELLS=64|SHA256='+$observed+'|RELEASE=HOLD')
+      - name: TAIL preserve all independent prior tests and release HOLD
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host 'NULL_OPTIMIZER|LANGUAGES_UNTESTED|NODE_SELF_EXCLUDE'
+          Write-Host 'NULL_OPTIMIZER|JSTAR_TRIFORCE_PR_PARITY_LADDERDI_NOT_REPLACED'
+          Write-Host 'NULL_OPTIMIZER|NO_MERGE|NO_RELEASE|RELEASE=HOLD'
