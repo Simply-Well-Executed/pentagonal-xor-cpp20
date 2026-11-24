@@ -1,0 +1,2 @@
+source_path	git_blob_sha	retired_path	reason
+.github/workflows/jstar-oracle27-vcxproj-experiment.yml	c56ddb3860eb9ed74c06645783031b3bc3df060c	Archive/Retired/.github/workflows/jstar-oracle27-vcxproj-experiment.yml	not_in_PR95_common_active_workflow_set
