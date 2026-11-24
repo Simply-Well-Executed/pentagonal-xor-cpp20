@@ -49,6 +49,49 @@ $lines[0]=$lines[0].Replace('EXCITE.QLAM.2','EXCITE.QLAM.1')
 if((Assert-ExciteEvidence $ctx) -cne $expected){
   throw 'DOVIA|HOLD|restored_ledger_not_verified'
 }
+# One observer and exact inclusive aperture edges, never fused views.
+foreach($offset in @([decimal]-15,[decimal]0,[decimal]15)){
+  if(-not (Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees $offset)){
+    throw 'DOVIA|HOLD|front_edge_false_negative'
+  }
+}
+foreach($offset in @([decimal]-6,[decimal]0,[decimal]6)){
+  if(-not (Test-DoviaFieldOfView -Direction REAR -OffsetDegrees $offset)){
+    throw 'DOVIA|HOLD|rear_edge_false_negative'
+  }
+}
+foreach($offset in @([decimal]-15.01,[decimal]15.01)){
+  if(Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees $offset){
+    throw 'DOVIA|HOLD|front_outside_accepted'
+  }
+}
+foreach($offset in @([decimal]-6.01,[decimal]6.01)){
+  if(Test-DoviaFieldOfView -Direction REAR -OffsetDegrees $offset){
+    throw 'DOVIA|HOLD|rear_outside_accepted'
+  }
+}
+if((Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees 0 -CameraCount 2) -or
+   (Test-DoviaFieldOfView -Direction REAR -OffsetDegrees 0 -RearTotalDegrees 13) -or
+   (Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees 0 -FrontTotalDegrees 31)){
+  throw 'DOVIA|HOLD|multiple_or_unbounded_view_accepted'
+}
+foreach($scenario in @(
+  @{direction='FRONT';expected='FRONT_FOV_30_TOTAL';front=[decimal]15.01;rear=[decimal]0},
+  @{direction='REAR';expected='REAR_FOV_12_TOTAL';front=[decimal]0;rear=[decimal]-6.01}
+)){
+  $observed=$false
+  try {
+    Assert-DoviaRailTransition -From 'QLAM' -To 'QGRAPH' -Ordinal 1 -FrontOffsetDegrees $scenario.front -RearOffsetDegrees $scenario.rear
+  }catch{
+    if([string]$_.Exception.Message -cmatch
+       ('^EXCITE\|HOLD\|dovia_signal\|ordinal=1\|stage=.*\|rule='+$scenario.expected+'$')){
+      $observed=$true
+    }else{throw}
+  }
+  if(-not $observed){throw ('DOVIA|HOLD|missed_field_boundary|'+$scenario.direction)}
+}
+Write-Host 'DOVIA|FOV_SELFTEST|ONE_OBSERVER=PASS|FRONT=30|REAR=12|OUTSIDE=REJECTED|NO_SIDE_VIEW|RELEASE=HOLD'
+
 # A train attempting to jump straight from QCHART to QGRAPH meets RED.
 $redObserved=$false
 try {

@@ -26,11 +26,32 @@ function Stop-DoviaSignal {
   throw ('EXCITE|HOLD|dovia_signal|ordinal='+$Ordinal+
     '|stage='+$Stage+'|rule='+$Rule)
 }
+# DOVIA.VIEW.1: one logical observer; no physical sensor or invented
+# scene geometry. Total centered aperture 30 degrees forward (+/-15)
+# and 12 degrees rearward (+/-6). Decimal, never silently rounded.
+# QCHAIN remains the authority; signal.jsonl is derived evidence.
+function Test-DoviaFieldOfView {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory=$true)][ValidateSet('FRONT','REAR')][string]$Direction,
+    [Parameter(Mandatory=$true)][decimal]$OffsetDegrees,
+    [int]$CameraCount=1,
+    [int]$FrontTotalDegrees=30,
+    [int]$RearTotalDegrees=12
+  )
+  if($CameraCount -ne 1 -or $FrontTotalDegrees -ne 30 -or
+     $RearTotalDegrees -ne 12){return $false}
+  $half=if($Direction -ceq 'FRONT'){[decimal]15}else{[decimal]6}
+  return ($OffsetDegrees -ge (-$half) -and $OffsetDegrees -le $half)
+}
+
 function Assert-DoviaRailTransition {
   param(
     [Parameter(Mandatory=$true)][string]$From,
     [Parameter(Mandatory=$true)][string]$To,
-    [Parameter(Mandatory=$true)][long]$Ordinal
+    [Parameter(Mandatory=$true)][long]$Ordinal,
+    [decimal]$FrontOffsetDegrees=0,
+    [decimal]$RearOffsetDegrees=0
   )
   $next=switch -CaseSensitive ($From) {
     'HEAD' {'QCHART'}
@@ -43,6 +64,13 @@ function Assert-DoviaRailTransition {
   }
   if($next -cne $To){
     Stop-DoviaSignal -Rule 'STAGE_ORDER' -Stage $To -Ordinal $Ordinal -Expected $next
+  }
+  if(-not (Test-DoviaFieldOfView -Direction FRONT -OffsetDegrees $FrontOffsetDegrees)){
+    Stop-DoviaSignal -Rule 'FRONT_FOV_30_TOTAL' -Stage $To -Ordinal $Ordinal -Expected 'OFFSET_WITHIN_PLUS_MINUS_15_DEGREES'
+  }
+  if($From -cne 'HEAD' -and
+     -not (Test-DoviaFieldOfView -Direction REAR -OffsetDegrees $RearOffsetDegrees)){
+    Stop-DoviaSignal -Rule 'REAR_FOV_12_TOTAL' -Stage $From -Ordinal $Ordinal -Expected 'OFFSET_WITHIN_PLUS_MINUS_6_DEGREES'
   }
 }
 function New-DoviaVehicleSignals {
@@ -128,7 +156,7 @@ function New-DoviaVehicleSignals {
     if(-not $checkpoint.valid){
       Stop-DoviaSignal -Rule $checkpoint.rule -Stage $checkpoint.stage -Ordinal $ordinal -Expected 'VALID_WITNESS'
     }
-    $signalSha=Get-ExciteDigest ('DOVIA.SIGNAL.1|'+$ordinal+'|'+
+    $signalSha=Get-ExciteDigest ('DOVIA.SIGNAL.2|SINGLE_VIEW|30_FRONT|12_REAR|'+$ordinal+'|'+
       $Chart.kind+'|'+$aspects+'|'+$before+'>'+ $checkpoint.stage+'|'+
       $checkpoint.proof+'|'+$signalSha)
     $signals.Add([ordered]@{
@@ -141,7 +169,15 @@ function New-DoviaVehicleSignals {
     $before=$checkpoint.stage
   }
   return [ordered]@{
-    schema='DOVIA.SIGNAL.1'
+    schema='DOVIA.SIGNAL.2'
+    view_schema='DOVIA.VIEW.1'
+    observer_count=1
+    front_total_degrees=30
+    rear_total_degrees=12
+    front_axis_degrees=0
+    rear_axis_degrees=180
+    aperture_boundary='INCLUSIVE_CENTERED'
+    view_policy='DERIVED_FROM_ONE_CANONICAL_INPUT_NO_SIDE_VISIBILITY'
     ordinal=$ordinal
     kind=$Chart.kind
     input_status=$Chart.status
@@ -275,6 +311,7 @@ function Add-ExciteVehicle {
     'SUBPROJECT' {$Context.SubprojectCount++}
     'REPOSITORY' {$Context.RepositoryCount++}
   }
+  Write-Host ('DOVIA|SINGLE_VIEW|VEHICLE='+$ordinal+'|OBSERVER=1|FRONT_TOTAL=30|REAR_TOTAL=12|SIDE=UNOBSERVED|SOURCE=CANONICAL_QCHAIN|RELEASE=HOLD')
   Write-Host ('DOVIA|RAIL_AUTOPILOT|VEHICLE='+$ordinal+'|ASPECT='+$signals.aspect+
     '|STAGES='+$signals.stage_count+'|HEAD='+$signals.head_sha256+'|RELEASE=HOLD')
   if($signals.aspect -ceq 'AMBER'){

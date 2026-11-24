@@ -6,6 +6,45 @@
 // Ethernet STP itself is IEEE 802.1D/802.1Q, NOT the SPF algorithm.
 #pragma once
 namespace dovia {
+// VIEW-001: one logical observer, not an actual camera or GPS.
+// Exact integer centidegrees: front aperture +/-1500 (30 total),
+// rear aperture +/-600 (12 total). Blind regions are unknown, not clear.
+enum class ViewSide {front,rear};
+struct SingleView {
+  unsigned observer_count;
+  int front_total_centidegrees,rear_total_centidegrees;
+};
+inline constexpr SingleView single_view{1u,3000,1200};
+constexpr bool valid_single_view(const SingleView& v) noexcept {
+  return v.observer_count==1u &&
+         v.front_total_centidegrees==3000 &&
+         v.rear_total_centidegrees==1200;
+}
+constexpr bool inside_single_view(const SingleView& v,
+                                  ViewSide side,int signed_offset_centidegrees) noexcept {
+  if(!valid_single_view(v)) return false;
+  if(side==ViewSide::front)
+    return signed_offset_centidegrees>=-1500 &&
+           signed_offset_centidegrees<=1500;
+  if(side==ViewSide::rear)
+    return signed_offset_centidegrees>=-600 &&
+           signed_offset_centidegrees<=600;
+  return false;
+}
+static_assert(valid_single_view(single_view));
+static_assert(inside_single_view(single_view,ViewSide::front,0));
+static_assert(inside_single_view(single_view,ViewSide::front,-1500));
+static_assert(inside_single_view(single_view,ViewSide::front,1500));
+static_assert(!inside_single_view(single_view,ViewSide::front,1501));
+static_assert(!inside_single_view(single_view,ViewSide::front,-1501));
+static_assert(inside_single_view(single_view,ViewSide::rear,-600));
+static_assert(inside_single_view(single_view,ViewSide::rear,600));
+static_assert(!inside_single_view(single_view,ViewSide::rear,601));
+static_assert(!inside_single_view(single_view,ViewSide::rear,-601));
+static_assert(!valid_single_view(SingleView{2u,3000,1200}));
+static_assert(!valid_single_view(SingleView{1u,3001,1200}));
+static_assert(!valid_single_view(SingleView{1u,3000,1201}));
+
 constexpr int nodes=5,root=0,goal=4,infinity=999999,port_count=10;
 struct Edge {int source,target,weight;};
 inline constexpr Edge graph[]={

@@ -266,3 +266,42 @@ must be rejected. It reports the row and rule when a receipt fails,
 rather than granting a silent PASS. No file inside the checkout is
 changed by the runner; failure remains HOLD. The previous failed
 job remains historical evidence and is not reclassified as PASS.
+
+### DOVIA one-observer FOV revision (DOVIA.VIEW.1 / SIGNAL.2)
+
+This version corrects the proposed internal-autopilot *visibility*
+contract, not earlier immutable source or earlier test history.
+One **logical observer** per vehicle consumes the existing canonical
+QCHAIN/vehicle source. The signal.jsonl stream is a **derived,
+replay-verified receipt**, not a second independent sensor or source of
+truth. No side cameras, fused observations or omniscient lookahead.
+
+The angular **total apertures** are 30 degrees front (inclusive
+offsets -15 through +15) and 12 degrees rear (inclusive offsets -6
+through +6). These are two directions of the same logical view,
+not two physical cameras. PowerShell offsets use decimal degrees;
+native C++20 uses exact integer centidegrees, without truncation.
+An outside-angle stage is blocked by RED
+FRONT_FOV_30_TOTAL or REAR_FOV_12_TOTAL. More than one observer,
+wider apertures and side visibility are rejected. The stage immediately
+ahead is nominally offset 0 from the forward direction, and the
+previous stage offset 0 from the rear direction. They are symbolic
+stage orientations only: no optical sensor, map, roads, or geometric
+measurements are created.
+
+All six QCHAIN validators, file SHA-256 source custody and later native
+CTest continue to use the full canonical evidence. Narrow visibility
+does **not** suppress failure signals. DOVIA.SIGNAL.2 binds the fixed
+one-view policy to each per-vehicle SHA proof; the independent verifier
+replays it. SIGNAL.1 remains historical, not silently reclassified.
+
+Negative tests cover both exact aperture edges, just-outside angles
+at 15.01 / 6.01 degrees, invalid observer counts, expanded apertures
+and front/rear invalid rail transitions. Native constexpr and runtime
+tests check the same scaled-degree boundary policy.
+
+Scratch-pad-point0 means a **new runner temp directory** with empty
+evidence streams, sequence 0, and a fresh 64-zero QCODE genesis, not
+deleting historical Git revisions or CI evidence. The ordered
+FILE -> SUBPROJECT -> REPOSITORY -> EXCITED circuit stays intact,
+with RELEASE=HOLD throughout.

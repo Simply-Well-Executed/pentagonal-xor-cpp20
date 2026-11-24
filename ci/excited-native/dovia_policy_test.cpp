@@ -2,6 +2,17 @@
 // DOVIA-STAR-001: runtime policy, event and fail-closed negative tests.
 #include "dovia_star.hpp"
 int main() {
+  if(!dovia::valid_single_view(dovia::single_view)) return 14;
+  if(!dovia::inside_single_view(dovia::single_view,dovia::ViewSide::front,1500) ||
+     dovia::inside_single_view(dovia::single_view,dovia::ViewSide::front,1501) ||
+     !dovia::inside_single_view(dovia::single_view,dovia::ViewSide::rear,-600) ||
+     dovia::inside_single_view(dovia::single_view,dovia::ViewSide::rear,-601))
+    return 15;
+  if(dovia::inside_single_view(dovia::SingleView{2u,3000,1200},
+                               dovia::ViewSide::front,0) ||
+     dovia::inside_single_view(dovia::SingleView{1u,3100,1200},
+                               dovia::ViewSide::rear,0))
+    return 16;
   dovia::Proof proof{};
   if(!dovia::dovia_star(dovia::baseline,proof)) return 1;
   if(!proof.yang_verified || !proof.yin_verified ||
