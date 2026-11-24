@@ -61,6 +61,7 @@ function Test-Mode {
  [IO.File]::WriteAllLines((Join-Path $ev ($Label+'.compiler.txt')),$diagnostics)
  if($ExpectCompile){
   if($exit -ne 0 -or -not [IO.File]::Exists($exe)){
+   foreach($diagnostic in $diagnostics){Write-Host ('BITFLYING_COMPILER_DIAGNOSTIC|'+$Label+'|'+$diagnostic)}
    throw ('BITFLYING|HOLD|compile_rejected|'+$Label+'|exit='+$exit)
   }
   $output=@(& $exe 2>&1 | ForEach-Object{[string]$_})
