@@ -117,7 +117,7 @@ if($OracleJdkHome){
  if($LASTEXITCODE -ne 0){throw 'SLIDINGTOOLONGA|HOLD|Oracle_compile_failed'}
  foreach($p in @('0','646','647',$canonical)|Select-Object -Unique){
   $out=Join-Path $ev ('java-p'+$p+'.tsv')
-  & $java -Dfile.encoding=UTF-8 -cp $classes SlidingToolongA $lines $p > $out
+  & $java '-Dfile.encoding=UTF-8' -cp $classes SlidingToolongA $lines $p > $out
   if($LASTEXITCODE -ne 0){throw ('SLIDINGTOOLONGA|HOLD|Oracle_run_failed|'+$p)}
   $native=if($p -eq '0'){$zero}elseif($p -eq '646'){Join-Path $ev 'power646.tsv'}elseif($p -eq '647'){Join-Path $ev 'power647.tsv'}else{$chosen}
   $left=[IO.File]::ReadAllLines($native);$right=[IO.File]::ReadAllLines($out)

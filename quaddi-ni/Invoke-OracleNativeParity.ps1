@@ -70,7 +70,7 @@ function Pair([int]$power,[string]$lines,[string]$samples,[string]$misc,[string]
  $left=Join-Path $ev ($tag+'-native.tsv');$right=Join-Path $ev ($tag+'-oracle.tsv')
  & $exe $lines $samples ([string]$power) $misc > $left
  if($LASTEXITCODE -ne 0){throw ('QUADDI|HOLD|native_exit|'+$tag)}
- & $java -Dfile.encoding=UTF-8 -cp $classes QuadDiNI $lines $samples ([string]$power) $misc > $right
+ & $java '-Dfile.encoding=UTF-8' -cp $classes QuadDiNI $lines $samples ([string]$power) $misc > $right
  if($LASTEXITCODE -ne 0){throw ('QUADDI|HOLD|oracle_exit|'+$tag)}
  Verify $left $right $power $lines $samples $misc
 }
