@@ -1,99 +1,94 @@
 # SPDX-License-Identifier: 0BSD
-name: QUADDI NI Oracle Java 27 and C++20 witness
+name: QUADDI NI | DIAERY-derived native parity
 on:
-  push:
-    branches:
-      - feat/quaddi-ni-oracle-cpp20-20261123
-    paths:
-      - 'quaddi-ni/**'
-      - '.github/workflows/quaddi-ni-oracle-cpp20.yml'
   workflow_dispatch:
     inputs:
       seed_power:
-        description: "Optional nonnegative seed exponent (default 0)"
-        type: string
+        description: 'Nonnegative seed exponent (default 0)'
         required: false
-        default: "0"
+        default: '0'
+        type: string
+  pull_request:
+    paths:
+      - 'quaddi-ni/**'
+      - '.github/workflows/quaddi-ni-oracle-cpp20.yml'
 permissions:
   contents: read
+concurrency:
+  group: quaddi-native-parity-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  dual-engine:
+  quaddi-concurrence:
+    name: Native MSVC /O2 | XHTML witness | Oracle explicit status
     runs-on: windows-2025
     timeout-minutes: 35
+    permissions:
+      contents: read
     env:
-      ORACLE_JDK_HOME: ${{ vars.SWE_ORACLE_JDK27_HOME }}
       SELECTED_POWER: ${{ inputs.seed_power }}
+      ORACLE_JDK_HOME: ${{ vars.SWE_ORACLE_JDK27_HOME }}
     steps:
-      - name: Immutable SHA source bootstrap using PowerShell
+      - name: Bootstrap exact SHA source (PowerShell only, no Node actions)
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           Set-StrictMode -Version Latest
           $ErrorActionPreference='Stop'
-          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows' -or $env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$'){
-            throw 'QUADDI|HOLD|unexpected_runner_or_commit'
+          if($env:GITHUB_ACTIONS -cne 'true' -or
+             $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$'){
+            throw 'QUADDI|HOLD|untrusted_runner_or_sha'
           }
           $zip=Join-Path $env:RUNNER_TEMP 'quaddi-exact-source.zip'
-          $target=Join-Path $env:RUNNER_TEMP 'quaddi-exact-source'
+          $destination=Join-Path $env:RUNNER_TEMP 'quaddi-exact-source'
           $uri='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:GITHUB_SHA
-          Invoke-WebRequest -Uri $uri -Headers @{Authorization='Bearer '+$env:GH_TOKEN;Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2022-11-28';'User-Agent'='swe-quaddi-ni'} -OutFile $zip -MaximumRedirection 5
-          Expand-Archive -LiteralPath $zip -DestinationPath $target
-          $roots=@(Get-ChildItem -LiteralPath $target -Directory)
-          if($roots.Count -ne 1 -or -not [IO.File]::Exists((Join-Path $roots[0].FullName 'quaddi-ni/QuadDiNI.cpp'))){
-            throw 'QUADDI|HOLD|source_incomplete'
+          # Source bootstrap ONLY. All subsequent compilation/testing is offline.
+          Invoke-WebRequest -Uri $uri -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-quaddi-ni'
+          } -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $destination
+          $roots=@(Get-ChildItem -LiteralPath $destination -Directory)
+          if($roots.Count -ne 1 -or
+             -not [IO.File]::Exists((Join-Path $roots[0].FullName 'quaddi-ni/QuadDiNI.cpp'))){
+            throw 'QUADDI|HOLD|incomplete_exact_source'
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'),$roots[0].FullName)
-      - name: C++20 native preflight and XHTML zero-power witness
+      - name: Qualification | native C++20 seed, XHTML and dynamic source count
         shell: pwsh
         run: |
           Set-StrictMode -Version Latest
           $ErrorActionPreference='Stop'
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
-          $evidence=Join-Path $env:RUNNER_TEMP 'quaddi-native-preflight'
-          [IO.Directory]::CreateDirectory($evidence)|Out-Null
-          $source=Join-Path $root 'quaddi-ni/QuadDiNI.cpp'
-          $before=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash
-          $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
-          if(-not [IO.File]::Exists($vswhere)){throw 'QUADDI|HOLD|vswhere_missing'}
-          $install=@(& $vswhere -latest -products '*' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -property installationPath)
-          if($install.Count -ne 1){throw 'QUADDI|HOLD|MSVC_missing'}
-          & (Join-Path $install[0] 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
-          $cl=(Get-Command cl.exe -ErrorAction Stop).Source
-          $exe=Join-Path $evidence 'quaddi-preflight.exe'
-          & $cl /nologo /std:c++20 /O2 /W4 /permissive- /fp:precise /EHsc ('/Fe:'+$exe) $source
-          if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($exe)){throw 'QUADDI|HOLD|native_preflight_compile_failed'}
-          $lines=Join-Path $root 'quaddi-ni/default-lines.tsv'
-          $xs=Join-Path $root 'quaddi-ni/default-xs.tsv'
-          $misc=Join-Path $root 'quaddi-ni/default-misc.tsv'
-          $out=Join-Path $evidence 'seed0-native.tsv'
-          & $exe $lines $xs $misc > $out
-          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_zero_default_failed'}
-          $rows=[IO.File]::ReadAllLines($out)
-          $expected=[string]::Join([char]9,@('META','1','6','3','1','10','0'))
-          if($rows.Count -lt 100 -or $rows[0] -cne $expected){throw 'QUADDI|HOLD|native_zero_metadata_bad'}
-          $report=Join-Path $evidence 'quaddi-native-zero.xhtml'
-          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-Render.ps1') -WitnessFile $out -Destination $report
-          if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($report)){throw 'QUADDI|HOLD|native_render_failed'}
-          $p6=Join-Path $evidence 'seed6-native.tsv'
-          & $exe $lines $xs 6 $misc > $p6
-          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_sixth_power_failed'}
-          if($before -cne (Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash){throw 'QUADDI|HOLD|source_mutation'}
-          Write-Host 'QUADDI|NATIVE_PREFLIGHT=PASS|SEED_POWER_DEFAULT=0|POWERS=0,6|XHTML=PASS|RELEASE=HOLD'
-      - name: Tandem native and Oracle evaluation then scriptless XHTML report
+          $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+          if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_not_nonnegative_integer'}
+          $value=[long]::Parse($text)
+          if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-NativeQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-native-evidence') -Power ([int]$value)
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|native_qualification_failed'}
+      - name: Oracle Java status explicit | exact vendor/version or HOLD
         shell: pwsh
         run: |
           Set-StrictMode -Version Latest
           $ErrorActionPreference='Stop'
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
-          $raw=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
-          if($raw -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|invalid_seed_power'}
-          $n=[long]::Parse($raw)
-          if($n -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
-          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power ([int]$n)
-          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|qualification_failed'}
-      - name: Fail-closed release status
+          if([string]::IsNullOrWhiteSpace($env:ORACLE_JDK_HOME)){
+            Write-Host 'QUADDI|JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED|NATIVE_QUALIFICATION_SEPARATE'
+          }else{
+            $text=if([string]::IsNullOrWhiteSpace($env:SELECTED_POWER)){'0'}else{$env:SELECTED_POWER}
+            if($text -cnotmatch '^[0-9]{1,10}$'){throw 'QUADDI|HOLD|seed_power_invalid'}
+            $value=[long]::Parse($text)
+            if($value -gt 2147483647){throw 'QUADDI|HOLD|seed_power_not_representable'}
+            & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power ([int]$value)
+            if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
+          }
+      - name: Preserve separate human authorization and release HOLD
         if: always()
         shell: pwsh
         run: |
-          Write-Host 'QUADDI|RELEASE=HOLD|NO_AUTO_MERGE|NO_CERTIFICATION'
+          Write-Host 'QUADDI|RELEASE=HOLD|CI_SUCCESS_IS_NOT_HUMAN_APPROVAL'
+          Write-Host 'QUADDI|NO_INCEPTION_GATE_BYPASS|NO_PUBLICATION_AUTHORIZATION'

@@ -43,10 +43,16 @@ The root degree is the closest positive prime to the absolute value of the origi
 
 ## Dual-language qualification and viewer
 
-The separate GitHub workflow uses a pinned exact source SHA, Windows MSVC with **/std:c++20 /O2**, and **Oracle JDK 27.0.1.1** already present on the runner through SWE_ORACLE_JDK27_HOME. It never downloads or substitutes Java, invokes no Node/Python helpers, and has no automatic release. A runner without that precise Oracle JDK fails closed.
+The QUADDI workflow is **adapted from the already qualified DIAERY native parity YAML** (`.github/workflows/diaery-parity.yml`): SHA-pinned PowerShell source bootstrap, Windows MSVC **/std:c++20 /O2**, external evidence, concurrency without cancellation, native qualification, and always-on RELEASE=HOLD. DIAERY's original workflow remains untouched. The separate native qualification script checks powers **0–6**, 17 independent source lines, four additional miscellaneous pages, input rejection, hash custody, and an XHTML report.
+
+When repository variable `SWE_ORACLE_JDK27_HOME` is **unset**, the same workflow logs `JAVA_CPP=HOLD|ORACLE_NOT_PROVISIONED` and may still pass its **native-only** job, matching DIAERY's explicit status convention. This is **not** an Oracle parity success. When the exact Oracle JDK **27.0.1.1** is provisioned, the independent Java/C++20 parity script runs and any disagreement fails the job. The app downloads no Java, substitutes no vendor, and has no automatic release.
 
 Both engines evaluate all default powers **0 through 6**, an explicit user-selected power if greater than 6, and a test with **17 independent lines** including a zero slope. They must agree for names, ordinal/page identity, samples, real/imaginary outputs, prime degree, GammGamma, and closure. Continuous quantities use a declared floating-point tolerance (1e-11 relative to max(1, abs(a), abs(b))). Malformed-input rejection and input SHA256 checks are required. No cross-source result borrowing.
 
 On parity, Invoke-Render.ps1 produces a **read-only, scriptless XHTML5** report with native HTML details/summary controls, per-source curves, original centrix text, origin (0,0), both X/Y numeric rulers, and **RULER REGISTER COUNT: #1**. Real and imaginary coordinates are separately disclosed, not numerically collapsed. No CSS, JavaScript, or hidden automatic fitting. The viewer uses declared finite windows and clipping; those are not mathematical domain limits. For powers 0 through 6 the Y viewports are predetermined; above 6 the viewport defaults to ±1e12 or can be overridden by -YHalfRange. Raw source data always outrank the display.
 
 **Until the GitHub workflow actually runs with Oracle 27.0.1.1, verification is unconfirmed. RELEASE=HOLD.**
+
+## Power-68 example and numerical honesty
+
+Selecting power **68** is a valid *nonnegative-integer request*, but it does **not** imply the current finite-double engine can evaluate every default X value or determine a nearest prime degree exactly. For the default intercept -3, `(-3)^68` already exceeds the exact-integer range used by the prime-degree check. The application must report **HOLD** rather than approximate an unverified prime, truncate samples, or quietly alter the user's exponent. No such HOLD changes the mathematical domain of the underlying polynomial.
