@@ -242,3 +242,27 @@ the repository checkout. Real-world signal aspects, rail block systems,
 Cisco switch state, and radiation physics are not being modeled.
 A zero-failure promise cannot be made; this is **fail-closed on
 checked rules**, with reviewable evidence rather than assumed perfection.
+
+### EXCITED v3 receipt parser jam diagnosis and repair
+
+The historical [EXCITE run 45344427378](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45344427378)
+had a successful upstream stack-circuit and four successful native
+A*/SPT/RUSPT/DOVIA CTests, but its downstream EXCITED job
+138276434905 failed at the TSV reader:
+`EXCITED|HOLD|invalid_or_duplicate_receipt_field`. The old log did
+not identify the particular row or duplicate, so the exact malformed
+field was *not established* from that attempt.
+
+The v3 repair changes only the receipt boundary: build 24 explicitly
+named key/value records as a single ordered dictionary, reject
+control-character injection, construct each record with **exactly
+one U+0009 tab**, write UTF-8 without BOM, re-read and compare
+every row, and print a receipt SHA-256. The downstream validator
+**independently** enforces the exact 24-key schema, order, one-tab
+separator, nonempty values, unique keys and the existing exact
+source SHA-256, generated Markdown SHA-256, path and security
+witness assertions. Deliberate malformed-row negative canaries
+must be rejected. It reports the row and rule when a receipt fails,
+rather than granting a silent PASS. No file inside the checkout is
+changed by the runner; failure remains HOLD. The previous failed
+job remains historical evidence and is not reclassified as PASS.

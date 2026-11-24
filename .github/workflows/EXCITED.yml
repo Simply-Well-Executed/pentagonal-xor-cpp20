@@ -76,13 +76,51 @@ jobs:
           if(-not [IO.File]::Exists($doc) -or -not [IO.File]::Exists($receipt)){
             throw 'EXCITED|HOLD|markdown_or_TSV_receipt_absent'
           }
+          # Independent consumer: exact schema/order, one TAB, no duplicate
+          # key, no empty value; reject malformed records with a safe row ID.
+          $expectedKeys=@(
+            'schema','source_sha','native_source_sha256',
+            'native_binary_sha256','markdown_file','markdown_sha256',
+            'route','path_cost','spt_protocol','spt_verified',
+            'spt_vertex_costs','spt_parent_nodes','dovia_yang',
+            'dovia_yin','dovia_verified','dovia_vlan_range',
+            'dovia_root','dovia_rotation_degrees','dovia_policy_negative_ctest',
+            'compiler','no_std_in_source','no_json','promotion','release'
+          )
+          $lines=[IO.File]::ReadAllLines($receipt,[Text.UTF8Encoding]::new($false,$true))
+          if($lines.Count -ne $expectedKeys.Count){
+            throw ('EXCITED|HOLD|receipt_field_count|found='+$lines.Count+
+                   '|expected='+$expectedKeys.Count)
+          }
           $fields=[Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
-          foreach($line in [IO.File]::ReadAllLines($receipt,[Text.Encoding]::UTF8)){
-            $pair=$line.Split([char]9)
-            if($pair.Count -ne 2 -or -not $fields.TryAdd($pair[0],$pair[1])){
-              throw 'EXCITED|HOLD|invalid_or_duplicate_receipt_field'
+          for([int]$i=0;$i -lt $lines.Count;$i++){
+            $line=$lines[$i]
+            $tab=$line.IndexOf([char]9)
+            if($tab -le 0 -or $tab -ne $line.LastIndexOf([char]9) -or
+               $tab -eq ($line.Length-1)){
+              throw ('EXCITED|HOLD|receipt_delimiter|row='+($i+1)+
+                     '|tab_count='+($line.Split([char]9).Count-1))
+            }
+            $key=$line.Substring(0,$tab)
+            $value=$line.Substring($tab+1)
+            if($key -cne $expectedKeys[$i]){
+              throw ('EXCITED|HOLD|receipt_key_order|row='+($i+1)+
+                     '|expected='+$expectedKeys[$i])
+            }
+            if(-not $fields.TryAdd($key,$value)){
+              throw ('EXCITED|HOLD|receipt_duplicate_key|row='+($i+1)+
+                     '|key='+$key)
             }
           }
+          # Deliberate negative canaries: no change to the real receipt.
+          foreach($bad in @('naked_record',('k'+[char]9+'v'+[char]9+'extra'),('k'+[char]9))){
+            $tab=$bad.IndexOf([char]9)
+            $invalid=($tab -le 0 -or $tab -ne $bad.LastIndexOf([char]9) -or
+                      $tab -eq ($bad.Length-1))
+            if(-not $invalid){throw 'EXCITED|HOLD|tsv_parser_canary_accepted'}
+          }
+          Write-Host ('EXCITED|TSV_READER|SCHEMA=EXCITED-STAR-003|ROWS='+$lines.Count+
+                      '|NEGATIVE_CANARIES=REJECTED|RELEASE=HOLD')
           $sha=(Get-FileHash -LiteralPath $doc -Algorithm SHA256).Hash.ToLowerInvariant()
           if($fields['schema'] -cne 'EXCITED-STAR-003' -or
              $fields['source_sha'] -cne $env:SOURCE_SHA -or
