@@ -41,20 +41,20 @@ constexpr auto pleat = fg::pleat_x(0.0,1.0,0.25,1.0,0.0);
 static_assert(pleat.valid && pleat.value == 1.0);
 constexpr auto billow = fg::damped_wave(
     0.0,0.0,2.0,0.15,1.0,1.0,fg::geometry_pi*0.5);
-static_assert(billow.valid && fg::near(billow.value,2.0,1e-12));
+static_assert(billow.valid && fg::near_scalar(billow.value,2.0,1e-12));
 static_assert(!fg::damped_wave(-1.0,0.0,2.0,0.15,1.0,1.0,0.0).valid);
 constexpr auto arm = fg::two_link_arm(
     {0.0,0.0},1.0,1.0,0.0,fg::geometry_pi*0.5);
-static_assert(arm.valid && fg::near(arm.elbow.x,1.0,1e-12) &&
-              fg::near(arm.elbow.y,0.0,1e-12) &&
-              fg::near(arm.hand.x,1.0,1e-12) &&
-              fg::near(arm.hand.y,1.0,1e-12));
+static_assert(arm.valid && fg::near_scalar(arm.elbow.x,1.0,1e-12) &&
+              fg::near_scalar(arm.elbow.y,0.0,1e-12) &&
+              fg::near_scalar(arm.hand.x,1.0,1e-12) &&
+              fg::near_scalar(arm.hand.y,1.0,1e-12));
 constexpr auto diffuse = fg::lambert(
     0.1,0.4,2.0,{0.0,0.0,1.0},{0.0,0.0,1.0});
-static_assert(diffuse.valid && fg::near(diffuse.value,0.9,1e-12));
+static_assert(diffuse.valid && fg::near_scalar(diffuse.value,0.9,1e-12));
 constexpr auto shadow = fg::lambert(
     0.1,0.4,2.0,{0.0,0.0,1.0},{0.0,0.0,-1.0});
-static_assert(shadow.valid && fg::near(shadow.value,0.1,1e-12));
+static_assert(shadow.valid && fg::near_scalar(shadow.value,0.1,1e-12));
 static_assert(!fg::lambert(
     0.1,0.4,2.0,{0.0,0.0,2.0},{0.0,0.0,1.0}).valid);
 constexpr auto projected = fg::pinhole_project(
@@ -66,7 +66,7 @@ static_assert(!fg::pinhole_project(
 constexpr auto inverse_sample = fg::inverse_square_intensity(
     1.0,0.15,1.0,fg::geometry_pi);
 static_assert(inverse_sample.valid);
-static_assert(fg::near(inverse_sample.value,
+static_assert(fg::near_scalar(inverse_sample.value,
     static_cast<double>(intensity.expected_integer)/1e17,1e-14));
 static_assert(!fg::inverse_square_intensity(
     1.0,0.15,0.0,fg::geometry_pi).valid);
@@ -539,27 +539,27 @@ static_assert(!tridi::RELEASE_AUTHORIZED);
 
 // THREE-GEOMETRIC-FOLDS-PR34-013: three DISTINCT active 90 degree hinges
 // moving a connected downstream assembly, not label permutations.
-namespace fold3=swe::three_geometric_folds;
-static_assert(fold3::WITNESS.valid);
-static_assert(fold3::FOLD_STEP(1u) && fold3::FOLD_STEP(2u) &&
-              fold3::FOLD_STEP(3u));
-static_assert(fold3::RIGHT_ANGLE_HINGE(1u) &&
-              fold3::RIGHT_ANGLE_HINGE(2u) &&
-              fold3::RIGHT_ANGLE_HINGE(3u));
-static_assert(fold3::SEAMS_MATCH(0u)&&fold3::SEAMS_MATCH(1u)&&
-              fold3::SEAMS_MATCH(2u)&&fold3::SEAMS_MATCH(3u));
-static_assert(fold3::ALL_RIGID(0u)&&fold3::ALL_RIGID(3u));
-static_assert(fold3::DOWNSTREAM_MOVED(1u)&&
-              fold3::DOWNSTREAM_MOVED(2u)&&
-              fold3::DOWNSTREAM_MOVED(3u));
-static_assert(fold3::SUM_DOUBLE_AREA()==7200ULL);
-static_assert(fold3::SUM_DOUBLE_AREA()==uc::SUM_NINE_DOUBLE_AREA());
-static_assert(fold3::FREE_SEAM_COINCIDENT());
-static_assert(fold3::SAME(fold3::CORNER_0,fold3::CORNER_4));
-static_assert(!fold3::SEALED_SEAM_VERIFIED);
-static_assert(!fold3::CLOSED_CUBE_VERIFIED);
-static_assert(!fold3::PHYSICAL_PAPER_FOLD_VERIFIED);
-static_assert(!fold3::RELEASE_AUTHORIZED);
+namespace geometric_fold3=swe::three_geometric_folds;
+static_assert(geometric_fold3::WITNESS.valid);
+static_assert(geometric_fold3::FOLD_STEP(1u) && geometric_fold3::FOLD_STEP(2u) &&
+              geometric_fold3::FOLD_STEP(3u));
+static_assert(geometric_fold3::RIGHT_ANGLE_HINGE(1u) &&
+              geometric_fold3::RIGHT_ANGLE_HINGE(2u) &&
+              geometric_fold3::RIGHT_ANGLE_HINGE(3u));
+static_assert(geometric_fold3::SEAMS_MATCH(0u)&&geometric_fold3::SEAMS_MATCH(1u)&&
+              geometric_fold3::SEAMS_MATCH(2u)&&geometric_fold3::SEAMS_MATCH(3u));
+static_assert(geometric_fold3::ALL_RIGID(0u)&&geometric_fold3::ALL_RIGID(3u));
+static_assert(geometric_fold3::DOWNSTREAM_MOVED(1u)&&
+              geometric_fold3::DOWNSTREAM_MOVED(2u)&&
+              geometric_fold3::DOWNSTREAM_MOVED(3u));
+static_assert(geometric_fold3::SUM_DOUBLE_AREA()==7200ULL);
+static_assert(geometric_fold3::SUM_DOUBLE_AREA()==uc::SUM_NINE_DOUBLE_AREA());
+static_assert(geometric_fold3::FREE_SEAM_COINCIDENT());
+static_assert(geometric_fold3::SAME(geometric_fold3::CORNER_0,geometric_fold3::CORNER_4));
+static_assert(!geometric_fold3::SEALED_SEAM_VERIFIED);
+static_assert(!geometric_fold3::CLOSED_CUBE_VERIFIED);
+static_assert(!geometric_fold3::PHYSICAL_PAPER_FOLD_VERIFIED);
+static_assert(!geometric_fold3::RELEASE_AUTHORIZED);
 
 
 // RECTANGLOID-PR34-014: 3 physical fold sources + 2 oriented end caps.
@@ -619,7 +619,7 @@ int main() {
     if(!direct::PING(direct::FOLD)||
        !direct::REPORT.ping_after_restore)return 7;
     if(!tridi::VALIDATE().valid)return 8;
-    if(!fold3::PING_THREE_FOLDS().valid)return 9;
+    if(!geometric_fold3::PING_THREE_FOLDS().valid)return 9;
     if(!prism::PING().valid)return 10;
     return 0;
 }

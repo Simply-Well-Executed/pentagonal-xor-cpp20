@@ -210,12 +210,12 @@ static constexpr Mesh8 MESH=BUILD_EIGHT();
 [[nodiscard]] constexpr bool DOWNSTREAM_MOVED(
     unsigned stage) noexcept {
     if(stage==0u || stage>FOLD_COUNT)return false;
-    const Point2 far{
+    const Point2 far_point{
         WIDTH,
         STRIP*static_cast<s64>(stage+1u)
     };
-    return DIFFERENT(PROJECT(far,stage,stage),
-                     PROJECT(far,stage,stage-1u));
+    return DIFFERENT(PROJECT(far_point,stage,stage),
+                     PROJECT(far_point,stage,stage-1u));
 }
 [[nodiscard]] constexpr bool RIGHT_ANGLE_HINGE(
     unsigned stage) noexcept {
