@@ -41,6 +41,7 @@ $required=[ordered]@{
  'DOVIA_NATIVE'=@('.github/workflows/DOVIA.yml','ci/excited-native/CMakeLists.txt')
  'QUADDI_NATIVE'=@('.github/workflows/quaddi-ni-oracle-cpp20.yml','quaddi-ni/QuadDiNI.cpp')
  'INTERPRETER_AIRGAP_HEADSTONES'=@('ci/Invoke-InterpreterCustodyAudit.ps1','ci/Test-InterpreterCustodyAudit.ps1','ci/INTERPRETER_HEADSTONES.tsv','docs/INTERPRETER_AIRGAP_HEADSTONES.md','hendecadi/HenDecaDi.R')
+ 'OCTADI_G_TABLE'=@('.github/workflows/OCTADI-G-TABLE.yml','octadi/G.py','octadi/Invoke-OctaDiGTable.ps1','docs/OCTADI_G_TABLE.md')
  'HEXADI_CORE_PWSH_CSHARP'=@('.github/workflows/HEXA-DI.yml','ci/Install-HexaDiPowerShell.ps1','ci/Invoke-HexaDiQualification.ps1','pentadi/Invoke-PentaDiQualification.ps1','pentadi/PentaDiC11BranchRecords.reference.tsv')
  'MATCHB0XN9'=@('.github/workflows/MATCHB0Xn9.yml','ci/Invoke-Matchb0xn9Race.ps1')
  'FESTIVAL'=@('.github/workflows/MATCHB0Xn9-Festival.yml','ci/Invoke-Matchb0xn9Festival256.ps1')
@@ -75,7 +76,8 @@ Audit 'SOURCE_PATH_AND_PYTHON_EXCLUSION' {
   if($relative -match '[\r\n\t|]' -or $relative.StartsWith('../',[StringComparison]::Ordinal)){
    throw ('untrusted_source_path|'+$relative)
   }
-  if($relative -notmatch '^(?i:Archive/Retired/)' -and
+  if($relative -cne 'octadi/G.py' -and
+     $relative -notmatch '^(?i:Archive/Retired/)' -and
      $relative -match '(?i)(^|/)__pycache__(/|$)|[.]py[ic]?$|[.]whl$|(^|/)(pyproject[.]toml|requirements[.]txt|Pipfile)$'){
     throw ('python_source_not_approved|'+$relative)
   }
