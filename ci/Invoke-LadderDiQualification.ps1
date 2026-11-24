@@ -128,6 +128,21 @@ $asm=Join-Path $root $definitions.UnDecaDi
 $cpp=Join-Path $root 'undecadi/UnDecaDiTest.cpp'
 $masm=Find 'UNDECADI_ML64_EXE' 'ml64.exe'
 $cl=Find 'UNDECADI_CL_EXE' 'cl.exe'
+if($null -eq $masm -or $null -eq $cl){
+ # Reuse the proven native PentaDi Visual Studio environment initialization.
+ $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
+ if([IO.File]::Exists($vswhere)){
+  $installations=@(& $vswhere -latest -products '*' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -property installationPath)
+  if($installations.Count -eq 1 -and -not [string]::IsNullOrWhiteSpace($installations[0])){
+   $init=Join-Path $installations[0] 'Common7/Tools/Launch-VsDevShell.ps1'
+   if([IO.File]::Exists($init)){
+    & $init -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+    $masm=Find 'UNDECADI_ML64_EXE' 'ml64.exe'
+    $cl=Find 'UNDECADI_CL_EXE' 'cl.exe'
+   }
+  }
+ }
+}
 if($null -eq $masm -or $null -eq $cl -or -not [IO.File]::Exists($cpp)){
  Record 'UnDecaDi' 'HOLD' 'MSVC_MASM_NOT_PROVISIONED' (Hash $asm) 'NONE' 'must_compile_MASM_x64_and_ISO_CXX20_O2'
 }else{
