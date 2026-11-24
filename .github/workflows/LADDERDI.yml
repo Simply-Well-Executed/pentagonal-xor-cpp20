@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: 0BSD
 # Source-only offline qualification of LadderDi language lanes.
 # GitHub bootstrap is an explicit pre-lab source transport, NOT an airgap claim.
-name: LADDERDI | Eight-lane native and local interpreter qualification
+name: LADDERDI | Nine-lane NUXPARLX | RUNG EXCITE EXCITED ATTEST
 on:
   push:
     branches-ignore:
@@ -15,11 +15,16 @@ concurrency:
 jobs:
   source-custody-and-native-test:
     runs-on: windows-2025
-    timeout-minutes: 35
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [HeptaDi, OctaDi, NonaDi, EnneaDi, DecaDi, UnDecaDi, HenDecaDi, DoDecaDi, TriDecaDi]
     permissions:
       contents: read
     steps:
       - name: Get exact immutable event commit source, no Node actions
+        id: bootstrap
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,6 +53,7 @@ jobs:
           }
           [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'ladderdi-root.txt'),$roots[0].FullName)
       - name: Pre-lab provision official Google Go 1.27.4, verify archive, never vendor
+        if: ${{ matrix.lane == 'DecaDi' }}
         shell: pwsh
         run: |
           Set-StrictMode -Version Latest
@@ -73,14 +79,165 @@ jobs:
              'DECADI_GO_OFFICIAL_ARCHIVE='+$zip+[char]10))
           Write-Host ('DECADI|PRELAB|SOURCE=dl.google.com|VERSION=1.27.4|ZIP_SHA256='+$actual+
             '|LOCAL_RUNTIME_STAGED=YES|NO_REPOSITORY_VENDORING|RELEASE=HOLD')
-      - name: Evaluate all lanes with locally provisioned toolchains
+      - name: Evaluate selected rung with locally provisioned toolchain
+        id: native
+        if: ${{ always() && steps.bootstrap.outcome == 'success' }}
         shell: pwsh
+        env:
+          RUNG: ${{ matrix.lane }}
         run: |
           Set-StrictMode -Version Latest
           $ErrorActionPreference='Stop'
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'ladderdi-root.txt'))
-          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-LadderDiQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'ladderdi-qualification')
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Invoke-LadderDiQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'ladderdi-qualification') -Lane $env:RUNG
           if($LASTEXITCODE -ne 0){throw 'LADDERDI|HOLD|one_or_more_unqualified_lanes'}
+      - name: EXCITE rung source and result custody, replay QCHAIN
+        id: excite
+        if: ${{ always() && steps.bootstrap.outcome == 'success' }}
+        shell: pwsh
+        env:
+          RUNG: ${{ matrix.lane }}
+          NATIVE_OUTCOME: ${{ steps.native.outcome }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'ladderdi-root.txt'))
+          . (Join-Path $root 'ci/Excite-Coreao.ps1')
+          $receipt=Join-Path $env:RUNNER_TEMP 'ladderdi-qualification/ladderdi-qualification.tsv'
+          $map=@{
+            HeptaDi='heptadi/HeptaDiLua3L.lua'; OctaDi='octadi/G.py'
+            NonaDi='nonadi/Invoke-NonaDiSelfExclude.ps1'; EnneaDi='enneadi/EnneaDi.rs'
+            DecaDi='decadi/DecaDi.go'; UnDecaDi='undecadi/UnDecaDi.asm'
+            HenDecaDi='hendecadi/HenDecaDi.R'; DoDecaDi='dodecadi/DoDecaDi.pl'
+            TriDecaDi='tridecadi/TriDecaDi.ml'
+          }
+          $context=Initialize-ExciteEvidence (Join-Path $env:RUNNER_TEMP 'ladderdi-excite')
+          $source=Join-Path $root $map[$env:RUNG]
+          $exists=[IO.File]::Exists($source)
+          $status='HOLD'
+          $digest='NONE'
+          $length=0
+          if($exists){
+            $sha=(Get-FileHash -LiteralPath $source -Algorithm SHA256).Hash.ToLowerInvariant()
+            $length=([IO.FileInfo]$source).Length
+          }else{
+            $sha=Get-ExciteDigest ('MISSING_SOURCE|'+$map[$env:RUNG])
+          }
+          if([IO.File]::Exists($receipt)){
+            $digest=(Get-FileHash -LiteralPath $receipt -Algorithm SHA256).Hash.ToLowerInvariant()
+            $rows=[IO.File]::ReadAllLines($receipt)
+            if($rows.Count -eq 2){
+              $cols=$rows[1].Split([char]9)
+              if($cols.Count -eq 6 -and $cols[0] -ceq $env:RUNG -and
+                 $cols[1] -ceq 'PASS' -and $exists -and $env:NATIVE_OUTCOME -ceq 'success'){
+                $status='PASS'
+              }
+            }
+          }
+          $head=Add-ExciteVehicle -Context $context -Kind SUBPROJECT -Label $env:RUNG -SourceSha $sha -Status $status -Bytes $length -Detail ('receipt_sha256='+$digest+'|native_outcome='+$env:NATIVE_OUTCOME+'|source_exists='+$exists)
+          $verified=Assert-ExciteEvidence $context
+          if($verified -cne $head){throw 'LADDERDI|HOLD|QCHAIN_HEAD_MISMATCH'}
+          Write-Host ('LADDERDI|EXCITE|RUNG='+$env:RUNG+'|INPUT='+$status+'|QCODE='+$head+'|RELEASE=HOLD')
+          if($status -cne 'PASS'){throw 'LADDERDI|HOLD|rung_or_receipt_not_qualified'}
+      - name: Compile ISO C++20 /O2 A* x SPT x DOVIA and generate Markdown
+        id: excited_build
+        if: ${{ always() && steps.bootstrap.outcome == 'success' }}
+        shell: pwsh
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'ladderdi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'ci/Build-ExcitedMarkdown.ps1') `
+            -RepositoryRoot $root `
+            -OutputDirectory (Join-Path $env:RUNNER_TEMP 'excited-docs') `
+            -SourceSha $env:SOURCE_SHA
+          if($LASTEXITCODE -ne 0){throw 'EXCITED|HOLD|A_star_markdown_failed'}
+      - name: Verify Markdown and immutable TSV receipt without Node upload
+        id: excited_verify
+        if: ${{ always() && steps.bootstrap.outcome == 'success' }}
+        shell: pwsh
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          Set-StrictMode -Version 2.0
+          $ErrorActionPreference='Stop'
+          $folder=Join-Path $env:RUNNER_TEMP 'excited-docs'
+          $doc=Join-Path $folder 'sovieta-diao-xian-excited.md'
+          $receipt=Join-Path $folder 'excited-receipt.tsv'
+          if(-not [IO.File]::Exists($doc) -or -not [IO.File]::Exists($receipt)){
+            throw 'EXCITED|HOLD|markdown_or_TSV_receipt_absent'
+          }
+          # Independent consumer: exact schema/order, one TAB, no duplicate
+          # key, no empty value; reject malformed records with a safe row ID.
+          $expectedKeys=@(
+            'schema','source_sha','native_source_sha256',
+            'native_binary_sha256','markdown_file','markdown_sha256',
+            'route','path_cost','spt_protocol','spt_verified',
+            'spt_vertex_costs','spt_parent_nodes','dovia_yang',
+            'dovia_yin','dovia_verified','dovia_vlan_range',
+            'dovia_root','dovia_rotation_degrees','dovia_policy_negative_ctest',
+            'compiler','no_std_in_source','no_json','promotion','release'
+          )
+          $lines=[IO.File]::ReadAllLines($receipt,[Text.UTF8Encoding]::new($false,$true))
+          if($lines.Count -ne $expectedKeys.Count){
+            throw ('EXCITED|HOLD|receipt_field_count|found='+$lines.Count+
+                   '|expected='+$expectedKeys.Count)
+          }
+          $fields=[Collections.Generic.Dictionary[string,string]]::new([StringComparer]::Ordinal)
+          for([int]$i=0;$i -lt $lines.Count;$i++){
+            $line=$lines[$i]
+            $tab=$line.IndexOf([char]9)
+            if($tab -le 0 -or $tab -ne $line.LastIndexOf([char]9) -or
+               $tab -eq ($line.Length-1)){
+              throw ('EXCITED|HOLD|receipt_delimiter|row='+($i+1)+
+                     '|tab_count='+($line.Split([char]9).Count-1))
+            }
+            $key=$line.Substring(0,$tab)
+            $value=$line.Substring($tab+1)
+            if($key -cne $expectedKeys[$i]){
+              throw ('EXCITED|HOLD|receipt_key_order|row='+($i+1)+
+                     '|expected='+$expectedKeys[$i])
+            }
+            if(-not $fields.TryAdd($key,$value)){
+              throw ('EXCITED|HOLD|receipt_duplicate_key|row='+($i+1)+
+                     '|key='+$key)
+            }
+          }
+          # Deliberate negative canaries: no change to the real receipt.
+          foreach($bad in @('naked_record',('k'+[char]9+'v'+[char]9+'extra'),('k'+[char]9))){
+            $tab=$bad.IndexOf([char]9)
+            $invalid=($tab -le 0 -or $tab -ne $bad.LastIndexOf([char]9) -or
+                      $tab -eq ($bad.Length-1))
+            if(-not $invalid){throw 'EXCITED|HOLD|tsv_parser_canary_accepted'}
+          }
+          Write-Host ('EXCITED|TSV_READER|SCHEMA=EXCITED-STAR-003|ROWS='+$lines.Count+
+                      '|NEGATIVE_CANARIES=REJECTED|RELEASE=HOLD')
+          $sha=(Get-FileHash -LiteralPath $doc -Algorithm SHA256).Hash.ToLowerInvariant()
+          if($fields['schema'] -cne 'EXCITED-STAR-003' -or
+             $fields['source_sha'] -cne $env:SOURCE_SHA -or
+             $fields['markdown_sha256'] -cne $sha -or
+             $fields['route'] -cne 'Overview>Security>Summary' -or
+             $fields['path_cost'] -cne '6' -or
+             $fields['spt_protocol'] -cne 'SHORTEST_PATH_TREE_NOT_ETHERNET_STP' -or
+             $fields['spt_verified'] -cne 'YES' -or
+             $fields['spt_vertex_costs'] -cne '0,2,4,5,6' -or
+             $fields['spt_parent_nodes'] -cne '-1,0,0,1,2' -or
+             $fields['dovia_yang'] -cne 'RFC2328_1998_SECTION16_1_BASE_NO_ERRATA' -or
+             $fields['dovia_yin'] -cne 'RUSPT_ROOT_GUARD_ASTAR' -or
+             $fields['dovia_verified'] -cne 'YES' -or
+             $fields['dovia_vlan_range'] -cne '1-4094' -or
+             $fields['dovia_root'] -cne 'DSW-RING1' -or
+             $fields['dovia_rotation_degrees'] -cne '180' -or
+             $fields['dovia_policy_negative_ctest'] -cne 'PASS' -or
+             $fields['compiler'] -cne 'MSVC_CXX20_O2' -or
+             $fields['no_std_in_source'] -cne 'YES' -or
+             $fields['no_json'] -cne 'YES' -or
+             $fields['release'] -cne 'HOLD'){
+            throw 'EXCITED|HOLD|TSV_receipt_mismatch'
+          }
+          Write-Host ('EXCITED|V3|SPT_DOVIA_RUSPT_VERIFIED|MARKDOWN_SHA256='+$sha+'|RELEASE=HOLD')
       - name: Enforce no false overall approval or remote auto install
         if: always()
         shell: pwsh
@@ -89,5 +246,17 @@ jobs:
           Write-Host 'LADDERDI|OCTADI=PY2_AND_PY3|EIGHT_G_LAYOUTS'
           Write-Host 'LADDERDI|NONADI=NODE_NPM_SELF_EXCLUDE'
           Write-Host 'LADDERDI|ENNEADI=RUST_NATIVE|DECADI=GOOGLE_GO_OFFLINE'
-          Write-Host 'LADDERDI|UNDECADI=MASM_DIRECT|DODECADI=PERL'
+          Write-Host 'LADDERDI|UNDECADI=MASM_DIRECT|HENDECADI=RSTAR|DODECADI=PERL'
           Write-Host 'LADDERDI|TRIDECADI=OCAML_NATIVE|NO_AUTO_MERGE|RELEASE=HOLD'
+      - name: ATTEST all three stage outcomes, no false promotion
+        if: always()
+        shell: pwsh
+        env:
+          RUNG: ${{ matrix.lane }}
+          NATIVE: ${{ steps.native.outcome }}
+          EXCITE: ${{ steps.excite.outcome }}
+          BUILD: ${{ steps.excited_build.outcome }}
+          VERIFY: ${{ steps.excited_verify.outcome }}
+        run: |
+          Write-Host ('LADDERDI|ATTEST|RUNG='+$env:RUNG+'|NATIVE='+$env:NATIVE+'|EXCITE='+$env:EXCITE+'|EXCITED_BUILD='+$env:BUILD+'|EXCITED_VERIFY='+$env:VERIFY+'|RELEASE=HOLD')
+          if($env:NATIVE -cne 'success' -or $env:EXCITE -cne 'success' -or $env:BUILD -cne 'success' -or $env:VERIFY -cne 'success'){throw 'LADDERDI|HOLD|stage_not_qualified'}
