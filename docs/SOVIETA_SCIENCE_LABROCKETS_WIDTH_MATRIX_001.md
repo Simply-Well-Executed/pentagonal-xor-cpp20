@@ -80,4 +80,52 @@ The new implementation and [native test entry](../quaddi-ni/SlipSlidingToolongTe
 SOVIETA_WIDTHS|32_64_128_192_224_256_384_448_480_512=PASS|PAIR_ROUTES=100|STAGE_PROJECTIONS=1000|LOSSLESS=89|LOSS_REJECTED=911|512_TO_128=PASS_OR_REJECT_LOSS|512_BASELINE=PASS|LIMB32_LIMB64_PARITY=PASS|100D_ROUNDTRIP=PASS|NO_SPEED_CLAIM|RELEASE=HOLD
 ```
 
-This is an **expected output signature**, not an assertion that the new CI has completed. The initial 100D test has prior successful evidence documented in the linked source ledger, but **the width/limb matrix requires new native compilation before we mark it PASS**. The test never changes the earlier 21 canonical constants or merges the draft PR.
+**Executed historical 10-width qualification: PASS.** [Native MSVC /O2 and guarded-width run #45317871859](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45317871859) completed **SUCCESS** on code commit `004d7623ca70831049935ce246d87a4bd96c7d71` and emitted this exact `SOVIETA_WIDTHS` signature. [DIAERY XHTML Strict regression run #45317871778](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45317871778) also completed **SUCCESS** for that code. These runs support the previous 10-width revision only; new micro-width code requires its own run. The earlier 21 canonical source constants remain unchanged. `RELEASE=HOLD`.
+
+
+## Micro-width addendum 002: 16, 8, 4, 2, 1, nobit, nop
+
+**Status: EXPLORATORY ADDITIVE EXTENSION.** The ten canonical source widths above remain unchanged and source-authoritative. Six additional **numeric bit capacities**, sorted ascending, are `nobit=0`, `1`, `2`, `4`, `8`, `16`, followed by the original ten widths. `nop` is a **separate checked identity operation**, not a seventeenth numeric width. No code silently aliases `nop` to zero width.
+
+| Extension | Numerical meaning | Valid data and boundary |
+|---|---|---|
+| `nobit` | Exactly zero data bits | Only integer 0 is representable; any set bit MUST yield `REJECT_LOSS` |
+| `1bit` | 1 data bit | 0–1 accepted; 2 rejected |
+| `2bit` | 2 data bits | 0–3 accepted; 4 rejected |
+| `4bit` | 4 data bits | 0–15 accepted; 16 rejected |
+| `8bit` | 8 data bits | 0–255 accepted; 256 rejected |
+| `16bit` | 16 data bits | 0–65535 accepted; 65536 rejected |
+| `nop` | No-operation (guarded identity) | Original value **and** semantic width unchanged; corrupted source or width seal rejected |
+
+This experiment uses the [separate C++20 micro-width registry](../shared/fudgelessslippingtoolong_micro_widths_001.hpp) rather than appending invalid small widths to the historical [32-bit-limb core](../shared/slipslidingtoolong.hpp). In particular, the original `bits / 32` loop logic cannot safely be reused as-is for 1, 2, 4, 8 or 16 bits. The extension checks **the actual bit boundary inside each 32-bit or 64-bit word**, and rejects nonzero bits outside the declared capacity. Nothing is *truncated* to make a value fit.
+
+### Expanded numeric matrix, all 100 stages
+
+There are **16 numeric sizes** total: `0, 1, 2, 4, 8, 16, 32, 64, 128, 192, 224, 256, 384, 448, 480, 512`. `nop` is a control operation, not a register bit capacity.
+
+| Matrix | Expected checks | Outcome meaning |
+|---|---:|---|
+| 100 stages × 16 numeric widths | **1,600** | 89 exact fits + **1,511** `REJECT_LOSS` |
+| 16 source × 16 destination width routes | **256** | 136 lossless equal/wider routes + **120** rejected narrowing routes |
+| `nop` on each stage’s unmodified 3,072-bit wide value | **100** | All 100 identity checks must preserve source, with guards intact |
+| `nop` on the 16 zero / max-bit route controls | **16** | Identity preserves width, tag, data, and seal |
+| Micro-boundary probes | **11** | Zero-capacity versus set-bit + each 1/2/4/8/16 max and max+1 |
+| Tamper probes | **3** | Corrupt width seal, value digest, or source guard; NOP must reject |
+
+The 1D seed already requires **24 significant bits**. Therefore none of the six new capacities can hold the nonzero value at ANY of the 100 stages. Their **600 additional stage checks must all reject**, whereas the ten established sizes retain exactly 89 accepted and 911 rejected. The original 512→128 and 512→512 baselines are repeated by the existing tests.
+
+### Two arithmetic lanes, no numerical source mutation
+
+**🚀 LEFT rocket:** one nine-digit block append in owned 32-bit or 64-bit limbs. **🏎️ RIGHT car:** nine one-digit appends; must agree bit-for-bit at every stage. A source value is never conflated with its logical capacity. An independent 64-bit-limb boundary inspector computes exact fit/overflow separately from the 32-bit-limb inspector.
+
+A `nop` must not become `wait()`, a pause instruction, a memory-order barrier, or a license to skip guard validation. **Zero capacity** is also different from the **number zero**: the latter can be represented in any width, including `nobit`.
+
+The full 100-stage decimal series is preserved without re-copying or shortening in the [existing canonical derived 100D ledger](./SOVIETA_SCIENCE_LABROCKETS_BIDI_100D_001.md). The 12 named symbolic operators and two ordered metadata passes remain separate and unmutated.
+
+### Expected new native log
+
+```text
+SOVIETA_MICRO_WIDTHS|NOBIT_1_2_4_8_16_32_64_128_192_224_256_384_448_480_512=PASS|NUMERIC_WIDTHS=16|ROUTES=256|ROUTE_PASS=136|ROUTE_REJECT_LOSS=120|STAGE_PROJECTIONS=1600|LOSSLESS=89|REJECT_LOSS=1511|NOP_IDENTITY=100|LIMB32_LIMB64=PASS|100D_ROUNDTRIP=PASS|NO_SPEED_CLAIM|RELEASE=HOLD
+```
+
+The line above is a **test target**, not proof that the micro-width code has already passed native CI. The code must compile and the corresponding source commit must have a successful run before recording PASS. `RELEASE=HOLD`, draft PR, no auto-merge.
