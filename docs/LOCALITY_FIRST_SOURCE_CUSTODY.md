@@ -1,5 +1,8 @@
 # Locality-first source custody and deterministic builds
 
+**2026-11-24 CURRENT scoped addition:** Project-authored interpreted scripts may be committed under their actual first-party grants while interpreters are independently provisioned and attributed outside this repository. HenDecaDi/R\* is 0BSD source only, with no vendored R or automatic R download. The R runtime's separate GPL-2 | GPL-3 grant is not altered. Full offline execution requires an operator-isolated laboratory, not just a GitHub-hosted check; historical remote-capable scripts remain HOLD. Audit all active interpreted source with [ci/Invoke-InterpreterCustodyAudit.ps1](../ci/Invoke-InterpreterCustodyAudit.ps1) and the [headstone protocol](INTERPRETER_AIRGAP_HEADSTONES.md). This explicitly narrow exception supersedes the prior zero-GNU runtime statement for this external, unbundled R use only.
+
+
 **CURRENT METHOD, 2026-11-20.** Scope: first-party code, third-party dependency records, licensed toolchains, security scans, release evidence and canonical inputs across this repository. Preferred execution: **GitHub-hosted toolchains only** for the current cloud effort. Local-first means **resolve verified, version-pinned, committed evidence before network lookups**, not that remote verification is always unnecessary or that network topology alone proves legality/security.
 
 **CURRENT zero-approval constraint:** GNU packages and toolchains, including LGPL-2.1, and authored POSIX shell or POSIX-dependent build execution have **no approvals**. Existing historical source or inherited vendor tools do not establish consent. The new PowerShell-only LICENSES custody workflow does not imply that the broader tree has passed compliance. See [migration policy](GNU_POSIX_ZERO_APPROVAL_POLICY.md).
