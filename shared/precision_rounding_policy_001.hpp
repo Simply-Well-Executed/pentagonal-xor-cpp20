@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: 0BSD
-// PRECISION-ROUNDING-001: derived Q62 display views, no canonical source edits.
-// Headerless / STL-free ISO C++20. Full 128-bit product retained as two u64s.
-// All conversions keep the exact remainder and round to nearest, ties to even.
-// Historical Q62 multiply_shift62 outputs are not rewritten.
+// PRECISION-ROUNDING-001: Q62 derived display views; canonical records unchanged.
+// ROUND-FIRST: retain a full exact product, separate head and tail by exact
+// inverse subtraction, then round ONCE to nearest, halfway ties to ODD.
+// Headerless / STL-free ISO C++20; no compiler-specific 128-bit integers.
 #ifndef SWE_PRECISION_ROUNDING_POLICY_001_HPP
 #define SWE_PRECISION_ROUNDING_POLICY_001_HPP
 
@@ -10,7 +10,6 @@ namespace swe::precision_rounding_policy_001 {
 using u64 = unsigned long long;
 static_assert(sizeof(u64)==8);
 inline constexpr u64 Q62_DENOMINATOR = 1ULL << 62u;
-inline constexpr u64 Q62_REMAINDER_MASK = Q62_DENOMINATOR - 1ULL;
 
 struct Product128 {u64 high,low;};
 [[nodiscard]] constexpr Product128 multiply_exact(u64 a,u64 b) noexcept {
@@ -21,26 +20,49 @@ struct Product128 {u64 high,low;};
  return {p11+(p01>>32u)+(p10>>32u)+(middle>>32u),
          ((middle&mask)<<32u)|(p00&mask)};
 }
+
 struct RoundedQ62 {
  bool valid;
  u64 rounded;
- u64 lower_neighbor;
- u64 remainder;
+ u64 lower_neighbor;           // Head H: candidate integer, not final rounding
+ u64 remainder;                // Tail T: exactly N - H*D
  bool rounded_up;
- Product128 exact_numerator;
+ bool exactly_half;
+ bool residual_above_exact;    // Sign of R*D - N (false when below or exact)
+ u64 residual_magnitude;      // Magnitude of R*D - N, in numerator units
+ Product128 exact_numerator;   // N: source_word * decimal_scale, unreduced
 };
-// Exact rational before display: (exact_numerator.high:low) / 2^62.
-// If quotient or rounded result cannot fit in 64 bits, fail closed.
-[[nodiscard]] constexpr RoundedQ62 round_nearest_even(u64 q62_word,u64 decimal_scale) noexcept {
+
+// With D=2^62: N=H*D+T; T=N-H*D, 0<=T<D.
+// Compare 2*T to D without overflowing: compare T to D/2.
+// At an exact half choose the ODD neighbor; NO tail multiplication by 3.
+// If a rounded value cannot fit u64, report invalid instead of wrapping.
+[[nodiscard]] constexpr RoundedQ62 round_first_nearest_odd(
+ u64 q62_word,u64 decimal_scale) noexcept {
  if(decimal_scale==0ULL)return {};
- const Product128 p=multiply_exact(q62_word,decimal_scale);
- if((p.high>>62u)!=0ULL)return {};
- const u64 lower=(p.high<<2u)|(p.low>>62u);
- const u64 rem=p.low&Q62_REMAINDER_MASK;
+ const Product128 n=multiply_exact(q62_word,decimal_scale);
+ if((n.high>>62u)!=0ULL)return {}; // head would exceed u64
+ const u64 head=(n.high<<2u)|(n.low>>62u);
+ // Compute H*2^62 as TWO u64 words, then subtract from the exact numerator.
+ const Product128 head_scaled{head>>2u,head<<62u};
+ const u64 borrow=(n.low<head_scaled.low)?1ULL:0ULL;
+ if(n.high<head_scaled.high+borrow)return {};
+ const u64 tail_high=n.high-head_scaled.high-borrow;
+ const u64 tail=n.low-head_scaled.low;
+ if(tail_high!=0ULL||tail>=Q62_DENOMINATOR)return {};
+ // Reconstruct the exact 128-bit numerator before any rounding decision.
+ const u64 recon_low=head_scaled.low+tail;
+ const u64 recon_high=head_scaled.high+
+                       ((recon_low<head_scaled.low)?1ULL:0ULL);
+ if(recon_low!=n.low||recon_high!=n.high)return {};
  const u64 half=Q62_DENOMINATOR>>1u;
- const bool up=(rem>half)||(rem==half&&((lower&1ULL)!=0ULL));
- if(up&&lower==~0ULL)return {};
- return {true,lower+(up?1ULL:0ULL),lower,rem,up,p};
+ const bool tie=(tail==half);
+ const bool up=(tail>half)||(tie&&((head&1ULL)==0ULL));
+ if(up&&head==~0ULL)return {};
+ const u64 result=head+(up?1ULL:0ULL);
+ // Exact signed residual: R*D-N, represented as sign + magnitude.
+ const u64 residual=up?(Q62_DENOMINATOR-tail):tail;
+ return {true,result,head,tail,up,tie,up,residual,n};
 }
 } // namespace swe::precision_rounding_policy_001
 #endif
