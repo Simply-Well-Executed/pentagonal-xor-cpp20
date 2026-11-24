@@ -1,6 +1,6 @@
 # LadderDi 001 | native and local interpreter qualification
 
-**Status: IMPLEMENTED SOURCES, QUALIFICATION PER LANE; release HOLD.** Existing five-lane PentaDi, PowerShell/C# HexaDi and script-only R* HenDecaDi remain independent.
+**Status: IMPLEMENTED SOURCES, QUALIFICATION PER LANE; release HOLD.** Existing five-lane PentaDi, PowerShell/C# HexaDi and script-only R* HenDecaDi remain independent; Han now participates in the nine-lane LadderDi qualification ledger without replacing another lane.
 
 ## Requirements
 
@@ -12,6 +12,7 @@
 | EnneaDi | Rust native | enneadi/EnneaDi.rs | Rust 1.100.0 from verified local install | rustc directly, -C opt-level=2, no Cargo or registry; 256-byte and masking negative controls |
 | DecaDi | Go native | decadi/DecaDi.go | Go 1.27.4, official Google-hosted archive | Offline Google archive SHA256 verification; direct go build with GOPROXY=off, GOSUMDB=off, GOTOOLCHAIN=local, CGO_ENABLED=0 |
 | UnDecaDi | direct x64 MASM | undecadi/UnDecaDi.asm + UnDecaDiTest.cpp | Microsoft ml64/cl, separately provisioned | ml64 /c plus MSVC /O2 ISO C++20 native witness, 256-byte and OR-negative tests |
+| HenDecaDi (Han) | R* | hendecadi/HenDecaDi.R | R 4.6.2, separately provisioned, no bundled runtime | Base R, canonical nine-record fixture, 255 laps, OR masking canary, ordered receipt and source custody |
 | DoDecaDi | Perl | dodecadi/DoDecaDi.pl | Perl 5.44.0 separately installed | Perl interpreter with -T, no modules, canonical bitwise and inverse witnesses |
 | TriDecaDi | OCaml | tridecadi/TriDecaDi.ml | OCaml 5.5.2 separately installed | ocamlopt -O2 native compilation and in-process witness |
 
