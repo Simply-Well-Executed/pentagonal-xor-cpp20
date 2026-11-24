@@ -105,6 +105,15 @@ jobs:
             & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-OracleNativeParity.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-oracle-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME -Power $baseline
             if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|oracle_native_parity_failed'}
           }
+      - name: Browser proof | render Oracle XHTML in native Microsoft Edge
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          $view=Join-Path $env:RUNNER_TEMP 'slidingtoolonga-evidence/slidingtoolonga-oracle-power647.xhtml'
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-BrowserXhtmlSmoke.ps1') -Report $view
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|BROWSER=HOLD|browser_validation_failed'}
       - name: Preserve separate human authorization and release HOLD
         if: always()
         shell: pwsh
