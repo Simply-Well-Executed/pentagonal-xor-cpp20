@@ -293,4 +293,11 @@ Each pass records 2 metadata-only permutations, 1 source-reference-only PiDi, 1 
 - [Nearest/ties-to-odd Q62 policy](../shared/precision_rounding_policy_001.hpp)
 - [Project operator source, GammaGamma factorial difference](../shared/gammagamma.hpp)
 
-**STATUS:** implementation committed and linked; CI qualification of this new 100D code is **PENDING** until the corresponding workflow run is verified. Update with run ID, commit SHA, and exact log line only after completion. `RELEASE=HOLD`.
+**STATUS / EXECUTED QUALIFICATION: PASS** for code commit `c4ee402a29d3c63b7044ed3ce7f5f8df567cac06`. [QUADDI native MSVC /O2 + Oracle workflow #45316920608](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45316920608) finished **SUCCESS**. Native C++20 emitted:
+
+```text
+FUDGELESSSLIPPINGTOOLONG|1D_TO_100D_TO_1D=PASS|UP=99|DOWN=99|BITS_100D=2984|LIMBS=96|ROCKET_LEFT=CAR_RIGHT|DIRECT_HOP_WITNESS=PASS|OPERATORS_12_REPLAY_2=ORDERED_METADATA_ONLY|DOMAIN_HOLDS=8|NO_SPEED_CLAIM|RELEASE=HOLD
+OPERATOR_REPLAY|BIDI=METADATA|TRIDI=METADATA|PIDI=SOURCE_REFERENCE|PIPI=SYMBOLIC|REPLAY_PASSES=2|TOKENS_PER_PASS=12|NEEDS_DOMAIN=8|RELEASE=HOLD
+```
+
+[DIAERY XHTML Strict regression #45316920945](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/actions/runs/45316920945) also completed **SUCCESS** on the same commit. The independent arbitrary-integer arithmetic preflight agreed on 99 up steps, 99 down steps, and exact original `12345678` seed reconstruction. The user-defined names in the operator list still require domain-qualified implementations; 8 names are **HOLD**, no simulated numerical result. The tested implementation contains no speed benchmark, so no performance victory or physical time travel is asserted. `RELEASE=HOLD`; the PR remains draft.
