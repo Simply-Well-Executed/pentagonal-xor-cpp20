@@ -3,7 +3,7 @@
   an authenticated licensed DCC32 compiler passes independent tests.
   Derived from user-provided BranchPinToTsht and table. Never claim
   "i3382.1x-96" is an IEEE specification or actual compiler format.
-  Safety delta: {$R+}, {$Q+}, {$I+} on purpose. Do NOT turn off the
+  Safety delta: R+, Q+, I+ on purpose. Do NOT turn off the
   three checks for correctness qualification or branch safety.
 }
 unit BranchPinToTsht;
@@ -267,7 +267,8 @@ function TBranchOptimizerTracker.IsPinnedToTsht(BranchId:Word;
 var Idx:Integer;
 begin
   Idx:=FindBranchIndex(BranchId);
-  Result:=(Idx>=0) and FBranches[Idx].PinnedToTsht;
+  Result:=False;
+  if Idx>=0 then Result:=FBranches[Idx].PinnedToTsht;
   PinnedWidth:=0;
   if Result then PinnedWidth:=FBranches[Idx].PinnedByteWidth;
 end;
