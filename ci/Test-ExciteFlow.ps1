@@ -106,7 +106,7 @@ if(-not $redObserved){throw 'DOVIA|HOLD|illegal_transition_accepted'}
 # a SIGNAL_RECEIPT_OR_PROVENANCE_TAMPER, not silently accept a green light.
 $signalPath=Join-Path $evidence 'signal.jsonl'
 $signalLines=[IO.File]::ReadAllLines($signalPath,[Text.UTF8Encoding]::new($false,$true))
-$signalLines[0]=$signalLines[0].Replace('DOVIA.SIGNAL.1','DOVIA.SIGNAL.9')
+$signalLines[0]=$signalLines[0].Replace('DOVIA.SIGNAL.2','DOVIA.SIGNAL.9')
 [IO.File]::WriteAllText($signalPath,
   ([string]::Join([char]10,$signalLines)+[char]10),
   [Text.UTF8Encoding]::new($false))
