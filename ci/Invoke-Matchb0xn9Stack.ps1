@@ -46,6 +46,7 @@ Write-Host ('MATCHB0Xn9|PR_INVENTORY|OPEN_COUNT='+$open.Count+
 if($target.Count -ne 1 -or $target[0].head.sha -cne $ExpectedTopSha){
   throw 'MATCHB0Xn9|HOLD|PR95_head_or_inventory_mismatch'
 }
+$lineageDrift=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $chain=[Collections.Generic.List[object]]::new()
 $visited=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $current=$target[0]
@@ -56,9 +57,14 @@ while($true){
   $chain.Insert(0,$current)
   if($current.base.ref -ceq 'main'){break}
   $matches=@($open|Where-Object {$_.head.ref -ceq $current.base.ref})
-  if($matches.Count -ne 1 -or
-     $matches[0].head.sha -cne $current.base.sha){
+  if($matches.Count -ne 1){
     throw 'MATCHB0Xn9|HOLD|missing_or_ambiguous_upstream_pr'
+  }
+  if($matches[0].head.sha -cne $current.base.sha){
+    $drift=('UPSTREAM_PR'+$matches[0].number+'_TO_PR'+$current.number)
+    [void]$lineageDrift.Add($drift)
+    Write-Host ('MATCHB0Xn9|LINEAGE_HOLD|EDGE='+$drift+
+                '|PINNED_SOURCE_TESTS_CONTINUE|REAL_RACE_BLOCKED|RELEASE=HOLD')
   }
   $current=$matches[0]
 }
@@ -67,10 +73,15 @@ while($true){
   $children=@($open|Where-Object {$_.base.ref -ceq $current.head.ref})
   if($children.Count -eq 0){break}
   if($children.Count -ne 1 -or
-     $children[0].base.sha -cne $current.head.sha -or
      $chain.Count -ge 9 -or
      -not $visited.Add([string]$children[0].number)){
     throw 'MATCHB0Xn9|HOLD|branch_or_more_than_nine_circuits'
+  }
+  if($children[0].base.sha -cne $current.head.sha){
+    $drift=('UPSTREAM_PR'+$current.number+'_TO_PR'+$children[0].number)
+    [void]$lineageDrift.Add($drift)
+    Write-Host ('MATCHB0Xn9|LINEAGE_HOLD|EDGE='+$drift+
+                '|PINNED_SOURCE_TESTS_CONTINUE|REAL_RACE_BLOCKED|RELEASE=HOLD')
   }
   $current=$children[0]
   $chain.Add($current)
@@ -272,6 +283,11 @@ foreach($pr in $chain){
   if($fresh.head.sha -cne $pr.head.sha -or $fresh.base.sha -cne $pr.base.sha){
     throw ('MATCHB0Xn9|HOLD|PR_MOVED_DURING_TEST|PR='+$pr.number)
   }
+}
+if($lineageDrift.Count -ne 0){
+  throw ('MATCHB0Xn9|HOLD|STACK_ANCESTRY_REVIEW_REQUIRED|'+
+         [string]::Join(';',@($lineageDrift.ToArray()))+
+         '|NO_UNATTENDED_BRANCH_MERGE')
 }
 if($holds.Count -ne 0 -or $manifest.Count -ne $chain.Count){
   throw ('MATCHB0Xn9|HOLD|PR_CIRCUITS_NOT_ALL_GREEN|'+

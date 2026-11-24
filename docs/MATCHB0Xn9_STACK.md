@@ -92,3 +92,13 @@ or SingleLane parameters, environment knobs or manifest-supplied limits.
 Logging uses sealed-policy statements, not mutable configuration.
 RELEASE=HOLD is a fixed output, never a caller parameter.
 No unattended PR merge, branch synchronization or release.
+
+## Fail-closed stack lineage diagnostic continuation
+
+When the upstream PR advances without an approved downstream branch
+synchronization, matching PR identities and branch refs may still be
+inspected, but the differing exact base/head SHA is recorded as a
+lineage HOLD. The harness may continue fresh, independent, SHA-pinned
+PR circuits to expose real test failures. Counterflow and release are
+forbidden until this drift is explicitly reviewed and reconciled.
+No automatic branch merge, ancestry rewrite or bypass occurs.
