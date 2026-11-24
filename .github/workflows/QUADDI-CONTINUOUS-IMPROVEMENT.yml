@@ -132,9 +132,10 @@ jobs:
             }
             $suggestions.Add('- HOLD '+$parts[0]+' '+$parts[2]+': '+$advice)
           }
-          if($suggestions.Count -eq 6) { $suggestions.Add('- No measurement holds were detected. This is not release authorization.') }
+          $heldCount=@($observations | Where-Object { $_ -match "`tHOLD`t" }).Count
+          if($heldCount -eq 0) { $suggestions.Add('- No measurement holds were detected. This is not release authorization.') }
           [IO.File]::WriteAllLines((Join-Path $evidence 'proposals.md'),$suggestions,[Text.UTF8Encoding]::new($false))
-          Write-Host ('QUADDI_CI|PROPOSE|REVIEW_NOTES='+($suggestions.Count-6)+'|SOURCE_MUTATIONS=0|RELEASE=HOLD')
+          Write-Host ('QUADDI_CI|PROPOSE|REVIEW_NOTES='+$heldCount+'|SOURCE_MUTATIONS=0|RELEASE=HOLD')
       - name: 'QuadDi 4/4 VERIFY: independent source hash replay, honest red gates'
         shell: pwsh
         run: |
@@ -181,7 +182,8 @@ jobs:
             '- RELEASE=HOLD; no automatic merges or approvals',
             ''
           )
-          [IO.File]::AppendAllText($env:GITHUB_STEP_SUMMARY,($summary -join [Environment]::NewLine)+[Environment]::NewLine)
+          $proposalText=[IO.File]::ReadAllText((Join-Path $evidence 'proposals.md'))
+          [IO.File]::AppendAllText($env:GITHUB_STEP_SUMMARY,($summary -join [Environment]::NewLine)+[Environment]::NewLine+$proposalText)
           foreach($line in [IO.File]::ReadAllLines((Join-Path $evidence 'proposals.md'))) {
             Write-Host $line
           }
