@@ -85,7 +85,7 @@ for($page=1;$page -le $pages;$page++){
   }
   $samples=[Collections.Generic.List[string]]::new()
   foreach($r in $items){
-   if($r.X -lt -2 -or $r.X -gt 2)continue
+   if($r.X -lt -2 -or $r.X -gt 2){continue}
    $px=120+($r.X+2)*180;$py=170-130*$r.Re/$bound
    if(-not [double]::IsFinite($px) -or -not [double]::IsFinite($py)){throw 'QUADDI|HOLD|nonfinite_render'}
    $samples.Add((Num $px)+','+(Num $py))
