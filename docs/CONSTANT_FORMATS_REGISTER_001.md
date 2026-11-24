@@ -264,7 +264,10 @@ Historical or retired sources under `Archive/Retired` remain history, not CURREN
 **Status:** recorded mathematical equalities and static-checkable conversions are proven only to their named input protocol. Cross-language agreement or run time acceleration is a separate claim requiring the actual CI witness. No automatic merge or release.
 
 
-## 8. Forward precision policy: never silently truncate
+## 8. Historical precision policy: nearest ties-to-even (SUPERSEDED)
+
+> **RETIRED FOR NEW CONVERSIONS:** The following section is retained as a traceable historical policy witness from commit `d0fc87b9c2193a8d69725a791b033816b16dc1fd`. Its references to "new" conversions and the former header describe that historical snapshot, not the current rule. **Section 9 is now authoritative for new conversions.** Source constants and historical outputs remain unchanged.
+
 
 **Status: explicitly requested forward policy, 2026-11-23.** Preserve every original canonical source record and its historical derived output as evidence. For **new** Q62-to-decimal conversions, do not discard significant digits/bits by using the lower integer neighbor as a final result. Use **nearest integer, ties to even**, and retain the exact 128-bit numerator and Q62 remainder as a witness. Exact-to-narrower register projection still **rejects loss**, not rounds, unless the caller explicitly requests a numerical conversion with a named scale and rounding mode.
 
@@ -282,3 +285,45 @@ New implementation: [shared/precision_rounding_policy_001.hpp](../shared/precisi
 The **historical** intensity x10^18 value 68492964503335230 resulted from multiplying a previously reduced x10^17 value by ten. The **new** direct nearest/ties-even x10^18 value is 68492964503335234, four integer units higher. Do not label either a source mutation: they follow different derivations. Likewise the π source Q62 word ending 685 and the mathematically lower neighbor ending 684 differ by one binary Q62 unit; preserve the source and name the comparison.
 
 **Scope of no truncation:** source data stays exact as (source_word × decimal_scale) / 2^62, with the numerator and remainder retained. A fixed-width user-facing numeric rendering is explicitly rounded. For irrational π and e, **no finite 64-bit representation is itself exact**. Use symbolic/exact multi-limb formulations if exactness is required. RELEASE=HOLD, draft PR; no automatic endorsement and no retroactive claims about earlier CI runs.
+
+## 9. ROUND-FIRST / nearest ties-to-ODD (current exploratory conversion policy)
+
+**Status:** Updated at explicit user request, 2026-11-23. Only derived Q62-to-decimal conversions change policy; source words, original `multiply_shift62` historical records, and the earlier ties-even witness remain in Git history. No changes to DOGMA or identity rules are implied by the informal cultural naming used to explain the numerical method. `RELEASE=HOLD`.
+
+### Algorithm and subtractive head/tail witness
+
+For a nonnegative Q62 source word `w` and requested nonzero decimal scale `S`, the **exact** numerator is `N = w*S` (two checked unsigned 64-bit product limbs), and `D = 2^62`. FIRST find the prospective display boundary, WITHOUT committing a rounded/truncated output:
+
+1. Isolate integer **head** `H` and remainder **tail** `T` from `N / D`.
+2. Recover the tail by the inverse/subtractive difference `T = N - H*D`, using checked 128-bit limb subtraction. Verify `N = H*D + T` and `0 <= T < D` before any rounding. This is an exact decomposition, not loss of the tail.
+3. Compare `T` with `D/2`. If below, output `H`. If above, output `H+1`. If **exactly tied**, output the **odd** integer of those two neighbors: `H` if odd, otherwise `H+1`.
+4. Retain the signed residual `R*D - N`, encoded as sign and magnitude, alongside source numerator and exact tail. Return invalid on overflow. Never multiply the tail by three, saturate, wrap, silently narrow, or round an already-rounded display value.
+
+The meaning of `round-first` here is **round only after examining the complete exact head/tail witness**, before final fixed-width rendering. No numerical rounding is performed to create `H` or `T`; they remain a lossless pair. In mathematical form:
+
+```text
+N = source_word * decimal_scale              // exact 128-bit
+N = H * (2^62) + T                          // exact decomposition
+T = N - H * (2^62)                          // inverse/subtractive tail witness
+R = H                         when 2*T < 2^62
+R = H+1                       when 2*T > 2^62
+R = odd(H, H+1)               when 2*T = 2^62
+signed_residual = R * (2^62) - N             // exact audit witness
+```
+
+**Ties to odd:** `0.5→1`, `1.5→1`, `2.5→3`, `3.5→3`. At exact integers `1.0→1`, and at nonties `1.25→1`, `1.75→2`. Ties are the only inputs for which changing ties-even to ties-odd can change a result.
+
+| Q62 input | Requested scale | ROUND-FIRST ties-odd | Exact remainder | Halfway tie? |
+|---|---:|---:|---:|---|
+| Euler `12535862302449814170` | 10^17 | `271828182845904524` | `2403300696930910208` | NO |
+| π `14488038916154245685` | 10^17 | `314159265358979324` | `3925840205563691008` | NO |
+| Intensity `315868046760674477` | 10^17 | `6849296450333523` | `1790435901504094208` | NO |
+| Euler | 10^18 | `2718281828459045235` | `974576877172162560` | NO |
+| π | 10^18 | `3141592653589793239` | `2364913908217806848` | NO |
+| Intensity | 10^18 | `68492964503335234` | `4069300959758778368` | NO |
+
+These six outputs do **not change** between ties-even and ties-odd, because none is halfway. The new policy is therefore independently qualified using **four intentionally exact halfway fixtures**. The prior Q62 π stored word ending `685` versus an independently derived lower neighbor ending `684` remains a separate one-ULP source/derivation witness, not permission to alter the source.
+
+**Implementation:** [shared/precision_rounding_policy_001.hpp](../shared/precision_rounding_policy_001.hpp) exposes `round_first_nearest_odd` with the exact product, head, remainder, midpoint flag, signed residual flag/magnitude and overflow guard. [quaddi-ni/SlipSlidingToolongTest.cpp](../quaddi-ni/SlipSlidingToolongTest.cpp) includes compile-time tie/parity/nearby/exact/overflow checks. Historical ties-even source is retrievable from prior Git commit `d0fc87b9c2193a8d69725a791b033816b16dc1fd`.
+
+**Precision boundary:** No finite 64-bit rendering makes irrational π or e exact. A precise rational remainder and one final rounding can avoid premature information loss; the number of math operations does NOT by itself guarantee increased accuracy. Per-operation rounding may accumulate error. This qualification is mathematical and compile-time, not a speed or real-hardware claim. Do not call new CI PASS without a completed corresponding workflow run.
