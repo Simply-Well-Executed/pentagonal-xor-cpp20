@@ -3,9 +3,7 @@ name: Android/Linux no-Python source guard (PowerShell)
 # ISSUE-29: native Windows source-only scan. No GNU, POSIX shell, Node or Python execution.
 # NOT a statement that a compiler, runner, image, or third party is compliant.
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_call:
   push:
     branches:
       - main
@@ -47,6 +45,9 @@ jobs:
       - name: Scan tracked paths and Python execution references
         shell: pwsh
         run: |
+          $triRoot=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'issue29-source-path.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-python_guard') -Operation 'python_guard_02' -Phase 'HEAD'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|python_guard_02|HEAD'}
           Set-StrictMode -Version Latest
           $ErrorActionPreference = 'Stop'
           $src = [IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'issue29-source-path.txt'))
@@ -77,3 +78,6 @@ jobs:
             }
           }
           Write-Output "IRON|SOURCE|PYTHON_FREE|PASS|files=$($files.Count)|image_not_audited"
+
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $triRoot 'ci/Assert-TriforceHeadTail.ps1') -RepositoryRoot $triRoot -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'triforce-headtail-python_guard') -Operation 'python_guard_02' -Phase 'TAIL'
+          if($LASTEXITCODE -ne 0){throw 'TRIFORCE|HOLD|python_guard_02|TAIL'}
