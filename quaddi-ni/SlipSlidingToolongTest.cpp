@@ -7,6 +7,7 @@
 #include "../shared/constant_formats_register_001.hpp"
 #include "../shared/precision_rounding_policy_001.hpp"
 #include "../shared/fudgelessslippingtoolong_12d.hpp"
+#include "../shared/fudgelessslippingtoolong_100d.hpp"
 #include <stdio.h>
 using namespace swe::slipslidingtoolong;
 namespace fmt=swe::constant_formats_register_001;
@@ -123,6 +124,11 @@ namespace prec=swe::precision_rounding_policy_001;
 static_assert(precision_rounding_001(),"PRECISION-ROUNDING-001: exact round-first / nearest-ties-odd witness failed");
 
 int main(){
+ const auto century=swe::fudgelessslippingtoolong_100d::run();
+ if(!century.valid||century.ascents!=99u||century.descents!=99u||
+    century.highest_bits!=2984u||!century.direct_hop_matches||
+    !century.operator_sequence_nonmutating||
+    century.repeated_operator_labels!=24u)return 1;
  if(!WIDTH_MATRIX||!NARROWING_REJECTS||!BIT_OPERATIONS||!OWNED_RING||
     !intensity_reference()||!requested_width_routes()||
     !precision_rounding_001()||
@@ -134,5 +140,6 @@ int main(){
  printf("CONSTANT_FORMATS|RECORDS=21|U64=PASS|LONG16=PASS|U32_PAIRS=PASS|WIDE_ROUTES=PASS|RELEASE=HOLD\n");
  printf("PRECISION_ROUNDING|EXACT_128_PRODUCT=PASS|HEAD_TAIL_RECONSTRUCT=PASS|NEAREST_TIES_ODD=PASS|ROUND_FIRST=PASS|RELEASE=HOLD\n");
  printf("FUDGELESSSLIPPINGTOOLONG|1D_TO_12D=PASS|LEVEL_9=DECIMAL_CHUNK|FAST9_SLOW9=EXACT_MATCH|BITS_12D=353|GLINTING_384=PASS|MIDPOINT_ODD=PASS|NO_SPEED_CLAIM|RELEASE=HOLD\n");
+ printf("FUDGELESSSLIPPINGTOOLONG|1D_TO_100D_TO_1D=PASS|UP=99|DOWN=99|BITS_100D=2984|LIMBS=96|ROCKET_LEFT=CAR_RIGHT|DIRECT_HOP_WITNESS=PASS|OPERATORS_12_REPLAY_2=ORDERED_METADATA_ONLY|DOMAIN_HOLDS=8|NO_SPEED_CLAIM|RELEASE=HOLD\n");
  return 0;
 }
