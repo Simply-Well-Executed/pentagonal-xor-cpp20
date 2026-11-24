@@ -41,6 +41,7 @@ $required=[ordered]@{
  'DOVIA_NATIVE'=@('.github/workflows/DOVIA.yml','ci/excited-native/CMakeLists.txt')
  'QUADDI_NATIVE'=@('.github/workflows/quaddi-ni-oracle-cpp20.yml','quaddi-ni/QuadDiNI.cpp')
  'INTERPRETER_AIRGAP_HEADSTONES'=@('ci/Invoke-InterpreterCustodyAudit.ps1','ci/Test-InterpreterCustodyAudit.ps1','ci/INTERPRETER_HEADSTONES.tsv','docs/INTERPRETER_AIRGAP_HEADSTONES.md','hendecadi/HenDecaDi.R')
+ 'LADDERDI_LANGUAGE_QUALIFICATION'=@('.github/workflows/LADDERDI.yml','ci/Invoke-LadderDiQualification.ps1','ci/LADDERDI_TOOLCHAIN_HEADSTONES.tsv','docs/LADDERDI_001.md','heptadi/HeptaDiLua3L.lua','nonadi/Invoke-NonaDiSelfExclude.ps1','enneadi/EnneaDi.rs','decadi/DecaDi.go','undecadi/UnDecaDi.asm','undecadi/UnDecaDiTest.cpp','dodecadi/DoDecaDi.pl','tridecadi/TriDecaDi.ml','octadi/Invoke-OctaDiWhitespaceMatrix.ps1')
  'OCTADI_G_TABLE'=@('.github/workflows/OCTADI-G-TABLE.yml','octadi/G.py','octadi/Invoke-OctaDiGTable.ps1','docs/OCTADI_G_TABLE.md')
  'HEXADI_CORE_PWSH_CSHARP'=@('.github/workflows/HEXA-DI.yml','ci/Install-HexaDiPowerShell.ps1','ci/Invoke-HexaDiQualification.ps1','pentadi/Invoke-PentaDiQualification.ps1','pentadi/PentaDiC11BranchRecords.reference.tsv')
  'MATCHB0XN9'=@('.github/workflows/MATCHB0Xn9.yml','ci/Invoke-Matchb0xn9Race.ps1')
