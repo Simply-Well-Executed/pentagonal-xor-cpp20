@@ -2,7 +2,7 @@
 
 **BRITISHISH-FAIR/1**, exploratory synthetic fairness experiment, no production-ranking authority
 
-WHITE is a fourth, explicitly **non-scoring AIRGAP workspace**. It starts as an empty UTF-8 `WHITE-AIRGAP.txt` evidence file, is hash-checked for non-mutation, and has no candidate ID, score, vote, tie-break privilege, or authority to overwrite baseline observations. It can be copied separately as a human notepad, but editing it during a frozen experiment invalidates that experiment's comparable evidence. Neither a blank file nor a missing note means consent or PASS.
+ARIRANG is a separate, explicitly **non-scoring neutral workspace**. It starts as an empty UTF-8 `ARIRANG.txt` evidence file, is hash-checked for non-mutation, and has no candidate ID, score, vote, tie-break privilege, or authority to overwrite baseline observations. It can be copied separately as a human notepad, but editing it during a frozen experiment invalidates that experiment's comparable evidence. Neither a blank file nor a missing note means consent or PASS.
 
 The TRI HORN experiment has three independent equally weighted identities: RED, GREEN and BLUE. The original baseline is exactly (9,9,9). All three equality lines must be verified. No two-way shortcut is allowed.
 
