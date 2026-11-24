@@ -134,6 +134,17 @@ if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($out)){throw 'SLIDINGTOOLONGA|
 $power647Report=Join-Path $ev 'slidingtoolonga-power647.xhtml'
 & pwsh -NoLogo -NoProfile -NonInteractive -File $render -WitnessFile (Join-Path $ev 'power647.tsv') -Destination $power647Report
 if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($power647Report)){throw 'SLIDINGTOOLONGA|HOLD|XHTML647_failed'}
+if($OracleJdkHome){
+ $javaWitness=Join-Path $ev 'java-p647.tsv'
+ $javaReport=Join-Path $ev 'slidingtoolonga-oracle-power647.xhtml'
+ if(-not [IO.File]::Exists($javaWitness)){throw 'SLIDINGTOOLONGA|HOLD|oracle_witness_missing'}
+ & pwsh -NoLogo -NoProfile -NonInteractive -File $render -WitnessFile $javaWitness -Destination $javaReport
+ if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($javaReport)){throw 'SLIDINGTOOLONGA|HOLD|oracle_XHTML_failed'}
+ $a=(Get-FileHash -LiteralPath $power647Report -Algorithm SHA256).Hash
+ $b=(Get-FileHash -LiteralPath $javaReport -Algorithm SHA256).Hash
+ if($a -cne $b){throw 'SLIDINGTOOLONGA|HOLD|Oracle_CXX20_XHTML_not_identical'}
+ Write-Host ('SLIDINGTOOLONGA|ORACLE_CPP_XHTML=PASS|POWER=647|SHA256='+$a.ToLowerInvariant())
+}
 Write-Host 'SLIDINGTOOLONGA|EXACT_646_647=PASS|XHTML647=PASS|RELEASE=HOLD'
 $after=@($source|ForEach-Object{(Get-FileHash -LiteralPath $_ -Algorithm SHA256).Hash})
 for($i=0;$i -lt $source.Count;$i++){if($before[$i] -cne $after[$i]){throw 'SLIDINGTOOLONGA|HOLD|source_mutated'}}

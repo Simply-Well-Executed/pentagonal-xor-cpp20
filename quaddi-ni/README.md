@@ -76,3 +76,11 @@ Manually run the exact qualification on Windows with:
 The separate optional `-OracleJdkHome` may be provided to require tandem Oracle parity.
 
 **Expanded XHTML pagination:** SLIDINGTOOLONGA renders the six ordered states, every entry in `default-misc.tsv`, and one separately folded page per named line. Its report now qualifies the exact **Power 647** visualization as a CI canary, even when the selected input defaults to Power 0. Both pages state their exact exponent and disclose that the inverse-power visual path is only approximate. Additional misc labels are accepted through `-MiscFile`; the page count is derived from the input without a fixed page maximum.
+
+## Automatic Oracle JDK provisioning
+
+The repository's 0BSD license applies to project-authored source, while **Oracle JDK 27.0.1.1** is separately supplied under the Oracle No-Fee Terms and Conditions (NFTC). No Oracle binaries are redistributed by this repository.
+
+The DIAERY-derived GitHub workflow runs **Invoke-InstallOracleJdk27.ps1** after source bootstrap and before calculation. This fetches Oracle's official Windows x64 ZIP, checks the pinned published SHA-256 **9a2972e8ade166718fdc47e903b10b88e046b9839efb0a5cacb994a4be3266f7**, verifies Oracle's manifest exact version and vendor, and checks java.exe and javac.exe versions. It then passes the verified folder via GITHUB_ENV. A newer upstream archive or a checksum mismatch causes HOLD until deliberately repinned. No fallback Java implementation.
+
+Native C++20 and Oracle Java independently generate TSV witnesses and must agree. The exact Power-647 Oracle and native XHTML browser reports are both created by the same scriptless renderer, and their SHA-256 hashes must agree. The browser displays the resulting XHTML; it does **not** execute Oracle Java or a legacy Java applet. The exact origin output is separate from the disclosed approximate inverse-power graphical viewport. RELEASE=HOLD remains in force.
