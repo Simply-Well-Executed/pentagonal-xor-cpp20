@@ -80,7 +80,7 @@ tasks:
       - sh ci/t-cross-posix.sh gate-pinned-versions
 
   build-cpp20:
-    desc: 'Configure ISO C++20: MSVC Release O2, GCC/Clang Release O3; compile locally'
+    desc: 'Configure ISO C++20 with approved compiler, O2 only; Clang prohibited (HOLD)'
     cmds:
       - sh ci/t-cross-posix.sh build-cpp20
 

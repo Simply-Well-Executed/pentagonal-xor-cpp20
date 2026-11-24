@@ -81,6 +81,8 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/pentagonal_xor_std_free.h
     shared/deca_sigma.hpp
     shared/tri_pi.hpp
+    shared/euler_pi_inverse_square.hpp
+    shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/coreo_stereo.hpp
@@ -147,8 +149,28 @@ install(FILES
   DESTINATION include/swe)
 install(FILES shared/quantum_operand_lexicon.hpp DESTINATION include/swe)
 
+# Independently authored 0BSD NiteRex / Web9.X core and native XHTML projection.
+# These targets do not claim a complete browser, certificate verification or
+# historical archive certification. Keep existing parity and witness APIs intact.
+if(WIN32)
+  add_executable(niterex_web9x_xhtml src/niterex_web9x_xhtml_renderer.cpp)
+  target_include_directories(niterex_web9x_xhtml PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_compile_features(niterex_web9x_xhtml PRIVATE cxx_std_20)
+  set_target_properties(niterex_web9x_xhtml PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  install(TARGETS niterex_web9x_xhtml RUNTIME DESTINATION bin)
+endif()
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(niterex_web9x_ninebit_test tests/niterex_web9x_ninebit_test.cpp)
+    target_include_directories(niterex_web9x_ninebit_test PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_features(niterex_web9x_ninebit_test PRIVATE cxx_std_20)
+    set_target_properties(niterex_web9x_ninebit_test PROPERTIES
+      CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    add_test(NAME niterex_web9x_ninebit_exhaustive
+      COMMAND niterex_web9x_ninebit_test)
     if(TARGET pentagonal_xor_std_free)
       add_test(NAME parity_std_free_example COMMAND
         pentagonal_xor_std_free 0.80 0.70 0.90 0.60 0.95)
@@ -342,6 +364,8 @@ install(EXPORT swe_audit_headers_targets
 install(FILES
     shared/deca_sigma.hpp
     shared/tri_pi.hpp
+    shared/euler_pi_inverse_square.hpp
+    shared/toolong_q62_core.hpp
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/gammagamma.hpp
@@ -349,6 +373,7 @@ install(FILES
     shared/toolong.hpp
     shared/toolong_ratio.hpp
     shared/toolong_bits.hpp
+    shared/toolong_q62.hpp
     shared/toolong_photon_model.hpp
     shared/stability10d.hpp
     shared/coreo_stereo.hpp
@@ -530,6 +555,8 @@ install(EXPORT swe_sigma_penta_ping_targets
   DESTINATION lib/cmake/SWESigmaPentaPing)
 install(FILES
   shared/sigma_penta_ping.hpp
+  shared/handi_sigmapi.hpp
+  shared/handi_rot_triad.hpp
   shared/sigmadi_handecasigma_presentation.hpp
   shared/sigmadi_collision12.hpp
   DESTINATION include/swe)
@@ -538,6 +565,17 @@ install(FILES
   docs/SIGMA_PENTA_HAN_VISTA_BOARD.svg
   DESTINATION share/doc/pentagonal-xor)
 if(BUILD_TESTING)
+  add_executable(handi_sigmapi_test tests/handi_sigmapi_test.cpp)
+  target_compile_features(handi_sigmapi_test PRIVATE cxx_std_20)
+  set_target_properties(handi_sigmapi_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  if(MSVC)
+    target_compile_options(handi_sigmapi_test PRIVATE /O2)
+  else()
+    target_compile_options(handi_sigmapi_test PRIVATE -O2)
+  endif()
+  add_test(NAME handi_sigmapi_observation_not_automatic_pass
+           COMMAND handi_sigmapi_test)
   add_executable(sigma_penta_ping_test tests/sigma_penta_ping_test.cpp)
   target_compile_features(sigma_penta_ping_test PRIVATE cxx_std_20)
   add_test(NAME sigma_penta_ping_triple_ring_and_braid
@@ -626,4 +664,44 @@ if(BUILD_TESTING)
   set_target_properties(minza_centrix_light_test PROPERTIES
     CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
   add_test(NAME minza_centrix_light_symmetry COMMAND minza_centrix_light_test)
+endif()
+
+# Opt-in host scheduler, outside STD-free core-only path.
+option(SWE_NINZA_PING_EXECUTOR "Enable experimental host PING executor" OFF)
+if(SWE_NINZA_PING_EXECUTOR)
+  find_package(Threads REQUIRED)
+  add_library(swe_ninza_ping_executor INTERFACE)
+  target_compile_features(swe_ninza_ping_executor INTERFACE cxx_std_20)
+  target_include_directories(swe_ninza_ping_executor INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/shared")
+  target_link_libraries(swe_ninza_ping_executor INTERFACE Threads::Threads)
+  if(BUILD_TESTING)
+    add_executable(ninza_ping_scheduler_test tests/ninza_ping_scheduler_test.cpp)
+    target_link_libraries(ninza_ping_scheduler_test PRIVATE swe_ninza_ping_executor)
+    if(MSVC)
+      target_compile_options(ninza_ping_scheduler_test PRIVATE /O2)
+    else()
+      target_compile_options(ninza_ping_scheduler_test PRIVATE -O2)
+    endif()
+    add_test(NAME ninza_ping_scheduler_explicit_order COMMAND ninza_ping_scheduler_test)
+    set_tests_properties(ninza_ping_scheduler_explicit_order PROPERTIES TIMEOUT 20)
+  endif()
+endif()
+
+# FIFONFU subprocess recovery is an opt-in host-side PowerShell fixture.
+if(SWE_NINZA_PING_EXECUTOR AND BUILD_TESTING)
+  find_program(SWE_NINZA_PWSH NAMES pwsh)
+  if(SWE_NINZA_PWSH)
+    add_test(NAME ninza_fifonfu_parent_supervision
+      COMMAND "${SWE_NINZA_PWSH}" -NoLogo -NoProfile -NonInteractive
+        -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/Test-NinzaFifonfu.ps1")
+    set_tests_properties(ninza_fifonfu_parent_supervision PROPERTIES TIMEOUT 90)
+  endif()
+endif()
+
+# Opt-in PiPi dual scheduling and idle-retirement fixture.
+if(SWE_NINZA_PING_EXECUTOR AND BUILD_TESTING AND SWE_NINZA_PWSH)
+  add_test(NAME ninza_pipi_star_supervision
+    COMMAND "${SWE_NINZA_PWSH}" -NoLogo -NoProfile -NonInteractive
+      -ExecutionPolicy Bypass -File "${CMAKE_CURRENT_SOURCE_DIR}/tests/Test-NinzaPiPi.ps1")
+  set_tests_properties(ninza_pipi_star_supervision PROPERTIES TIMEOUT 180)
 endif()

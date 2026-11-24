@@ -57,7 +57,8 @@ constexpr Trace run(double x) noexcept {
 
 constexpr double magnitude(double x) noexcept { return x < 0.0 ? -x : x; }
 
-constexpr bool near(double a, double b,
+// Stable neutral helper name: Windows headers may define 'near' as a macro.
+constexpr bool within_tolerance(double a, double b,
                     double relative_tolerance = 1e-12) noexcept {
     if (!finite(a) || !finite(b) || !finite(relative_tolerance) ||
         relative_tolerance < 0.0) return false;
@@ -68,9 +69,9 @@ constexpr bool near(double a, double b,
 constexpr bool witnesses_return(const Trace& trace,
                                 double relative_tolerance = 1e-12) noexcept {
     return trace.admissible &&
-           near(trace.stages[4], trace.stages[0], relative_tolerance) &&
-           near(trace.stages[8], trace.stages[0], relative_tolerance) &&
-           near(trace.stages[10], trace.stages[0], relative_tolerance);
+           within_tolerance(trace.stages[4], trace.stages[0], relative_tolerance) &&
+           within_tolerance(trace.stages[8], trace.stages[0], relative_tolerance) &&
+           within_tolerance(trace.stages[10], trace.stages[0], relative_tolerance);
 }
 
 static_assert(!run(0.0).admissible);
