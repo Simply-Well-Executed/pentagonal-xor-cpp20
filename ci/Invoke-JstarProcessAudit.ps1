@@ -298,7 +298,7 @@ $report=[ordered]@{
     process_integrity_status=if($errors.Count -eq 0){'SAMPLED_PASS'}else{'HOLD'}
     release='HOLD'
 }
-[IO.File]::WriteAllText($auditPath,($report|ConvertTo-Json -Depth 12),
+[IO.File]::WriteAllText($auditPath,($report|ConvertTo-Json -Depth 9 -WarningAction Stop),
     [Text.UTF8Encoding]::new($false))
 $auditHash=(Get-FileHash -LiteralPath $auditPath -Algorithm SHA256).Hash.ToLowerInvariant()
 Write-Host ('JSTAR|PROCESS_AUDIT|OP='+$Operation+'|SAMPLED='+$observed.Count+

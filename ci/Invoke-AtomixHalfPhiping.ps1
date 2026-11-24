@@ -52,7 +52,7 @@ foreach($phase in $phases){
         })
       })
     }
-    $json=ConvertTo-Json -InputObject $fixture -Compress -Depth 24
+    $json=ConvertTo-Json -InputObject $fixture -Compress -Depth 9 -WarningAction Stop
     $needle='ATOMIX:A:'
     $at=$json.IndexOf($needle,[StringComparison]::Ordinal)
     if($at -lt 0 -or
@@ -79,8 +79,8 @@ foreach($phase in $phases){
        ($mutated[$offset] -bxor 1) -ne $original[$offset]){
       throw 'ATOMIX|HOLD|mutation_not_exactly_reversible'
     }
-    $before=ConvertFrom-Json -InputObject $utf8.GetString($original) -Depth 24
-    $after=ConvertFrom-Json -InputObject $utf8.GetString($mutated) -Depth 24
+    $before=ConvertFrom-Json -InputObject $utf8.GetString($original) -Depth 9
+    $after=ConvertFrom-Json -InputObject $utf8.GetString($mutated) -Depth 9
     if($before.version -cne '2.1.0' -or
        $after.version -cne '2.1.0' -or
        @($after.runs).Count -ne 1 -or
@@ -108,7 +108,7 @@ foreach($phase in $phases){
     }
     $records.Add([pscustomobject]$record)
     $path=Join-Path $evidence ($phase.name.ToLowerInvariant()+'.json')
-    [IO.File]::WriteAllText($path,($record|ConvertTo-Json -Depth 8),
+    [IO.File]::WriteAllText($path,($record|ConvertTo-Json -Depth 9 -WarningAction Stop),
       [Text.UTF8Encoding]::new($false))
     Write-Host ('ATOMIX|'+$phase.name+'|LOCAL_PROBE_PASS|XOR_BITS=1'+
       '|BASE='+$record.original_sha256+'|PROBE='+$record.xor_probe_sha256)
@@ -136,7 +136,7 @@ $audit=[ordered]@{
   release='HOLD'
 }
 $auditPath=Join-Path $evidence 'atomix-audit.json'
-[IO.File]::WriteAllText($auditPath,($audit|ConvertTo-Json -Depth 12),
+[IO.File]::WriteAllText($auditPath,($audit|ConvertTo-Json -Depth 9 -WarningAction Stop),
   [Text.UTF8Encoding]::new($false))
 $hash=(Get-FileHash -LiteralPath $auditPath -Algorithm SHA256).Hash.ToLowerInvariant()
 Write-Host ('ATOMIX|TRIFORCE|HEAD_AIRGAP_TAIL|Q62_PASS'+

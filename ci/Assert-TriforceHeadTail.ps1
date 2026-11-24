@@ -225,7 +225,7 @@ if($Phase -ceq 'HEAD') {
     $state.completed=[int]$state.completed+1
 }
 $tmp=$statePath+'.tmp'
-[IO.File]::WriteAllText($tmp,($state | ConvertTo-Json -Depth 5),
+[IO.File]::WriteAllText($tmp,($state | ConvertTo-Json -Depth 9 -WarningAction Stop),
                         [Text.UTF8Encoding]::new($false))
 [IO.File]::Move($tmp,$statePath,$true)
 Write-Host ('TRIFORCE|'+$Phase+'|OP='+$Operation+

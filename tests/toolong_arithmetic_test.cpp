@@ -109,11 +109,11 @@ try {
     check(swe::toolong_bits::rotate_left_width(toolong{129},8,1)==toolong{3},"rotate left");
     const auto fraction=swe::toolong_ratio{toolong{4},toolong{-6}};
     check(fraction.str()=="-2/3","canonical signed fraction");
-    const swe::toolong_ratio third{toolong{1},toolong{3}};
-    check((third+third).str()=="2/3","ratio sum");
-    check((third*third).str()=="1/9","ratio product");
-    check((third/third).str()=="1","ratio division");
-    check((third-third).str()=="0","ratio difference");
+    const swe::toolong_ratio one_third{toolong{1},toolong{3}};
+    check((one_third+one_third).str()=="2/3","ratio sum");
+    check((one_third*one_third).str()=="1/9","ratio product");
+    check((one_third/one_third).str()=="1","ratio division");
+    check((one_third-one_third).str()=="0","ratio difference");
     const auto counts=swe::inspect_photon_counts(toolong{100},
         {toolong{105},toolong{120},toolong{135}});
     check(counts.total_detected==toolong{360},"count total");
