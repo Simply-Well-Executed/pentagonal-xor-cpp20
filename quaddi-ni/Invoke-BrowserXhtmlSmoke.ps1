@@ -18,9 +18,19 @@ $profile=Join-Path ([IO.Path]::GetDirectoryName($report)) 'browser-smoke-userdat
 if([IO.Directory]::Exists($profile)){throw 'QUADDI|BROWSER=HOLD|existing_profile'}
 [IO.Directory]::CreateDirectory($profile)|Out-Null
 $uri=[Uri]::new($report).AbsoluteUri
-$dom=@(& $edge '--headless=new' '--disable-gpu' '--disable-background-networking' '--disable-extensions' '--disable-sync' '--no-first-run' '--no-default-browser-check' ('--user-data-dir='+$profile) '--dump-dom' $uri 2>$null)
-if($LASTEXITCODE -ne 0){throw ('QUADDI|BROWSER=HOLD|Edge_exit='+$LASTEXITCODE)}
-$view=[string]::Join([Environment]::NewLine,[string[]]$dom)
+$stdout=Join-Path ([IO.Path]::GetDirectoryName($report)) 'edge-dom.txt'
+$stderr=Join-Path ([IO.Path]::GetDirectoryName($report)) 'edge-stderr.txt'
+$argsList=@('--headless=new','--disable-gpu','--disable-background-networking',
+ '--disable-extensions','--disable-sync','--no-first-run',
+ '--no-default-browser-check',('--user-data-dir='+$profile),'--dump-dom',$uri)
+$proc=Start-Process -FilePath $edge -ArgumentList $argsList -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+if(-not $proc.WaitForExit(30000)){
+ try{Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue}catch{}
+ throw 'QUADDI|BROWSER=HOLD|Edge_timeout_30s'
+}
+if($proc.ExitCode -ne 0){throw ('QUADDI|BROWSER=HOLD|Edge_exit='+$proc.ExitCode)}
+if(-not [IO.File]::Exists($stdout)){throw 'QUADDI|BROWSER=HOLD|Edge_DOM_missing'}
+$view=[IO.File]::ReadAllText($stdout)
 foreach($needle in @(
  'SLIDINGTOOLONGA',
  'RULER REGISTER COUNT: #1',
