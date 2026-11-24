@@ -1,7 +1,7 @@
 { SPDX-License-Identifier: 0BSD
   Derived from user-supplied keep.pass (retained verbatim alongside).
   This is a build-profile/measurement unit, not a Delphi compiler.
-  Qualification uses compiler-level {$R+} {$Q+} {$I+}.
+  Qualification uses compiler-level R+, Q+, I+ checks.
   Any bpFinal unsafe toggles are historical proposed settings only and
   must be overridden for validating branch bounds, memory and I/O.
 }
