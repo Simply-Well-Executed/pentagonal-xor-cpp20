@@ -54,6 +54,22 @@ jobs:
           $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pentadi-root.txt'))
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-PentaDiQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'pentadi-asm-evidence')
           if($LASTEXITCODE -ne 0){throw 'PENTADI|HOLD|c11_masm_or_pipe_failed'}
+      - name: PentaPi | bounded local TCP IPv4 TTL 255 framed loopback
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pentadi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-PentaPiTcp255.ps1') -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'pentapi-tcp255-evidence') -InitialIPv4Ttl 255 -TimeoutMilliseconds 2500
+          if($LASTEXITCODE -ne 0){throw 'PENTAPI|FAIL|tcp_ipv4_255_gate'}
+      - name: PentaPi | five-gate provenance and continuous improvement lap
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'pentadi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'pentadi/Invoke-PentaPiLapAudit.ps1') -RepositoryRoot $root -PentaDiEvidenceDirectory (Join-Path $env:RUNNER_TEMP 'pentadi-asm-evidence') -TcpEvidenceDirectory (Join-Path $env:RUNNER_TEMP 'pentapi-tcp255-evidence') -AuditDirectory (Join-Path $env:RUNNER_TEMP 'pentapi-lap001-evidence')
+          if($LASTEXITCODE -ne 0){throw 'PENTAPI|FAIL|five_gate_lap_audit'}
       - name: PentaDi provenance and release gate
         if: always()
         shell: pwsh
