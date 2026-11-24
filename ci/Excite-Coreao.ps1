@@ -287,7 +287,7 @@ function Add-ExciteVehicle {
 }
 function Assert-ExciteEvidence([object]$Context) {
   $tables=@{}
-  foreach($name in @('qchart','qlam','qgraph','qcode')){
+  foreach($name in @('qchart','qlam','qgraph','qcode','signal')){
     $tables[$name]=[IO.File]::ReadAllLines(
       (Join-Path $Context.Directory ($name+'.jsonl')),
       [Text.UTF8Encoding]::new($false,$true))
