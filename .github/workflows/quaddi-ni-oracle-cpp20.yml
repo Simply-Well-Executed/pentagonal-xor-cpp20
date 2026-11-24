@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: 0BSD
-name: QUADDI NI | DIAERY-derived native parity
+name: QUADDI NI | C++20 Oracle27 XHTML1.0Strict C11
 on:
   workflow_dispatch:
     inputs:
@@ -11,6 +11,7 @@ on:
   pull_request:
     paths:
       - 'quaddi-ni/**'
+      - 'shared/**'
       - '.github/workflows/quaddi-ni-oracle-cpp20.yml'
 permissions:
   contents: read
@@ -19,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   quaddi-concurrence:
-    name: Native MSVC /O2 | XHTML witness | Oracle explicit status
+    name: QuadDi native MSVC C++20 + C11 | Oracle JDK 27 | XHTML Strict profile
     runs-on: windows-2025
     timeout-minutes: 35
     permissions:
@@ -130,6 +131,14 @@ jobs:
           $view=Join-Path $env:RUNNER_TEMP 'slidingtoolonga-evidence/slidingtoolonga-oracle-power647.xhtml'
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-BrowserXhtmlSmoke.ps1') -Report $view
           if($LASTEXITCODE -ne 0){throw 'QUADDI|BROWSER=HOLD|browser_validation_failed'}
+      - name: QUADDI four lanes | XHTML 1.0 Strict bounded XML profile and provenance
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-QuadDiXhtml10StrictGate.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'quaddi-xhtml10-strict') -OracleJdkHome $env:ORACLE_JDK_HOME
+          if($LASTEXITCODE -ne 0){throw 'QUADDI|HOLD|four_lane_strict_profile_failed'}
       - name: Preserve separate human authorization and release HOLD
         if: always()
         shell: pwsh
