@@ -89,6 +89,14 @@ jobs:
           if($text -cnotmatch '^[0-9]+$'){throw 'SLIDINGTOOLONGA|HOLD|nonnegative_power_required'}
           & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-SlidingToolongAQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'slidingtoolonga-evidence') -Exponent $text -OracleJdkHome $env:ORACLE_JDK_HOME
           if($LASTEXITCODE -ne 0){throw 'SLIDINGTOOLONGA|HOLD|exact_qualification_failed'}
+      - name: GUARDMEMORYGUARD | native and Oracle logical widths and MXRING
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'quaddi-root.txt'))
+          & pwsh -NoLogo -NoProfile -NonInteractive -File (Join-Path $root 'quaddi-ni/Invoke-SlipSlidingToolongQualification.ps1') -RepositoryRoot $root -EvidenceDirectory (Join-Path $env:RUNNER_TEMP 'slipslidingtoolong-evidence') -OracleJdkHome $env:ORACLE_JDK_HOME
+          if($LASTEXITCODE -ne 0){throw 'GUARDMEMORYGUARD|HOLD|qualification_failed'}
       - name: Oracle Java status explicit | exact vendor/version or HOLD
         shell: pwsh
         run: |
