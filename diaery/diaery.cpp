@@ -268,7 +268,7 @@ static void paint_time_plot(W32H dc) {
     label(dc,475,552,g_trace_input,thread);
     if(g_trace_editing)label(dc,475,568,"EDIT: type then Enter | Esc cancels",grey);
     else if(g_trace_rejected)label(dc,475,568,"HOLD: unknown trace expression",grey);
-    if(line.valid){
+    if(line.valid && swe::diaery::research::included(swe::diaery::research::assess({nullptr,swe::diaery::research::Measurement::VaginalDepth,g_depth_inches,true}))){
         W32H trace_pen=CreatePen(0,1,rgb(108,172,174));
         old=SelectObject(dc,trace_pen);
         bool first=true;
@@ -357,6 +357,13 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     label(dc,475,104,line.valid&&g_depth_inches>0.0
           ?"AM I VALID? ALGEBRA YES":"AM I VALID? NO / HOLD",
           line.valid&&g_depth_inches>0.0?teal:gold);
+    const bool filtrex_eligible =
+        swe::diaery::research::included(swe::diaery::research::assess(
+            {nullptr,swe::diaery::research::Measurement::PenileLength,g_length_inches,true})) &&
+        swe::diaery::research::included(swe::diaery::research::assess(
+            {nullptr,swe::diaery::research::Measurement::PenileCircumference,g_girth_inches,true})) &&
+        swe::diaery::research::included(swe::diaery::research::assess(
+            {nullptr,swe::diaery::research::Measurement::VaginalDepth,g_depth_inches,true}));
     label(dc,475,123,"RESEARCH: HOLD | UNKNOWN UNCERTAINTY",gold);
     namespace fx=swe::diaery::filtrox;
     namespace rs=swe::diaery::research;
@@ -367,7 +374,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
        y_check.position==fx::Position::WithinObserved &&
        z_check.position==fx::Position::WithinObserved;
     label(dc,475,218,within?"FILTROX: IN STUDY RANGES":"FILTROX: OUTSIDE SAMPLE / NULL",within?teal:gold);
-    if(line.valid) {
+    if(line.valid && filtrex_eligible) {
         W32H pen=CreatePen(0,3,teal);old=SelectObject(dc,pen);
         MoveToEx(dc,plot_x(line.y_end.x,left,pix),plot_y(line.y_end.y,bottom,pix),nullptr);
         LineTo(dc,plot_x(line.x_end.x,left,pix),plot_y(line.x_end.y,bottom,pix));
@@ -380,7 +387,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     }
     // Never plot invalid, non-finite or negative source coordinates.
     // The point is an unverified selection, not a real participant record.
-    if(line.valid){
+    if(line.valid && filtrex_eligible){
         const int sx=plot_x(g_length_inches,left,pix),sy=plot_y(g_girth_inches,bottom,pix);
         W32H marker=CreateSolidBrush(purple);
         W32RECT dot{sx-5,sy-5,sx+6,sy+6};FillRect(dc,&dot,marker);DeleteObject(marker);
@@ -405,7 +412,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     label(dc,475,426,"NULL GUARD: RESEARCH HOLD",gold);
     label(dc,475,448,"SIGMA uncertainty: NULL (not zero)",grey);
     label(dc,475,470,g_dynamo_mint?"MINTING: ON (-0.03)":"MINTING: OFF",grey);
-    if(g_dynamo_mint){
+    if(g_dynamo_mint && line.valid && filtrex_eligible){
         // A second derived point only. The S source marker is unchanged.
         const double dx=swe::diaery::graph::minting(g_length_inches);
         const double dy=swe::diaery::graph::minting(g_girth_inches);
