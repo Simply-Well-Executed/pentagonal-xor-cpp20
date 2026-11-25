@@ -3,6 +3,8 @@
 // No C++ standard library or system header is included. Geometry comes
 // from the original repository, never reconstructed from XHTML markup.
 #include "model_bridge.hpp"
+#include "application_of_ymxb.hpp"
+#include "dynamo_subject.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -139,6 +141,9 @@ static bool load_validate(const char* path) {
 #if defined(_WIN32)
 static int g_stage=0,g_yaw=-30,g_pitch=22,g_zoom=5;
 static bool g_drag=false,g_water=true,g_yang=true,g_bubble=true,g_cutaway=true;
+static bool g_dynamo=false;
+static double g_length_inches=4.0/2.54,g_girth_inches=6.1240,g_depth_inches=2.9000;
+static bool g_dynamo_mint=false;
 static int g_mouse_x=0,g_mouse_y=0;
 static W32H g_window=nullptr;
 // Rendering-only approximations; source and gate remain exact integers.
@@ -177,11 +182,97 @@ static void quad(W32H dc,swe::rectangloid_primitive::Quad face,
     W32H old=SelectObject(dc,brush);
     Polygon(dc,a,4);SelectObject(dc,old);DeleteObject(brush);
 }
+// Native GDI DYNAMO: real line calculation, explicit source point,
+// equal pixel/inch axes, separate unverified depth, NULL uncertainty HOLD.
+// No change to XHTML parser, profile or fold viewer.
+static void decimal4(char* out,unsigned capacity,double value) {
+    if(capacity<12u)return;
+    unsigned j=0u;
+    if(value<0.){out[j++]='-';value=-value;}
+    // Display-only rounding, nearest 0.0001; does NOT alter sources.
+    const unsigned whole=static_cast<unsigned>(value);
+    unsigned long long scaled=static_cast<unsigned long long>((value-static_cast<double>(whole))*10000.+0.5);
+    unsigned integer=whole;
+    if(scaled>=10000ULL){++integer;scaled-=10000ULL;}
+    char reversed[12]{};unsigned n=0u;
+    do{reversed[n++]=static_cast<char>('0'+integer%10u);integer/=10u;}while(integer&&n<10u);
+    while(n&&j+1<capacity)out[j++]=reversed[--n];
+    if(j+5>=capacity){out[j]=0;return;}
+    out[j++]='.';
+    out[j++]=static_cast<char>('0'+scaled/1000ULL%10ULL);
+    out[j++]=static_cast<char>('0'+scaled/100ULL%10ULL);
+    out[j++]=static_cast<char>('0'+scaled/10ULL%10ULL);
+    out[j++]=static_cast<char>('0'+scaled%10ULL);
+    out[j]=0;
+}
+static void text_value(W32H dc,int x,int y,const char* title,double v,W32D color){
+    label(dc,x,y,title,color);
+    char buffer[24]{};decimal4(buffer,24u,v);
+    label(dc,x+188,y,buffer,color);
+}
+static int plot_x(double v,int left,int px_per_inch){return left+static_cast<int>(v*px_per_inch+0.5);}
+static int plot_y(double v,int bottom,int px_per_inch){return bottom-static_cast<int>(v*px_per_inch+0.5);}
+static void paint_dynamo(W32H dc,const W32RECT& rc){
+    const W32D grey=rgb(159,176,194),teal=rgb(95,212,202),gold=rgb(237,190,117),purple=rgb(192,141,233);
+    label(dc,22,16,"DIAERY | APPLICATION OF Y=MX+B | native C++20 | RELEASE=HOLD",teal);
+    label(dc,22,39,"X horizontal = penile length (in); Y vertical = circumference (in)",grey);
+    label(dc,22,60,"Z separate = vaginal depth (in), unverified; no physiological inference",grey);
+    const int left=83,top=110,side=360,pix=30,bottom=top+side;
+    W32H grid_pen=CreatePen(0,1,rgb(49,72,87));
+    W32H old=SelectObject(dc,grid_pen);
+    for(int n=0;n<=12;n+=2){
+        MoveToEx(dc,left+pix*n,top,nullptr);LineTo(dc,left+pix*n,bottom);
+        MoveToEx(dc,left,bottom-pix*n,nullptr);LineTo(dc,left+side,bottom-pix*n);
+    }
+    SelectObject(dc,old);DeleteObject(grid_pen);
+    W32H axis=CreatePen(0,2,grey);old=SelectObject(dc,axis);
+    MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left+side,bottom);
+    MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left,top);
+    SelectObject(dc,old);DeleteObject(axis);
+    const auto line=swe::diaery::graph::application_of_ymxb(g_length_inches,g_girth_inches);
+    if(line.valid) {
+        W32H pen=CreatePen(0,3,teal);old=SelectObject(dc,pen);
+        MoveToEx(dc,plot_x(line.y_end.x,left,pix),plot_y(line.y_end.y,bottom,pix),nullptr);
+        LineTo(dc,plot_x(line.x_end.x,left,pix),plot_y(line.x_end.y,bottom,pix));
+        SelectObject(dc,old);DeleteObject(pen);
+        label(dc,475,135,"APPLICATION: y = m*x + b",teal);
+        text_value(dc,475,165,"m = -Y/X",line.slope,teal);
+        text_value(dc,475,192,"b = Y (inches)",line.intercept,teal);
+    } else {
+        label(dc,475,135,"HOLD: invalid slope/intercept input",gold);
+    }
+    // XY subject marker is distinct from derived intercept endpoints.
+    const int sx=plot_x(g_length_inches,left,pix),sy=plot_y(g_girth_inches,bottom,pix);
+    W32H marker=CreateSolidBrush(purple);
+    W32RECT dot{sx-5,sy-5,sx+6,sy+6};FillRect(dc,&dot,marker);DeleteObject(marker);
+    label(dc,sx+10,sy-12,"S (source selection)",purple);
+    text_value(dc,475,255,"X length (in)",g_length_inches,grey);
+    text_value(dc,475,282,"Y girth (in)",g_girth_inches,grey);
+    text_value(dc,475,309,"Z depth (in)",g_depth_inches,gold);
+    label(dc,475,345,"NULL GUARD: RESEARCH HOLD",gold);
+    label(dc,475,369,"No paired subject or valid error budget verified",grey);
+    label(dc,475,392,"SIGMA uncertainty: NULL (not zero)",grey);
+    label(dc,475,420,"Derived MINTING is display-only",grey);
+    label(dc,475,443,g_dynamo_mint?"MINTING: ON (-0.03)":"MINTING: OFF",grey);
+    if(g_dynamo_mint){
+        // A second derived point only. The S source marker is unchanged.
+        const double dx=swe::diaery::graph::minting(g_length_inches);
+        const double dy=swe::diaery::graph::minting(g_girth_inches);
+        W32H brush=CreateSolidBrush(gold);
+        const int mx=plot_x(dx,left,pix),my=plot_y(dy,bottom,pix);
+        W32RECT d{mx-3,my-3,mx+4,my+4};FillRect(dc,&d,brush);DeleteObject(brush);
+    }
+    label(dc,83,85,"Y (in)",grey);label(dc,285,489,"X (in) ->",grey);
+    label(dc,22,rc.bottom-70,"D: DIAERY/DYNAMO | arrows: adjust X/Y | PgUp/PgDn: adjust Z",grey);
+    label(dc,22,rc.bottom-46,"M: toggle MINTING | S=source point | geometry is algebraic, not clinical",grey);
+}
+
 static void paint(W32H hwnd){
     W32PAINT ps{};W32H dc=BeginPaint(hwnd,&ps);
     W32RECT rc{};GetClientRect(hwnd,&rc);
     W32H bg=CreateSolidBrush(rgb(8,18,30));FillRect(dc,&rc,bg);DeleteObject(bg);
     SetBkMode(dc,1);
+    if(g_dynamo){paint_dynamo(dc,rc);EndPaint(hwnd,&ps);return;}
     label(dc,22,15,"DIAERY | XHTML 1.0 STRICT PROFILE | 1:1-PARITY-GATE: PASS",rgb(122,225,211));
     label(dc,22,37,"Native ISO C++20 geometry; no remote content, no script execution",rgb(209,199,173));
     unsigned row=0u;
@@ -242,6 +333,8 @@ static int mouse_component(W32L lp,bool upper){
 static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
     if(msg==WM_PAINT){paint(hwnd);return 0;}
     if(msg==WM_DESTROY){PostQuitMessage(0);return 0;}
+    if(msg==WM_LBUTTONDOWN&&g_dynamo)return 0;
+    if(msg==WM_MOUSEMOVE&&g_dynamo)return 0;
     if(msg==WM_LBUTTONDOWN){g_drag=true;g_mouse_x=mouse_component(l,false);g_mouse_y=mouse_component(l,true);SetCapture(hwnd);return 0;}
     if(msg==WM_LBUTTONUP){g_drag=false;ReleaseCapture();return 0;}
     if(msg==WM_MOUSEMOVE&&g_drag){
@@ -252,6 +345,23 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
     }
     if(msg==WM_KEYDOWN){
         const unsigned key=static_cast<unsigned>(w);
+        if(key=='D'){g_dynamo=!g_dynamo;InvalidateRect(hwnd,nullptr,0);return 0;}
+        if(g_dynamo){
+            if(key==37u&&g_length_inches>4.0/2.54)g_length_inches-=0.05;
+            if(key==39u&&g_length_inches<26.0/2.54)g_length_inches+=0.05;
+            if(key==40u&&g_girth_inches>3.0/2.54)g_girth_inches-=0.05;
+            if(key==38u&&g_girth_inches<19.0/2.54)g_girth_inches+=0.05;
+            if(key==33u&&g_depth_inches<6.0)g_depth_inches+=0.05;
+            if(key==34u&&g_depth_inches>0.0)g_depth_inches-=0.05;
+            if(key=='M')g_dynamo_mint=!g_dynamo_mint;
+            if(g_length_inches<4.0/2.54)g_length_inches=4.0/2.54;
+            if(g_length_inches>26.0/2.54)g_length_inches=26.0/2.54;
+            if(g_girth_inches<3.0/2.54)g_girth_inches=3.0/2.54;
+            if(g_girth_inches>19.0/2.54)g_girth_inches=19.0/2.54;
+            if(g_depth_inches<0.0)g_depth_inches=0.0;
+            if(g_depth_inches>6.0)g_depth_inches=6.0;
+            InvalidateRect(hwnd,nullptr,0);return 0;
+        }
         if(key==39u&&g_stage<5)++g_stage;
         if(key==37u&&g_stage>0)--g_stage;
         if((key==187u||key==107u)&&g_zoom<10)++g_zoom;
