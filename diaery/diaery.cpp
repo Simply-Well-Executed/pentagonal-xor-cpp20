@@ -13,6 +13,7 @@
 #include "circle_band.hpp"
 #include "quintiles.hpp"
 #include "audit.hpp"
+#include "rejection_ledger.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -169,7 +170,8 @@ static swe::diaery::freq::Samples g_freq_x{};
 static bool g_freq_memory_hold=false;
 static swe::diaery::freq::Samples g_freq_y{};
 static swe::diaery::freq::Samples g_freq_z{};
-static unsigned g_freq_rejected=0u;
+static swe::diaery::freq::U64 g_freq_rejected=0ULL;
+static swe::diaery::reject::Ledger g_rejections{};
 static bool g_audit_clipboard_success=false;
 static bool g_audit_clipboard_hold=false;
 static bool g_projection_visible[10]{true,true,false,false,false,false,false,false,false,false};
@@ -411,9 +413,12 @@ static bool copy_thailonga_audit() noexcept {
     using U64=swe::diaery::freq::U64;
     if(g_freq_x.count!=g_freq_y.count||g_freq_y.count!=g_freq_z.count)
         return false;
-    constexpr U64 overhead=8192ULL,per_row=104ULL;
+    constexpr U64 overhead=8192ULL,per_row=104ULL,per_rejection=112ULL;
+    if(!swe::diaery::reject::complete(g_rejections))return false;
     if(g_freq_x.count>(~0ULL-overhead)/per_row)return false;
-    const U64 size=overhead+g_freq_x.count*per_row;
+    const U64 base=overhead+g_freq_x.count*per_row;
+    if(g_rejections.count>(~0ULL-base)/per_rejection)return false;
+    const U64 size=base+g_rejections.count*per_rejection;
     W32H mem=GlobalAlloc(0x0002u,size);
     if(!mem)return false;
     char* buffer=static_cast<char*>(GlobalLock(mem));
@@ -447,7 +452,7 @@ static bool copy_thailonga_audit() noexcept {
     const bool complete=au::emit(w,frame,g_freq_x,g_freq_y,g_freq_z,
                                  g_projection_visible,g_circle_gap_canary,
                                  g_freq_rejected,g_freq_memory_hold,
-                                 &qx,&qy,&qz);
+                                 &qx,&qy,&qz,g_rejections);
     GlobalUnlock(mem);
     if(!complete){GlobalFree(mem);return false;}
     if(!OpenClipboard(g_window)){GlobalFree(mem);return false;}
@@ -455,6 +460,22 @@ static bool copy_thailonga_audit() noexcept {
     W32H published=SetClipboardData(1u,mem); // CF_TEXT, ASCII-only audit
     CloseClipboard();
     if(!published){GlobalFree(mem);return false;}
+    return true;
+}
+static bool ensure_rejection_capacity(){
+    using swe::diaery::freq::U64;
+    auto& l=g_rejections;
+    if(l.count<l.capacity)return true;
+    const U64 next=l.capacity?(l.capacity<=~0ULL/2ULL?l.capacity*2ULL:0ULL):64ULL;
+    if(next<=l.capacity||next>~0ULL/sizeof(swe::diaery::reject::Event))
+        return false;
+    const U64 bytes=next*sizeof(swe::diaery::reject::Event);
+    W32H heap=GetProcessHeap();
+    W32H p=l.events?HeapReAlloc(heap,0u,l.events,bytes):
+                     HeapAlloc(heap,0u,bytes);
+    if(!p)return false;
+    l.events=static_cast<swe::diaery::reject::Event*>(p);
+    l.capacity=next;
     return true;
 }
 static double gear_length(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileLength);}
@@ -792,7 +813,8 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
         if(g_freq_x.values)HeapFree(heap,0u,g_freq_x.values);
         if(g_freq_y.values)HeapFree(heap,0u,g_freq_y.values);
         if(g_freq_z.values)HeapFree(heap,0u,g_freq_z.values);
-        g_freq_x={};g_freq_y={};g_freq_z={};
+        if(g_rejections.events)HeapFree(heap,0u,g_rejections.events);
+        g_freq_x={};g_freq_y={};g_freq_z={};g_rejections={};
         PostQuitMessage(0);return 0;
     }
     if(msg==WM_CHAR&&g_dynamo&&g_trace_editing){
@@ -862,7 +884,19 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
                     (void)swe::diaery::freq::append(g_freq_y,g_girth_inches);
                     (void)swe::diaery::freq::append(g_freq_z,g_depth_inches);
                 }else{
-                    if(current.eligible)g_freq_memory_hold=true;
+                    const auto reason=!current.eligible?
+                       swe::diaery::reject::Reason::Filtrex:
+                      (!swe::diaery::freq::admissible(g_length_inches)||
+                       !swe::diaery::freq::admissible(g_girth_inches)||
+                       !swe::diaery::freq::admissible(g_depth_inches))?
+                       swe::diaery::reject::Reason::InvalidFrequencyDomain:
+                       swe::diaery::reject::Reason::Memory;
+                    if(reason==swe::diaery::reject::Reason::Memory)
+                        g_freq_memory_hold=true;
+                    if(ensure_rejection_capacity()){
+                        (void)swe::diaery::reject::append(g_rejections,
+                            {g_length_inches,g_girth_inches,g_depth_inches,reason});
+                    }else ++g_rejections.lost;
                     ++g_freq_rejected;
                 }
             }
