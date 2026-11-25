@@ -6,6 +6,7 @@
 #include "application_of_ymxb.hpp"
 #include "dynamo_subject.hpp"
 #include "trace_timeline.hpp"
+#include "filtrox.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -144,6 +145,7 @@ static int g_stage=0,g_yaw=-30,g_pitch=22,g_zoom=5;
 static bool g_drag=false,g_water=true,g_yang=true,g_bubble=true,g_cutaway=true;
 static bool g_dynamo=false;
 static double g_length_inches=4.0/2.54,g_girth_inches=6.1240,g_depth_inches=2.9000;
+static bool g_study_gears=true;
 static bool g_dynamo_mint=false;
 static bool g_subunits=true;
 static swe::diaery::trace::U64 g_elapsed_fs=0ULL;
@@ -306,6 +308,9 @@ static void paint_time_plot(W32H dc) {
     label(dc,83,680,"SECONDARY TIME AXIS: 0 to 2 seconds; exact counter never rounds to samples",grey);
 }
 
+static double gear_length(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileLength);}
+static double gear_girth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileCircumference);}
+static double gear_depth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::VaginalDepth);}
 static void paint_dynamo(W32H dc,const W32RECT& rc){
     const W32D grey=rgb(159,176,194),teal=rgb(95,212,202),gold=rgb(237,190,117),purple=rgb(192,141,233);
     label(dc,22,16,"DIAERY | APPLICATION OF Y=MX+B | native C++20 | RELEASE=HOLD",teal);
@@ -353,6 +358,15 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
           ?"AM I VALID? ALGEBRA YES":"AM I VALID? NO / HOLD",
           line.valid&&g_depth_inches>0.0?teal:gold);
     label(dc,475,123,"RESEARCH: HOLD | UNKNOWN UNCERTAINTY",gold);
+    namespace fx=swe::diaery::filtrox;
+    namespace rs=swe::diaery::research;
+    const auto x_check=fx::assess({nullptr,rs::Measurement::PenileLength,g_length_inches,true});
+    const auto y_check=fx::assess({nullptr,rs::Measurement::PenileCircumference,g_girth_inches,true});
+    const auto z_check=fx::assess({nullptr,rs::Measurement::VaginalDepth,g_depth_inches,true});
+    const bool within=x_check.position==fx::Position::WithinObserved &&
+       y_check.position==fx::Position::WithinObserved &&
+       z_check.position==fx::Position::WithinObserved;
+    label(dc,475,218,within?"FILTROX: IN STUDY RANGES":"FILTROX: OUTSIDE SAMPLE / NULL",within?teal:gold);
     if(line.valid) {
         W32H pen=CreatePen(0,3,teal);old=SelectObject(dc,pen);
         MoveToEx(dc,plot_x(line.y_end.x,left,pix),plot_y(line.y_end.y,bottom,pix),nullptr);
@@ -375,11 +389,22 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     text_value(dc,475,255,"X length (in)",g_length_inches,grey);
     text_value(dc,475,282,"Y girth (in)",g_girth_inches,grey);
     text_value(dc,475,309,"Z depth (in)",g_depth_inches,gold);
-    label(dc,475,345,"NULL GUARD: RESEARCH HOLD",gold);
-    label(dc,475,369,"No paired subject or valid error budget verified",grey);
-    label(dc,475,392,"SIGMA uncertainty: NULL (not zero)",grey);
-    label(dc,475,420,"Derived MINTING is display-only",grey);
-    label(dc,475,443,g_dynamo_mint?"MINTING: ON (-0.03)":"MINTING: OFF",grey);
+    label(dc,475,337,
+        x_check.position==fx::Position::BelowObserved?"X: BELOW HERBENICK RANGE":
+        x_check.position==fx::Position::AboveObserved?"X: ABOVE HERBENICK RANGE":
+        x_check.position==fx::Position::NullInput?"X: FILTREX EXCLUDED":"X: WITHIN SAMPLE",grey);
+    label(dc,475,359,
+        y_check.position==fx::Position::BelowObserved?"Y: BELOW HERBENICK RANGE":
+        y_check.position==fx::Position::AboveObserved?"Y: ABOVE HERBENICK RANGE":
+        y_check.position==fx::Position::NullInput?"Y: FILTREX EXCLUDED":"Y: WITHIN SAMPLE",grey);
+    label(dc,475,381,
+        z_check.position==fx::Position::BelowObserved?"Z: BELOW LLOYD RANGE":
+        z_check.position==fx::Position::AboveObserved?"Z: ABOVE LLOYD RANGE":
+        z_check.position==fx::Position::NullInput?"Z: FILTREX EXCLUDED":"Z: WITHIN SAMPLE",grey);
+    label(dc,475,403,"Study extent is not a biological minimum",grey);
+    label(dc,475,426,"NULL GUARD: RESEARCH HOLD",gold);
+    label(dc,475,448,"SIGMA uncertainty: NULL (not zero)",grey);
+    label(dc,475,470,g_dynamo_mint?"MINTING: ON (-0.03)":"MINTING: OFF",grey);
     if(g_dynamo_mint){
         // A second derived point only. The S source marker is unchanged.
         const double dx=swe::diaery::graph::minting(g_length_inches);
@@ -389,9 +414,9 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
         W32RECT d{mx-3,my-3,mx+4,my+4};FillRect(dc,&d,brush);DeleteObject(brush);
     }
     label(dc,83,85,"Y (in)",grey);label(dc,285,489,"X (in) ->",grey);
-    label(dc,475,477,g_subunits?"GRID: X /4 ; Y /3":"GRID: MAJOR ONLY",grey);
+    label(dc,475,494,g_study_gears?"GEARS: SAMPLE-RANGE (K)":"GEARS: EXPLORATORY (K)",grey);
     paint_time_plot(dc);
-    label(dc,22,rc.bottom-70,"D: DIAERY/DYNAMO | arrows: X/Y | PgUp/PgDn: Z | G: subunits",grey);
+    label(dc,22,rc.bottom-70,"D: DIAERY/DYNAMO | arrows: X/Y | PgUp/PgDn: Z | G: grid | K: study bounds",grey);
     label(dc,22,rc.bottom-46,"M: MINTING | F: +1fs | S: +1s | T: trace | source remains intact",grey);
 }
 
@@ -491,12 +516,13 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
         if(g_dynamo){
             if(g_trace_editing){if(key==27u)g_trace_editing=false;InvalidateRect(hwnd,nullptr,0);return 0;}
             if(key=='R'){g_trace_editing=true;g_skip_trace_open_char=true;g_trace_used=0u;g_trace_input[0]=0;g_trace_rejected=false;InvalidateRect(hwnd,nullptr,0);return 0;}
-            if(key==37u&&g_length_inches>4.0/2.54)g_length_inches-=0.05;
-            if(key==39u&&g_length_inches<26.0/2.54)g_length_inches+=0.05;
-            if(key==40u&&g_girth_inches>3.0/2.54)g_girth_inches-=0.05;
-            if(key==38u&&g_girth_inches<19.0/2.54)g_girth_inches+=0.05;
-            if(key==33u&&g_depth_inches<6.0)g_depth_inches+=0.05;
-            if(key==34u&&g_depth_inches>0.0)g_depth_inches-=0.05;
+            if(key==37u)g_length_inches-=0.05;
+            if(key==39u)g_length_inches+=0.05;
+            if(key==40u)g_girth_inches-=0.05;
+            if(key==38u)g_girth_inches+=0.05;
+            if(key==33u)g_depth_inches+=0.05;
+            if(key==34u)g_depth_inches-=0.05;
+            if(key=='K')g_study_gears=!g_study_gears;
             if(key=='M')g_dynamo_mint=!g_dynamo_mint;
             if(key=='G')g_subunits=!g_subunits;
             if(key=='T'){
@@ -514,12 +540,18 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
                 const auto next=swe::diaery::trace::advance(g_elapsed_fs,swe::diaery::trace::FS_PER_SECOND);
                 if(next.status==swe::diaery::trace::Status::Valid)g_elapsed_fs=next.fs;
             }
-            if(g_length_inches<4.0/2.54)g_length_inches=4.0/2.54;
-            if(g_length_inches>26.0/2.54)g_length_inches=26.0/2.54;
-            if(g_girth_inches<3.0/2.54)g_girth_inches=3.0/2.54;
-            if(g_girth_inches>19.0/2.54)g_girth_inches=19.0/2.54;
-            if(g_depth_inches<0.0)g_depth_inches=0.0;
-            if(g_depth_inches>6.0)g_depth_inches=6.0;
+            if(g_study_gears){
+                g_length_inches=gear_length(g_length_inches);
+                g_girth_inches=gear_girth(g_girth_inches);
+                g_depth_inches=gear_depth(g_depth_inches);
+            }else{
+                if(g_length_inches<0.0)g_length_inches=0.0;
+                if(g_length_inches>12.0)g_length_inches=12.0;
+                if(g_girth_inches<0.0)g_girth_inches=0.0;
+                if(g_girth_inches>12.0)g_girth_inches=12.0;
+                if(g_depth_inches<0.0)g_depth_inches=0.0;
+                if(g_depth_inches>12.0)g_depth_inches=12.0;
+            }
             InvalidateRect(hwnd,nullptr,0);return 0;
         }
         if(key==39u&&g_stage<5)++g_stage;
