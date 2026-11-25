@@ -4,6 +4,7 @@
 #include "../shared/redneckengineered_ninza_minza.hpp"
 #include "../shared/redneckengineered_model_bidi.hpp"
 #include "../shared/redneckengineered_model_tridi.hpp"
+#include "../shared/redneckengineered_model_pidi.hpp"
 #ifndef _WIN32
 #error "REDNECKENGINEERED requires a native Windows binary for resource verification"
 #endif
@@ -162,7 +163,46 @@ static_assert(model_bidi_tests());
 }
 static_assert(model_tridi_tests());
 
+[[nodiscard]] constexpr bool model_pidi_tests() noexcept {
+    namespace p=swe::redneckengineered::model_pidi;
+    namespace u=swe::u_circle_fit;
+    std::array<p::Candidate,p::steps> source{};
+    for(unsigned i=0u;i<p::steps;++i)
+        source[i]={u::FACE,u::FACE,u::ENCLOSING_CIRCLE,
+                   static_cast<std::uint64_t>(i+1u),true,true};
+    const p::Report accepted=p::filter(source);
+    if(!accepted.exact_motion || !accepted.source_unchanged ||
+       !accepted.all_nice_proven || accepted.release_authorized ||
+       accepted.kept!=p::steps || accepted.clipped!=0u ||
+       accepted.needs_mapping!=0u)return false;
+    for(unsigned i=0u;i<p::steps;++i)
+        if(accepted.audit[i].result!=p::Disposition::NICE ||
+           accepted.audit[i].hot_jig_x1e17!=p::HOT_JIG_X1E17 ||
+           accepted.audit[i].pidi_phase!=(i+p::PIDI)%4u ||
+           accepted.nice_source_indices[i]!=i)return false;
+    // Clip only derived views. Every original rejected candidate remains.
+    source[3].circle=u::HEIGHT_CIRCLE;
+    source[11].jig_geometry_and_area_mapping_verified=false;
+    source[18].projected_triangle=u::DEGENERATE;
+    const p::Report clipped=p::filter(source);
+    if(clipped.kept!=p::steps-3u || clipped.clipped!=2u ||
+       clipped.needs_mapping!=1u || clipped.all_nice_proven ||
+       !clipped.source_unchanged)return false;
+    if(clipped.audit[3].result!=p::Disposition::NOT_NICE ||
+       clipped.audit[11].result!=p::Disposition::NEEDS_JIG_MAPPING ||
+       clipped.audit[18].result!=p::Disposition::NOT_NICE)return false;
+    if(clipped.audit[11].original.source_token!=12u ||
+       clipped.audit[3].original.source_token!=4u ||
+       clipped.audit[18].original.source_token!=19u)return false;
+    source[0].source_token=0u;
+    if(p::inspect(0u,source[0]).result!=p::Disposition::NOT_NICE)
+        return false;
+    return true;
+}
+static_assert(model_pidi_tests());
+
+
 
 static_assert(all_tests());
 static_assert(s::loops==9u && s::stripe_bytes==6u && e::groups==3u);
-int main() { return (all_tests() && model_bidi_tests() && model_tridi_tests() && pennyworth_embedded())?0:1; }
+int main() { return (all_tests() && model_bidi_tests() && model_tridi_tests() && model_pidi_tests() && pennyworth_embedded())?0:1; }
