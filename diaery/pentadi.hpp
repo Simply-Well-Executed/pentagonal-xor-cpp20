@@ -16,12 +16,13 @@ struct Result { State common_null; State status; unsigned pass_count; };
 [[nodiscard]] constexpr Result evaluate(Four stages) noexcept {
     const State v[4]{stages.rung,stages.excite,stages.excited,stages.attest};
     unsigned count=0u;
+    bool failed=false,missing=false;
     for(unsigned i=0;i<4u;++i){
-        if(v[i]==State::Fail)return {State::Null,State::Fail,count};
-        if(v[i]==State::Null)return {State::Null,State::Null,count};
-        ++count;
+        if(v[i]==State::Fail)failed=true;
+        else if(v[i]==State::Null)missing=true;
+        else ++count;
     }
-    return {State::Null,State::Pass,count};
+    return {State::Null,failed?State::Fail:(missing?State::Null:State::Pass),count};
 }
 [[nodiscard]] constexpr bool promoted(const Result& r) noexcept {
     return r.common_null==State::Null&&r.status==State::Pass&&r.pass_count==4u;
