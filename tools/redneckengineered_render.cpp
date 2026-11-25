@@ -12,7 +12,7 @@ namespace u=swe::u_circle_fit;
                         const graphics::Bitmap& bitmap) {
     FILE* file=nullptr;
     if(fopen_s(&file,filename.c_str(),"wb")!=0 || !file)return false;
-    constexpr char header[]="P6\n64 64\n255\n";
+    constexpr char header[]="P6\n# C5824 PENNYWORTH\n64 64\n255\n";
     bool okay=std::fwrite(header,1u,sizeof(header)-1u,file)==
               sizeof(header)-1u;
     for(const auto& pixel:bitmap) {
