@@ -16,6 +16,7 @@
 #include "rejection_ledger.hpp"
 #include "accessible_actions.hpp"
 #include "accessible_seals.hpp"
+#include "pentapi.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -203,7 +204,7 @@ static W32H g_window=nullptr;
 static W32H g_action_buttons[swe::diaery::access::COUNT]{};
 static W32H g_seal_roots[2]{},g_seal_branches[2]{},g_seal_pages[5]{};
 static W32H g_seal_audit=nullptr,g_seal_airgap_label=nullptr;
-static swe::diaery::seals::Selection g_seal_selection{0u,0u,0u,true};
+static swe::diaery::pentapi::State g_pentapi=swe::diaery::pentapi::initial();
 static bool g_action_deck_complete=false;
 // Rendering-only approximations; source and gate remain exact integers.
 static double trig_sin(double a){
@@ -497,7 +498,7 @@ static void refresh_accessibility_deck(){
     for(unsigned i=0u;i<swe::diaery::access::COUNT;++i){
         if(g_action_buttons[i])
             ShowWindow(g_action_buttons[i],
-                       se::visible(g_seal_selection,i)?1:0);
+                       swe::diaery::pentapi::terminal_visible(g_pentapi,i)?1:0);
     }
     const char* rootLabels[2][2]{
        {"X | CONTROLS 1-40 [OPEN]","X | CONTROLS 1-40"},
@@ -507,13 +508,13 @@ static void refresh_accessibility_deck(){
        {"Y2 | ADVANCED","Y2 | ADVANCED [OPEN]"}};
     for(unsigned i=0u;i<2u;++i){
         if(g_seal_roots[i]){
-            SetWindowTextA(g_seal_roots[i],rootLabels[g_seal_selection.root][i]);
+            SetWindowTextA(g_seal_roots[i],rootLabels[g_pentapi.selection.root][i]);
             ShowWindow(g_seal_roots[i],1);
         }
         if(g_seal_branches[i]){
-            const char* title=(g_seal_selection.expanded?branchLabels[g_seal_selection.branch][i]:branchLabels[i==0u?1u:0u][i]);
+            const char* title=(g_pentapi.selection.expanded?branchLabels[g_pentapi.selection.branch][i]:branchLabels[i==0u?1u:0u][i]);
             SetWindowTextA(g_seal_branches[i],title);
-            ShowWindow(g_seal_branches[i],1);
+            ShowWindow(g_seal_branches[i],g_pentapi.phase==swe::diaery::pentapi::Phase::Branch||g_pentapi.phase==swe::diaery::pentapi::Phase::Terminal?1:0);
         }
     }
     const char* pagesNormal[5]{
@@ -525,9 +526,9 @@ static void refresh_accessibility_deck(){
     for(unsigned i=0u;i<5u;++i){
         if(g_seal_pages[i]){
             SetWindowTextA(g_seal_pages[i],
-                (g_seal_selection.expanded&&g_seal_selection.page==i)?
+                (g_pentapi.selection.expanded&&g_pentapi.selection.page==i)?
                  pagesActive[i]:pagesNormal[i]);
-            ShowWindow(g_seal_pages[i],g_seal_selection.expanded?1:0);
+            ShowWindow(g_seal_pages[i],g_pentapi.phase==swe::diaery::pentapi::Phase::Terminal?1:0);
         }
     }
 }
@@ -964,29 +965,37 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
         const unsigned notify=static_cast<unsigned>((w>>16u)&0xFFFFULL);
         if(notify==0u){
             if(id>=SEAL_ROOT_ID&&id<SEAL_ROOT_ID+2u){
-                g_seal_selection=swe::diaery::seals::choose_root(
-                    g_seal_selection,id-SEAL_ROOT_ID);
+                g_pentapi=swe::diaery::pentapi::root(
+                    g_pentapi,id-SEAL_ROOT_ID);
                 refresh_accessibility_deck();return 0;
             }
             if(id>=SEAL_BRANCH_ID&&id<SEAL_BRANCH_ID+2u){
-                g_seal_selection=swe::diaery::seals::choose_branch(
-                    g_seal_selection,id-SEAL_BRANCH_ID);
+                g_pentapi=swe::diaery::pentapi::branch(
+                    g_pentapi,id-SEAL_BRANCH_ID);
                 refresh_accessibility_deck();return 0;
             }
             if(id>=SEAL_PAGE_ID&&id<SEAL_PAGE_ID+5u){
-                g_seal_selection=swe::diaery::seals::choose_page(
-                    g_seal_selection,id-SEAL_PAGE_ID);
+                g_pentapi=swe::diaery::pentapi::page(
+                    g_pentapi,id-SEAL_PAGE_ID);
                 refresh_accessibility_deck();return 0;
             }
             if(id==SEAL_AUDIT_ID){
-                apply_accessible_action(hwnd,9u);return 0;
+                apply_accessible_action(hwnd,9u);
+                g_pentapi=swe::diaery::pentapi::reset(g_pentapi);
+                refresh_accessibility_deck();
+                return 0;
             }
             if(id>=ACTION_ID_BASE&&
                id<ACTION_ID_BASE+swe::diaery::access::COUNT){
                 const unsigned index=id-ACTION_ID_BASE;
                 // A hidden stale child cannot activate the current branch.
-                if(swe::diaery::seals::visible(g_seal_selection,index))
+                if(swe::diaery::pentapi::terminal_visible(g_pentapi,index)){
                     apply_accessible_action(hwnd,index);
+                    // No additional switch actuation to close/escape.
+                    // The result and raw data survive; only selection resets.
+                    g_pentapi=swe::diaery::pentapi::complete(g_pentapi,index,true);
+                    refresh_accessibility_deck();
+                }
                 return 0;
             }
         }
