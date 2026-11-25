@@ -17,4 +17,16 @@ static_assert(fold(8.0)==4.0 && project(8.0)==16.0 && quarter(2.0)==8.0);
 constexpr Bounds box=view_bounds({1.0,2.0},{3.0,2.0},{2.0,4.0});
 static_assert(box.xmax-box.xmin==box.ymax-box.ymin);
 static_assert(a.x==1.0 && a.y==0.0); // original witness still intact
+// Native DYNAMO line: exact algebraic intercept witnesses.
+// Values are selection coordinates in inches, not clinical paired records.
+constexpr auto direct=application_of_ymxb(2.0,6.0);
+static_assert(direct.valid && direct.slope==-3.0 && direct.intercept==6.0);
+static_assert(direct.x_end.x==2.0 && direct.x_end.y==0.0);
+static_assert(direct.y_end.x==0.0 && direct.y_end.y==6.0);
+static_assert(direct.slope*direct.x_end.x+direct.intercept==0.0);
+static_assert(!application_of_ymxb(0.0,6.0).valid);
+static_assert(!application_of_ymxb(2.0,0.0).valid);
+static_assert(!application_of_ymxb(-1.0,6.0).valid);
+static_assert(!application_of_ymxb(1.0e20,6.0).valid);
+static_assert(a.x==1.0 && a.y==0.0);
 int main(){return 0;}
