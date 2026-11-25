@@ -511,7 +511,7 @@ static void refresh_accessibility_deck(){
             ShowWindow(g_seal_roots[i],1);
         }
         if(g_seal_branches[i]){
-            const char* title=branchLabels[g_seal_selection.branch][i];
+            const char* title=(g_seal_selection.expanded?branchLabels[g_seal_selection.branch][i]:branchLabels[i==0u?1u:0u][i]);
             SetWindowTextA(g_seal_branches[i],title);
             ShowWindow(g_seal_branches[i],1);
         }
