@@ -110,7 +110,7 @@ struct Writer {
    w.text("\tMIN_HEX=");w.hex_double(hist.minimum);
    w.text("\tMAX_HEX=");w.hex_double(hist.maximum);w.put('\n');
    w.text("QUINTILES_NEAREST_RANK\t");w.text(labels[a]);
-   if(!qs[a]||qs[a]->state!=quintiles::State::Ready)w.text("\tNULL_OR_HOLD");
+   if(!axes[a].count||!qs[a]||qs[a]->state!=quintiles::State::Ready||qs[a]->count!=axes[a].count)w.text("\tNULL_OR_HOLD");
    else for(unsigned q=0u;q<6u;++q){w.put('\t');w.hex_double(qs[a]->boundaries[q]);}
    w.put('\n');
  }
