@@ -8,6 +8,7 @@
 #include "trace_timeline.hpp"
 #include "filtrox.hpp"
 #include "projections.hpp"
+#include "thailonga.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -337,7 +338,7 @@ static double gear_girth(double v){return swe::diaery::filtrox::clamp_to_study(v
 static double gear_depth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::VaginalDepth);}
 static void paint_dynamo(W32H dc,const W32RECT& rc){
     const W32D grey=rgb(159,176,194),teal=rgb(95,212,202),gold=rgb(237,190,117),purple=rgb(192,141,233);
-    label(dc,22,16,"DIAERY | APPLICATION OF Y=MX+B | native C++20 | RELEASE=HOLD",teal);
+    label(dc,22,16,"THAILONGA | DYNTR0X + PROJECTIONS | native C++20 | HOLD",teal);
     label(dc,22,39,"X horizontal = penile length (in); Y vertical = circumference (in)",grey);
     label(dc,22,60,"Z separate = vaginal depth (in), unverified; no physiological inference",grey);
     const int left=83,top=110,side=360,pix=30,bottom=top+side;
@@ -375,28 +376,23 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left+side,bottom);
     MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left,top);
     SelectObject(dc,old);DeleteObject(axis);
-    const auto line=swe::diaery::graph::application_of_ymxb(g_length_inches,g_girth_inches);
-    // Local algebra-only validity. Research validation requires evidence
-    // not contained in this viewer; no fabricated "study verified" state.
-    label(dc,475,104,line.valid&&g_depth_inches>0.0
-          ?"AM I VALID? ALGEBRA YES":"AM I VALID? NO / HOLD",
-          line.valid&&g_depth_inches>0.0?teal:gold);
-    const bool filtrex_eligible =
-        swe::diaery::research::included(swe::diaery::research::assess(
-            {nullptr,swe::diaery::research::Measurement::PenileLength,g_length_inches,true})) &&
-        swe::diaery::research::included(swe::diaery::research::assess(
-            {nullptr,swe::diaery::research::Measurement::PenileCircumference,g_girth_inches,true})) &&
-        swe::diaery::research::included(swe::diaery::research::assess(
-            {nullptr,swe::diaery::research::Measurement::VaginalDepth,g_depth_inches,true}));
+    // THAILONGA is the common source of truth for both rendered aspects.
+    // Never infer paired scientific evidence from a selected graph coordinate.
+    const auto shared=swe::diaery::thailonga::build(
+        {g_length_inches,g_girth_inches,g_depth_inches,true,true,true},
+         g_elapsed_fs);
+    const auto line=shared.intercept;
+    const bool filtrex_eligible=shared.eligible;
+    label(dc,475,104,shared.eligible?
+        "AM I VALID? INPUT YES":"AM I VALID? FILTREX HOLD",
+        shared.eligible?teal:gold);
     label(dc,475,123,"RESEARCH: HOLD | UNKNOWN UNCERTAINTY",gold);
     namespace fx=swe::diaery::filtrox;
     namespace rs=swe::diaery::research;
-    const auto x_check=fx::assess({nullptr,rs::Measurement::PenileLength,g_length_inches,true});
-    const auto y_check=fx::assess({nullptr,rs::Measurement::PenileCircumference,g_girth_inches,true});
-    const auto z_check=fx::assess({nullptr,rs::Measurement::VaginalDepth,g_depth_inches,true});
-    const bool within=x_check.position==fx::Position::WithinObserved &&
-       y_check.position==fx::Position::WithinObserved &&
-       z_check.position==fx::Position::WithinObserved;
+    const auto x_check=shared.x.filtrox;
+    const auto y_check=shared.y.filtrox;
+    const auto z_check=shared.z.filtrox;
+    const bool within=shared.within_sample_ranges;
     label(dc,475,218,within?"FILTROX: IN STUDY RANGES":"FILTROX: OUTSIDE SAMPLE / NULL",within?teal:gold);
     if(line.valid && filtrex_eligible && g_projection_visible[1]) {
         W32H pen=CreatePen(0,3,teal);old=SelectObject(dc,pen);
@@ -434,9 +430,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
         }
     }
     const auto selected_projection=swe::diaery::projections::describe(g_projection_selected);
-    const swe::diaery::projections::Evidence none{
-      filtrex_eligible&&line.valid,false,false,false,false,false,false};
-    const auto selected_status=swe::diaery::projections::qualify(g_projection_selected,none);
+    const auto selected_status=shared.projection_status[g_projection_selected];
     label(dc,475,74,selected_projection.label,purple);
     label(dc,475,90,selected_status==swe::diaery::projections::Status::Ready?
         "PROJECTION: ALGEBRAIC / UNVERIFIED":
