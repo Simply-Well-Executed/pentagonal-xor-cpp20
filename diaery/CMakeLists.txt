@@ -113,3 +113,10 @@ set_target_properties(swe_diaery_dynamo_subject PROPERTIES
  CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 target_compile_options(swe_diaery_dynamo_subject PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_dynamo_xy_z_source_gate COMMAND swe_diaery_dynamo_subject)
+
+# Exact femtosecond timebase / rational major-subunit grid / bounded trace gate.
+add_executable(swe_diaery_trace_timeline trace_timeline_test.cpp)
+set_target_properties(swe_diaery_trace_timeline PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_trace_timeline PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_dynamo_fs_grid_trace_gate COMMAND swe_diaery_trace_timeline)
