@@ -145,3 +145,11 @@ set_target_properties(swe_diaery_filtrox PROPERTIES
 target_compile_options(swe_diaery_filtrox PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_filtrox_study_range_both_anatomies
  COMMAND swe_diaery_filtrox)
+
+# DYNTR0X: bounded 10-layer PROJECTIONS, no synthetic scientific estimates.
+add_executable(swe_diaery_projections projections_test.cpp)
+set_target_properties(swe_diaery_projections PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_projections PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_dyntr0x_projections_evidence_and_band
+ COMMAND swe_diaery_projections)
