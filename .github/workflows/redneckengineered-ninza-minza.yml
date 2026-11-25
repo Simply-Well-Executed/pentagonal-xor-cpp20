@@ -1,0 +1,112 @@
+# SPDX-License-Identifier: 0BSD
+name: REDNECKENGINEERED | NINZA motion MINZA individualized PING
+on:
+  pull_request:
+    paths:
+      - 'shared/redneckengineered_ninza_minza.hpp'
+      - 'tests/redneckengineered_ninza_minza_test.cpp'
+      - 'shared/sigma_penta_ping.hpp'
+      - 'shared/minza_ninza_ping_unfold.hpp'
+      - 'shared/pentagonal_vista_9x9.hpp'
+      - 'shared/stability10d.hpp'
+      - '.github/workflows/redneckengineered-ninza-minza.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: redneckengineered-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  halfpipe:
+    name: REDNECKENGINEERED ${{ matrix.phase }} | C++20 /O2 individualized PING
+    runs-on: windows-2025
+    strategy:
+      fail-fast: false
+      matrix:
+        phase: [HEAD, TAIL]
+    timeout-minutes: 20
+    steps:
+      - name: Exact Git SHA bootstrap using PowerShell
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          if($env:GITHUB_REPOSITORY -cne 'Simply-Well-Executed/pentagonal-xor-cpp20' -or
+             $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$'){
+            throw 'REDNECKENGINEERED|HOLD|unexpected_repo_or_sha'
+          }
+          $archive=Join-Path $env:RUNNER_TEMP 'redneck-source.zip'
+          $directory=Join-Path $env:RUNNER_TEMP 'redneck-source'
+          $uri='https://api.github.com/repos/'+$env:GITHUB_REPOSITORY+'/zipball/'+$env:GITHUB_SHA
+          Invoke-WebRequest -Uri $uri -OutFile $archive -Headers @{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'User-Agent'='swe-redneckengineered'
+          }
+          Expand-Archive -LiteralPath $archive -DestinationPath $directory
+          $roots=@(Get-ChildItem -LiteralPath $directory -Directory)
+          if($roots.Count -ne 1){throw 'REDNECKENGINEERED|HOLD|source_count'}
+          $root=$roots[0].FullName
+          foreach($relative in @(
+            'shared/sigma_penta_ping.hpp',
+            'shared/minza_ninza_ping_unfold.hpp',
+            'shared/redneckengineered_ninza_minza.hpp',
+            'tests/redneckengineered_ninza_minza_test.cpp'
+          )){
+            if(-not [IO.File]::Exists((Join-Path $root $relative))){
+              throw ('REDNECKENGINEERED|HOLD|missing_source|'+$relative)
+            }
+          }
+          [IO.File]::WriteAllText((Join-Path $env:RUNNER_TEMP 'redneck-root.txt'),$root)
+      - name: Native MSVC C++20 /O2 halfpipe and source comparison
+        shell: pwsh
+        env:
+          REDNECK_PHASE: ${{ matrix.phase }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'redneck-root.txt'))
+          $relative=@(
+            'shared/sigma_penta_ping.hpp',
+            'shared/minza_ninza_ping_unfold.hpp',
+            'shared/redneckengineered_ninza_minza.hpp',
+            'tests/redneckengineered_ninza_minza_test.cpp'
+          )
+          $before=@($relative | ForEach-Object {
+            (Get-FileHash -LiteralPath (Join-Path $root $_) -Algorithm SHA256).Hash
+          })
+          $vswhere=Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Microsoft Visual Studio/Installer/vswhere.exe'
+          if(-not [IO.File]::Exists($vswhere)){throw 'REDNECKENGINEERED|HOLD|vswhere_missing'}
+          $vs=@(& $vswhere -latest -products '*' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -property installationPath)
+          if($vs.Count -ne 1 -or -not $vs[0]){throw 'REDNECKENGINEERED|HOLD|MSVC_missing'}
+          & (Join-Path $vs[0] 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          $cl=(Get-Command cl.exe -ErrorAction Stop).Source
+          $file=Join-Path $root 'tests/redneckengineered_ninza_minza_test.cpp'
+          $exe=Join-Path $env:RUNNER_TEMP ('redneck-'+$env:REDNECK_PHASE+'.exe')
+          $obj=Join-Path $env:RUNNER_TEMP ('redneck-'+$env:REDNECK_PHASE+'.obj')
+          & $cl /nologo /std:c++20 /O2 /W4 /WX /permissive- /EHsc /constexpr:steps2000000 ('/Fo'+$obj) ('/Fe'+$exe) $file
+          if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($exe)){
+            throw 'REDNECKENGINEERED|HOLD|compile_failed'
+          }
+          & $exe
+          if($LASTEXITCODE -ne 0){throw 'REDNECKENGINEERED|HOLD|individual_ping_failed'}
+          for($i=0;$i -lt $relative.Count;++$i){
+            $after=(Get-FileHash -LiteralPath (Join-Path $root $relative[$i]) -Algorithm SHA256).Hash
+            if($before[$i] -cne $after){throw ('REDNECKENGINEERED|HOLD|source_drift|'+$relative[$i])}
+            Write-Host ('REDNECKENGINEERED|SOURCE_SHA256|'+$relative[$i]+'|'+$after)
+          }
+          Write-Host ('REDNECKENGINEERED|'+$env:REDNECK_PHASE+'|INDIVIDUALIZED_PING=PASS|SOURCE_STABLE|RELEASE=HOLD')
+  convergence:
+    name: REDNECKENGINEERED | paired HALFPIPE PING
+    runs-on: windows-2025
+    needs: halfpipe
+    if: ${{ needs.halfpipe.result == 'success' }}
+    steps:
+      - name: Require both parallel halfpipe lanes
+        shell: pwsh
+        run: |
+          Write-Host 'REDNECKENGINEERED|HEAD_AND_TAIL=PASS|NO_SOURCE_MUTATION|RELEASE=HOLD'
+          Write-Host 'MINZA_GROUPS=3|NINZA_LOOPS=9|INDIVIDUAL_PINGS=9|BYTES_PER_LOOP=6'
+          Write-Host 'CI_SUCCESS_IS_NOT_AUTHORIZATION_TO_MERGE_OR_RELEASE'
