@@ -25,3 +25,9 @@ Key controls in DYNAMO: `F` advances by 1 femtosecond; `S` advances by 1 second;
 ## Verification
 
 The header and native view are source-committed. `trace_timeline_test.cpp` includes compile-time tests for conversion, overflow, rational subunit labels and accepted/rejected trace patterns. Native MSVC/CTests and visual checks remain to be independently executed. Do not promote test registration into a PASS claim.
+
+## Native pattern-entry update
+
+**R** enters a 15-character ASCII trace-entry field. Type a complete format and press **Enter** to validate against the bounded grammar. **T** cycles through the three known formats; invalid input displays **HOLD** and draws no trace. Only `Y=MX+B`, `Y=X`, and `Y=0` are currently accepted; there is no arbitrary regular expression engine. Changes recompute the trace on repaint. This is a native interactive implementation rather than a mockup; actual runtime acceptance is still unverified pending CI/native execution.
+
+The graph subunits are drawn with 1px pens in light monochrome dash strokes; X divisions are exactly quarters and Y exactly thirds of their respective 1-inch majors. The time axis is a separate 2-second viewing pane using exact integer femtosecond ledger values. Raster positions and trace display samples never replace the integer authority.
