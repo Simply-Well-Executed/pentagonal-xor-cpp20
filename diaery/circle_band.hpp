@@ -69,5 +69,54 @@ struct CylinderResult {
          c.resting_radius_inches*2.0,c.stretched_radius_inches*2.0,
          c.stretched_radius_inches-c.resting_radius_inches};
 }
+// Distinct resting/maximum measurements are independent empirical inputs.
+// No resting/max depth or radius is inferred from a single axis.
+struct StretchEnvelope {
+ double resting_depth_inches,maximum_depth_inches;
+ double resting_radius_inches,maximum_radius_inches;
+ bool resting_depth_measured,maximum_depth_measured;
+ bool resting_radius_measured,maximum_radius_measured;
+};
+enum class StretchStatus { ExploratoryGeometry, MissingMeasurement, InvalidDimensions };
+struct StretchResult {
+ StretchStatus status;
+ double depth_delta_inches,diameter_delta_inches;
+};
+[[nodiscard]] constexpr StretchResult assess_stretch(StretchEnvelope s) noexcept {
+ if(!s.resting_depth_measured||!s.maximum_depth_measured||
+    !s.resting_radius_measured||!s.maximum_radius_measured)
+     return {StretchStatus::MissingMeasurement,0.,0.};
+ if(!finite_nonnegative(s.resting_depth_inches)||
+    !finite_nonnegative(s.maximum_depth_inches)||
+    !finite_nonnegative(s.resting_radius_inches)||
+    !finite_nonnegative(s.maximum_radius_inches)||
+    s.resting_depth_inches<=0.0||s.resting_radius_inches<=0.0||
+    s.maximum_depth_inches<s.resting_depth_inches||
+    s.maximum_radius_inches<s.resting_radius_inches)
+     return {StretchStatus::InvalidDimensions,0.,0.};
+ return {StretchStatus::ExploratoryGeometry,
+         s.maximum_depth_inches-s.resting_depth_inches,
+         2.0*(s.maximum_radius_inches-s.resting_radius_inches)};
+}
+// A right triangle yields radial width only when an INDEPENDENT measured
+// hypotenuse is also supplied. Geometric toy, never an elasticity equation.
+enum class TriangleStatus { CalculatedGeometry, MissingSecondMeasure, InvalidGeometry };
+struct TriangleResult { TriangleStatus status; double radial_width_inches; };
+[[nodiscard]] constexpr double sqrt_nonnegative(double x) noexcept {
+ if(!(x>0.0))return 0.0;
+ double t=x>=1.0?x:1.0;
+ for(unsigned i=0;i<40u;++i)t=(t+x/t)/2.0;
+ return t;
+}
+[[nodiscard]] constexpr TriangleResult solve_radius(double depth,
+                     double hypotenuse,bool hypotenuse_measured) noexcept {
+ if(!hypotenuse_measured)
+     return {TriangleStatus::MissingSecondMeasure,0.};
+ if(!finite_nonnegative(depth)||!finite_nonnegative(hypotenuse)||
+    depth<=0.0||hypotenuse<depth)
+     return {TriangleStatus::InvalidGeometry,0.};
+ return {TriangleStatus::CalculatedGeometry,
+         sqrt_nonnegative(hypotenuse*hypotenuse-depth*depth)};
+}
 } // namespace swe::diaery::circle_band
 #endif
