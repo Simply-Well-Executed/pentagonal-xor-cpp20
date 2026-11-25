@@ -531,7 +531,14 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
         if(g_skip_trace_open_char){g_skip_trace_open_char=false;return 0;}
         if(chr==13u){
             g_trace_editing=false;
-            g_trace_rejected=swe::diaery::trace::parse(g_trace_input)==swe::diaery::trace::Pattern::Invalid;
+            const int projection=swe::diaery::projections::parse(g_trace_input);
+            if(projection>=0){
+                g_projection_selected=static_cast<unsigned>(projection);
+                g_projection_visible[g_projection_selected]=true;
+                g_trace_rejected=false;
+            }else{
+                g_trace_rejected=swe::diaery::trace::parse(g_trace_input)==swe::diaery::trace::Pattern::Invalid;
+            }
         } else if(chr==8u) {
             if(g_trace_used>0u)g_trace_input[--g_trace_used]=0;
         } else if(chr>=32u&&chr<=126u&&g_trace_used<15u){
