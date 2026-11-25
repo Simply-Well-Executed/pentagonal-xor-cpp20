@@ -367,6 +367,7 @@ static double gear_depth(double v){return swe::diaery::filtrox::clamp_to_study(v
 static void paint_frequency_panel(W32H dc,int left,int top,
                                   const char* title,
                                   const swe::diaery::freq::Samples& samples,
+                                  double selected_value,
                                   W32D color){
     namespace fq=swe::diaery::freq;
     const auto hist=fq::count_bins(samples);
@@ -377,6 +378,14 @@ static void paint_frequency_panel(W32H dc,int left,int top,
     format_u64(counter,24u,static_cast<swe::diaery::trace::U64>(samples.count));
     label(dc,left,top-31,"MANUAL OBSERVATIONS:",rgb(166,180,196));
     label(dc,left+178,top-31,counter,color);
+    // The count at the selected VALUE is a separate exact query.
+    const auto exact=swe::diaery::freq::count_at_value(samples,selected_value);
+    char valbuf[24]{},countbuf[24]{};
+    decimal4(valbuf,24u,selected_value);
+    format_u64(countbuf,24u,exact);
+    label(dc,left,top-72,"COUNT AT VALUE:",rgb(166,180,196));
+    label(dc,left+130,top-72,valbuf,color);
+    label(dc,left+213,top-72,countbuf,color);
     W32H axes=CreatePen(0,1,rgb(125,146,163));
     W32H old=SelectObject(dc,axes);
     MoveToEx(dc,left,top,nullptr);LineTo(dc,left,base);
@@ -435,9 +444,9 @@ static void paint_frequency(W32H dc,const W32RECT& rc){
     label(dc,22,39,"FREQ HISTOGRAMS | X = observed VALUE | Y = COUNT | bin span derives from data",grey);
     label(dc,22,62,"Source: manual exploratory selections; NOT imported studies",grey);
     label(dc,22,87,"A: append current valid X/Y/Z values | H: graph view",grey);
-    paint_frequency_panel(dc,46,175,"X / PENILE LENGTH",g_freq_x,rgb(95,212,202));
-    paint_frequency_panel(dc,445,175,"Y / PENILE CIRCUMFERENCE",g_freq_y,rgb(192,141,233));
-    paint_frequency_panel(dc,844,175,"Z / VAGINAL DEPTH",g_freq_z,rgb(237,190,117));
+    paint_frequency_panel(dc,46,175,"X / PENILE LENGTH",g_freq_x,g_length_inches,rgb(95,212,202));
+    paint_frequency_panel(dc,445,175,"Y / PENILE CIRCUMFERENCE",g_freq_y,g_girth_inches,rgb(192,141,233));
+    paint_frequency_panel(dc,844,175,"Z / VAGINAL DEPTH",g_freq_z,g_depth_inches,rgb(237,190,117));
     char rejected[24]{};
     format_u64(rejected,24u,static_cast<swe::diaery::trace::U64>(g_freq_rejected));
     label(dc,46,515,"REJECTED APPEND ATTEMPTS (NOT OBSERVATIONS):",grey);
