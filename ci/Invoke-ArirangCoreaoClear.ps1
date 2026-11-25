@@ -105,8 +105,8 @@ $report=[ordered]@{
  airgap=[ordered]@{
   both_heads_ancestors=$clear
   shared_paths=$sharedSorted
-  yin_to_target_residual=Sorted @($yinResidual)
-  yang_to_target_residual=Sorted @($yangResidual)
+  yin_to_target_residual=(Sorted @($yinResidual))
+  yang_to_target_residual=(Sorted @($yangResidual))
   semantics_qualified=$false
   tests_qualified=$false
  }
