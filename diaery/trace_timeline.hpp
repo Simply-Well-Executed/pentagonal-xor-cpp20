@@ -12,6 +12,38 @@ struct TimeResult { Status status; Time time; };
 [[nodiscard]] constexpr TimeResult split_femtoseconds(U64 fs) noexcept {
     return {Status::Valid,{fs/FS_PER_SECOND,fs%FS_PER_SECOND}};
 }
+// EXPLORATORY DARN -> YARN display policy; never changes the exact clock.
+// DARN is the exact seconds + residual-femtosecond representation.
+// One second-DARN is split into 16 equal S P L O O N sectors by integer
+// quotient (no binary-floating quantization of the canonical time).
+// Offset +0.1 and >0.6 threshold become exact integer inequalities:
+// (sector/16 + 1/10) > 3/5  iff 10*sector + 16 > 96.
+// A crossing of 1.0 adds ONE more bonus second beyond the threshold carry.
+// This is a user-defined display algorithm, NOT standard time rounding.
+constexpr unsigned SPLOONS_PER_DARN=16u;
+struct Yarn {
+    Status status;
+    U64 exact_seconds;             // DARN authority
+    U64 remainder_femtoseconds;    // exact and never rounded
+    unsigned sploon;               // 0..15, derived
+    unsigned threshold_carry;      // 0 or 1
+    unsigned angular_bonus;        // 0 or 1
+    U64 shown_yarn_seconds;        // derived, no source mutation
+};
+[[nodiscard]] constexpr Yarn make_yarn(U64 fs) noexcept {
+    const auto exact=split_femtoseconds(fs);
+    const U64 whole=exact.time.seconds;
+    const U64 remainder=exact.time.remainder_femtoseconds;
+    // Safe since remainder < 1e15, and 16*remainder < 2^64.
+    const unsigned sector=static_cast<unsigned>((remainder*16ULL)/FS_PER_SECOND);
+    const unsigned adjusted_tenths_numerator=10u*sector+16u;
+    const unsigned carry=adjusted_tenths_numerator>96u?1u:0u;
+    const unsigned bonus=adjusted_tenths_numerator>=160u?1u:0u;
+    const U64 increment=static_cast<U64>(carry+bonus);
+    if(whole>~0ULL-increment)
+        return {Status::Overflow,whole,remainder,sector,carry,bonus,whole};
+    return {Status::Valid,whole,remainder,sector,carry,bonus,whole+increment};
+}
 [[nodiscard]] constexpr bool add_safe(U64 a,U64 b) noexcept { return a<=~0ULL-b; }
 struct Advance { Status status; U64 fs; };
 [[nodiscard]] constexpr Advance advance(U64 fs,U64 delta) noexcept {
