@@ -51,11 +51,37 @@ struct Writer {
  w.text("STATUS\tRELEASE=HOLD\tDATA=MANUAL_EXPLORATORY\n");
  w.text("PROVENANCE\tPR316\tNO_PUBLISHED_ROWS_IMPORTED\n");
  w.text("UNITS\tX=inch\tY=inch\tZ=inch\tFREQ=count\n");
+ w.text("FIGURE_1\\tTHAILONGA_DYNTR0X_XY\\tSOURCE_PLANE\\n");
+ w.text("FIGURE_2\\tTHAILONGA_FREQ_X_Y_Z\\tEMPIRICAL_COUNT_AT_VALUE\\n");
+ w.text("FIGURE_3\\tTHAILONGA_CIRCLE_BAND\\tEXPLORATORY_NORMALIZED_ANNULUS\\n");
+ w.text("XY_MAJOR\\tX=1_INCH\\tY=1_INCH\\tORIGIN=0_0\\n");
+ w.text("XY_SUBUNITS\\tX=1/4_INCH\\tY=1/3_INCH\\tDISPLAY_ONLY\\n");
+ w.text("FREQ_BINS\\t16_DISPLAY_BINS\\tNOT_SAMPLE_CAPACITY\\n");
+ w.text("FREQ_COUNTS\\tEXACT_VALUE_COUNT\\tSTORED_IEEE754_EQUALITY\\n");
+ w.text("CIRCLE_SUBUNITS\\t72_SECTORS\\tGAP_CANARY_SINGLE_MISSING_CELL\\n");
+ w.text("CIRCLE_BOUNDS\\t41..42_PERCENT\\tUNVERIFIED_OUTCOME\\n");
+ w.text("BIOMEASUREMENT_MODEL\\tEXPLORATORY_CYLINDER\\tDEPTH_ALONE_CANNOT_PREDICT_WIDTH_OR_ELASTICITY\\n");
+ w.text("REJECTION_PROVENANCE\\tAGGREGATE_ONLY\\tNO_PER_EVENT_LEDGER_YET\\n");
+ w.text("STUDY_RANGE_METHOD\\tMARGINAL_SAMPLE_EXTREMA\\tNOT_DIAGNOSTIC\\n");
+
  w.text("ORIGIN\tX=0\tY=0\tGEOMETRY=INTERCEPT_NOT_REGRESSION\n");
  w.text("STUDY_REFERENCE\tX/Y=HERBENICK_2014\tZ=LLOYD_2005\tRANGES_NOT_BIOLOGICAL_LIMITS\n");
  w.text("FILTREX\t");w.text(f.eligible?"ELIGIBLE":"HOLD");w.put('\n');
  w.text("FILTROX\t");w.text(f.within_sample_ranges?"WITHIN_SAMPLES":"OUTSIDE_OR_NULL");w.put('\n');
- w.text("SOURCE_IEEE754_NATIVE_BYTES\t");
+ w.text("INTERCEPT_LINE\\t");
+ w.text(f.intercept.valid?"ALGEBRAIC_VALID":"HOLD");w.put('\\t');
+ w.hex_double(f.intercept.slope);w.put('\\t');
+ w.hex_double(f.intercept.intercept);w.put('\\n');
+ w.text("PROJECTION_QUALIFICATION\\t");
+ for(unsigned i=0u;i<10u;++i){
+   if(i)w.put(',');
+   w.put('{');w.put(static_cast<char>('0'+i));w.put('}');
+   w.put(':');
+   w.text(f.projection_status[i]==projections::Status::Ready?"ALGEBRA":
+          f.projection_status[i]==projections::Status::NullEvidence?"NULL":"HOLD");
+ }
+ w.put('\\n');
+ w.text("SOURCE_IEEE754_NATIVE_BYTES\\t");
  w.hex_double(f.original.length_inches);w.put('\t');
  w.hex_double(f.original.circumference_inches);w.put('\t');
  w.hex_double(f.original.depth_inches);w.put('\n');
