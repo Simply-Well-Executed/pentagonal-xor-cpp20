@@ -27,3 +27,11 @@ The optional Gaussian bell is only a parametric fit to manually entered observat
 ## Qualification
 
 Compile-time unit tests: `circle_band_test.cpp`, `quintiles_test.cpp`, `freq_test.cpp`, `thailonga_test.cpp`; runtime clipboard-audit buffer tests: `audit_test.cpp`. Each is registered for native /O2 DIAERY CTest and LadderDi's nine-lane MSVC phase. Code registration does not prove workflow success. No remote feed is required and no native release has been attested; RELEASE=HOLD until verified.
+
+## Explicit depth/width/stretch measurements and algebra
+
+The optional cylinder model does not assign a clinical elasticity law. `assess_stretch` requires **four independently measured quantities**, resting depth, maximum depth, resting radius, maximum radius, and exposes depth and diameter changes only as their algebraic differences. If even one measurement is unavailable, it returns `MissingMeasurement`. These numbers are never synthesized by X/Y, FREQ, the circle band, or the research sample minima.
+
+The experimental triangle helper `solve_radius` calculates a geometric radial width using `sqrt(hypotenuse² - depth²)` **only** if an independently measured hypotenuse is provided and the geometric inequality is satisfied. With depth alone, the result is `MissingSecondMeasure`. This mathematical construction is not a vagina-specific biomechanical relation and cannot predict stretch capacity, comfort, pressure, tissue elasticity, insertion response, or medical outcome. Those need appropriate separately measured data and justified modeling assumptions.
+
+Native circle-band tests confirm the 72-sector gap check, incomplete masks, known geometric triangles, and independent stretch-profile measurements. `RELEASE=HOLD` until native CI results are verified.
