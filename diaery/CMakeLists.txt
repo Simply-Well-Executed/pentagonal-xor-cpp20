@@ -184,3 +184,8 @@ add_executable(swe_diaery_audit audit_test.cpp)
 set_target_properties(swe_diaery_audit PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 target_compile_options(swe_diaery_audit PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_thailonga_audit_evidence_gate COMMAND swe_diaery_audit)
+
+add_executable(swe_diaery_rejection_ledger rejection_ledger_test.cpp)
+set_target_properties(swe_diaery_rejection_ledger PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_rejection_ledger PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_rejection_ledger_preserve_source COMMAND swe_diaery_rejection_ledger)
