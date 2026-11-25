@@ -502,8 +502,8 @@ static void refresh_accessibility_deck(){
                        swe::diaery::pentapi::terminal_visible(g_pentapi,i)?1:0);
     }
     const char* rootLabels[2][2]{
-       {"X | CONTROLS 1-40 [OPEN]","X | CONTROLS 1-40"},
-       {"Y | CONTROLS 41+","Y | CONTROLS 41+ [OPEN]"}};
+       {"X | Measurements [SELECTED]","X | Measurements"},
+       {"Y | Operations","Y | Operations [SELECTED]"}};
     const char* branchLabels[2][2]{
        {"Y1 | PRIMARY [OPEN]","Y1 | PRIMARY"},
        {"Y2 | ADVANCED","Y2 | ADVANCED [OPEN]"}};
@@ -512,7 +512,7 @@ static void refresh_accessibility_deck(){
             const bool rootActive=g_pentapi.phase!=swe::diaery::pentapi::Phase::Root;
             const char* rootName=rootActive?
                   rootLabels[g_pentapi.selection.root][i]:
-                  (i==0u?"X | CONTROLS 1-40":"Y | CONTROLS 41+");
+                  (i==0u?"X | Measurements":"Y | Operations");
             SetWindowTextA(g_seal_roots[i],rootName);
             ShowWindow(g_seal_roots[i],1);
         }
