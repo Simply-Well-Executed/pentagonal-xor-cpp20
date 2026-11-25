@@ -7,6 +7,7 @@
 #include "thailonga.hpp"
 #include "freq.hpp"
 #include "circle_band.hpp"
+#include "quintiles.hpp"
 namespace swe::diaery::audit {
 using U64=unsigned long long;
 struct Writer {
@@ -39,7 +40,10 @@ struct Writer {
  Writer& w,const thailonga::Frame& f,
  const freq::Samples& x,const freq::Samples& y,const freq::Samples& z,
  const bool* layers,bool circle_gap,
- U64 rejected,bool memory_hold) noexcept {
+ U64 rejected,bool memory_hold,
+ const quintiles::Result* qx,
+ const quintiles::Result* qy,
+ const quintiles::Result* qz) noexcept {
  if(x.count!=y.count||y.count!=z.count)return false;
  if((x.count&&!x.values)||(y.count&&!y.values)||(z.count&&!z.values))
     return false;
@@ -63,6 +67,27 @@ struct Writer {
  w.hex_double(freq::fit_bell(y).sample_standard_deviation);w.put('\t');
  w.hex_double(freq::fit_bell(z).sample_standard_deviation);w.put('\n');
  w.text("COUNT_TOTAL\t");w.integer(x.count);w.put('\n');
+ w.text("DARN_SECONDS\t");w.integer(f.time.exact_seconds);w.put('\n');
+ w.text("DARN_REMAINDER_FS\t");w.integer(f.time.remainder_femtoseconds);w.put('\n');
+ w.text("YARN_SECONDS_DERIVED\t");w.integer(f.time.shown_yarn_seconds);w.put('\n');
+ w.text("SPLOON_DERIVED\t");w.integer(f.time.sploon);w.put('\n');
+ const freq::Samples axes[3]{x,y,z};
+ const char* labels[3]{"X","Y","Z"};
+ const quintiles::Result* qs[3]{qx,qy,qz};
+ for(unsigned a=0u;a<3u;++a){
+   const auto bell=freq::fit_bell(axes[a]);
+   const auto hist=freq::count_bins(axes[a]);
+   w.text("STATS\t");w.text(labels[a]);
+   w.text("\tMEAN_HEX=");w.hex_double(bell.mean);
+   w.text("\tSD_HEX=");w.hex_double(bell.sample_standard_deviation);
+   w.text("\tSAMPLE_VARIANCE_HEX=");w.hex_double(bell.sample_variance);
+   w.text("\tMIN_HEX=");w.hex_double(hist.minimum);
+   w.text("\tMAX_HEX=");w.hex_double(hist.maximum);w.put('\n');
+   w.text("QUINTILES_NEAREST_RANK\t");w.text(labels[a]);
+   if(!qs[a]||qs[a]->state!=quintiles::State::Ready)w.text("\tNULL_OR_HOLD");
+   else for(unsigned q=0u;q<6u;++q){w.put('\t');w.hex_double(qs[a]->boundaries[q]);}
+   w.put('\n');
+ }
  w.text("REJECTED_ATTEMPTS\t");w.integer(rejected);w.put('\n');
  w.text("MEMORY_HOLD\t");w.text(memory_hold?"YES":"NO");w.put('\n');
  w.text("CIRCLE\t");w.text(circle_gap?"GAP":"NICE_FIRM");
@@ -74,7 +99,7 @@ struct Writer {
     w.text(layers&&layers[i]?"ON":"OFF");}
  w.put('\n');
  w.text("UNCERTAINTY\tUNKNOWN\tNO_VALIDATED_PHYSIOLOGICAL_PREDICTION\n");
- w.text("QUINTILES\tNEAREST_RANK_AVAILABLE_IN_NATIVE_CORE\tNOT_ANATOMICAL_CUTOFFS\n");
+ w.text("QUINTILE_POLICY\tNEAREST_RANK\tNOT_ANATOMICAL_CUTOFFS\n");
  w.text("ROW\tX_IEEE754_NATIVE_BYTES\tY_IEEE754_NATIVE_BYTES\tZ_IEEE754_NATIVE_BYTES\n");
  for(U64 i=0ULL;i<x.count;++i){
     w.integer(i+1ULL);w.put('\t');
