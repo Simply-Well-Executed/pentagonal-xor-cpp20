@@ -513,6 +513,31 @@ static void paint_frequency_panel(W32H dc,int left,int top,
     SelectObject(dc,old);DeleteObject(pen);
     label(dc,left,base+30,"BELL: FITTED TO MANUAL VALUES",rgb(232,211,142));
 }
+static void paint_quintiles(W32H dc,int left,int top,
+                            const swe::diaery::freq::Samples& s,W32D color){
+    namespace qt=swe::diaery::quintiles;
+    if(!s.count){label(dc,left,top,"Q20..Q80: NULL / NO DATA",color);return;}
+    if(s.count>~0ULL/sizeof(double)){
+        label(dc,left,top,"QUINTILES: MEMORY HOLD",color);return;
+    }
+    W32H heap=GetProcessHeap();
+    double* scratch=static_cast<double*>(HeapAlloc(heap,0u,s.count*sizeof(double)));
+    if(!scratch){label(dc,left,top,"QUINTILES: MEMORY HOLD",color);return;}
+    const auto r=qt::calculate(s,scratch,s.count);
+    HeapFree(heap,0u,scratch);
+    if(r.state!=qt::State::Ready){
+        label(dc,left,top,"QUINTILES: EVIDENCE HOLD",color);return;
+    }
+    char b[24]{};
+    label(dc,left,top,"NEAREST RANK QUINTILES",color);
+    for(unsigned k=1;k<=4u;++k){
+       decimal4(b,24u,r.boundaries[k]);
+       const int bx=left+static_cast<int>((k-1u)%2u)*136;
+       const int by=top+21+static_cast<int>((k-1u)/2u)*22;
+       label(dc,bx,by,k==1u?"Q20":k==2u?"Q40":k==3u?"Q60":"Q80",color);
+       label(dc,bx+42,by,b,color);
+    }
+}
 static void paint_frequency(W32H dc,const W32RECT& rc){
     const W32D grey=rgb(159,176,194);
     label(dc,22,16,"THAILONGA | FREQ = COUNT AT VALUE | RELEASE=HOLD",rgb(95,212,202));
@@ -530,6 +555,9 @@ static void paint_frequency(W32H dc,const W32RECT& rc){
     label(dc,46,570,"FILTROX sample ranges are labels, not universal biological limits.",grey);
     label(dc,46,596,"The Gaussian is a fitted approximation, NOT original observations.",grey);
     label(dc,46,621,g_freq_memory_hold?"MEMORY HOLD: append denied, old records preserved":"Empty records remain NULL; no artificial record-count limit.",grey);
+    paint_quintiles(dc,46,700,g_freq_x,rgb(95,212,202));
+    paint_quintiles(dc,445,700,g_freq_y,rgb(192,141,233));
+    paint_quintiles(dc,844,700,g_freq_z,rgb(237,190,117));
     label(dc,46,645,g_audit_clipboard_success?"COPY AUDIT: COMPLETE TSV IN CLIPBOARD":g_audit_clipboard_hold?"COPY AUDIT: HOLD / FAILED":"C: COPY AUDIT (FULL DATA + EVIDENCE)",grey);
     label(dc,46,rc.bottom-46,"H: DYNTR0X/PROJECTIONS | D: DIAERY | FREQ source remains in session memory",grey);
 }
