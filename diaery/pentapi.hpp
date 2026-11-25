@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: 0BSD
 // PENTAPI: accessibility-oriented five-stage single-switch navigation.
-// ROOT -> BRANCH -> TERMINAL -> [XOR] [AIRGAP] [OR] -> choice.
+// ROOT -> BRANCH -> TERMINAL -> [XOR][AIRGAP][OR] -> choice.
 // NULL is an inactive selection, never data deletion. No extra input required
 // to exit a completed terminal action.
 #ifndef SWE_DIAERY_PENTAPI_HPP
@@ -42,7 +42,7 @@ struct State {
 [[nodiscard]] constexpr bool terminal_visible(State s,unsigned action) noexcept {
  return s.phase==Phase::Terminal && seals::visible(s.selection,action);
 }
-// An invoked terminal action reaches XOR | RESERVED AIRGAP | OR.
+// An invoked terminal action reaches [XOR][AIRGAP][OR].
 // XOR: exactly one route may be chosen. OR: both routes are offered.
 // AIRGAP: spatial separation, never a third route or extra activation.
 // No branch is preselected: silence, gaze or timeout cannot choose a route.
