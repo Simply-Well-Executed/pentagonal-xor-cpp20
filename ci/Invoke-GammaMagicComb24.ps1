@@ -68,9 +68,9 @@ for($i=0;$i -lt $names.Count;$i++){
  $rows.Add((@(($i+1),$p,$a.Sha,$a.Bytes,$a.Utf8,$a.Nfkc,$a.Bidi,$a.ZeroWidth,$a.Nul,$a.Tabs,$a.CrLf,$parity) -join [char]9))
 }
 [void][IO.Directory]::CreateDirectory($out)
-$path=Join-Path $out 'banana.gamma24.tsv'
+$path=Join-Path $out 'LICE.gamma24.tsv'
 [IO.File]::WriteAllLines($path,$rows,$utf8)
 $receiptSha=Sha $utf8.GetBytes(($rows -join [char]10)+[char]10)
 Write-Host ('GAMMA24|HEAD_TAIL|FILES=24|HOLD='+$holds+'|RECEIPT_SHA256='+$receiptSha+'|SOURCE_NOT_MUTATED|RELEASE=HOLD')
-Write-Host ('GAMMA24|BANANA|'+$path)
+Write-Host ('GAMMA24|LICE|'+$path)
 if($holds -ne 0){throw 'GAMMA24|HOLD|unverified_file_or_direction_drift'}
