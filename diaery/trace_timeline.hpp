@@ -34,7 +34,10 @@ struct ExactLength { U64 numerator; U64 denominator; };
 [[nodiscard]] constexpr ExactLength micrometres_to_inches(U64 um) noexcept {
     return {um,25400ULL}; // exact fraction, never rounded
 }
-// EXPLORATORY n-1663r where r=pi^2. This formula is NOT an
+// EXPLORATORY subtraction: n - (1663 * r), where r = pi * pi.
+// ASCII '-' is the subtraction operator; '*' is multiplication.
+// This is a code expression, not an HTML/LaTeX typography glyph.
+// This formula is NOT an
 // imperial-to-metric conversion and has no specified physical units.
 // Conventional pi is irrational; a finite double is an approximation.
 // Do NOT use this transform to change original fs or length authority.
@@ -43,7 +46,7 @@ struct ImperealTransform { Status status; double derived; };
     if(n>=16u)return {Status::NullInput,0.0};
     constexpr double pi_approx=3.14159265358979323846;
     const double r=pi_approx*pi_approx;
-    return {Status::Valid,static_cast<double>(n)-1663.0*r};
+    return {Status::Valid,static_cast<double>(n) - (1663.0 * r)};
 }
 
 struct Yarn {
