@@ -12,6 +12,7 @@
 #include "freq.hpp"
 #include "circle_band.hpp"
 #include "quintiles.hpp"
+#include "audit.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -44,6 +45,14 @@ struct W32CLASS {
 extern "C" {
 DIA_IMPORT W32H DIA_STDCALL GetModuleHandleA(const char*);
 DIA_IMPORT W32H DIA_STDCALL GetProcessHeap();
+DIA_IMPORT W32H DIA_STDCALL GlobalAlloc(W32U,W32W);
+DIA_IMPORT W32H DIA_STDCALL GlobalLock(W32H);
+DIA_IMPORT int DIA_STDCALL GlobalUnlock(W32H);
+DIA_IMPORT W32H DIA_STDCALL GlobalFree(W32H);
+DIA_IMPORT int DIA_STDCALL OpenClipboard(W32H);
+DIA_IMPORT int DIA_STDCALL EmptyClipboard();
+DIA_IMPORT W32H DIA_STDCALL SetClipboardData(W32U,W32H);
+DIA_IMPORT int DIA_STDCALL CloseClipboard();
 DIA_IMPORT W32H DIA_STDCALL HeapAlloc(W32H,W32D,W32W);
 DIA_IMPORT W32H DIA_STDCALL HeapReAlloc(W32H,W32D,W32H,W32W);
 DIA_IMPORT int DIA_STDCALL HeapFree(W32H,W32D,W32H);
@@ -161,6 +170,8 @@ static bool g_freq_memory_hold=false;
 static swe::diaery::freq::Samples g_freq_y{};
 static swe::diaery::freq::Samples g_freq_z{};
 static unsigned g_freq_rejected=0u;
+static bool g_audit_clipboard_success=false;
+static bool g_audit_clipboard_hold=false;
 static bool g_projection_visible[10]{true,true,false,false,false,false,false,false,false,false};
 static unsigned g_projection_selected=1u;
 static bool g_orgasm_band_proposal=true;
@@ -392,6 +403,37 @@ static bool ensure_freq_capacity(swe::diaery::freq::Samples& s){
     s.capacity=next;
     return true;
 }
+// C copies a complete TSV witness to Windows clipboard, including all
+// accepted rows as lossless IEEE754 byte payloads. On failure no truncation
+// is silently promoted; clipboard ownership transfers only after SetClipboard.
+static bool copy_thailonga_audit() noexcept {
+    namespace au=swe::diaery::audit;
+    using U64=swe::diaery::freq::U64;
+    if(g_freq_x.count!=g_freq_y.count||g_freq_y.count!=g_freq_z.count)
+        return false;
+    constexpr U64 overhead=8192ULL,per_row=104ULL;
+    if(g_freq_x.count>(~0ULL-overhead)/per_row)return false;
+    const U64 size=overhead+g_freq_x.count*per_row;
+    W32H mem=GlobalAlloc(0x0002u,size);
+    if(!mem)return false;
+    char* buffer=static_cast<char*>(GlobalLock(mem));
+    if(!buffer){GlobalFree(mem);return false;}
+    const auto frame=swe::diaery::thailonga::build(
+        {g_length_inches,g_girth_inches,g_depth_inches,true,true,true},
+        g_elapsed_fs);
+    au::Writer w{buffer,size,0ULL,true};
+    const bool complete=au::emit(w,frame,g_freq_x,g_freq_y,g_freq_z,
+                                 g_projection_visible,g_circle_gap_canary,
+                                 g_freq_rejected,g_freq_memory_hold);
+    GlobalUnlock(mem);
+    if(!complete){GlobalFree(mem);return false;}
+    if(!OpenClipboard(g_window)){GlobalFree(mem);return false;}
+    if(!EmptyClipboard()){CloseClipboard();GlobalFree(mem);return false;}
+    W32H published=SetClipboardData(1u,mem); // CF_TEXT, ASCII-only audit
+    CloseClipboard();
+    if(!published){GlobalFree(mem);return false;}
+    return true;
+}
 static double gear_length(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileLength);}
 static double gear_girth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileCircumference);}
 static double gear_depth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::VaginalDepth);}
@@ -488,6 +530,7 @@ static void paint_frequency(W32H dc,const W32RECT& rc){
     label(dc,46,570,"FILTROX sample ranges are labels, not universal biological limits.",grey);
     label(dc,46,596,"The Gaussian is a fitted approximation, NOT original observations.",grey);
     label(dc,46,621,g_freq_memory_hold?"MEMORY HOLD: append denied, old records preserved":"Empty records remain NULL; no artificial record-count limit.",grey);
+    label(dc,46,645,g_audit_clipboard_success?"COPY AUDIT: COMPLETE TSV IN CLIPBOARD":g_audit_clipboard_hold?"COPY AUDIT: HOLD / FAILED":"C: COPY AUDIT (FULL DATA + EVIDENCE)",grey);
     label(dc,46,rc.bottom-46,"H: DYNTR0X/PROJECTIONS | D: DIAERY | FREQ source remains in session memory",grey);
 }
 static void paint_dynamo(W32H dc,const W32RECT& rc){
@@ -625,7 +668,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     label(dc,475,494,g_study_gears?"GEARS: SAMPLE-RANGE (K)":"GEARS: EXPLORATORY (K)",grey);
     paint_time_plot(dc);
     label(dc,22,rc.bottom-70,"D: DIAERY/DYNTR0X | arrows X/Y | PgUp/PgDn Z | G grid | K study",grey);
-    label(dc,22,rc.bottom-46,"H FREQ | A append | P/0..9 projections | N circle band | J gap canary | C copy audit",grey);
+    label(dc,22,rc.bottom-46,g_audit_clipboard_success?"AUDIT COPIED | H FREQ | A append | P/0..9 layers | J gap":g_audit_clipboard_hold?"AUDIT COPY HOLD | C retry | H FREQ | J gap":"H FREQ | A append | P/0..9 layers | N circle | J gap | C copy audit",grey);
 }
 
 static void paint(W32H hwnd){
@@ -745,6 +788,10 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
             if(key==33u)g_depth_inches+=0.05;
             if(key==34u)g_depth_inches-=0.05;
             if(key=='H')g_freq_view=!g_freq_view;
+            if(key=='C'){
+                g_audit_clipboard_success=copy_thailonga_audit();
+                g_audit_clipboard_hold=!g_audit_clipboard_success;
+            }
             if(key=='A'){
                 const auto current=swe::diaery::thailonga::build(
                     {g_length_inches,g_girth_inches,g_depth_inches,true,true,true},
