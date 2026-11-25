@@ -10,6 +10,9 @@ on:
       - 'shared/redneckengineered_model_pidi.hpp'
       - 'shared/redneckengineered_native_render.hpp'
       - 'tools/redneckengineered_render.cpp'
+      - 'tools/RedneckEngineeredPiPiWorker.ps1'
+      - 'tools/Invoke-NinzaPiPi.ps1'
+      - 'tools/NinzaPiPiHelper.ps1'
       - 'shared/eulers_jig_canonical.hpp'
       - 'shared/u_circle_fit.hpp'
       - 'tests/redneckengineered_ninza_minza_test.cpp'
@@ -67,6 +70,9 @@ jobs:
             'shared/redneckengineered_model_pidi.hpp',
             'shared/redneckengineered_native_render.hpp',
             'tools/redneckengineered_render.cpp',
+            'tools/RedneckEngineeredPiPiWorker.ps1',
+            'tools/Invoke-NinzaPiPi.ps1',
+            'tools/NinzaPiPiHelper.ps1',
             'shared/eulers_jig_canonical.hpp',
             'shared/u_circle_fit.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
@@ -94,6 +100,9 @@ jobs:
             'shared/redneckengineered_model_pidi.hpp',
             'shared/redneckengineered_native_render.hpp',
             'tools/redneckengineered_render.cpp',
+            'tools/RedneckEngineeredPiPiWorker.ps1',
+            'tools/Invoke-NinzaPiPi.ps1',
+            'tools/NinzaPiPiHelper.ps1',
             'shared/eulers_jig_canonical.hpp',
             'shared/u_circle_fit.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
@@ -156,6 +165,46 @@ jobs:
             throw 'REDNECKENGINEERED|HOLD|identity_cook_changed_source'
           }
           Write-Host ('REDNECKENGINEERED|BITMAPS=8|CUBEMAP_FACES=6|PENNYWORTH_C5824=EMBEDDED|DIFZ=HOLD|PUBLISH=HOLD')
+          # Actual PiPi: the established supervisor dispatches two private
+          # renderer workers and independently validates their signed receipts
+          # and SHA-256 output bundles. It is not a simulated scheduler.
+          $worker=Join-Path $root 'tools/RedneckEngineeredPiPiWorker.ps1'
+          $supervisor=Join-Path $root 'tools/Invoke-NinzaPiPi.ps1'
+          $workerPin=(Get-FileHash -LiteralPath $worker -Algorithm SHA256).Hash
+          $env:REDNECK_RENDER_EXE=$renderExe
+          $env:REDNECK_RENDER_SHA256=(Get-FileHash -LiteralPath $renderExe -Algorithm SHA256).Hash.ToLowerInvariant()
+          $manifest=Join-Path $env:RUNNER_TEMP ('redneck-pipi-'+$env:REDNECK_PHASE+'.json')
+          $runDir=Join-Path $env:RUNNER_TEMP ('redneck-pipi-run-'+$env:REDNECK_PHASE)
+          $jobManifest=[ordered]@{
+            protocol='NINZA-PIPI-READY-v1'
+            retry_safe=$true
+            jobs=@(
+              [ordered]@{job_id='head';lane='FIFONFU'},
+              [ordered]@{job_id='tail';lane='LIFODFU'}
+            )
+          }
+          [IO.File]::WriteAllText($manifest,($jobManifest | ConvertTo-Json -Depth 8),
+             [Text.UTF8Encoding]::new($false))
+          & pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $supervisor -ManifestPath $manifest -WorkerPath $worker -WorkerSha256 $workerPin -RunDirectory $runDir -Workers 2 -MaxAttempts 2 -IdleTtlSeconds 12 -HeartbeatTtlSeconds 10 -MaxAttemptSeconds 60 -PollMilliseconds 100
+          if($LASTEXITCODE -ne 42){throw 'REDNECKENGINEERED|HOLD|pipi_supervisor_failed'}
+          $ledger=Get-Content -LiteralPath (Join-Path $runDir 'JSONLedger.json') -Raw -Encoding utf8 | ConvertFrom-Json
+          if($ledger.state -cne 'COMPLETE' -or @($ledger.jobs).Count -ne 2){
+            throw 'REDNECKENGINEERED|HOLD|pipi_ledger_incomplete'
+          }
+          foreach($job in $ledger.jobs){
+            if($job.state -cne 'COMPLETE' -or -not $job.accepted_output){
+              throw ('REDNECKENGINEERED|HOLD|pipi_job_incomplete|'+$job.job_id)
+            }
+            $bundle=[string]$job.accepted_output.path
+            if(-not [IO.File]::Exists($bundle)){
+              throw 'REDNECKENGINEERED|HOLD|pipi_missing_bundle'
+            }
+            $digest=(Get-FileHash -LiteralPath $bundle -Algorithm SHA256).Hash.ToLowerInvariant()
+            if($digest -cne [string]$job.accepted_output.sha256){
+              throw 'REDNECKENGINEERED|HOLD|pipi_bundle_hash_mismatch'
+            }
+            Write-Host ('REDNECKENGINEERED|PIPI_JOB='+$job.job_id+'|BUNDLE_SHA256='+$digest+'|MODEL_PUBLISH=HOLD')
+          }
           for($i=0;$i -lt $relative.Count;++$i){
             $after=(Get-FileHash -LiteralPath (Join-Path $root $relative[$i]) -Algorithm SHA256).Hash
             if($before[$i] -cne $after){throw ('REDNECKENGINEERED|HOLD|source_drift|'+$relative[$i])}
