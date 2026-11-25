@@ -120,3 +120,10 @@ set_target_properties(swe_diaery_trace_timeline PROPERTIES
  CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 target_compile_options(swe_diaery_trace_timeline PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_dynamo_fs_grid_trace_gate COMMAND swe_diaery_trace_timeline)
+
+# PentaDi: four explicit stages and a shared NULL sentinel.
+add_executable(swe_diaery_pentadi pentadi_test.cpp)
+set_target_properties(swe_diaery_pentadi PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_pentadi PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_pentadi_shared_null COMMAND swe_diaery_pentadi)
