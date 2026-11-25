@@ -27,6 +27,17 @@ struct Bounds { double xmin; double xmax; double ymin; double ymax; };
 [[nodiscard]] constexpr double fold(double n) noexcept { return n / 2.0; }
 [[nodiscard]] constexpr double project(double n) noexcept { return (n / 2.0) * (n / 2.0); }
 [[nodiscard]] constexpr double quarter(double n) noexcept { return (n * n) * (n * n) / 2.0; }
+// The requested APPLICATION OF Y=MX+B: line through documented intercepts
+// (0,Y) and (X,0). It is an algebraic construction, NOT a measured
+// physiological correlation. X and Y must be positive inches.
+struct InterceptLine { bool valid; double slope; double intercept; Point x_end; Point y_end; };
+[[nodiscard]] constexpr InterceptLine application_of_ymxb(double x,double y) noexcept {
+    if(!finite_domain(x)||!finite_domain(y)||x<=0.0||y<=0.0)
+        return {false,0.,0.,{0.,0.},{0.,0.}};
+    const double m=-y/x;
+    if(!finite_domain(m))return {false,0.,0.,{0.,0.},{0.,0.}};
+    return {true,m,y,{x,0.},{0.,y}};
+}
 [[nodiscard]] constexpr Fit fit(Point a, Point b, Point c) noexcept {
     Fit out{Shape::Invalid,{0.0,0.0},0.0,0.0,0.0,0.0};
     if (!finite_domain(a.x)||!finite_domain(a.y)||
