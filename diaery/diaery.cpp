@@ -300,7 +300,7 @@ static void paint_time_plot(W32H dc) {
     const auto im=tr::n_minus_1663_pi_squared(yarn_view.sploon);
     char imbuf[24]{};
     if(im.status==tr::Status::Valid)decimal4(imbuf,24u,im.derived);
-    label(dc,475,698,"n-1663*pi^2 (approx):",grey);
+    label(dc,475,698,"n - (1663 * r):",grey);
     label(dc,690,698,im.status==tr::Status::Valid?imbuf:"HOLD",thread);
     label(dc,83,714,"F +1fs | S +1s | T cycle | R edit | G grid",grey);
     label(dc,83,680,"SECONDARY TIME AXIS: 0 to 2 seconds; exact counter never rounds to samples",grey);
