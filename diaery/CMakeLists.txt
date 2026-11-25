@@ -136,3 +136,12 @@ set_target_properties(swe_diaery_research_filter PROPERTIES
 target_compile_options(swe_diaery_research_filter PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_research_exclude_zero_source_preserved
  COMMAND swe_diaery_research_filter)
+
+# FILTROX: research sample-range warnings for penile/vaginal measures;
+# unlike FILTREX, sample extremum is not universal biological cutoff.
+add_executable(swe_diaery_filtrox filtrox_test.cpp)
+set_target_properties(swe_diaery_filtrox PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_filtrox PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_filtrox_study_range_both_anatomies
+ COMMAND swe_diaery_filtrox)
