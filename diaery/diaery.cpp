@@ -5,6 +5,7 @@
 #include "model_bridge.hpp"
 #include "application_of_ymxb.hpp"
 #include "dynamo_subject.hpp"
+#include "trace_timeline.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -144,6 +145,9 @@ static bool g_drag=false,g_water=true,g_yang=true,g_bubble=true,g_cutaway=true;
 static bool g_dynamo=false;
 static double g_length_inches=4.0/2.54,g_girth_inches=6.1240,g_depth_inches=2.9000;
 static bool g_dynamo_mint=false;
+static bool g_subunits=true;
+static swe::diaery::trace::U64 g_elapsed_fs=0ULL;
+static unsigned g_trace_index=0u;
 static int g_mouse_x=0,g_mouse_y=0;
 static W32H g_window=nullptr;
 // Rendering-only approximations; source and gate remain exact integers.
@@ -212,19 +216,115 @@ static void text_value(W32H dc,int x,int y,const char* title,double v,W32D color
 }
 static int plot_x(double v,int left,int px_per_inch){return left+static_cast<int>(v*px_per_inch+0.5);}
 static int plot_y(double v,int bottom,int px_per_inch){return bottom-static_cast<int>(v*px_per_inch+0.5);}
+// Integer decimal formatting for exact time ledger. No fractional precision loss.
+static void format_u64(char* out,unsigned capacity,swe::diaery::trace::U64 v){
+    if(capacity==0u)return;
+    char scratch[24]{};unsigned n=0u;
+    do {scratch[n++]=static_cast<char>('0'+v%10ULL);v/=10ULL;} while(v&&n<24u);
+    unsigned i=0u;
+    while(n&&i+1u<capacity)out[i++]=scratch[--n];
+    out[i]=0;
+}
+static void paint_time_plot(W32H dc) {
+    namespace tr=swe::diaery::trace;
+    const W32D grey=rgb(158,174,190),yarn=rgb(169,192,203),thread=rgb(221,217,164);
+    const int left=83,right=443,top=552,bottom=665,width=360;
+    label(dc,left,521,"TIME PLANE (not a physical clock)",grey);
+    label(dc,left,537,"THREAD: femtoseconds | YARN: seconds",grey);
+    W32H yarn_pen=CreatePen(0,1,yarn);
+    W32H old=SelectObject(dc,yarn_pen);
+    MoveToEx(dc,left,bottom,nullptr);LineTo(dc,right,bottom);
+    for(int sec=0;sec<=2;++sec){
+        const int px=left+sec*180;
+        MoveToEx(dc,px,top,nullptr);LineTo(dc,px,bottom);
+    }
+    SelectObject(dc,old);DeleteObject(yarn_pen);
+    // 1/4 second threads are dashed, but exact fs positions are integer.
+    W32H thread_pen=CreatePen(0,1,rgb(83,98,107));
+    old=SelectObject(dc,thread_pen);
+    for(int q=1;q<8;++q){
+        if(q%4==0)continue;
+        const int px=left+q*45;
+        for(int yy=top;yy<bottom;yy+=9){
+            MoveToEx(dc,px,yy,nullptr);LineTo(dc,px,yy+4<bottom?yy+4:bottom);
+        }
+    }
+    SelectObject(dc,old);DeleteObject(thread_pen);
+    const tr::U64 window=2ULL*tr::FS_PER_SECOND;
+    const tr::U64 local=g_elapsed_fs%window;
+    const int cursor=left+static_cast<int>((local*360ULL)/window); // no overflow: local < 2e15
+    W32H marker_pen=CreatePen(0,2,thread);
+    old=SelectObject(dc,marker_pen);
+    MoveToEx(dc,cursor,top,nullptr);LineTo(dc,cursor,bottom);
+    SelectObject(dc,old);DeleteObject(marker_pen);
+    // Controlled expression traces: source m/b are algebraic, not measurements.
+    const auto line=swe::diaery::graph::application_of_ymxb(g_length_inches,g_girth_inches);
+    const char* format[3]{"Y=MX+B","Y=X","Y=0"};
+    label(dc,475,530,"TRACE: bounded format",grey);
+    label(dc,475,552,format[g_trace_index],thread);
+    if(line.valid){
+        W32H trace_pen=CreatePen(0,1,rgb(108,172,174));
+        old=SelectObject(dc,trace_pen);
+        bool first=true;
+        for(int step=0;step<=40;++step){
+            // 2-second viewport, 1/20-second display sampling ONLY.
+            const double seconds=static_cast<double>(step)/20.0;
+            const auto value=tr::calculate(tr::parse(format[g_trace_index]),seconds,line.slope,line.intercept);
+            if(value.status!=tr::Status::Valid){first=true;continue;}
+            // Map y from -10 to +10 on this independent time panel.
+            if(value.y< -10.||value.y>10.){first=true;continue;}
+            const int px=left+step*9;
+            const int py=top+static_cast<int>((10.0-value.y)*(bottom-top)/20.0+0.5);
+            if(first){MoveToEx(dc,px,py,nullptr);first=false;}else LineTo(dc,px,py);
+        }
+        SelectObject(dc,old);DeleteObject(trace_pen);
+    }
+    const auto parts=tr::split_femtoseconds(g_elapsed_fs);
+    char secbuf[24]{},rembuf[24]{};
+    format_u64(secbuf,24u,parts.time.seconds);
+    format_u64(rembuf,24u,parts.time.remainder_femtoseconds);
+    label(dc,475,585,"SECONDS (exact):",grey);label(dc,640,585,secbuf,thread);
+    label(dc,475,607,"REMAINDER fs:",grey);label(dc,640,607,rembuf,thread);
+    label(dc,475,632,"F +1 fs | S +1 s | T trace | G grid",grey);
+    label(dc,83,680,"SECONDARY TIME AXIS: 0 to 2 seconds; exact counter never rounds to samples",grey);
+}
+
 static void paint_dynamo(W32H dc,const W32RECT& rc){
     const W32D grey=rgb(159,176,194),teal=rgb(95,212,202),gold=rgb(237,190,117),purple=rgb(192,141,233);
     label(dc,22,16,"DIAERY | APPLICATION OF Y=MX+B | native C++20 | RELEASE=HOLD",teal);
     label(dc,22,39,"X horizontal = penile length (in); Y vertical = circumference (in)",grey);
     label(dc,22,60,"Z separate = vaginal depth (in), unverified; no physiological inference",grey);
     const int left=83,top=110,side=360,pix=30,bottom=top+side;
-    W32H grid_pen=CreatePen(0,1,rgb(49,72,87));
+    // X MAJOR and Y MAJOR are each one physical inch in their own axis.
+    // Same 1px stroke width; subunits are lighter and monochrome dashed.
+    W32H grid_pen=CreatePen(0,1,rgb(77,90,105));
     W32H old=SelectObject(dc,grid_pen);
-    for(int n=0;n<=12;n+=2){
+    for(int n=0;n<=12;++n){
         MoveToEx(dc,left+pix*n,top,nullptr);LineTo(dc,left+pix*n,bottom);
         MoveToEx(dc,left,bottom-pix*n,nullptr);LineTo(dc,left+side,bottom-pix*n);
     }
     SelectObject(dc,old);DeleteObject(grid_pen);
+    if(g_subunits){
+        W32H sub_pen=CreatePen(0,1,rgb(41,49,57));
+        old=SelectObject(dc,sub_pen);
+        // Compute raster positions directly from rational integer indices;
+        // never add approximate floating 1/3 values to the source axis.
+        for(unsigned quarter=1u;quarter<48u;++quarter){
+            if(swe::diaery::trace::x_is_major(quarter))continue;
+            const int xx=left+static_cast<int>((quarter*pix+2u)/4u);
+            for(int yy=top;yy<bottom;yy+=10){
+                MoveToEx(dc,xx,yy,nullptr);LineTo(dc,xx,yy+5<bottom?yy+5:bottom);
+            }
+        }
+        for(unsigned third=1u;third<36u;++third){
+            if(swe::diaery::trace::y_is_major(third))continue;
+            const int yy=bottom-static_cast<int>((third*pix+1u)/3u);
+            for(int xx=left;xx<left+side;xx+=10){
+                MoveToEx(dc,xx,yy,nullptr);LineTo(dc,xx+5<left+side?xx+5:left+side,yy);
+            }
+        }
+        SelectObject(dc,old);DeleteObject(sub_pen);
+    }
     W32H axis=CreatePen(0,2,grey);old=SelectObject(dc,axis);
     MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left+side,bottom);
     MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left,top);
@@ -263,8 +363,10 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
         W32RECT d{mx-3,my-3,mx+4,my+4};FillRect(dc,&d,brush);DeleteObject(brush);
     }
     label(dc,83,85,"Y (in)",grey);label(dc,285,489,"X (in) ->",grey);
-    label(dc,22,rc.bottom-70,"D: DIAERY/DYNAMO | arrows: adjust X/Y | PgUp/PgDn: adjust Z",grey);
-    label(dc,22,rc.bottom-46,"M: toggle MINTING | S=source point | geometry is algebraic, not clinical",grey);
+    label(dc,475,477,g_subunits?"GRID: X /4 ; Y /3":"GRID: MAJOR ONLY",grey);
+    paint_time_plot(dc);
+    label(dc,22,rc.bottom-70,"D: DIAERY/DYNAMO | arrows: X/Y | PgUp/PgDn: Z | G: subunits",grey);
+    label(dc,22,rc.bottom-46,"M: MINTING | F: +1fs | S: +1s | T: trace | source remains intact",grey);
 }
 
 static void paint(W32H hwnd){
@@ -354,6 +456,16 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
             if(key==33u&&g_depth_inches<6.0)g_depth_inches+=0.05;
             if(key==34u&&g_depth_inches>0.0)g_depth_inches-=0.05;
             if(key=='M')g_dynamo_mint=!g_dynamo_mint;
+            if(key=='G')g_subunits=!g_subunits;
+            if(key=='T')g_trace_index=(g_trace_index+1u)%3u;
+            if(key=='F'){
+                const auto next=swe::diaery::trace::advance(g_elapsed_fs,1ULL);
+                if(next.status==swe::diaery::trace::Status::Valid)g_elapsed_fs=next.fs;
+            }
+            if(key=='S'){
+                const auto next=swe::diaery::trace::advance(g_elapsed_fs,swe::diaery::trace::FS_PER_SECOND);
+                if(next.status==swe::diaery::trace::Status::Valid)g_elapsed_fs=next.fs;
+            }
             if(g_length_inches<4.0/2.54)g_length_inches=4.0/2.54;
             if(g_length_inches>26.0/2.54)g_length_inches=26.0/2.54;
             if(g_girth_inches<3.0/2.54)g_girth_inches=3.0/2.54;
