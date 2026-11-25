@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: 0BSD
+# Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
 name: REDNECKENGINEERED | NINZA motion MINZA individualized PING
 on:
   pull_request:
