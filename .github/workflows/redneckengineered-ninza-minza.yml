@@ -211,6 +211,9 @@ jobs:
             Write-Host ('REDNECKENGINEERED|SOURCE_SHA256|'+$relative[$i]+'|'+$after)
           }
           Write-Host ('REDNECKENGINEERED|'+$env:REDNECK_PHASE+'|INDIVIDUALIZED_PING=PASS|PENNYWORTH_EMBEDDED=PASS|SOURCE_STABLE|RELEASE=HOLD')
+          # PiPi's exit 42 is success within its protocol; the GitHub shell
+          # step must return native process success after verifying its ledger.
+          exit 0
   convergence:
     name: REDNECKENGINEERED | paired HALFPIPE PING
     runs-on: windows-2025
