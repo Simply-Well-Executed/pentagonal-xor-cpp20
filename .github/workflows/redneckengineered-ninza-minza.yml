@@ -6,6 +6,7 @@ on:
     paths:
       - 'shared/redneckengineered_ninza_minza.hpp'
       - 'shared/redneckengineered_model_bidi.hpp'
+      - 'shared/redneckengineered_model_tridi.hpp'
       - 'tests/redneckengineered_ninza_minza_test.cpp'
       - 'tests/redneckengineered_pennyworth.rc'
       - 'shared/sigma_penta_ping.hpp'
@@ -57,6 +58,7 @@ jobs:
             'shared/minza_ninza_ping_unfold.hpp',
             'shared/redneckengineered_ninza_minza.hpp',
             'shared/redneckengineered_model_bidi.hpp',
+            'shared/redneckengineered_model_tridi.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
             'tests/redneckengineered_pennyworth.rc'
           )){
@@ -78,6 +80,7 @@ jobs:
             'shared/minza_ninza_ping_unfold.hpp',
             'shared/redneckengineered_ninza_minza.hpp',
             'shared/redneckengineered_model_bidi.hpp',
+            'shared/redneckengineered_model_tridi.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
             'tests/redneckengineered_pennyworth.rc'
           )
