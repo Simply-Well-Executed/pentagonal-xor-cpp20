@@ -9,6 +9,7 @@
 #include "filtrox.hpp"
 #include "projections.hpp"
 #include "thailonga.hpp"
+#include "freq.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -148,6 +149,11 @@ static bool g_drag=false,g_water=true,g_yang=true,g_bubble=true,g_cutaway=true;
 static bool g_dynamo=false;
 static double g_length_inches=4.0/2.54,g_girth_inches=6.1240,g_depth_inches=2.9000;
 static bool g_study_gears=true;
+static bool g_freq_view=false;
+static swe::diaery::freq::Samples g_freq_x{};
+static swe::diaery::freq::Samples g_freq_y{};
+static swe::diaery::freq::Samples g_freq_z{};
+static unsigned g_freq_rejected=0u;
 static bool g_projection_visible[10]{true,true,false,false,false,false,false,false,false,false};
 static unsigned g_projection_selected=1u;
 static bool g_orgasm_band_proposal=true;
@@ -336,6 +342,87 @@ static void paint_time_plot(W32H dc) {
 static double gear_length(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileLength);}
 static double gear_girth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileCircumference);}
 static double gear_depth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::VaginalDepth);}
+// FREQ is a separate projectorial facet of THAILONGA. Each measurement
+// has its own histogram. No actual research data are imported here.
+static void paint_frequency_panel(W32H dc,int left,int top,
+                                  const char* title,
+                                  const swe::diaery::freq::Samples& samples,
+                                  W32D color){
+    namespace fq=swe::diaery::freq;
+    const auto hist=fq::count_bins(samples);
+    const auto fitted=fq::fit_bell(samples);
+    const int width=288,height=230,base=top+height;
+    label(dc,left,top-54,title,color);
+    char counter[24]{};
+    format_u64(counter,24u,static_cast<swe::diaery::trace::U64>(samples.count));
+    label(dc,left,top-31,"MANUAL OBSERVATIONS:",rgb(166,180,196));
+    label(dc,left+178,top-31,counter,color);
+    W32H axes=CreatePen(0,1,rgb(125,146,163));
+    W32H old=SelectObject(dc,axes);
+    MoveToEx(dc,left,top,nullptr);LineTo(dc,left,base);
+    LineTo(dc,left+width,base);
+    SelectObject(dc,old);DeleteObject(axes);
+    if(hist.state!=fq::State::Ready){
+        label(dc,left+48,top+90,"FREQ: NULL / NO DATA",rgb(237,190,117));
+        label(dc,left+35,top+117,"Press A to record X/Y/Z",rgb(159,176,194));
+        return;
+    }
+    const unsigned scale=hist.maximum_count?hist.maximum_count:1u;
+    for(unsigned i=0;i<fq::BINS;++i){
+        const int x=left+static_cast<int>(i)*18+2;
+        const int bar=static_cast<int>(static_cast<unsigned long long>(hist.bins[i])*height/scale);
+        if(bar<=0)continue;
+        W32RECT rect{x,base-bar,x+14,base};
+        W32H brush=CreateSolidBrush(color);
+        FillRect(dc,&rect,brush);
+        DeleteObject(brush);
+    }
+    label(dc,left,base+9,"0 inches",rgb(159,176,194));
+    label(dc,left+225,base+9,"12 in",rgb(159,176,194));
+    format_u64(counter,24u,static_cast<swe::diaery::trace::U64>(scale));
+    label(dc,left,top-12,"MAX COUNT:",rgb(159,176,194));
+    label(dc,left+94,top-12,counter,rgb(221,217,164));
+    if(fitted.state!=fq::State::Ready){
+        label(dc,left,base+30,"BELL: NULL / insufficient variance or N",rgb(237,190,117));
+        return;
+    }
+    // Gaussian overlay is an exploratory parametric fit on manual samples;
+    // bars are empirical counts. No confidence interval is implied.
+    W32H pen=CreatePen(0,2,rgb(232,211,142));
+    old=SelectObject(dc,pen);
+    bool first=true;
+    for(unsigned step=0;step<=144u;++step){
+        const double value=(static_cast<double>(step)+0.5)/12.0;
+        const double bell=fq::expected_bin_count(fitted,value);
+        int bh=static_cast<int>(bell*static_cast<double>(height)/static_cast<double>(scale)+0.5);
+        if(bh<0)bh=0;if(bh>height)bh=height;
+        const int gx=left+static_cast<int>(step)*2;
+        const int gy=base-bh;
+        if(first){MoveToEx(dc,gx,gy,nullptr);first=false;}
+        else LineTo(dc,gx,gy);
+    }
+    SelectObject(dc,old);DeleteObject(pen);
+    label(dc,left,base+30,"BELL: FITTED TO MANUAL VALUES",rgb(232,211,142));
+}
+static void paint_frequency(W32H dc,const W32RECT& rc){
+    const W32D grey=rgb(159,176,194);
+    label(dc,22,16,"THAILONGA | FREQ = COUNT AT VALUE | RELEASE=HOLD",rgb(95,212,202));
+    label(dc,22,39,"FREQ HISTOGRAMS (0..12 inches in 16 equal bins) | Y = COUNT",grey);
+    label(dc,22,62,"Source: manual exploratory selections; NOT imported studies",grey);
+    label(dc,22,87,"A: append current valid X/Y/Z values | H: graph view",grey);
+    paint_frequency_panel(dc,46,175,"X / PENILE LENGTH",g_freq_x,rgb(95,212,202));
+    paint_frequency_panel(dc,445,175,"Y / PENILE CIRCUMFERENCE",g_freq_y,rgb(192,141,233));
+    paint_frequency_panel(dc,844,175,"Z / VAGINAL DEPTH",g_freq_z,rgb(237,190,117));
+    char rejected[24]{};
+    format_u64(rejected,24u,static_cast<swe::diaery::trace::U64>(g_freq_rejected));
+    label(dc,46,515,"REJECTED APPEND ATTEMPTS (NOT OBSERVATIONS):",grey);
+    label(dc,460,515,rejected,rgb(237,190,117));
+    label(dc,46,544,"FILTREX rejects zero, negative, missing and nonfinite values.",grey);
+    label(dc,46,570,"FILTROX sample ranges are labels, not universal biological limits.",grey);
+    label(dc,46,596,"The Gaussian is a fitted approximation, NOT original observations.",grey);
+    label(dc,46,621,"An empty observation set remains NULL, never a zero-count claim.",grey);
+    label(dc,46,rc.bottom-46,"H: DYNTR0X/PROJECTIONS | D: DIAERY | FREQ source remains in session memory",grey);
+}
 static void paint_dynamo(W32H dc,const W32RECT& rc){
     const W32D grey=rgb(159,176,194),teal=rgb(95,212,202),gold=rgb(237,190,117),purple=rgb(192,141,233);
     label(dc,22,16,"THAILONGA | DYNTR0X + PROJECTIONS | native C++20 | HOLD",teal);
@@ -471,7 +558,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     label(dc,475,494,g_study_gears?"GEARS: SAMPLE-RANGE (K)":"GEARS: EXPLORATORY (K)",grey);
     paint_time_plot(dc);
     label(dc,22,rc.bottom-70,"D: DIAERY/DYNTR0X | arrows X/Y | PgUp/PgDn Z | G grid | K study",grey);
-    label(dc,22,rc.bottom-46,"P projection | 0..9 toggle layer | N band | T trace | original data intact",grey);
+    label(dc,22,rc.bottom-46,"H frequency | A add manual sample | P / 0..9 projections | N band",grey);
 }
 
 static void paint(W32H hwnd){
@@ -479,7 +566,7 @@ static void paint(W32H hwnd){
     W32RECT rc{};GetClientRect(hwnd,&rc);
     W32H bg=CreateSolidBrush(rgb(8,18,30));FillRect(dc,&rc,bg);DeleteObject(bg);
     SetBkMode(dc,1);
-    if(g_dynamo){paint_dynamo(dc,rc);EndPaint(hwnd,&ps);return;}
+    if(g_dynamo){if(g_freq_view)paint_frequency(dc,rc);else paint_dynamo(dc,rc);EndPaint(hwnd,&ps);return;}
     label(dc,22,15,"DIAERY | XHTML 1.0 STRICT PROFILE | 1:1-PARITY-GATE: PASS",rgb(122,225,211));
     label(dc,22,37,"Native ISO C++20 geometry; no remote content, no script execution",rgb(209,199,173));
     unsigned row=0u;
@@ -583,6 +670,25 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
             if(key==38u)g_girth_inches+=0.05;
             if(key==33u)g_depth_inches+=0.05;
             if(key==34u)g_depth_inches-=0.05;
+            if(key=='H')g_freq_view=!g_freq_view;
+            if(key=='A'){
+                const auto current=swe::diaery::thailonga::build(
+                    {g_length_inches,g_girth_inches,g_depth_inches,true,true,true},
+                    g_elapsed_fs);
+                // Transactional append: either all three measurements added
+                // or none. An unverified manual XY/Z triple is not a
+                // scientifically paired observation.
+                if(current.eligible&&g_freq_x.count<swe::diaery::freq::CAPACITY&&
+                   g_freq_y.count<swe::diaery::freq::CAPACITY&&
+                   g_freq_z.count<swe::diaery::freq::CAPACITY&&
+                   swe::diaery::freq::admissible(g_length_inches)&&
+                   swe::diaery::freq::admissible(g_girth_inches)&&
+                   swe::diaery::freq::admissible(g_depth_inches)){
+                    (void)swe::diaery::freq::append(g_freq_x,g_length_inches);
+                    (void)swe::diaery::freq::append(g_freq_y,g_girth_inches);
+                    (void)swe::diaery::freq::append(g_freq_z,g_depth_inches);
+                }else ++g_freq_rejected;
+            }
             if(key=='K')g_study_gears=!g_study_gears;
             if(key=='P')g_projection_selected=(g_projection_selected+1u)%10u;
             if(key=='N')g_orgasm_band_proposal=!g_orgasm_band_proposal;
