@@ -9,7 +9,8 @@ enum class Status { NiceAndFirm, Gap, InvalidRadius, InvalidCount, MissingEviden
 struct Band {
  double inner_radius,outer_radius;  // same units as the projection plane
  U64 subunit_count;
- const unsigned char* present;     // length >= subunit_count, 1 = occupied
+ const unsigned char* present;     // 1=occupied, never read past capacity
+ U64 present_capacity;
  bool source_qualified;
 };
 struct Result {
@@ -24,7 +25,7 @@ struct Result {
  if(!finite_nonnegative(b.inner_radius)||!finite_nonnegative(b.outer_radius)||
     !(b.outer_radius>b.inner_radius))
     return {Status::InvalidRadius,false,false,false,0ULL,0ULL};
- if(!b.subunit_count||!b.present)
+ if(!b.subunit_count||!b.present||b.subunit_count>b.present_capacity)
     return {Status::InvalidCount,false,false,false,0ULL,0ULL};
  U64 have=0ULL;
  for(U64 i=0;i<b.subunit_count;++i)
