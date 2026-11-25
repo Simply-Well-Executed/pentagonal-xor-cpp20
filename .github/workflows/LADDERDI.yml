@@ -258,7 +258,7 @@ jobs:
           $cl=(Get-Command cl.exe -ErrorAction Stop).Source
           $out=Join-Path $env:RUNNER_TEMP ('dynamo-ladderdi-'+$env:RUNG)
           [IO.Directory]::CreateDirectory($out)|Out-Null
-          foreach($test in @('application_of_ymxb_test','error_ledger_test','dynamo_subject_test','research_filter_test','trace_timeline_test','pentadi_test')){
+          foreach($test in @('application_of_ymxb_test','error_ledger_test','dynamo_subject_test','research_filter_test','filtrox_test','trace_timeline_test','pentadi_test')){
             $src=Join-Path $root ('diaery/'+$test+'.cpp')
             if(-not [IO.File]::Exists($src)){throw ('DYNAMO|HOLD|SOURCE_MISSING|'+$test)}
             $exe=Join-Path $out ($test+'.exe')
