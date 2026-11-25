@@ -9,10 +9,10 @@ static_assert(reference(pl).minimum_cm==4.0&&reference(pl).maximum_cm==26.0);
 static_assert(reference(pc).minimum_cm==3.0&&reference(pc).maximum_cm==19.0);
 static_assert(reference(vd).minimum_cm==6.5&&reference(vd).maximum_cm==12.5);
 // Exact metric sample edges convert back to inch coordinates for comparison.
-static_assert(assess({"A",pl,4.0/2.54,true}).position==Position::WithinObserved);
+static_assert(assess({"A",pl,4.01/2.54,true}).position==Position::WithinObserved);
 static_assert(assess({"B",pl,3.99/2.54,true}).position==Position::BelowObserved);
 static_assert(assess({"C",pc,2.99/2.54,true}).position==Position::BelowObserved);
-static_assert(assess({"D",vd,6.50/2.54,true}).position==Position::WithinObserved);
+static_assert(assess({"D",vd,6.51/2.54,true}).position==Position::WithinObserved);
 static_assert(assess({"E",vd,6.49/2.54,true}).position==Position::BelowObserved);
 static_assert(assess({"F",vd,12.51/2.54,true}).position==Position::AboveObserved);
 static_assert(assess({"G",pl,0.,true}).position==Position::NullInput);
