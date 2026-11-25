@@ -204,3 +204,8 @@ add_executable(swe_diaery_accessible_seals accessible_seals_test.cpp)
 set_target_properties(swe_diaery_accessible_seals PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 target_compile_options(swe_diaery_accessible_seals PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_seal_cubed_accessible_exclusive_panel COMMAND swe_diaery_accessible_seals)
+
+add_executable(swe_diaery_pentapi pentapi_test.cpp)
+set_target_properties(swe_diaery_pentapi PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_pentapi PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_pentapi_null_reset_root_accessibility COMMAND swe_diaery_pentapi)
