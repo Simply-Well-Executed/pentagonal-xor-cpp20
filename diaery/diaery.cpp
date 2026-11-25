@@ -270,7 +270,7 @@ static void paint_circle_band(W32H dc,int cx,int cy){
     constexpr unsigned sectors=72u;
     unsigned char present[sectors]{};
     for(unsigned i=0u;i<sectors;++i)present[i]=(g_circle_gap_canary&&i==51u)?0u:1u;
-    const auto status=cb::assess({41.,42.,sectors,present,false});
+    const auto status=cb::assess({41.,42.,sectors,present,sectors,false});
     const W32D ink=status.firm?rgb(95,212,202):rgb(237,190,117);
     // 41-42% are only an unverified, normalized annular display proposal.
     // Width is visually enlarged so discrete sectors remain distinguishable.
@@ -842,6 +842,7 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
         const unsigned key=static_cast<unsigned>(w);
         if(key=='D'){g_dynamo=!g_dynamo;InvalidateRect(hwnd,nullptr,0);return 0;}
         if(g_dynamo){
+            if(key!='C'){g_audit_clipboard_success=false;g_audit_clipboard_hold=false;}
             if(g_trace_editing){if(key==27u)g_trace_editing=false;InvalidateRect(hwnd,nullptr,0);return 0;}
             if(key=='R'){g_trace_editing=true;g_skip_trace_open_char=true;g_trace_used=0u;g_trace_input[0]=0;g_trace_rejected=false;InvalidateRect(hwnd,nullptr,0);return 0;}
             if(key==37u)g_length_inches-=0.05;
