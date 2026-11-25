@@ -421,10 +421,33 @@ static bool copy_thailonga_audit() noexcept {
     const auto frame=swe::diaery::thailonga::build(
         {g_length_inches,g_girth_inches,g_depth_inches,true,true,true},
         g_elapsed_fs);
+    // Independent scratch sort for each axis; empirical quintiles do not
+    // mutate original records, and all or nothing is copied.
+    using Q=swe::diaery::quintiles::Result;
+    Q qx{},qy{},qz{};
+    double* scratch=nullptr;
+    if(g_freq_x.count){
+        if(g_freq_x.count>~0ULL/sizeof(double)){
+            GlobalUnlock(mem);GlobalFree(mem);return false;
+        }
+        scratch=static_cast<double*>(HeapAlloc(GetProcessHeap(),0u,
+                                            g_freq_x.count*sizeof(double)));
+        if(!scratch){GlobalUnlock(mem);GlobalFree(mem);return false;}
+        qx=swe::diaery::quintiles::calculate(g_freq_x,scratch,g_freq_x.count);
+        qy=swe::diaery::quintiles::calculate(g_freq_y,scratch,g_freq_y.count);
+        qz=swe::diaery::quintiles::calculate(g_freq_z,scratch,g_freq_z.count);
+        HeapFree(GetProcessHeap(),0u,scratch);
+        if(qx.state!=swe::diaery::quintiles::State::Ready||
+           qy.state!=swe::diaery::quintiles::State::Ready||
+           qz.state!=swe::diaery::quintiles::State::Ready){
+            GlobalUnlock(mem);GlobalFree(mem);return false;
+        }
+    }
     au::Writer w{buffer,size,0ULL,true};
     const bool complete=au::emit(w,frame,g_freq_x,g_freq_y,g_freq_z,
                                  g_projection_visible,g_circle_gap_canary,
-                                 g_freq_rejected,g_freq_memory_hold);
+                                 g_freq_rejected,g_freq_memory_hold,
+                                 &qx,&qy,&qz);
     GlobalUnlock(mem);
     if(!complete){GlobalFree(mem);return false;}
     if(!OpenClipboard(g_window)){GlobalFree(mem);return false;}
