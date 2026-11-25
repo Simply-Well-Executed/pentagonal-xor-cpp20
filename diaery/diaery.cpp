@@ -309,6 +309,26 @@ static void paint_time_plot(W32H dc) {
     label(dc,475,698,"n - (1663 * r):",grey);
     label(dc,690,698,im.status==tr::Status::Valid?imbuf:"HOLD",thread);
     label(dc,83,714,"F +1fs | S +1s | T cycle | R edit | G grid",grey);
+    // Independent normalized marker ONLY. It is neither a physical
+    // anatomy coordinate nor an observed orgasm probability.
+    if(g_orgasm_band_proposal){
+        const auto band=swe::diaery::projections::historical_female_orgasm_band;
+        const auto state=swe::diaery::projections::band_qualification(band,false,false);
+        label(dc,83,732,"PROJECTION: FEMALE ORGASM 41-42% | UNVERIFIED",thread);
+        W32H guide=CreatePen(0,1,grey);
+        W32H previous=SelectObject(dc,guide);
+        MoveToEx(dc,83,754);LineTo(dc,403,754);
+        SelectObject(dc,previous);DeleteObject(guide);
+        const int begin=83+static_cast<int>(320u*band.lower_permyriad/10000u);
+        const int end=83+static_cast<int>((320u*band.upper_permyriad+9999u)/10000u);
+        W32H highlight=CreateSolidBrush(rgb(213,172,99));
+        W32RECT strip{begin,746,end,762};
+        FillRect(dc,&strip,highlight);DeleteObject(highlight);
+        label(dc,83,769,"0%",grey);
+        label(dc,383,769,"100%",grey);
+        label(dc,475,754,state==swe::diaery::projections::Status::NullEvidence?
+          "NULL: source/outcome not calibrated":"BAND READY",thread);
+    }
     label(dc,83,680,"SECONDARY TIME AXIS: 0 to 2 seconds; exact counter never rounds to samples",grey);
 }
 
