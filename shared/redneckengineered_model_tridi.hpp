@@ -113,9 +113,9 @@ struct Report {
     Report out{};
     out.existing_bidi=bi::bidi(trace);
     out.motion=parse(source_text);
-    out.original={{{Role::FORWARD,forward_token,true},
-                   {Role::BACKWARD,backward_token,true},
-                   {Role::NULL_EULERS_JIG,jig_token,true}}};
+    out.original=Three{{Lane{Role::FORWARD,forward_token,true},
+                        Lane{Role::BACKWARD,backward_token,true},
+                        Lane{Role::NULL_EULERS_JIG,jig_token,true}}};
     out.first=TRIDI(out.original);
     out.second=TRIDI(out.first);
     out.third=TRIDI(out.second);
