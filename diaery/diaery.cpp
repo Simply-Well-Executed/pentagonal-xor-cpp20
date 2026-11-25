@@ -347,6 +347,12 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left,top);
     SelectObject(dc,old);DeleteObject(axis);
     const auto line=swe::diaery::graph::application_of_ymxb(g_length_inches,g_girth_inches);
+    // Local algebra-only validity. Research validation requires evidence
+    // not contained in this viewer; no fabricated "study verified" state.
+    label(dc,475,104,line.valid&&g_depth_inches>0.0
+          ?"AM I VALID? ALGEBRA YES":"AM I VALID? NO / HOLD",
+          line.valid&&g_depth_inches>0.0?teal:gold);
+    label(dc,475,123,"RESEARCH: HOLD | UNKNOWN UNCERTAINTY",gold);
     if(line.valid) {
         W32H pen=CreatePen(0,3,teal);old=SelectObject(dc,pen);
         MoveToEx(dc,plot_x(line.y_end.x,left,pix),plot_y(line.y_end.y,bottom,pix),nullptr);
@@ -358,11 +364,14 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     } else {
         label(dc,475,135,"HOLD: invalid slope/intercept input",gold);
     }
-    // XY subject marker is distinct from derived intercept endpoints.
-    const int sx=plot_x(g_length_inches,left,pix),sy=plot_y(g_girth_inches,bottom,pix);
-    W32H marker=CreateSolidBrush(purple);
-    W32RECT dot{sx-5,sy-5,sx+6,sy+6};FillRect(dc,&dot,marker);DeleteObject(marker);
-    label(dc,sx+10,sy-12,"S (source selection)",purple);
+    // Never plot invalid, non-finite or negative source coordinates.
+    // The point is an unverified selection, not a real participant record.
+    if(line.valid){
+        const int sx=plot_x(g_length_inches,left,pix),sy=plot_y(g_girth_inches,bottom,pix);
+        W32H marker=CreateSolidBrush(purple);
+        W32RECT dot{sx-5,sy-5,sx+6,sy+6};FillRect(dc,&dot,marker);DeleteObject(marker);
+        label(dc,sx+10,sy-12,"S (unverified selection)",purple);
+    }
     text_value(dc,475,255,"X length (in)",g_length_inches,grey);
     text_value(dc,475,282,"Y girth (in)",g_girth_inches,grey);
     text_value(dc,475,309,"Z depth (in)",g_depth_inches,gold);
