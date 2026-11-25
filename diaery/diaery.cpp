@@ -373,17 +373,7 @@ static void paint_time_plot(W32H dc) {
         const auto state=swe::diaery::projections::band_qualification(band,false,false);
         label(dc,83,732,"PROJECTION: FEMALE ORGASM 41-42% | UNVERIFIED",thread);
         paint_circle_band(dc,1040,640);
-        W32H guide=CreatePen(0,1,grey);
-        W32H previous=SelectObject(dc,guide);
-        MoveToEx(dc,83,754);LineTo(dc,403,754);
-        SelectObject(dc,previous);DeleteObject(guide);
-        const int begin=83+static_cast<int>(320u*band.lower_permyriad/10000u);
-        const int end=83+static_cast<int>((320u*band.upper_permyriad+9999u)/10000u);
-        W32H highlight=CreateSolidBrush(rgb(213,172,99));
-        W32RECT strip{begin,746,end,762};
-        FillRect(dc,&strip,highlight);DeleteObject(highlight);
-        label(dc,83,769,"0%",grey);
-        label(dc,383,769,"100%",grey);
+        label(dc,83,752,"BAND: circular subunit projection, NOT anatomy",thread);
         label(dc,475,754,state==swe::diaery::projections::Status::NullEvidence?
           "NULL: source/outcome not calibrated":"BAND READY",thread);
     }
