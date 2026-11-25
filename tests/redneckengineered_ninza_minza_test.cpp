@@ -3,6 +3,7 @@
 // REDNECKENGINEERED: native C++20 individual motion-PING and negative probes.
 #include "../shared/redneckengineered_ninza_minza.hpp"
 #include "../shared/redneckengineered_model_bidi.hpp"
+#include "../shared/redneckengineered_model_tridi.hpp"
 #ifndef _WIN32
 #error "REDNECKENGINEERED requires a native Windows binary for resource verification"
 #endif
@@ -124,6 +125,44 @@ struct Sample { s::Ninza ninza; s::Ping motion; };
 }
 static_assert(model_bidi_tests());
 
+[[nodiscard]] constexpr bool model_tridi_tests() noexcept {
+    namespace t=swe::redneckengineered::model_tridi;
+    namespace b=swe::redneckengineered::model_bidi;
+    b::Trace original{};
+    for(unsigned i=0u;i<b::stage_count;++i)
+        original.stages[i]={b::forward_order[i],
+                            500u+i,501u+i,true,false};
+    const t::Report report=t::audit(original,11u,22u,33u,t::raw_sequence);
+    if(!t::provenance_ping(report) || !t::author_motion.exact_parse ||
+       report.motion.flop_count!=13u || report.motion.flip_count!=7u ||
+       report.finalized_model!=t::Status::HOLD ||
+       !t::source_roles(report.original))return false;
+    const auto twice=t::TRIDI(t::TRIDI(report.original));
+    const auto thrice=t::TRIDI(twice);
+    if(!t::equal(thrice,report.original) ||
+       !t::equal(t::UNTRIDI(t::TRIDI(report.original)),
+                 report.original))return false;
+    // Negative source, missing lane, duplicated role, and bad BiDi witnesses.
+    if(t::provenance_ping(t::audit(original,11u,22u,33u,
+                                  "NULLEULER'SJIGIGAVEYOUXORORNORCORPING")))
+        return false;
+    auto altered=report.original;
+    altered.lanes[2].source_present=false;
+    if(t::source_roles(altered))return false;
+    altered=report.original;
+    altered.lanes[2].role=t::Role::BACKWARD;
+    if(t::source_roles(altered))return false;
+    altered=report.original;
+    altered.lanes[2].token=0u;
+    if(t::source_roles(altered))return false;
+    original.stages[3].output_token^=1u;
+    if(t::provenance_ping(t::audit(original,11u,22u,33u,t::raw_sequence)))
+        return false;
+    return true;
+}
+static_assert(model_tridi_tests());
+
+
 static_assert(all_tests());
 static_assert(s::loops==9u && s::stripe_bytes==6u && e::groups==3u);
-int main() { return (all_tests() && model_bidi_tests() && pennyworth_embedded())?0:1; }
+int main() { return (all_tests() && model_bidi_tests() && model_tridi_tests() && pennyworth_embedded())?0:1; }
