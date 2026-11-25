@@ -10,6 +10,8 @@
 #include "projections.hpp"
 #include "thailonga.hpp"
 #include "freq.hpp"
+#include "circle_band.hpp"
+#include "quintiles.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -162,6 +164,7 @@ static unsigned g_freq_rejected=0u;
 static bool g_projection_visible[10]{true,true,false,false,false,false,false,false,false,false};
 static unsigned g_projection_selected=1u;
 static bool g_orgasm_band_proposal=true;
+static bool g_circle_gap_canary=false;
 static bool g_dynamo_mint=false;
 static bool g_subunits=true;
 static swe::diaery::trace::U64 g_elapsed_fs=0ULL;
@@ -246,6 +249,35 @@ static void format_u64(char* out,unsigned capacity,swe::diaery::trace::U64 v){
     while(n&&i+1u<capacity)out[i++]=scratch[--n];
     out[i]=0;
 }
+// A band is projected as an annulus, never a naked percentage rectangle.
+// This overlay uses a separate NORMALIZED visual coordinate space;
+// no penile/vaginal physical axis is inferred from its radius.
+static void paint_circle_band(W32H dc,int cx,int cy){
+    namespace cb=swe::diaery::circle_band;
+    constexpr unsigned sectors=72u;
+    unsigned char present[sectors]{};
+    for(unsigned i=0u;i<sectors;++i)present[i]=(g_circle_gap_canary&&i==51u)?0u:1u;
+    const auto status=cb::assess({41.,42.,sectors,present,false});
+    const W32D ink=status.firm?rgb(95,212,202):rgb(237,190,117);
+    // 41-42% are only an unverified, normalized annular display proposal.
+    // Width is visually enlarged so discrete sectors remain distinguishable.
+    W32H pen=CreatePen(0,4,ink);
+    W32H old=SelectObject(dc,pen);
+    const double tau=6.283185307179586;
+    for(unsigned i=0u;i<sectors;++i){
+        if(!present[i])continue;
+        const double a=tau*static_cast<double>(i)/static_cast<double>(sectors);
+        const double b=tau*static_cast<double>(i+1u)/static_cast<double>(sectors);
+        MoveToEx(dc,cx+static_cast<int>(52.0*trig_cos(a)),
+                    cy+static_cast<int>(52.0*trig_sin(a)),nullptr);
+        LineTo(dc,cx+static_cast<int>(52.0*trig_cos(b)),
+                  cy+static_cast<int>(52.0*trig_sin(b)));
+    }
+    SelectObject(dc,old);DeleteObject(pen);
+    label(dc,cx-64,cy+64,status.nice?"NICENESS: PASS":"NICENESS: GAP",ink);
+    label(dc,cx-64,cy+82,status.firm?"FIRMNESS: PASS":"FIRMNESS: HOLD",ink);
+    label(dc,cx-64,cy+100,"RESEARCH: NULL",rgb(237,190,117));
+}
 static void paint_time_plot(W32H dc) {
     namespace tr=swe::diaery::trace;
     const W32D grey=rgb(158,174,190),yarn=rgb(169,192,203),thread=rgb(221,217,164);
@@ -327,6 +359,7 @@ static void paint_time_plot(W32H dc) {
         const auto band=swe::diaery::projections::historical_female_orgasm_band;
         const auto state=swe::diaery::projections::band_qualification(band,false,false);
         label(dc,83,732,"PROJECTION: FEMALE ORGASM 41-42% | UNVERIFIED",thread);
+        paint_circle_band(dc,1040,640);
         W32H guide=CreatePen(0,1,grey);
         W32H previous=SelectObject(dc,guide);
         MoveToEx(dc,83,754);LineTo(dc,403,754);
@@ -592,7 +625,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     label(dc,475,494,g_study_gears?"GEARS: SAMPLE-RANGE (K)":"GEARS: EXPLORATORY (K)",grey);
     paint_time_plot(dc);
     label(dc,22,rc.bottom-70,"D: DIAERY/DYNTR0X | arrows X/Y | PgUp/PgDn Z | G grid | K study",grey);
-    label(dc,22,rc.bottom-46,"H frequency | A add manual sample | P / 0..9 projections | N band",grey);
+    label(dc,22,rc.bottom-46,"H FREQ | A append | P/0..9 projections | N circle band | J gap canary | C copy audit",grey);
 }
 
 static void paint(W32H hwnd){
@@ -738,6 +771,7 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
             if(key=='K')g_study_gears=!g_study_gears;
             if(key=='P')g_projection_selected=(g_projection_selected+1u)%10u;
             if(key=='N')g_orgasm_band_proposal=!g_orgasm_band_proposal;
+            if(key=='J')g_circle_gap_canary=!g_circle_gap_canary;
             if(key>='0'&&key<='9'){
                 const unsigned slot=key-'0';
                 g_projection_visible[slot]=!g_projection_visible[slot];
