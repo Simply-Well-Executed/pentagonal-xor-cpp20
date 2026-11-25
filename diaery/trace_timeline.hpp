@@ -21,6 +21,31 @@ struct TimeResult { Status status; Time time; };
 // A crossing of 1.0 adds ONE more bonus second beyond the threshold carry.
 // This is a user-defined display algorithm, NOT standard time rounding.
 constexpr unsigned SPLOONS_PER_DARN=16u;
+// "IMPEREAL STANDARD MEASURES": user-defined label for the 16
+// SPLOON positions. Not an official Imperial measurement system.
+// Standard imperial/metric length conversion is separately EXACT:
+// 1 inch = 25.4 mm = 25400 micrometres by definition.
+// Keep values as integers/rationals instead of rounding into doubles.
+struct ExactLength { U64 numerator; U64 denominator; };
+[[nodiscard]] constexpr ExactLength inches_to_micrometres(U64 inches) noexcept {
+    if(inches>~0ULL/25400ULL)return {0ULL,0ULL}; // HOLD
+    return {inches*25400ULL,1ULL};
+}
+[[nodiscard]] constexpr ExactLength micrometres_to_inches(U64 um) noexcept {
+    return {um,25400ULL}; // exact fraction, never rounded
+}
+// EXPLORATORY n-1663r where r=pi^2. This formula is NOT an
+// imperial-to-metric conversion and has no specified physical units.
+// Conventional pi is irrational; a finite double is an approximation.
+// Do NOT use this transform to change original fs or length authority.
+struct ImperealTransform { Status status; double derived; };
+[[nodiscard]] constexpr ImperealTransform n_minus_1663_pi_squared(unsigned n) noexcept {
+    if(n>=16u)return {Status::NullInput,0.0};
+    constexpr double pi_approx=3.14159265358979323846;
+    const double r=pi_approx*pi_approx;
+    return {Status::Valid,static_cast<double>(n)-1663.0*r};
+}
+
 struct Yarn {
     Status status;
     U64 exact_seconds;             // DARN authority
