@@ -161,3 +161,11 @@ set_target_properties(swe_diaery_thailonga PROPERTIES
 target_compile_options(swe_diaery_thailonga PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_thailonga_shared_source_and_projections
  COMMAND swe_diaery_thailonga)
+
+# THAILONGA FREQ: independent frequency counts and optional Gaussian fit.
+add_executable(swe_diaery_freq freq_test.cpp)
+set_target_properties(swe_diaery_freq PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_freq PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_freq_count_bell_null_gates
+ COMMAND swe_diaery_freq)
