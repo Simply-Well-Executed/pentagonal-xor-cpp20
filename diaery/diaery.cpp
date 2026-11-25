@@ -233,7 +233,7 @@ static void paint_time_plot(W32H dc) {
     const W32D grey=rgb(158,174,190),yarn=rgb(169,192,203),thread=rgb(221,217,164);
     const int left=83,right=443,top=552,bottom=665,width=360;
     label(dc,left,521,"TIME PLANE (not a physical clock)",grey);
-    label(dc,left,537,"THREAD: femtoseconds | YARN: seconds",grey);
+    label(dc,left,537,"THREAD fs | DARN exact seconds+fs | YARN derived",grey);
     W32H yarn_pen=CreatePen(0,1,yarn);
     W32H old=SelectObject(dc,yarn_pen);
     MoveToEx(dc,left,bottom,nullptr);LineTo(dc,right,bottom);
@@ -287,9 +287,17 @@ static void paint_time_plot(W32H dc) {
     char secbuf[24]{},rembuf[24]{};
     format_u64(secbuf,24u,parts.time.seconds);
     format_u64(rembuf,24u,parts.time.remainder_femtoseconds);
-    label(dc,475,585,"SECONDS (exact):",grey);label(dc,640,585,secbuf,thread);
-    label(dc,475,607,"REMAINDER fs:",grey);label(dc,640,607,rembuf,thread);
-    label(dc,475,632,"F +1fs | S +1s | T cycle | R edit | G grid",grey);
+    label(dc,475,585,"DARN SECONDS:",grey);label(dc,640,585,secbuf,thread);
+    label(dc,475,607,"DARN REMAINDER fs:",grey);label(dc,640,607,rembuf,thread);
+    const auto yarn_view=tr::make_yarn(g_elapsed_fs);
+    char yarnbuf[24]{},sectorbuf[24]{};
+    format_u64(yarnbuf,24u,yarn_view.shown_yarn_seconds);
+    format_u64(sectorbuf,24u,static_cast<tr::U64>(yarn_view.sploon));
+    label(dc,475,631,"YARN (derived sec):",grey);
+    label(dc,640,631,yarn_view.status==tr::Status::Valid?yarnbuf:"HOLD",thread);
+    label(dc,475,654,"SPLOON of 16:",grey);label(dc,640,654,sectorbuf,thread);
+    label(dc,475,676,"+0.1; >0.6 carry; >=1 extra sec",grey);
+    label(dc,83,714,"F +1fs | S +1s | T cycle | R edit | G grid",grey);
     label(dc,83,680,"SECONDARY TIME AXIS: 0 to 2 seconds; exact counter never rounds to samples",grey);
 }
 
