@@ -15,7 +15,7 @@
 [[nodiscard]] bool pennyworth_embedded() noexcept {
     HMODULE module=GetModuleHandleW(nullptr);
     if(!module)return false;
-    HRSRC found=FindResourceW(module,MAKEINTRESOURCEW(5824),RT_RCDATA);
+    HRSRC found=FindResourceW(module,MAKEINTRESOURCEW(5824),MAKEINTRESOURCEW(10));
     if(!found || SizeofResource(module,found)<5u)return false;
     HGLOBAL loaded=LoadResource(module,found);
     if(!loaded)return false;
