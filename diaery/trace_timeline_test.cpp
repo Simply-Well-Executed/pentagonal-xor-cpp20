@@ -43,4 +43,14 @@ static_assert(through_one.exact_seconds==1ULL);
 static_assert(through_one.shown_yarn_seconds==3ULL);
 static_assert(through_one.remainder_femtoseconds==15ULL*SPLOON_FS);
 static_assert(split_femtoseconds(FS_PER_SECOND+15ULL*SPLOON_FS).time.seconds==1ULL);
+// Exact predefined length conversion is rational and independent from pi.
+constexpr auto inch=inches_to_micrometres(1ULL);
+static_assert(inch.numerator==25400ULL && inch.denominator==1ULL);
+constexpr auto back=micrometres_to_inches(25400ULL);
+static_assert(back.numerator==25400ULL && back.denominator==25400ULL);
+static_assert(inches_to_micrometres(~0ULL).denominator==0ULL);
+static_assert(n_minus_1663_pi_squared(0u).status==Status::Valid);
+static_assert(n_minus_1663_pi_squared(15u).derived<0.0);
+static_assert(n_minus_1663_pi_squared(16u).status==Status::NullInput);
+static_assert(make_yarn(FS_PER_SECOND).exact_seconds==1ULL);
 int main(){return 0;}
