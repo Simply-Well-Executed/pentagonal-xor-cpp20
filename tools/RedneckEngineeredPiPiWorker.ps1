@@ -62,7 +62,7 @@ if(-not [IO.File]::Exists($OutputPath)){Help-Required 'MISSING_OUTPUT'}
 $sha=(Get-FileHash -LiteralPath $OutputPath -Algorithm SHA256).Hash.ToLowerInvariant()
 Publish $HeartbeatPath @{
  protocol='NINZA-FIFONFU-HEARTBEAT-v1';job_id=$JobId;attempt=$Attempt;seq=1
-}
+} $true
 Publish $ReceiptPath @{
  protocol='NINZA-FIFONFU-RECEIPT-v1';job_id=$JobId;attempt=$Attempt
  status='COMPLETE';output_sha256=$sha
