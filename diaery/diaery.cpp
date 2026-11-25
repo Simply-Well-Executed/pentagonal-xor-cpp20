@@ -14,6 +14,7 @@
 #include "quintiles.hpp"
 #include "audit.hpp"
 #include "rejection_ledger.hpp"
+#include "accessible_actions.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -59,6 +60,7 @@ DIA_IMPORT W32H DIA_STDCALL HeapReAlloc(W32H,W32D,W32H,W32W);
 DIA_IMPORT int DIA_STDCALL HeapFree(W32H,W32D,W32H);
 DIA_IMPORT unsigned short DIA_STDCALL RegisterClassExA(const W32CLASS*);
 DIA_IMPORT W32H DIA_STDCALL CreateWindowExA(W32D,const char*,const char*,W32D,int,int,int,int,W32H,W32H,W32H,void*);
+DIA_IMPORT W32L DIA_STDCALL SendMessageA(W32H,W32U,W32W,W32L);
 DIA_IMPORT int DIA_STDCALL ShowWindow(W32H,int);
 DIA_IMPORT int DIA_STDCALL UpdateWindow(W32H);
 DIA_IMPORT int DIA_STDCALL GetMessageA(W32MESSAGE*,W32H,W32U,W32U);
@@ -95,6 +97,10 @@ static constexpr W32D FILE_READ=0x80000000u;
 static constexpr W32D STDOUT_HANDLE=0xFFFFFFF5u;
 static constexpr W32D WS_OVERLAPPEDWINDOW=0x00CF0000u;
 static constexpr W32D WS_VISIBLE=0x10000000u;
+static constexpr W32D WS_CHILD=0x40000000u,WS_TABSTOP=0x00010000u;
+static constexpr W32D WS_GROUP=0x00020000u;
+static constexpr W32D WM_COMMAND=0x0111u;
+static constexpr unsigned ACTION_ID_BASE=1100u;
 static constexpr W32D WM_PAINT=0x000Fu,WM_DESTROY=0x0002u;
 static constexpr W32D WM_KEYDOWN=0x0100u,WM_CHAR=0x0102u,WM_LBUTTONDOWN=0x0201u;
 static constexpr W32D WM_LBUTTONUP=0x0202u,WM_MOUSEMOVE=0x0200u;
@@ -187,6 +193,8 @@ static char g_trace_input[16]{"Y=MX+B"};
 static unsigned g_trace_used=6u;
 static int g_mouse_x=0,g_mouse_y=0;
 static W32H g_window=nullptr;
+static W32H g_action_buttons[swe::diaery::access::COUNT]{};
+static bool g_action_deck_complete=false;
 // Rendering-only approximations; source and gate remain exact integers.
 static double trig_sin(double a){
     // Polynomial after bounding to [-pi,pi] (angles in degrees).
@@ -467,6 +475,58 @@ static bool ensure_rejection_capacity(){
     l.events=static_cast<swe::diaery::reject::Event*>(p);
     l.capacity=next;
     return true;
+}
+// Standard native BUTTON children carry Windows accessibility semantics
+// (focus, role, name and Invoke), so OS eye-control click, pen, switch
+// interfaces and pointer activation can trigger the same checked actions.
+static void install_accessibility_deck(W32H parent,W32H instance){
+    namespace ac=swe::diaery::access;
+    g_action_deck_complete=true;
+    constexpr int left=1218,top=106;
+    constexpr int dx=static_cast<int>(ac::BUTTON_WIDTH+ac::BUTTON_GAP);
+    constexpr int dy=static_cast<int>(ac::BUTTON_HEIGHT+ac::BUTTON_GAP);
+    for(unsigned i=0u;i<ac::COUNT;++i){
+        const int bx=left+static_cast<int>(i%ac::COLUMNS)*dx;
+        const int by=top+static_cast<int>(i/ac::COLUMNS)*dy;
+        const W32D style=WS_CHILD|WS_VISIBLE|WS_TABSTOP|
+             (i==0u?WS_GROUP:0u);
+        g_action_buttons[i]=CreateWindowExA(0u,"BUTTON",ac::actions[i].label,
+             style,bx,by,static_cast<int>(ac::BUTTON_WIDTH),
+             static_cast<int>(ac::BUTTON_HEIGHT),parent,
+             reinterpret_cast<W32H>(static_cast<W32W>(ACTION_ID_BASE+i)),
+             instance,nullptr);
+        if(!g_action_buttons[i])g_action_deck_complete=false;
+    }
+}
+static void apply_accessible_action(W32H hwnd,unsigned index){
+    namespace ac=swe::diaery::access;
+    if(index>=ac::COUNT)return;
+    const ac::Action action=ac::actions[index];
+    if(action.kind==ac::Kind::Key){
+        SendMessageA(hwnd,WM_KEYDOWN,static_cast<W32W>(action.virtual_key),0);
+        return;
+    }
+    if(action.kind==ac::Kind::PresetTrace){
+        const char* sources[3]{"Y=MX+B","Y=X","Y=0"};
+        if(action.virtual_key>=3u)return;
+        const char* source=sources[action.virtual_key];
+        unsigned used=0u;
+        while(source[used]&&used<15u){
+            g_trace_input[used]=source[used];++used;
+        }
+        g_trace_input[used]=0;
+        g_trace_used=used;
+        g_trace_editing=false;g_trace_rejected=false;
+        g_trace_index=action.virtual_key;
+    }else if(action.kind==ac::Kind::ConfirmTrace){
+        if(g_trace_editing)SendMessageA(hwnd,WM_CHAR,13u,0);
+    }else if(action.kind==ac::Kind::CancelTrace){
+        if(g_trace_editing)SendMessageA(hwnd,WM_KEYDOWN,27u,0);
+    }else if(action.kind==ac::Kind::BackspaceTrace){
+        if(g_trace_editing)SendMessageA(hwnd,WM_CHAR,8u,0);
+    }
+    g_audit_clipboard_success=false;g_audit_clipboard_hold=false;
+    InvalidateRect(hwnd,nullptr,0);
 }
 static double gear_length(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileLength);}
 static double gear_girth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileCircumference);}
@@ -798,6 +858,15 @@ static int mouse_component(W32L lp,bool upper){
 }
 static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
     if(msg==WM_PAINT){paint(hwnd);return 0;}
+    if(msg==WM_COMMAND){
+        const unsigned id=static_cast<unsigned>(w&0xFFFFULL);
+        const unsigned notify=static_cast<unsigned>((w>>16u)&0xFFFFULL);
+        if(notify==0u && id>=ACTION_ID_BASE &&
+           id<ACTION_ID_BASE+swe::diaery::access::COUNT){
+            apply_accessible_action(hwnd,id-ACTION_ID_BASE);
+            return 0;
+        }
+    }
     if(msg==WM_DESTROY){
         W32H heap=GetProcessHeap();
         if(g_freq_x.values)HeapFree(heap,0u,g_freq_x.values);
@@ -949,8 +1018,9 @@ static int show_native(){
     cls.class_name="SWE_DIAERY_STRICT";
     if(!RegisterClassExA(&cls))return 30;
     g_window=CreateWindowExA(0u,cls.class_name,"DIAERY | XHTML Strict Geometry Inspector",
-        WS_OVERLAPPEDWINDOW|WS_VISIBLE,60,50,1300,900,nullptr,nullptr,instance,nullptr);
+        WS_OVERLAPPEDWINDOW|WS_VISIBLE,30,25,1720,930,nullptr,nullptr,instance,nullptr);
     if(!g_window)return 31;
+    install_accessibility_deck(g_window,instance);
     ShowWindow(g_window,1);UpdateWindow(g_window);
     W32MESSAGE msg{};while(GetMessageA(&msg,nullptr,0u,0u)>0){
         TranslateMessage(&msg);DispatchMessageA(&msg);
