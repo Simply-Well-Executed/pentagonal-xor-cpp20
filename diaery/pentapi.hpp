@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: 0BSD
 // PENTAPI: accessibility-oriented five-stage single-switch navigation.
-// ROOT -> BRANCH -> TERMINAL -> OR -> (RELEASE / CONTINUE).
+// ROOT -> BRANCH -> TERMINAL -> [XOR] [AIRGAP] [OR] -> choice.
 // NULL is an inactive selection, never data deletion. No extra input required
 // to exit a completed terminal action.
 #ifndef SWE_DIAERY_PENTAPI_HPP
 #define SWE_DIAERY_PENTAPI_HPP
 #include "accessible_seals.hpp"
 namespace swe::diaery::pentapi {
-enum class Phase : unsigned { Root, Branch, Terminal, Or, Null, Reset };
+enum class Phase : unsigned { Root, Branch, Terminal, XorAirgapOr, Null, Reset };
 struct State {
  seals::Selection selection;
  Phase phase;
@@ -42,12 +42,14 @@ struct State {
 [[nodiscard]] constexpr bool terminal_visible(State s,unsigned action) noexcept {
  return s.phase==Phase::Terminal && seals::visible(s.selection,action);
 }
-// An invoked terminal action reaches the explicit Y/OR junction.
-// No branch is preselected: no response, gaze or timeout implies consent.
+// An invoked terminal action reaches XOR | RESERVED AIRGAP | OR.
+// XOR: exactly one route may be chosen. OR: both routes are offered.
+// AIRGAP: spatial separation, never a third route or extra activation.
+// No branch is preselected: silence, gaze or timeout cannot choose a route.
 [[nodiscard]] constexpr State complete(State s,unsigned action,
                                          bool succeeded) noexcept {
  if(!terminal_visible(s,action))return s;
- s.phase=Phase::Or;
+ s.phase=Phase::XorAirgapOr;
  s.selection.expanded=false;
  s.last_action=action;
  s.has_completed=true;
@@ -57,7 +59,7 @@ struct State {
 }
 enum class Route : unsigned { ReleaseToRoot, ContinueBranch };
 [[nodiscard]] constexpr State choose_or(State s,Route route) noexcept {
- if(s.phase!=Phase::Or)return s;
+ if(s.phase!=Phase::XorAirgapOr)return s;
  if(route==Route::ContinueBranch){
     s.phase=Phase::Terminal;
     s.selection.expanded=true;
