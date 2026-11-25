@@ -14,10 +14,9 @@ struct ComplexTriangle {
  I64 product_real,product_imaginary;
  I64 squared_hypotenuse;
 };
-[[nodiscard]] constexpr I64 absolute(I64 n) noexcept {return n<0?-n:n;}
 // Signed range bound proves all products and sums fit I64.
 [[nodiscard]] constexpr ComplexTriangle conjugate_triangle(I64 a,I64 b) noexcept {
- if(absolute(a)>1000000000LL||absolute(b)>1000000000LL)
+ if(a>1000000000LL||a< -1000000000LL||b>1000000000LL||b< -1000000000LL)
      return {State::InvalidDomain,a,b,0,0,0,0,0};
  const I64 real=a*a+b*b; // (a+bi)(a-bi), i*i=-1.
  const I64 imaginary=b*a-a*b; // EXACT cancellation: +ab-ab=0.
@@ -45,13 +44,19 @@ struct Rounded {
 }
 struct Gain {
  State state;
- U64 numerator,denominator;
- bool shrinking;
+ I64 signed_numerator;
+ U64 denominator;
+ bool shrinking,alternating_sign;
 };
-[[nodiscard]] constexpr Gain negative_gain_to_zero(U64 numerator,U64 denominator) noexcept {
- if(!denominator)return {State::ZeroDenominator,numerator,denominator,false};
- // Magnitude shrink 0<=g<1 is distinct from complex i rotation.
- return {State::Verified,numerator,denominator,numerator<denominator};
+[[nodiscard]] constexpr Gain negative_gain_to_zero(I64 numerator,U64 denominator) noexcept {
+ if(!denominator)return {State::ZeroDenominator,numerator,denominator,false,false};
+ // Avoid absolute value overflow at signed minimum; compare magnitudes as U64.
+ const U64 magnitude=numerator<0?
+    static_cast<U64>(-(numerator+1LL))+1ULL:static_cast<U64>(numerator);
+ // A negative g with |g|<1 alternates sign while shrinking; an i rotation
+ // has |i|=1 and does not shrink by itself.
+ return {State::Verified,numerator,denominator,
+         magnitude<denominator,numerator<0};
 }
 } // namespace swe::diaery::monkey_tail
 #endif
