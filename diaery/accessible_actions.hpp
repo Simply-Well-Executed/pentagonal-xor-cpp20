@@ -4,7 +4,7 @@
 #ifndef SWE_DIAERY_ACCESSIBLE_ACTIONS_HPP
 #define SWE_DIAERY_ACCESSIBLE_ACTIONS_HPP
 namespace swe::diaery::access {
-enum class Kind : unsigned { Key, PresetTrace, CancelTrace, ConfirmTrace, BackspaceTrace };
+enum class Kind : unsigned { Key, PresetTrace, CancelTrace, ConfirmTrace, BackspaceTrace, TypeTrace };
 struct Action { const char* label; unsigned virtual_key; Kind kind; };
 constexpr Action actions[]{
  {"D VIEW", 'D', Kind::Key},
@@ -29,6 +29,15 @@ constexpr Action actions[]{
  {"ENTER / APPLY",13u,Kind::ConfirmTrace},
  {"ESC / CANCEL",27u,Kind::CancelTrace},
  {"BACKSPACE",8u,Kind::BackspaceTrace},
+ {"TYPE Y",'Y',Kind::TypeTrace}, {"TYPE X",'X',Kind::TypeTrace},
+ {"TYPE M",'M',Kind::TypeTrace}, {"TYPE B",'B',Kind::TypeTrace},
+ {"TYPE =",'=',Kind::TypeTrace}, {"TYPE +",'+',Kind::TypeTrace},
+ {"TYPE {",'{',Kind::TypeTrace}, {"TYPE }",'}',Kind::TypeTrace},
+ {"TYPE 0",'0',Kind::TypeTrace}, {"TYPE 1",'1',Kind::TypeTrace},
+ {"TYPE 2",'2',Kind::TypeTrace}, {"TYPE 3",'3',Kind::TypeTrace},
+ {"TYPE 4",'4',Kind::TypeTrace}, {"TYPE 5",'5',Kind::TypeTrace},
+ {"TYPE 6",'6',Kind::TypeTrace}, {"TYPE 7",'7',Kind::TypeTrace},
+ {"TYPE 8",'8',Kind::TypeTrace}, {"TYPE 9",'9',Kind::TypeTrace},
  {"W WATER",'W',Kind::Key}, {"Y YANG",'Y',Kind::Key},
  {"C CUTAWAY",'C',Kind::Key}, {"B BUBBLE",'B',Kind::Key},
  {"+ ZOOM",187u,Kind::Key}, {"- ZOOM",189u,Kind::Key},
@@ -38,7 +47,7 @@ constexpr unsigned COUNT=sizeof(actions)/sizeof(actions[0]);
 constexpr unsigned BUTTON_WIDTH=109u;
 constexpr unsigned BUTTON_HEIGHT=48u;
 constexpr unsigned BUTTON_GAP=7u;
-constexpr unsigned COLUMNS=4u;
+constexpr unsigned COLUMNS=6u;
 constexpr unsigned ROWS=(COUNT+COLUMNS-1u)/COLUMNS;
 [[nodiscard]] constexpr bool contract() noexcept {
  if(BUTTON_WIDTH<40u||BUTTON_HEIGHT<44u||BUTTON_GAP<4u)return false;
@@ -49,7 +58,7 @@ constexpr unsigned ROWS=(COUNT+COLUMNS-1u)/COLUMNS;
       actions[i].virtual_key>='0'&&actions[i].virtual_key<='9')
       ++projection_buttons;
  }
- return projection_buttons==10u&&COUNT>=40u;
+ return projection_buttons==10u&&COUNT>=55u;
 }
 } // namespace swe::diaery::access
 #endif
