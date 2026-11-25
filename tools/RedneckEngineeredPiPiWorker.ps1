@@ -8,11 +8,11 @@
 param([string]$JobId,[int]$Attempt,[string]$HeartbeatPath,
       [string]$ReceiptPath,[string]$OutputPath,[string]$EmergencyPath)
 $ErrorActionPreference='Stop'
-function Publish([string]$Path,[object]$Value) {
+function Publish([string]$Path,[object]$Value,[bool]$Replace=$false) {
   $tmp=$Path+'.tmp'
   [IO.File]::WriteAllText($tmp,($Value | ConvertTo-Json -Compress -Depth 6),
        [Text.UTF8Encoding]::new($false))
-  [IO.File]::Move($tmp,$Path,$false)
+  [IO.File]::Move($tmp,$Path,$Replace)
 }
 function Help-Required([string]$Reason) {
   Publish $EmergencyPath @{
