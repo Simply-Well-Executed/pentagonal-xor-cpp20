@@ -386,7 +386,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
         label(dc,475,135,"APPLICATION: y = m*x + b",teal);
         text_value(dc,475,165,"m = -Y/X",line.slope,teal);
         text_value(dc,475,192,"b = Y (inches)",line.intercept,teal);
-    } else {
+    } else if(!line.valid || !filtrex_eligible) {
         label(dc,475,135,"HOLD: invalid slope/intercept input",gold);
     }
     // Never plot invalid, non-finite or negative source coordinates.
