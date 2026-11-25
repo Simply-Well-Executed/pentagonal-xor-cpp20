@@ -6,6 +6,7 @@ on:
     paths:
       - 'shared/redneckengineered_ninza_minza.hpp'
       - 'tests/redneckengineered_ninza_minza_test.cpp'
+      - 'tests/redneckengineered_pennyworth.rc'
       - 'shared/sigma_penta_ping.hpp'
       - 'shared/minza_ninza_ping_unfold.hpp'
       - 'shared/pentagonal_vista_9x9.hpp'
@@ -54,7 +55,8 @@ jobs:
             'shared/sigma_penta_ping.hpp',
             'shared/minza_ninza_ping_unfold.hpp',
             'shared/redneckengineered_ninza_minza.hpp',
-            'tests/redneckengineered_ninza_minza_test.cpp'
+            'tests/redneckengineered_ninza_minza_test.cpp',
+            'tests/redneckengineered_pennyworth.rc'
           )){
             if(-not [IO.File]::Exists((Join-Path $root $relative))){
               throw ('REDNECKENGINEERED|HOLD|missing_source|'+$relative)
@@ -73,7 +75,8 @@ jobs:
             'shared/sigma_penta_ping.hpp',
             'shared/minza_ninza_ping_unfold.hpp',
             'shared/redneckengineered_ninza_minza.hpp',
-            'tests/redneckengineered_ninza_minza_test.cpp'
+            'tests/redneckengineered_ninza_minza_test.cpp',
+            'tests/redneckengineered_pennyworth.rc'
           )
           $before=@($relative | ForEach-Object {
             (Get-FileHash -LiteralPath (Join-Path $root $_) -Algorithm SHA256).Hash
@@ -85,9 +88,16 @@ jobs:
           & (Join-Path $vs[0] 'Common7/Tools/Launch-VsDevShell.ps1') -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
           $cl=(Get-Command cl.exe -ErrorAction Stop).Source
           $file=Join-Path $root 'tests/redneckengineered_ninza_minza_test.cpp'
+          $resourceFile=Join-Path $root 'tests/redneckengineered_pennyworth.rc'
+          $rc=(Get-Command rc.exe -ErrorAction Stop).Source
+          $res=Join-Path $env:RUNNER_TEMP ('redneck-'+$env:REDNECK_PHASE+'.res')
+          & $rc /nologo ('/fo'+$res) $resourceFile
+          if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($res)){
+            throw 'REDNECKENGINEERED|HOLD|pennyworth_resource_failed'
+          }
           $exe=Join-Path $env:RUNNER_TEMP ('redneck-'+$env:REDNECK_PHASE+'.exe')
           $obj=Join-Path $env:RUNNER_TEMP ('redneck-'+$env:REDNECK_PHASE+'.obj')
-          & $cl /nologo /std:c++20 /O2 /W4 /WX /permissive- /EHsc /constexpr:steps2000000 ('/Fo'+$obj) ('/Fe'+$exe) $file
+          & $cl /nologo /std:c++20 /O2 /W4 /WX /permissive- /EHsc /constexpr:steps2000000 ('/Fo'+$obj) ('/Fe'+$exe) $file $res /link kernel32.lib
           if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($exe)){
             throw 'REDNECKENGINEERED|HOLD|compile_failed'
           }
@@ -98,7 +108,7 @@ jobs:
             if($before[$i] -cne $after){throw ('REDNECKENGINEERED|HOLD|source_drift|'+$relative[$i])}
             Write-Host ('REDNECKENGINEERED|SOURCE_SHA256|'+$relative[$i]+'|'+$after)
           }
-          Write-Host ('REDNECKENGINEERED|'+$env:REDNECK_PHASE+'|INDIVIDUALIZED_PING=PASS|SOURCE_STABLE|RELEASE=HOLD')
+          Write-Host ('REDNECKENGINEERED|'+$env:REDNECK_PHASE+'|INDIVIDUALIZED_PING=PASS|PENNYWORTH_EMBEDDED=PASS|SOURCE_STABLE|RELEASE=HOLD')
   convergence:
     name: REDNECKENGINEERED | paired HALFPIPE PING
     runs-on: windows-2025
