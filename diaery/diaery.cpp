@@ -76,7 +76,7 @@ static constexpr W32D STDOUT_HANDLE=0xFFFFFFF5u;
 static constexpr W32D WS_OVERLAPPEDWINDOW=0x00CF0000u;
 static constexpr W32D WS_VISIBLE=0x10000000u;
 static constexpr W32D WM_PAINT=0x000Fu,WM_DESTROY=0x0002u;
-static constexpr W32D WM_KEYDOWN=0x0100u,WM_LBUTTONDOWN=0x0201u;
+static constexpr W32D WM_KEYDOWN=0x0100u,WM_CHAR=0x0102u,WM_LBUTTONDOWN=0x0201u;
 static constexpr W32D WM_LBUTTONUP=0x0202u,WM_MOUSEMOVE=0x0200u;
 static int read_local(const char* path){
     W32H h=CreateFileA(path,FILE_READ,1u,nullptr,OPEN_EXISTING,0u,nullptr);
@@ -148,6 +148,9 @@ static bool g_dynamo_mint=false;
 static bool g_subunits=true;
 static swe::diaery::trace::U64 g_elapsed_fs=0ULL;
 static unsigned g_trace_index=0u;
+static bool g_trace_editing=false,g_trace_rejected=false;
+static char g_trace_input[16]{"Y=MX+B"};
+static unsigned g_trace_used=6u;
 static int g_mouse_x=0,g_mouse_y=0;
 static W32H g_window=nullptr;
 // Rendering-only approximations; source and gate remain exact integers.
@@ -261,7 +264,9 @@ static void paint_time_plot(W32H dc) {
     const auto line=swe::diaery::graph::application_of_ymxb(g_length_inches,g_girth_inches);
     const char* format[3]{"Y=MX+B","Y=X","Y=0"};
     label(dc,475,530,"TRACE: bounded format",grey);
-    label(dc,475,552,format[g_trace_index],thread);
+    label(dc,475,552,g_trace_input,thread);
+    if(g_trace_editing)label(dc,475,568,"EDIT: type then Enter | Esc cancels",grey);
+    else if(g_trace_rejected)label(dc,475,568,"HOLD: unknown trace expression",grey);
     if(line.valid){
         W32H trace_pen=CreatePen(0,1,rgb(108,172,174));
         old=SelectObject(dc,trace_pen);
@@ -269,7 +274,7 @@ static void paint_time_plot(W32H dc) {
         for(int step=0;step<=40;++step){
             // 2-second viewport, 1/20-second display sampling ONLY.
             const double seconds=static_cast<double>(step)/20.0;
-            const auto value=tr::calculate(tr::parse(format[g_trace_index]),seconds,line.slope,line.intercept);
+            const auto value=tr::calculate(tr::parse(g_trace_input),seconds,line.slope,line.intercept);
             if(value.status!=tr::Status::Valid){first=true;continue;}
             // Map y from -10 to +10 on this independent time panel.
             if(value.y< -10.||value.y>10.){first=true;continue;}
@@ -285,7 +290,7 @@ static void paint_time_plot(W32H dc) {
     format_u64(rembuf,24u,parts.time.remainder_femtoseconds);
     label(dc,475,585,"SECONDS (exact):",grey);label(dc,640,585,secbuf,thread);
     label(dc,475,607,"REMAINDER fs:",grey);label(dc,640,607,rembuf,thread);
-    label(dc,475,632,"F +1 fs | S +1 s | T trace | G grid",grey);
+    label(dc,475,632,"F +1fs | S +1s | T cycle | R edit | G grid",grey);
     label(dc,83,680,"SECONDARY TIME AXIS: 0 to 2 seconds; exact counter never rounds to samples",grey);
 }
 
@@ -435,6 +440,19 @@ static int mouse_component(W32L lp,bool upper){
 static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
     if(msg==WM_PAINT){paint(hwnd);return 0;}
     if(msg==WM_DESTROY){PostQuitMessage(0);return 0;}
+    if(msg==WM_CHAR&&g_dynamo&&g_trace_editing){
+        const unsigned chr=static_cast<unsigned>(w);
+        if(chr==13u){
+            g_trace_editing=false;
+            g_trace_rejected=swe::diaery::trace::parse(g_trace_input)==swe::diaery::trace::Pattern::Invalid;
+        } else if(chr==8u) {
+            if(g_trace_used>0u)g_trace_input[--g_trace_used]=0;
+        } else if(chr>=32u&&chr<=126u&&g_trace_used<15u){
+            g_trace_input[g_trace_used++]=static_cast<char>(chr);
+            g_trace_input[g_trace_used]=0;
+        }
+        InvalidateRect(hwnd,nullptr,0);return 0;
+    }
     if(msg==WM_LBUTTONDOWN&&g_dynamo)return 0;
     if(msg==WM_MOUSEMOVE&&g_dynamo)return 0;
     if(msg==WM_LBUTTONDOWN){g_drag=true;g_mouse_x=mouse_component(l,false);g_mouse_y=mouse_component(l,true);SetCapture(hwnd);return 0;}
@@ -449,6 +467,8 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
         const unsigned key=static_cast<unsigned>(w);
         if(key=='D'){g_dynamo=!g_dynamo;InvalidateRect(hwnd,nullptr,0);return 0;}
         if(g_dynamo){
+            if(g_trace_editing){if(key==27u)g_trace_editing=false;InvalidateRect(hwnd,nullptr,0);return 0;}
+            if(key=='R'){g_trace_editing=true;g_trace_used=0u;g_trace_input[0]=0;g_trace_rejected=false;InvalidateRect(hwnd,nullptr,0);return 0;}
             if(key==37u&&g_length_inches>4.0/2.54)g_length_inches-=0.05;
             if(key==39u&&g_length_inches<26.0/2.54)g_length_inches+=0.05;
             if(key==40u&&g_girth_inches>3.0/2.54)g_girth_inches-=0.05;
@@ -457,7 +477,13 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
             if(key==34u&&g_depth_inches>0.0)g_depth_inches-=0.05;
             if(key=='M')g_dynamo_mint=!g_dynamo_mint;
             if(key=='G')g_subunits=!g_subunits;
-            if(key=='T')g_trace_index=(g_trace_index+1u)%3u;
+            if(key=='T'){
+                g_trace_index=(g_trace_index+1u)%3u;
+                const char* choices[3]{"Y=MX+B","Y=X","Y=0"};
+                unsigned k=0u;
+                while(choices[g_trace_index][k]&&k<15u){g_trace_input[k]=choices[g_trace_index][k];++k;}
+                g_trace_input[k]=0;g_trace_used=k;g_trace_rejected=false;
+            }
             if(key=='F'){
                 const auto next=swe::diaery::trace::advance(g_elapsed_fs,1ULL);
                 if(next.status==swe::diaery::trace::Status::Valid)g_elapsed_fs=next.fs;
