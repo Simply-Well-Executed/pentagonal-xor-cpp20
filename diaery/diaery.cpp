@@ -148,7 +148,7 @@ static bool g_dynamo_mint=false;
 static bool g_subunits=true;
 static swe::diaery::trace::U64 g_elapsed_fs=0ULL;
 static unsigned g_trace_index=0u;
-static bool g_trace_editing=false,g_trace_rejected=false;
+static bool g_trace_editing=false,g_trace_rejected=false,g_skip_trace_open_char=false;
 static char g_trace_input[16]{"Y=MX+B"};
 static unsigned g_trace_used=6u;
 static int g_mouse_x=0,g_mouse_y=0;
@@ -262,7 +262,6 @@ static void paint_time_plot(W32H dc) {
     SelectObject(dc,old);DeleteObject(marker_pen);
     // Controlled expression traces: source m/b are algebraic, not measurements.
     const auto line=swe::diaery::graph::application_of_ymxb(g_length_inches,g_girth_inches);
-    const char* format[3]{"Y=MX+B","Y=X","Y=0"};
     label(dc,475,530,"TRACE: bounded format",grey);
     label(dc,475,552,g_trace_input,thread);
     if(g_trace_editing)label(dc,475,568,"EDIT: type then Enter | Esc cancels",grey);
@@ -442,6 +441,7 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
     if(msg==WM_DESTROY){PostQuitMessage(0);return 0;}
     if(msg==WM_CHAR&&g_dynamo&&g_trace_editing){
         const unsigned chr=static_cast<unsigned>(w);
+        if(g_skip_trace_open_char){g_skip_trace_open_char=false;return 0;}
         if(chr==13u){
             g_trace_editing=false;
             g_trace_rejected=swe::diaery::trace::parse(g_trace_input)==swe::diaery::trace::Pattern::Invalid;
@@ -468,7 +468,7 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
         if(key=='D'){g_dynamo=!g_dynamo;InvalidateRect(hwnd,nullptr,0);return 0;}
         if(g_dynamo){
             if(g_trace_editing){if(key==27u)g_trace_editing=false;InvalidateRect(hwnd,nullptr,0);return 0;}
-            if(key=='R'){g_trace_editing=true;g_trace_used=0u;g_trace_input[0]=0;g_trace_rejected=false;InvalidateRect(hwnd,nullptr,0);return 0;}
+            if(key=='R'){g_trace_editing=true;g_skip_trace_open_char=true;g_trace_used=0u;g_trace_input[0]=0;g_trace_rejected=false;InvalidateRect(hwnd,nullptr,0);return 0;}
             if(key==37u&&g_length_inches>4.0/2.54)g_length_inches-=0.05;
             if(key==39u&&g_length_inches<26.0/2.54)g_length_inches+=0.05;
             if(key==40u&&g_girth_inches>3.0/2.54)g_girth_inches-=0.05;
