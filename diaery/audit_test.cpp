@@ -8,11 +8,11 @@ int main(){
  const auto frame=thailonga::build({2.,4.,3.,true,true,true},0ULL);
  audit::Writer w{output,8192ULL,0ULL,true};
  if(!audit::emit(w,frame,{xv,3ULL,3ULL},{yv,3ULL,3ULL},
-                  {zv,3ULL,3ULL},flags,false,0ULL,false))return 1;
+                  {zv,3ULL,3ULL},flags,false,0ULL,false,nullptr,nullptr,nullptr))return 1;
  if(w.used<200ULL)return 2;
  char small[10]{};
  audit::Writer bad{small,10ULL,0ULL,true};
  if(audit::emit(bad,frame,{xv,3ULL,3ULL},{yv,3ULL,3ULL},
-                {zv,3ULL,3ULL},flags,false,0ULL,false))return 3;
+                {zv,3ULL,3ULL},flags,false,0ULL,false,nullptr,nullptr,nullptr))return 3;
  return 0;
 }
