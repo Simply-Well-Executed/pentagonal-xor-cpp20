@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: 0BSD
+// Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
 // REDNECKENGINEERED: native C++20 individual motion-PING and negative probes.
 #include "../shared/redneckengineered_ninza_minza.hpp"
 namespace s=swe::sigma_penta_ping;
