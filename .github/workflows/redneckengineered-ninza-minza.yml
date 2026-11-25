@@ -8,6 +8,8 @@ on:
       - 'shared/redneckengineered_model_bidi.hpp'
       - 'shared/redneckengineered_model_tridi.hpp'
       - 'shared/redneckengineered_model_pidi.hpp'
+      - 'shared/redneckengineered_native_render.hpp'
+      - 'tools/redneckengineered_render.cpp'
       - 'shared/eulers_jig_canonical.hpp'
       - 'shared/u_circle_fit.hpp'
       - 'tests/redneckengineered_ninza_minza_test.cpp'
@@ -63,6 +65,8 @@ jobs:
             'shared/redneckengineered_model_bidi.hpp',
             'shared/redneckengineered_model_tridi.hpp',
             'shared/redneckengineered_model_pidi.hpp',
+            'shared/redneckengineered_native_render.hpp',
+            'tools/redneckengineered_render.cpp',
             'shared/eulers_jig_canonical.hpp',
             'shared/u_circle_fit.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
@@ -88,6 +92,8 @@ jobs:
             'shared/redneckengineered_model_bidi.hpp',
             'shared/redneckengineered_model_tridi.hpp',
             'shared/redneckengineered_model_pidi.hpp',
+            'shared/redneckengineered_native_render.hpp',
+            'tools/redneckengineered_render.cpp',
             'shared/eulers_jig_canonical.hpp',
             'shared/u_circle_fit.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
@@ -118,6 +124,38 @@ jobs:
           }
           & $exe
           if($LASTEXITCODE -ne 0){throw 'REDNECKENGINEERED|HOLD|individual_ping_failed'}
+          # Build a second real renderer binary and execute it.
+          $renderFile=Join-Path $root 'tools/redneckengineered_render.cpp'
+          $renderExe=Join-Path $env:RUNNER_TEMP ('redneck-render-'+$env:REDNECK_PHASE+'.exe')
+          $renderObj=Join-Path $env:RUNNER_TEMP ('redneck-render-'+$env:REDNECK_PHASE+'.obj')
+          & $cl /nologo /std:c++20 /O2 /W4 /WX /permissive- /EHsc ('/Fo'+$renderObj) ('/Fe'+$renderExe) $renderFile $res /link kernel32.lib
+          if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($renderExe)){
+            throw 'REDNECKENGINEERED|HOLD|render_compile_failed'
+          }
+          $renderDir=Join-Path $env:RUNNER_TEMP ('redneck-images-'+$env:REDNECK_PHASE)
+          [void][IO.Directory]::CreateDirectory($renderDir)
+          & $renderExe $renderDir
+          if($LASTEXITCODE -ne 0){throw 'REDNECKENGINEERED|HOLD|render_failed'}
+          $imageNames=@('bake','cook','cubemap_posx','cubemap_negx','cubemap_posy','cubemap_negy','cubemap_posz','cubemap_negz')
+          $header=[Text.Encoding]::ASCII.GetBytes("P6"+[char]10+"# C5824 PENNYWORTH"+[char]10+"64 64"+[char]10+"255"+[char]10)
+          foreach($name in $imageNames) {
+            $imagePath=Join-Path $renderDir ($name+'.ppm')
+            if(-not [IO.File]::Exists($imagePath)){throw ('REDNECKENGINEERED|HOLD|missing_bitmap|'+$name)}
+            $bytes=[IO.File]::ReadAllBytes($imagePath)
+            if($bytes.Length -ne ($header.Length+64*64*3)){
+              throw ('REDNECKENGINEERED|HOLD|bitmap_length|'+$name)
+            }
+            for($j=0;$j -lt $header.Length;++$j){
+              if($bytes[$j] -ne $header[$j]){throw ('REDNECKENGINEERED|HOLD|bitmap_header|'+$name)}
+            }
+            $hash=[Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+            Write-Host ('REDNECKENGINEERED|REAL_BITMAP|'+$name+'|SHA256='+$hash)
+          }
+          if((Get-FileHash -LiteralPath (Join-Path $renderDir 'bake.ppm') -Algorithm SHA256).Hash -cne
+             (Get-FileHash -LiteralPath (Join-Path $renderDir 'cook.ppm') -Algorithm SHA256).Hash){
+            throw 'REDNECKENGINEERED|HOLD|identity_cook_changed_source'
+          }
+          Write-Host ('REDNECKENGINEERED|BITMAPS=8|CUBEMAP_FACES=6|PENNYWORTH_C5824=EMBEDDED|DIFZ=HOLD|PUBLISH=HOLD')
           for($i=0;$i -lt $relative.Count;++$i){
             $after=(Get-FileHash -LiteralPath (Join-Path $root $relative[$i]) -Algorithm SHA256).Hash
             if($before[$i] -cne $after){throw ('REDNECKENGINEERED|HOLD|source_drift|'+$relative[$i])}
