@@ -32,7 +32,7 @@ struct Trace {
     std::array<Witness,stage_count> stages{};
     bool forward_ping{};
     bool backward_ping{};
-    bool original_recovered{};
+    bool original_token_traced{};
     bool publish_authorized{}; // May never be inferred from traversal alone.
 };
 [[nodiscard]] constexpr bool forward_ping(const Trace& trace) noexcept {
@@ -75,7 +75,7 @@ struct Trace {
     Trace result=source;
     result.forward_ping=forward_ping(source);
     result.backward_ping=backward_ping(source);
-    result.original_recovered=result.forward_ping&&result.backward_ping&&
+    result.original_token_traced=result.forward_ping&&result.backward_ping&&
         source.stages[0u].input_token!=0u;
     // These synthetic witness IDs do not prove model processing or authorize
     // publishing. No source-defined DIFZ, asset baker, or renderer connected.
