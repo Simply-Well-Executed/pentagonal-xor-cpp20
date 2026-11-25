@@ -189,3 +189,13 @@ add_executable(swe_diaery_rejection_ledger rejection_ledger_test.cpp)
 set_target_properties(swe_diaery_rejection_ledger PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 target_compile_options(swe_diaery_rejection_ledger PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_rejection_ledger_preserve_source COMMAND swe_diaery_rejection_ledger)
+
+add_executable(swe_diaery_accessible_actions accessible_actions_test.cpp)
+set_target_properties(swe_diaery_accessible_actions PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_accessible_actions PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_accessible_actions_proof COMMAND swe_diaery_accessible_actions)
+
+add_executable(swe_diaery_monkey_tail monkey_tail_test.cpp)
+set_target_properties(swe_diaery_monkey_tail PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_monkey_tail PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_monkey_tail_proof COMMAND swe_diaery_monkey_tail)
