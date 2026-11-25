@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: 0BSD
 // PENTAPI: accessibility-oriented five-stage single-switch navigation.
-// ROOT -> BRANCH -> TERMINAL -> NULL -> RESET -> ROOT.
+// ROOT -> BRANCH -> TERMINAL -> OR -> (RELEASE / CONTINUE).
 // NULL is an inactive selection, never data deletion. No extra input required
 // to exit a completed terminal action.
 #ifndef SWE_DIAERY_PENTAPI_HPP
 #define SWE_DIAERY_PENTAPI_HPP
 #include "accessible_seals.hpp"
 namespace swe::diaery::pentapi {
-enum class Phase : unsigned { Root, Branch, Terminal, Null, Reset };
+enum class Phase : unsigned { Root, Branch, Terminal, Or, Null, Reset };
 struct State {
  seals::Selection selection;
  Phase phase;
@@ -42,19 +42,30 @@ struct State {
 [[nodiscard]] constexpr bool terminal_visible(State s,unsigned action) noexcept {
  return s.phase==Phase::Terminal && seals::visible(s.selection,action);
 }
-// Completing an action returns immediately to Root without requiring a
-// second switch click. The transition visits NULL and RESET conceptually;
-// the last action/result remains available to the audit, without clearing
-// measurements, sample rows or input selections.
+// An invoked terminal action reaches the explicit Y/OR junction.
+// No branch is preselected: no response, gaze or timeout implies consent.
 [[nodiscard]] constexpr State complete(State s,unsigned action,
                                          bool succeeded) noexcept {
  if(!terminal_visible(s,action))return s;
- s.phase=Phase::Null;
+ s.phase=Phase::Or;
  s.selection.expanded=false;
  s.last_action=action;
  s.has_completed=true;
  s.last_action_succeeded=succeeded;
  if(s.completed!=~0ULL)++s.completed;
+ return s;
+}
+enum class Route : unsigned { ReleaseToRoot, ContinueBranch };
+[[nodiscard]] constexpr State choose_or(State s,Route route) noexcept {
+ if(s.phase!=Phase::Or)return s;
+ if(route==Route::ContinueBranch){
+    s.phase=Phase::Terminal;
+    s.selection.expanded=true;
+    return s;
+ }
+ // The ☯️ release is only the navigation selection, NOT measurements.
+ s.phase=Phase::Null;
+ s.selection.expanded=false;
  s.phase=Phase::Reset;
  s.selection={0u,0u,0u,false};
  s.phase=Phase::Root;
