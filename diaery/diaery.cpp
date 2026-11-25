@@ -539,7 +539,7 @@ static void install_accessibility_deck(W32H parent,W32H instance){
          "AIRGAP RESERVED | one branch and one terminal page at a time",
          WS_CHILD|WS_VISIBLE,left,302,690,30,parent,nullptr,instance,nullptr);
     for(unsigned i=0u;i<ac::COUNT;++i){
-        const int slot=static_cast<int>(i%seals::TERMINALS);
+        const int slot=static_cast<int>(i%swe::diaery::seals::TERMINALS);
         g_action_buttons[i]=CreateWindowExA(0u,"BUTTON",
              ac::actions[i].label,button,left+slot*174,358,166,56,
              parent,reinterpret_cast<W32H>(
