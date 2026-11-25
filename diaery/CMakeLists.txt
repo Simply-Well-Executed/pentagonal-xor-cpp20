@@ -106,3 +106,10 @@ set_target_properties(swe_diaery_error_ledger PROPERTIES
 target_compile_options(swe_diaery_error_ledger PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_sigma_null_error_gate
  COMMAND swe_diaery_error_ledger)
+
+# DYNAMO repaired XY/Z subject/provenance boundary.
+add_executable(swe_diaery_dynamo_subject dynamo_subject_test.cpp)
+set_target_properties(swe_diaery_dynamo_subject PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_dynamo_subject PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_dynamo_xy_z_source_gate COMMAND swe_diaery_dynamo_subject)
