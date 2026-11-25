@@ -7,6 +7,7 @@
 #include "dynamo_subject.hpp"
 #include "trace_timeline.hpp"
 #include "filtrox.hpp"
+#include "projections.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -146,6 +147,9 @@ static bool g_drag=false,g_water=true,g_yang=true,g_bubble=true,g_cutaway=true;
 static bool g_dynamo=false;
 static double g_length_inches=4.0/2.54,g_girth_inches=6.1240,g_depth_inches=2.9000;
 static bool g_study_gears=true;
+static bool g_projection_visible[10]{true,true,false,false,false,false,false,false,false,false};
+static unsigned g_projection_selected=1u;
+static bool g_orgasm_band_proposal=true;
 static bool g_dynamo_mint=false;
 static bool g_subunits=true;
 static swe::diaery::trace::U64 g_elapsed_fs=0ULL;
@@ -374,7 +378,7 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
        y_check.position==fx::Position::WithinObserved &&
        z_check.position==fx::Position::WithinObserved;
     label(dc,475,218,within?"FILTROX: IN STUDY RANGES":"FILTROX: OUTSIDE SAMPLE / NULL",within?teal:gold);
-    if(line.valid && filtrex_eligible) {
+    if(line.valid && filtrex_eligible && g_projection_visible[1]) {
         W32H pen=CreatePen(0,3,teal);old=SelectObject(dc,pen);
         MoveToEx(dc,plot_x(line.y_end.x,left,pix),plot_y(line.y_end.y,bottom,pix),nullptr);
         LineTo(dc,plot_x(line.x_end.x,left,pix),plot_y(line.x_end.y,bottom,pix));
@@ -387,12 +391,41 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     }
     // Never plot invalid, non-finite or negative source coordinates.
     // The point is an unverified selection, not a real participant record.
-    if(line.valid && filtrex_eligible){
+    if(line.valid && filtrex_eligible && g_projection_visible[0]){
         const int sx=plot_x(g_length_inches,left,pix),sy=plot_y(g_girth_inches,bottom,pix);
         W32H marker=CreateSolidBrush(purple);
         W32RECT dot{sx-5,sy-5,sx+6,sy+6};FillRect(dc,&dot,marker);DeleteObject(marker);
         label(dc,sx+10,sy-12,"S (unverified selection)",purple);
     }
+    // PROJECTIONS are transparent, independent overlays. Only observed
+    // source and well-defined algebraic references are currently drawable.
+    if(filtrex_eligible && line.valid){
+        if(g_projection_visible[2]){
+            W32H layer=CreatePen(0,1,rgb(150,151,215));
+            W32H previous=SelectObject(dc,layer);
+            MoveToEx(dc,left,bottom,nullptr);LineTo(dc,left+side,top);
+            SelectObject(dc,previous);DeleteObject(layer);
+        }
+        if(g_projection_visible[3]){
+            W32H layer=CreatePen(0,1,rgb(203,171,123));
+            W32H previous=SelectObject(dc,layer);
+            MoveToEx(dc,left,bottom-2,nullptr);LineTo(dc,left+side,bottom-2);
+            SelectObject(dc,previous);DeleteObject(layer);
+        }
+    }
+    const auto selected_projection=swe::diaery::projections::describe(g_projection_selected);
+    const swe::diaery::projections::Evidence none{
+      filtrex_eligible&&line.valid,false,false,false,false,false,false};
+    const auto selected_status=swe::diaery::projections::qualify(g_projection_selected,none);
+    label(dc,475,74,selected_projection.label,purple);
+    label(dc,475,90,selected_status==swe::diaery::projections::Status::Ready?
+        "PROJECTION: ALGEBRAIC / UNVERIFIED":
+        "PROJECTION: NULL | EVIDENCE MISSING",selected_status==
+        swe::diaery::projections::Status::Ready?grey:gold);
+    // 41-42% is an unverified historical proposal. No calibrated
+    // probability, anatomical axis or orgasm predictor is claimed.
+    if(g_orgasm_band_proposal)
+        label(dc,83,508,"ORGASM BAND 41-42%: EXPLORE / NULL (NO DEFINED OUTCOME)",gold);
     text_value(dc,475,255,"X length (in)",g_length_inches,grey);
     text_value(dc,475,282,"Y girth (in)",g_girth_inches,grey);
     text_value(dc,475,309,"Z depth (in)",g_depth_inches,gold);
@@ -423,8 +456,8 @@ static void paint_dynamo(W32H dc,const W32RECT& rc){
     label(dc,83,85,"Y (in)",grey);label(dc,285,489,"X (in) ->",grey);
     label(dc,475,494,g_study_gears?"GEARS: SAMPLE-RANGE (K)":"GEARS: EXPLORATORY (K)",grey);
     paint_time_plot(dc);
-    label(dc,22,rc.bottom-70,"D: DIAERY/DYNAMO | arrows: X/Y | PgUp/PgDn: Z | G: grid | K: study bounds",grey);
-    label(dc,22,rc.bottom-46,"M: MINTING | F: +1fs | S: +1s | T: trace | source remains intact",grey);
+    label(dc,22,rc.bottom-70,"D: DIAERY/DYNTR0X | arrows X/Y | PgUp/PgDn Z | G grid | K study",grey);
+    label(dc,22,rc.bottom-46,"P projection | 0..9 toggle layer | N band | T trace | original data intact",grey);
 }
 
 static void paint(W32H hwnd){
@@ -530,6 +563,13 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
             if(key==33u)g_depth_inches+=0.05;
             if(key==34u)g_depth_inches-=0.05;
             if(key=='K')g_study_gears=!g_study_gears;
+            if(key=='P')g_projection_selected=(g_projection_selected+1u)%10u;
+            if(key=='N')g_orgasm_band_proposal=!g_orgasm_band_proposal;
+            if(key>='0'&&key<='9'){
+                const unsigned slot=key-'0';
+                g_projection_visible[slot]=!g_projection_visible[slot];
+                g_projection_selected=slot;
+            }
             if(key=='M')g_dynamo_mint=!g_dynamo_mint;
             if(key=='G')g_subunits=!g_subunits;
             if(key=='T'){
