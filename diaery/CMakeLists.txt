@@ -98,3 +98,11 @@ set_target_properties(swe_diaery_application_of_ymxb PROPERTIES
 target_compile_options(swe_diaery_application_of_ymxb PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_application_of_ymxb_circle_line_minting
  COMMAND swe_diaery_application_of_ymxb)
+
+# SIGMA uncertainty gate: fail closed on NULL, incomparable, or invalid model.
+add_executable(swe_diaery_error_ledger error_ledger_test.cpp)
+set_target_properties(swe_diaery_error_ledger PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_error_ledger PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_sigma_null_error_gate
+ COMMAND swe_diaery_error_ledger)
