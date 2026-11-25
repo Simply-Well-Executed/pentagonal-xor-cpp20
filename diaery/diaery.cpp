@@ -15,6 +15,7 @@
 #include "audit.hpp"
 #include "rejection_ledger.hpp"
 #include "accessible_actions.hpp"
+#include "accessible_seals.hpp"
 #include "strict_profile.hpp"
 #include "parity_gate.hpp"
 #include "fusion_watchdog.hpp"
@@ -102,6 +103,10 @@ static constexpr W32D WS_CHILD=0x40000000u,WS_TABSTOP=0x00010000u;
 static constexpr W32D WS_GROUP=0x00020000u;
 static constexpr W32D WM_COMMAND=0x0111u;
 static constexpr unsigned ACTION_ID_BASE=1100u;
+static constexpr unsigned SEAL_ROOT_ID=2100u;
+static constexpr unsigned SEAL_BRANCH_ID=2110u;
+static constexpr unsigned SEAL_PAGE_ID=2120u;
+static constexpr unsigned SEAL_AUDIT_ID=2199u;
 static constexpr W32D WM_PAINT=0x000Fu,WM_DESTROY=0x0002u;
 static constexpr W32D WM_KEYDOWN=0x0100u,WM_CHAR=0x0102u,WM_LBUTTONDOWN=0x0201u;
 static constexpr W32D WM_LBUTTONUP=0x0202u,WM_MOUSEMOVE=0x0200u;
@@ -195,6 +200,9 @@ static unsigned g_trace_used=6u;
 static int g_mouse_x=0,g_mouse_y=0;
 static W32H g_window=nullptr;
 static W32H g_action_buttons[swe::diaery::access::COUNT]{};
+static W32H g_seal_roots[2]{},g_seal_branches[2]{},g_seal_pages[5]{};
+static W32H g_seal_audit=nullptr,g_seal_airgap_label=nullptr;
+static swe::diaery::seals::Selection g_seal_selection{0u,0u,0u,true};
 static bool g_action_deck_complete=false;
 // Rendering-only approximations; source and gate remain exact integers.
 static double trig_sin(double a){
@@ -480,24 +488,72 @@ static bool ensure_rejection_capacity(){
 // Standard native BUTTON children carry Windows accessibility semantics
 // (focus, role, name and Invoke), so OS eye-control click, pen, switch
 // interfaces and pointer activation can trigger the same checked actions.
+// Seal³: all underlying action buttons exist, but only four visible
+// terminal buttons can occupy the reserved fixed AIRGAP at once.
+// Native BUTTON controls expose role/name/Invoke and focus behavior.
+static void refresh_accessibility_deck(){
+    namespace se=swe::diaery::seals;
+    for(unsigned i=0u;i<swe::diaery::access::COUNT;++i){
+        if(g_action_buttons[i])
+            ShowWindow(g_action_buttons[i],
+                       se::visible(g_seal_selection,i)?1:0);
+    }
+    for(unsigned i=0u;i<2u;++i){
+        if(g_seal_roots[i])
+            ShowWindow(g_seal_roots[i],1);
+        if(g_seal_branches[i])
+            ShowWindow(g_seal_branches[i],1);
+    }
+    for(unsigned i=0u;i<5u;++i)
+        if(g_seal_pages[i])ShowWindow(g_seal_pages[i],g_seal_selection.expanded?1:0);
+}
 static void install_accessibility_deck(W32H parent,W32H instance){
     namespace ac=swe::diaery::access;
     g_action_deck_complete=true;
-    constexpr int left=1135,top=106;
-    constexpr int dx=static_cast<int>(ac::BUTTON_WIDTH+ac::BUTTON_GAP);
-    constexpr int dy=static_cast<int>(ac::BUTTON_HEIGHT+ac::BUTTON_GAP);
+    constexpr int left=1135;
+    constexpr W32D button=WS_CHILD|WS_VISIBLE|WS_TABSTOP;
+    const char* roots[2]{"X | Measurements","Y | Operations"};
+    const char* branches[2]{"Y1 | Primary","Y2 | Advanced"};
+    const char* pages[5]{"Z1 | A","Z2 | B","Z3 | C","Z4 | D","Z5 | E"};
+    for(unsigned i=0u;i<2u;++i){
+        g_seal_roots[i]=CreateWindowExA(0u,"BUTTON",roots[i],
+            button|(i==0u?WS_GROUP:0u),left+static_cast<int>(i)*348,106,
+            338,52,parent,reinterpret_cast<W32H>(
+                 static_cast<W32W>(SEAL_ROOT_ID+i)),instance,nullptr);
+        g_seal_branches[i]=CreateWindowExA(0u,"BUTTON",branches[i],
+            button,left+static_cast<int>(i)*348,170,
+            338,52,parent,reinterpret_cast<W32H>(
+                 static_cast<W32W>(SEAL_BRANCH_ID+i)),instance,nullptr);
+        if(!g_seal_roots[i]||!g_seal_branches[i])
+            g_action_deck_complete=false;
+    }
+    for(unsigned i=0u;i<5u;++i){
+        g_seal_pages[i]=CreateWindowExA(0u,"BUTTON",pages[i],button,
+            left+static_cast<int>(i)*140,236,132,52,parent,
+            reinterpret_cast<W32H>(static_cast<W32W>(SEAL_PAGE_ID+i)),
+            instance,nullptr);
+        if(!g_seal_pages[i])g_action_deck_complete=false;
+    }
+    // Fixed physical space from y=300 to y=790, even collapsed.
+    g_seal_airgap_label=CreateWindowExA(0u,"STATIC",
+         "AIRGAP RESERVED | one branch and one terminal page at a time",
+         WS_CHILD|WS_VISIBLE,left,302,690,30,parent,nullptr,instance,nullptr);
     for(unsigned i=0u;i<ac::COUNT;++i){
-        const int bx=left+static_cast<int>(i%ac::COLUMNS)*dx;
-        const int by=top+static_cast<int>(i/ac::COLUMNS)*dy;
-        const W32D style=WS_CHILD|WS_VISIBLE|WS_TABSTOP|
-             (i==0u?WS_GROUP:0u);
-        g_action_buttons[i]=CreateWindowExA(0u,"BUTTON",ac::actions[i].label,
-             style,bx,by,static_cast<int>(ac::BUTTON_WIDTH),
-             static_cast<int>(ac::BUTTON_HEIGHT),parent,
-             reinterpret_cast<W32H>(static_cast<W32W>(ACTION_ID_BASE+i)),
-             instance,nullptr);
+        const int slot=static_cast<int>(i%seals::TERMINALS);
+        g_action_buttons[i]=CreateWindowExA(0u,"BUTTON",
+             ac::actions[i].label,button,left+slot*174,358,166,56,
+             parent,reinterpret_cast<W32H>(
+                  static_cast<W32W>(ACTION_ID_BASE+i)),instance,nullptr);
         if(!g_action_buttons[i])g_action_deck_complete=false;
     }
+    // Always-visible safety-critical export outside the accordion.
+    g_seal_audit=CreateWindowExA(0u,"BUTTON","COPY FULL ACADEMIC AUDIT",
+        button,left,787,690,64,parent,
+        reinterpret_cast<W32H>(static_cast<W32W>(SEAL_AUDIT_ID)),
+        instance,nullptr);
+    if(!g_seal_audit||!g_seal_airgap_label)
+        g_action_deck_complete=false;
+    refresh_accessibility_deck();
 }
 static void apply_accessible_action(W32H hwnd,unsigned index){
     namespace ac=swe::diaery::access;
@@ -882,10 +938,33 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
     if(msg==WM_COMMAND){
         const unsigned id=static_cast<unsigned>(w&0xFFFFULL);
         const unsigned notify=static_cast<unsigned>((w>>16u)&0xFFFFULL);
-        if(notify==0u && id>=ACTION_ID_BASE &&
-           id<ACTION_ID_BASE+swe::diaery::access::COUNT){
-            apply_accessible_action(hwnd,id-ACTION_ID_BASE);
-            return 0;
+        if(notify==0u){
+            if(id>=SEAL_ROOT_ID&&id<SEAL_ROOT_ID+2u){
+                g_seal_selection=swe::diaery::seals::choose_root(
+                    g_seal_selection,id-SEAL_ROOT_ID);
+                refresh_accessibility_deck();return 0;
+            }
+            if(id>=SEAL_BRANCH_ID&&id<SEAL_BRANCH_ID+2u){
+                g_seal_selection=swe::diaery::seals::choose_branch(
+                    g_seal_selection,id-SEAL_BRANCH_ID);
+                refresh_accessibility_deck();return 0;
+            }
+            if(id>=SEAL_PAGE_ID&&id<SEAL_PAGE_ID+5u){
+                g_seal_selection=swe::diaery::seals::choose_page(
+                    g_seal_selection,id-SEAL_PAGE_ID);
+                refresh_accessibility_deck();return 0;
+            }
+            if(id==SEAL_AUDIT_ID){
+                apply_accessible_action(hwnd,9u);return 0;
+            }
+            if(id>=ACTION_ID_BASE&&
+               id<ACTION_ID_BASE+swe::diaery::access::COUNT){
+                const unsigned index=id-ACTION_ID_BASE;
+                // A hidden stale child cannot activate the current branch.
+                if(swe::diaery::seals::visible(g_seal_selection,index))
+                    apply_accessible_action(hwnd,index);
+                return 0;
+            }
         }
     }
     if(msg==WM_DESTROY){
