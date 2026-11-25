@@ -13,7 +13,7 @@
 
 The second panel carries two semantic layers:
 * **Invisible thread** = exact integer femtosecond counter, `1 second = 1,000,000,000,000,000 fs`; stored as `unsigned long long` with overflow HOLD.
-* **Invisible yarn** = integer seconds and residual femtoseconds computed by quotient/remainder, no floating second rounding or claims of physical measurement. Key events advance the timeline. This is a simulated coordinate timeline, **not** actual hardware clock resolution or femtosecond accurate instrumentation.
+* **DARN** = integer seconds and residual femtoseconds computed by quotient/remainder, no floating second rounding. **YARN** = separate user-defined 16-sploon display carry. Neither changes canonical time. Key events advance the timeline. This is a simulated coordinate timeline, **not** actual hardware clock resolution or femtosecond accurate instrumentation.
 * The panel depicts progress over a 2-second viewport; the current timeline marker and a source-preserving trace are overlaid.
 
 ## Controlled trace format
@@ -31,3 +31,16 @@ The header and native view are source-committed. `trace_timeline_test.cpp` inclu
 **R** enters a 15-character ASCII trace-entry field. Type a complete format and press **Enter** to validate against the bounded grammar. **T** cycles through the three known formats; invalid input displays **HOLD** and draws no trace. Only `Y=MX+B`, `Y=X`, and `Y=0` are currently accepted; there is no arbitrary regular expression engine. Changes recompute the trace on repaint. This is a native interactive implementation rather than a mockup; actual runtime acceptance is still unverified pending CI/native execution.
 
 The graph subunits are drawn with 1px pens in light monochrome dash strokes; X divisions are exactly quarters and Y exactly thirds of their respective 1-inch majors. The time axis is a separate 2-second viewing pane using exact integer femtosecond ledger values. Raster positions and trace display samples never replace the integer authority.
+
+## THREAD / DARN / SPLOON / YARN correction
+
+**Status: EXPLORATORY, not a physical unit standard.** This correction supersedes the previous identification of yarn with unrounded seconds.
+
+- THREAD: 1 femtosecond, counted in the exact integer ledger.
+- DARN: exact quotient/remainder of the fs count by `10^15`. The expression `fs^15` means femtoseconds to the 15th power in conventional units, **not** 10^15 femtoseconds. We therefore preserve `10^15 fs = 1 s` as the time conversion.
+- SPLOON: one of 16 equally spaced fractional sectors of a one-second DARN. For this test, one sploon = `62,500,000,000,000 fs` exactly.
+- YARN: derived display seconds. The 16-sector index `k = floor(16*remainder/10^15)` falls in 0..15. Evaluate the user's additive `.1` and `.6` threshold with integers, not rounded binary fractions: `(10*k+16)/160`. If this expression is strictly greater than 0.6, add one derived display second. If it reaches or crosses 1.0, add one **additional** derived second. For `k=8`, adjusted = 0.6, no carry; `k=9`, 0.6625, one carry; `k=15`, 1.0375, two carries. This double-carry interpretation is exploratory and intentionally separate from conventional rounding and true elapsed time.
+- The exact DARN numerator and femtosecond remainder are unchanged even when YARN jumps by two seconds. Exact data **always** wins over the display. The test fixtures verify 8/9/14/15 boundary sectors and do not silently treat YARN as an actual physical clock.
+- Native DYNAMO now prints the exact DARN seconds and residual fs, the derived YARN seconds and the current sector, with `HOLD` on overflow.
+
+Original explanation is retained in version history; no ordinary timer uses this exploratory carry as an actual change in elapsed seconds. `RELEASE=HOLD`.
