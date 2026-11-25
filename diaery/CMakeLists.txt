@@ -169,3 +169,18 @@ set_target_properties(swe_diaery_freq PROPERTIES
 target_compile_options(swe_diaery_freq PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_thailonga_freq_count_bell_null_gates
  COMMAND swe_diaery_freq)
+
+add_executable(swe_diaery_circle_band circle_band_test.cpp)
+set_target_properties(swe_diaery_circle_band PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_circle_band PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_circle_band_evidence_gate COMMAND swe_diaery_circle_band)
+
+add_executable(swe_diaery_quintiles quintiles_test.cpp)
+set_target_properties(swe_diaery_quintiles PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_quintiles PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_quintiles_evidence_gate COMMAND swe_diaery_quintiles)
+
+add_executable(swe_diaery_audit audit_test.cpp)
+set_target_properties(swe_diaery_audit PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_audit PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_audit_evidence_gate COMMAND swe_diaery_audit)
