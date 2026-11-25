@@ -651,7 +651,14 @@ static int mouse_component(W32L lp,bool upper){
 }
 static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
     if(msg==WM_PAINT){paint(hwnd);return 0;}
-    if(msg==WM_DESTROY){PostQuitMessage(0);return 0;}
+    if(msg==WM_DESTROY){
+        W32H heap=GetProcessHeap();
+        if(g_freq_x.values)HeapFree(heap,0u,g_freq_x.values);
+        if(g_freq_y.values)HeapFree(heap,0u,g_freq_y.values);
+        if(g_freq_z.values)HeapFree(heap,0u,g_freq_z.values);
+        g_freq_x={};g_freq_y={};g_freq_z={};
+        PostQuitMessage(0);return 0;
+    }
     if(msg==WM_CHAR&&g_dynamo&&g_trace_editing){
         const unsigned chr=static_cast<unsigned>(w);
         if(g_skip_trace_open_char){g_skip_trace_open_char=false;return 0;}
