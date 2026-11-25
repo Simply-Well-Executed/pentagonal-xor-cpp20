@@ -50,6 +50,11 @@ constexpr auto back=micrometres_to_inches(25400ULL);
 static_assert(back.numerator==25400ULL && back.denominator==25400ULL);
 static_assert(inches_to_micrometres(~0ULL).denominator==0ULL);
 static_assert(n_minus_1663_pi_squared(0u).status==Status::Valid);
+// The displayed '-' must remain an arithmetic subtraction.
+static_assert(n_minus_1663_pi_squared(1u).derived -
+              n_minus_1663_pi_squared(0u).derived > 0.999999999998);
+static_assert(n_minus_1663_pi_squared(1u).derived -
+              n_minus_1663_pi_squared(0u).derived < 1.000000000002);
 static_assert(n_minus_1663_pi_squared(15u).derived<0.0);
 static_assert(n_minus_1663_pi_squared(16u).status==Status::NullInput);
 static_assert(make_yarn(FS_PER_SECOND).exact_seconds==1ULL);
