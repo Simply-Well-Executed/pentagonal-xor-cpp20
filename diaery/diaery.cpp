@@ -61,6 +61,7 @@ DIA_IMPORT int DIA_STDCALL HeapFree(W32H,W32D,W32H);
 DIA_IMPORT unsigned short DIA_STDCALL RegisterClassExA(const W32CLASS*);
 DIA_IMPORT W32H DIA_STDCALL CreateWindowExA(W32D,const char*,const char*,W32D,int,int,int,int,W32H,W32H,W32H,void*);
 DIA_IMPORT W32L DIA_STDCALL SendMessageA(W32H,W32U,W32W,W32L);
+DIA_IMPORT int DIA_STDCALL IsDialogMessageA(W32H,W32MESSAGE*);
 DIA_IMPORT int DIA_STDCALL ShowWindow(W32H,int);
 DIA_IMPORT int DIA_STDCALL UpdateWindow(W32H);
 DIA_IMPORT int DIA_STDCALL GetMessageA(W32MESSAGE*,W32H,W32U,W32U);
@@ -482,7 +483,7 @@ static bool ensure_rejection_capacity(){
 static void install_accessibility_deck(W32H parent,W32H instance){
     namespace ac=swe::diaery::access;
     g_action_deck_complete=true;
-    constexpr int left=1218,top=106;
+    constexpr int left=1135,top=106;
     constexpr int dx=static_cast<int>(ac::BUTTON_WIDTH+ac::BUTTON_GAP);
     constexpr int dy=static_cast<int>(ac::BUTTON_HEIGHT+ac::BUTTON_GAP);
     for(unsigned i=0u;i<ac::COUNT;++i){
@@ -524,6 +525,9 @@ static void apply_accessible_action(W32H hwnd,unsigned index){
         if(g_trace_editing)SendMessageA(hwnd,WM_KEYDOWN,27u,0);
     }else if(action.kind==ac::Kind::BackspaceTrace){
         if(g_trace_editing)SendMessageA(hwnd,WM_CHAR,8u,0);
+    }else if(action.kind==ac::Kind::TypeTrace){
+        if(g_trace_editing)SendMessageA(hwnd,WM_CHAR,
+                                      static_cast<W32W>(action.virtual_key),0);
     }
     g_audit_clipboard_success=false;g_audit_clipboard_hold=false;
     InvalidateRect(hwnd,nullptr,0);
@@ -1018,12 +1022,14 @@ static int show_native(){
     cls.class_name="SWE_DIAERY_STRICT";
     if(!RegisterClassExA(&cls))return 30;
     g_window=CreateWindowExA(0u,cls.class_name,"DIAERY | XHTML Strict Geometry Inspector",
-        WS_OVERLAPPEDWINDOW|WS_VISIBLE,30,25,1720,930,nullptr,nullptr,instance,nullptr);
+        WS_OVERLAPPEDWINDOW|WS_VISIBLE,30,25,1860,930,nullptr,nullptr,instance,nullptr);
     if(!g_window)return 31;
     install_accessibility_deck(g_window,instance);
     ShowWindow(g_window,1);UpdateWindow(g_window);
     W32MESSAGE msg{};while(GetMessageA(&msg,nullptr,0u,0u)>0){
-        TranslateMessage(&msg);DispatchMessageA(&msg);
+        if(!IsDialogMessageA(g_window,&msg)){
+            TranslateMessage(&msg);DispatchMessageA(&msg);
+        }
     }
     return 0;
 }
