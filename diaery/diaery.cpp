@@ -65,6 +65,7 @@ DIA_IMPORT W32H DIA_STDCALL CreateWindowExA(W32D,const char*,const char*,W32D,in
 DIA_IMPORT W32L DIA_STDCALL SendMessageA(W32H,W32U,W32W,W32L);
 DIA_IMPORT int DIA_STDCALL IsDialogMessageA(W32H,W32MESSAGE*);
 DIA_IMPORT int DIA_STDCALL SetWindowTextA(W32H,const char*);
+DIA_IMPORT W32H DIA_STDCALL SetFocus(W32H);
 DIA_IMPORT int DIA_STDCALL ShowWindow(W32H,int);
 DIA_IMPORT int DIA_STDCALL UpdateWindow(W32H);
 DIA_IMPORT int DIA_STDCALL GetMessageA(W32MESSAGE*,W32H,W32U,W32U);
@@ -967,22 +968,31 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
             if(id>=SEAL_ROOT_ID&&id<SEAL_ROOT_ID+2u){
                 g_pentapi=swe::diaery::pentapi::root(
                     g_pentapi,id-SEAL_ROOT_ID);
-                refresh_accessibility_deck();return 0;
+                refresh_accessibility_deck();
+                if(g_seal_branches[0])SetFocus(g_seal_branches[0]);
+                return 0;
             }
             if(id>=SEAL_BRANCH_ID&&id<SEAL_BRANCH_ID+2u){
                 g_pentapi=swe::diaery::pentapi::branch(
                     g_pentapi,id-SEAL_BRANCH_ID);
-                refresh_accessibility_deck();return 0;
+                refresh_accessibility_deck();
+                if(g_seal_pages[0])SetFocus(g_seal_pages[0]);
+                return 0;
             }
             if(id>=SEAL_PAGE_ID&&id<SEAL_PAGE_ID+5u){
                 g_pentapi=swe::diaery::pentapi::page(
                     g_pentapi,id-SEAL_PAGE_ID);
-                refresh_accessibility_deck();return 0;
+                refresh_accessibility_deck();
+                const unsigned first=swe::diaery::seals::index(g_pentapi.selection,0u);
+                if(first<swe::diaery::access::COUNT && g_action_buttons[first])
+                    SetFocus(g_action_buttons[first]);
+                return 0;
             }
             if(id==SEAL_AUDIT_ID){
                 apply_accessible_action(hwnd,9u);
                 g_pentapi=swe::diaery::pentapi::reset(g_pentapi);
                 refresh_accessibility_deck();
+                if(g_seal_roots[0])SetFocus(g_seal_roots[0]);
                 return 0;
             }
             if(id>=ACTION_ID_BASE&&
@@ -995,6 +1005,7 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
                     // The result and raw data survive; only selection resets.
                     g_pentapi=swe::diaery::pentapi::complete(g_pentapi,index,true);
                     refresh_accessibility_deck();
+                    if(g_seal_roots[0])SetFocus(g_seal_roots[0]);
                 }
                 return 0;
             }
