@@ -41,6 +41,10 @@ struct W32CLASS {
 };
 extern "C" {
 DIA_IMPORT W32H DIA_STDCALL GetModuleHandleA(const char*);
+DIA_IMPORT W32H DIA_STDCALL GetProcessHeap();
+DIA_IMPORT W32H DIA_STDCALL HeapAlloc(W32H,W32D,W32W);
+DIA_IMPORT W32H DIA_STDCALL HeapReAlloc(W32H,W32D,W32H,W32W);
+DIA_IMPORT int DIA_STDCALL HeapFree(W32H,W32D,W32H);
 DIA_IMPORT unsigned short DIA_STDCALL RegisterClassExA(const W32CLASS*);
 DIA_IMPORT W32H DIA_STDCALL CreateWindowExA(W32D,const char*,const char*,W32D,int,int,int,int,W32H,W32H,W32H,void*);
 DIA_IMPORT int DIA_STDCALL ShowWindow(W32H,int);
@@ -151,6 +155,7 @@ static double g_length_inches=4.0/2.54,g_girth_inches=6.1240,g_depth_inches=2.90
 static bool g_study_gears=true;
 static bool g_freq_view=false;
 static swe::diaery::freq::Samples g_freq_x{};
+static bool g_freq_memory_hold=false;
 static swe::diaery::freq::Samples g_freq_y{};
 static swe::diaery::freq::Samples g_freq_z{};
 static unsigned g_freq_rejected=0u;
@@ -339,6 +344,21 @@ static void paint_time_plot(W32H dc) {
     label(dc,83,680,"SECONDARY TIME AXIS: 0 to 2 seconds; exact counter never rounds to samples",grey);
 }
 
+// Grow as available, bounded only by host addressable memory and safety.
+static bool ensure_freq_capacity(swe::diaery::freq::Samples& s){
+    using swe::diaery::freq::U64;
+    if(s.count<s.capacity)return true;
+    const U64 next=s.capacity?(s.capacity<=~0ULL/2ULL?s.capacity*2ULL:0ULL):64ULL;
+    if(next<=s.capacity || next>~0ULL/sizeof(double))return false;
+    const U64 size=next*sizeof(double);
+    W32H heap=GetProcessHeap();
+    W32H buffer=s.values?HeapReAlloc(heap,0u,s.values,size):
+                           HeapAlloc(heap,0u,size);
+    if(!buffer)return false;
+    s.values=static_cast<double*>(buffer);
+    s.capacity=next;
+    return true;
+}
 static double gear_length(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileLength);}
 static double gear_girth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::PenileCircumference);}
 static double gear_depth(double v){return swe::diaery::filtrox::clamp_to_study(v,swe::diaery::research::Measurement::VaginalDepth);}
@@ -367,18 +387,21 @@ static void paint_frequency_panel(W32H dc,int left,int top,
         label(dc,left+35,top+117,"Press A to record X/Y/Z",rgb(159,176,194));
         return;
     }
-    const unsigned scale=hist.maximum_count?hist.maximum_count:1u;
+    const swe::diaery::freq::U64 scale=hist.maximum_count?hist.maximum_count:1ULL;
     for(unsigned i=0;i<fq::BINS;++i){
         const int x=left+static_cast<int>(i)*18+2;
-        const int bar=static_cast<int>(static_cast<unsigned long long>(hist.bins[i])*height/scale);
+        const int bar=static_cast<int>(static_cast<double>(hist.bins[i])*static_cast<double>(height)/static_cast<double>(scale));
         if(bar<=0)continue;
         W32RECT rect{x,base-bar,x+14,base};
         W32H brush=CreateSolidBrush(color);
         FillRect(dc,&rect,brush);
         DeleteObject(brush);
     }
-    label(dc,left,base+9,"0 inches",rgb(159,176,194));
-    label(dc,left+225,base+9,"12 in",rgb(159,176,194));
+    char minbuf[24]{},maxbuf[24]{};
+    decimal4(minbuf,24u,hist.minimum);
+    decimal4(maxbuf,24u,hist.maximum);
+    label(dc,left,base+9,minbuf,rgb(159,176,194));
+    label(dc,left+225,base+9,maxbuf,rgb(159,176,194));
     format_u64(counter,24u,static_cast<swe::diaery::trace::U64>(scale));
     label(dc,left,top-12,"MAX COUNT:",rgb(159,176,194));
     label(dc,left+94,top-12,counter,rgb(221,217,164));
@@ -392,8 +415,10 @@ static void paint_frequency_panel(W32H dc,int left,int top,
     old=SelectObject(dc,pen);
     bool first=true;
     for(unsigned step=0;step<=144u;++step){
-        const double value=(static_cast<double>(step)+0.5)/12.0;
-        const double bell=fq::expected_bin_count(fitted,value);
+        const double span=hist.maximum-hist.minimum;
+        const double width=span>0.0?span/static_cast<double>(fq::BINS):0.0;
+        const double value=hist.minimum+(static_cast<double>(step)+0.5)/144.0*span;
+        const double bell=fq::expected_bin_count(fitted,value,width);
         int bh=static_cast<int>(bell*static_cast<double>(height)/static_cast<double>(scale)+0.5);
         if(bh<0)bh=0;if(bh>height)bh=height;
         const int gx=left+static_cast<int>(step)*2;
@@ -407,7 +432,7 @@ static void paint_frequency_panel(W32H dc,int left,int top,
 static void paint_frequency(W32H dc,const W32RECT& rc){
     const W32D grey=rgb(159,176,194);
     label(dc,22,16,"THAILONGA | FREQ = COUNT AT VALUE | RELEASE=HOLD",rgb(95,212,202));
-    label(dc,22,39,"FREQ HISTOGRAMS (0..12 inches in 16 equal bins) | Y = COUNT",grey);
+    label(dc,22,39,"FREQ HISTOGRAMS | X = observed VALUE | Y = COUNT | bin span derives from data",grey);
     label(dc,22,62,"Source: manual exploratory selections; NOT imported studies",grey);
     label(dc,22,87,"A: append current valid X/Y/Z values | H: graph view",grey);
     paint_frequency_panel(dc,46,175,"X / PENILE LENGTH",g_freq_x,rgb(95,212,202));
@@ -420,7 +445,7 @@ static void paint_frequency(W32H dc,const W32RECT& rc){
     label(dc,46,544,"FILTREX rejects zero, negative, missing and nonfinite values.",grey);
     label(dc,46,570,"FILTROX sample ranges are labels, not universal biological limits.",grey);
     label(dc,46,596,"The Gaussian is a fitted approximation, NOT original observations.",grey);
-    label(dc,46,621,"An empty observation set remains NULL, never a zero-count claim.",grey);
+    label(dc,46,621,g_freq_memory_hold?"MEMORY HOLD: append denied, old records preserved":"Empty records remain NULL; no artificial record-count limit.",grey);
     label(dc,46,rc.bottom-46,"H: DYNTR0X/PROJECTIONS | D: DIAERY | FREQ source remains in session memory",grey);
 }
 static void paint_dynamo(W32H dc,const W32RECT& rc){
@@ -678,16 +703,21 @@ static W32L DIA_STDCALL window_proc(W32H hwnd,W32U msg,W32W w,W32L l){
                 // Transactional append: either all three measurements added
                 // or none. An unverified manual XY/Z triple is not a
                 // scientifically paired observation.
-                if(current.eligible&&g_freq_x.count<swe::diaery::freq::CAPACITY&&
-                   g_freq_y.count<swe::diaery::freq::CAPACITY&&
-                   g_freq_z.count<swe::diaery::freq::CAPACITY&&
+                if(current.eligible &&
                    swe::diaery::freq::admissible(g_length_inches)&&
                    swe::diaery::freq::admissible(g_girth_inches)&&
-                   swe::diaery::freq::admissible(g_depth_inches)){
+                   swe::diaery::freq::admissible(g_depth_inches)&&
+                   ensure_freq_capacity(g_freq_x)&&
+                   ensure_freq_capacity(g_freq_y)&&
+                   ensure_freq_capacity(g_freq_z)){
+                    // All three slots have room before mutating any count.
                     (void)swe::diaery::freq::append(g_freq_x,g_length_inches);
                     (void)swe::diaery::freq::append(g_freq_y,g_girth_inches);
                     (void)swe::diaery::freq::append(g_freq_z,g_depth_inches);
-                }else ++g_freq_rejected;
+                }else{
+                    if(current.eligible)g_freq_memory_hold=true;
+                    ++g_freq_rejected;
+                }
             }
             if(key=='K')g_study_gears=!g_study_gears;
             if(key=='P')g_projection_selected=(g_projection_selected+1u)%10u;
