@@ -7,6 +7,9 @@ on:
       - 'shared/redneckengineered_ninza_minza.hpp'
       - 'shared/redneckengineered_model_bidi.hpp'
       - 'shared/redneckengineered_model_tridi.hpp'
+      - 'shared/redneckengineered_model_pidi.hpp'
+      - 'shared/eulers_jig_canonical.hpp'
+      - 'shared/u_circle_fit.hpp'
       - 'tests/redneckengineered_ninza_minza_test.cpp'
       - 'tests/redneckengineered_pennyworth.rc'
       - 'shared/sigma_penta_ping.hpp'
@@ -59,6 +62,9 @@ jobs:
             'shared/redneckengineered_ninza_minza.hpp',
             'shared/redneckengineered_model_bidi.hpp',
             'shared/redneckengineered_model_tridi.hpp',
+            'shared/redneckengineered_model_pidi.hpp',
+            'shared/eulers_jig_canonical.hpp',
+            'shared/u_circle_fit.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
             'tests/redneckengineered_pennyworth.rc'
           )){
@@ -81,6 +87,9 @@ jobs:
             'shared/redneckengineered_ninza_minza.hpp',
             'shared/redneckengineered_model_bidi.hpp',
             'shared/redneckengineered_model_tridi.hpp',
+            'shared/redneckengineered_model_pidi.hpp',
+            'shared/eulers_jig_canonical.hpp',
+            'shared/u_circle_fit.hpp',
             'tests/redneckengineered_ninza_minza_test.cpp',
             'tests/redneckengineered_pennyworth.rc'
           )
