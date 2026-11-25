@@ -127,3 +127,12 @@ set_target_properties(swe_diaery_pentadi PROPERTIES
  CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
 target_compile_options(swe_diaery_pentadi PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_pentadi_shared_null COMMAND swe_diaery_pentadi)
+
+# Research cohort eligibility: zero/null/nonpositive anatomy is excluded,
+# source provenance remains available to the audit.
+add_executable(swe_diaery_research_filter research_filter_test.cpp)
+set_target_properties(swe_diaery_research_filter PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_research_filter PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_research_exclude_zero_source_preserved
+ COMMAND swe_diaery_research_filter)
