@@ -503,8 +503,17 @@ static void apply_accessible_action(W32H hwnd,unsigned index){
     namespace ac=swe::diaery::access;
     if(index>=ac::COUNT)return;
     const ac::Action action=ac::actions[index];
-    if(action.kind==ac::Kind::Key){
+    if(action.kind==ac::Kind::Key||action.kind==ac::Kind::KeyOtherView){
+        // Each visible action has an unambiguous native view context.
+        if(action.kind==ac::Kind::KeyOtherView)g_dynamo=false;
+        else if(action.virtual_key!='D')g_dynamo=true;
         SendMessageA(hwnd,WM_KEYDOWN,static_cast<W32W>(action.virtual_key),0);
+        // WM_CHAR for a physically pressed R follows WM_KEYDOWN, but
+        // BUTTON clicks do not generate that character. Do not swallow
+        // the first touch-keypad character after the visible R button.
+        if(action.kind==ac::Kind::Key && action.virtual_key=='R')
+            g_skip_trace_open_char=false;
+        InvalidateRect(hwnd,nullptr,0);
         return;
     }
     if(action.kind==ac::Kind::PresetTrace){
@@ -529,6 +538,7 @@ static void apply_accessible_action(W32H hwnd,unsigned index){
         if(g_trace_editing)SendMessageA(hwnd,WM_CHAR,
                                       static_cast<W32W>(action.virtual_key),0);
     }else if(action.kind==ac::Kind::Rotate){
+        g_dynamo=false;
         if(action.virtual_key==0u)g_yaw-=5;
         if(action.virtual_key==1u)g_yaw+=5;
         if(action.virtual_key==2u&&g_pitch<80)g_pitch+=5;
