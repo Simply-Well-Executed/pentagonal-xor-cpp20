@@ -1,0 +1,5 @@
+# SPOOL curvature contract
+
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+CURRENT exploratory design: every Unicode spool string can be *rendered* on user-selected curved, straight, looped, or quadratic paths without mutating the source code-point sequence. Curvature is a property of the selected geometric rendering, not inherent in the string's text identity. `Q=TRUE` is a separately validated numerical quadratic eligibility predicate, never a license to discard nonnumeric strings. Raw input -> immutable source spool -> optional numeric token parse and provenance -> optional typed anatomical observation -> FILTREX/FILTROX -> derived THAILONGA projection -> independent visual display/audit. A number is not a physical observation until a user explicitly selects a measurement metric and unit. No identity merge, no silent normalization, no clinical inference. Any numeric overflow/invalid syntax yields HOLD and retains original text. RELEASE=HOLD pending native C++20 tests and accessible rendering.
