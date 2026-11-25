@@ -2,6 +2,7 @@
 // Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
 // REDNECKENGINEERED: native C++20 individual motion-PING and negative probes.
 #include "../shared/redneckengineered_ninza_minza.hpp"
+#include "../shared/redneckengineered_model_bidi.hpp"
 #ifndef _WIN32
 #error "REDNECKENGINEERED requires a native Windows binary for resource verification"
 #endif
@@ -90,6 +91,39 @@ struct Sample { s::Ninza ninza; s::Ping motion; };
     if(e::replay(wrong,replayed,remotion))return false;
     return true;
 }
+
+// BiDi is paired traversal of explicit stage records, not inverse rendering.
+[[nodiscard]] constexpr bool model_bidi_tests() noexcept {
+    namespace m=swe::redneckengineered::model_bidi;
+    m::Trace observed{};
+    for(unsigned i=0;i<m::stage_count;++i) {
+        observed.stages[i]={m::forward_order[i],100u+i,101u+i,
+                            true,false};
+    }
+    const m::Trace audit=m::bidi(observed);
+    if(!audit.forward_ping || !audit.backward_ping ||
+       !audit.original_token_traced ||
+       audit.publish_authorized || m::all_individual_pings(audit))
+        return false;
+    for(unsigned i=0;i<m::stage_count;++i)
+        if(m::individual_ping(audit,m::forward_order[i]))
+            return false;
+    // A broken link must reject in both audit directions.
+    observed.stages[4].input_token^=1u;
+    if(m::forward_ping(observed) || m::backward_ping(observed))
+        return false;
+    observed.stages[4].input_token^=1u;
+    observed.stages[4].stage=m::Stage::DIFZ;
+    if(m::forward_ping(observed) || m::backward_ping(observed))
+        return false;
+    observed.stages[4].stage=m::Stage::CUBEMAP;
+    observed.stages[5].recorded=false;
+    if(m::forward_ping(observed) || m::backward_ping(observed))
+        return false;
+    return true;
+}
+static_assert(model_bidi_tests());
+
 static_assert(all_tests());
 static_assert(s::loops==9u && s::stripe_bytes==6u && e::groups==3u);
-int main() { return (all_tests() && pennyworth_embedded())?0:1; }
+int main() { return (all_tests() && model_bidi_tests() && pennyworth_embedded())?0:1; }
