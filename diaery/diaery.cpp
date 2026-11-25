@@ -63,6 +63,7 @@ DIA_IMPORT unsigned short DIA_STDCALL RegisterClassExA(const W32CLASS*);
 DIA_IMPORT W32H DIA_STDCALL CreateWindowExA(W32D,const char*,const char*,W32D,int,int,int,int,W32H,W32H,W32H,void*);
 DIA_IMPORT W32L DIA_STDCALL SendMessageA(W32H,W32U,W32W,W32L);
 DIA_IMPORT int DIA_STDCALL IsDialogMessageA(W32H,W32MESSAGE*);
+DIA_IMPORT int DIA_STDCALL SetWindowTextA(W32H,const char*);
 DIA_IMPORT int DIA_STDCALL ShowWindow(W32H,int);
 DIA_IMPORT int DIA_STDCALL UpdateWindow(W32H);
 DIA_IMPORT int DIA_STDCALL GetMessageA(W32MESSAGE*,W32H,W32U,W32U);
@@ -498,14 +499,37 @@ static void refresh_accessibility_deck(){
             ShowWindow(g_action_buttons[i],
                        se::visible(g_seal_selection,i)?1:0);
     }
+    const char* rootLabels[2][2]{
+       {"X | CONTROLS 1-40 [OPEN]","X | CONTROLS 1-40"},
+       {"Y | CONTROLS 41+","Y | CONTROLS 41+ [OPEN]"}};
+    const char* branchLabels[2][2]{
+       {"Y1 | PRIMARY [OPEN]","Y1 | PRIMARY"},
+       {"Y2 | ADVANCED","Y2 | ADVANCED [OPEN]"}};
     for(unsigned i=0u;i<2u;++i){
-        if(g_seal_roots[i])
+        if(g_seal_roots[i]){
+            SetWindowTextA(g_seal_roots[i],rootLabels[g_seal_selection.root][i]);
             ShowWindow(g_seal_roots[i],1);
-        if(g_seal_branches[i])
+        }
+        if(g_seal_branches[i]){
+            const char* title=branchLabels[g_seal_selection.branch][i];
+            SetWindowTextA(g_seal_branches[i],title);
             ShowWindow(g_seal_branches[i],1);
+        }
     }
-    for(unsigned i=0u;i<5u;++i)
-        if(g_seal_pages[i])ShowWindow(g_seal_pages[i],g_seal_selection.expanded?1:0);
+    const char* pagesNormal[5]{
+        "Z1 | Actions 1-4","Z2 | Actions 5-8","Z3 | Actions 9-12",
+        "Z4 | Actions 13-16","Z5 | Actions 17-20"};
+    const char* pagesActive[5]{
+        "Z1 | 1-4 [OPEN]","Z2 | 5-8 [OPEN]","Z3 | 9-12 [OPEN]",
+        "Z4 | 13-16 [OPEN]","Z5 | 17-20 [OPEN]"};
+    for(unsigned i=0u;i<5u;++i){
+        if(g_seal_pages[i]){
+            SetWindowTextA(g_seal_pages[i],
+                (g_seal_selection.expanded&&g_seal_selection.page==i)?
+                 pagesActive[i]:pagesNormal[i]);
+            ShowWindow(g_seal_pages[i],g_seal_selection.expanded?1:0);
+        }
+    }
 }
 static void install_accessibility_deck(W32H parent,W32H instance){
     namespace ac=swe::diaery::access;
