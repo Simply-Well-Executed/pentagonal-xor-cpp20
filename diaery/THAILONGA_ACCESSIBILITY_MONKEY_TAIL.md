@@ -23,3 +23,8 @@ Reference: William Kahan, Miscalculating Area and Angles of a Needle-like Triang
 ## Validation and consent
 
 Both accessibility actions and MONKEY TAIL tests are registered in CTest and every LadderDi native test source list. A registered pipeline is not a proven passing pipeline. Evaluate on Windows with Windows Voice Access/Eye Control, touch, a stylus and switch-actuated pointer/Tab. Keep RELEASE=HOLD until real tests finish.
+## Signed-gain correction
+
+The numerical gain helper now accepts a **signed** numerator and positive denominator. With -3/4 the sign alternates and the magnitude decreases under repeated multiplication. With i alone, the magnitude stays constant: `|i|=1`. Signed minimum input is checked without calling unary minus on the minimum signed integer. These operations are distinct from an electrical negative gain in dB; decibels require an explicitly chosen amplitude/power convention.
+
+The trace editor's physical R button now suppresses the keyboard-only skipped character guard, so the first character entered using the physical touch keypad is not lost. Overloaded C shortcuts are context-resolved, and physical yaw/pitch buttons expose formerly drag-only camera movement.
