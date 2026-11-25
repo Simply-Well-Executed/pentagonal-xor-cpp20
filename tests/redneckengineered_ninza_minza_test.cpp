@@ -2,6 +2,24 @@
 // Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
 // REDNECKENGINEERED: native C++20 individual motion-PING and negative probes.
 #include "../shared/redneckengineered_ninza_minza.hpp"
+#ifndef _WIN32
+#error "REDNECKENGINEERED requires a native Windows binary for resource verification"
+#endif
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+// C5824 is compiled as PE RCDATA, not shown in any UI or logging channel
+[[nodiscard]] bool pennyworth_embedded() noexcept {
+    HMODULE module=GetModuleHandleW(nullptr);
+    if(!module)return false;
+    HRSRC found=FindResourceW(module,MAKEINTRESOURCEW(5824),RT_RCDATA);
+    if(!found || SizeofResource(module,found)<5u)return false;
+    HGLOBAL loaded=LoadResource(module,found);
+    if(!loaded)return false;
+    const auto* bytes=static_cast<const unsigned char*>(LockResource(loaded));
+    return bytes && bytes[0]=='C' && bytes[1]=='5' && bytes[2]=='8' &&
+           bytes[3]=='2' && bytes[4]=='4';
+}
 namespace s=swe::sigma_penta_ping;
 namespace e=swe::redneckengineered;
 struct Sample { s::Ninza ninza; s::Ping motion; };
@@ -74,4 +92,4 @@ struct Sample { s::Ninza ninza; s::Ping motion; };
 }
 static_assert(all_tests());
 static_assert(s::loops==9u && s::stripe_bytes==6u && e::groups==3u);
-int main() { return all_tests()?0:1; }
+int main() { return (all_tests() && pennyworth_embedded())?0:1; }
