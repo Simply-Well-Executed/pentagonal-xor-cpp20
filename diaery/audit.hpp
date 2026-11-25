@@ -8,6 +8,7 @@
 #include "freq.hpp"
 #include "circle_band.hpp"
 #include "quintiles.hpp"
+#include "rejection_ledger.hpp"
 namespace swe::diaery::audit {
 using U64=unsigned long long;
 struct Writer {
@@ -43,8 +44,9 @@ struct Writer {
  U64 rejected,bool memory_hold,
  const quintiles::Result* qx,
  const quintiles::Result* qy,
- const quintiles::Result* qz) noexcept {
- if(x.count!=y.count||y.count!=z.count)return false;
+ const quintiles::Result* qz,
+ const reject::Ledger& rejections) noexcept {
+ if(x.count!=y.count||y.count!=z.count||!reject::complete(rejections))return false;
  if((x.count&&!x.values)||(y.count&&!y.values)||(z.count&&!z.values))
     return false;
  w.text("THAILONGA\tAUDIT\tV1\n");
@@ -61,7 +63,7 @@ struct Writer {
  w.text("CIRCLE_SUBUNITS\t72_SECTORS\tGAP_CANARY_SINGLE_MISSING_CELL\n");
  w.text("CIRCLE_BOUNDS\t41..42_PERCENT\tUNVERIFIED_OUTCOME\n");
  w.text("BIOMEASUREMENT_MODEL\tEXPLORATORY_CYLINDER\tDEPTH_ALONE_CANNOT_PREDICT_WIDTH_OR_ELASTICITY\n");
- w.text("REJECTION_PROVENANCE\tAGGREGATE_ONLY\tNO_PER_EVENT_LEDGER_YET\n");
+ w.text("REJECTION_PROVENANCE\tPER_EVENT_IEEE754\tREASON_CODES_1_FILTREX_2_FREQUENCY_3_MEMORY\n");
  w.text("STUDY_RANGE_METHOD\tMARGINAL_SAMPLE_EXTREMA\tNOT_DIAGNOSTIC\n");
 
  w.text("ORIGIN\tX=0\tY=0\tGEOMETRY=INTERCEPT_NOT_REGRESSION\n");
@@ -115,6 +117,8 @@ struct Writer {
    w.put('\n');
  }
  w.text("REJECTED_ATTEMPTS\t");w.integer(rejected);w.put('\n');
+ w.text("REJECTION_LEDGER_COUNT\t");w.integer(rejections.count);w.put('\n');
+ w.text("REJECTION_LOST\t");w.integer(rejections.lost);w.put('\n');
  w.text("MEMORY_HOLD\t");w.text(memory_hold?"YES":"NO");w.put('\n');
  w.text("CIRCLE\t");w.text(circle_gap?"GAP":"NICE_FIRM");
  w.text("\tRESEARCH=NULL\tBAND=41..42_PERCENT_UNVERIFIED\n");
@@ -126,6 +130,15 @@ struct Writer {
  w.put('\n');
  w.text("UNCERTAINTY\tUNKNOWN\tNO_VALIDATED_PHYSIOLOGICAL_PREDICTION\n");
  w.text("QUINTILE_POLICY\tNEAREST_RANK\tNOT_ANATOMICAL_CUTOFFS\n");
+ w.text("REJECTION_ROW\tREASON_CODE\tX_HEX\tY_HEX\tZ_HEX\n");
+ for(U64 i=0ULL;i<rejections.count;++i){
+    const reject::Event e=rejections.events[i];
+    w.integer(i+1ULL);w.put('\t');
+    w.integer(static_cast<U64>(e.reason));w.put('\t');
+    w.hex_double(e.x_inches);w.put('\t');
+    w.hex_double(e.y_inches);w.put('\t');
+    w.hex_double(e.z_inches);w.put('\n');
+ }
  w.text("ROW\tX_IEEE754_NATIVE_BYTES\tY_IEEE754_NATIVE_BYTES\tZ_IEEE754_NATIVE_BYTES\n");
  for(U64 i=0ULL;i<x.count;++i){
     w.integer(i+1ULL);w.put('\t');
