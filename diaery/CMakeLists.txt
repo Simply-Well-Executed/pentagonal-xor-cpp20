@@ -90,3 +90,11 @@ add_test(NAME diaery_triangle_triflavors_cpp_xhtml
  COMMAND swe_diaery_triflavors ${CMAKE_CURRENT_SOURCE_DIR}/tri_flavors.xhtml)
 # Oracle Java 27.0.1.1 is a SEPARATE externally provisioned
 # toolchain, never an implicit replacement or automatic download.
+
+# APPLICATION OF Y=MX+B: compile-time source preservation and geometry gate.
+add_executable(swe_diaery_application_of_ymxb application_of_ymxb_test.cpp)
+set_target_properties(swe_diaery_application_of_ymxb PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_application_of_ymxb PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_application_of_ymxb_circle_line_minting
+ COMMAND swe_diaery_application_of_ymxb)
