@@ -204,7 +204,7 @@ static int g_mouse_x=0,g_mouse_y=0;
 static W32H g_window=nullptr;
 static W32H g_action_buttons[swe::diaery::access::COUNT]{};
 static W32H g_seal_roots[2]{},g_seal_branches[2]{},g_seal_pages[5]{};
-static W32H g_seal_audit=nullptr,g_seal_airgap_label=nullptr;
+static W32H g_seal_audit=nullptr,g_seal_airgap_label=nullptr,g_seal_feedback=nullptr;
 static swe::diaery::pentapi::State g_pentapi=swe::diaery::pentapi::initial();
 static bool g_action_deck_complete=false;
 // Rendering-only approximations; source and gate remain exact integers.
@@ -509,7 +509,11 @@ static void refresh_accessibility_deck(){
        {"Y2 | ADVANCED","Y2 | ADVANCED [OPEN]"}};
     for(unsigned i=0u;i<2u;++i){
         if(g_seal_roots[i]){
-            SetWindowTextA(g_seal_roots[i],rootLabels[g_pentapi.selection.root][i]);
+            const bool rootActive=g_pentapi.phase!=swe::diaery::pentapi::Phase::Root;
+            const char* rootName=rootActive?
+                  rootLabels[g_pentapi.selection.root][i]:
+                  (i==0u?"X | CONTROLS 1-40":"Y | CONTROLS 41+");
+            SetWindowTextA(g_seal_roots[i],rootName);
             ShowWindow(g_seal_roots[i],1);
         }
         if(g_seal_branches[i]){
@@ -531,6 +535,17 @@ static void refresh_accessibility_deck(){
                  pagesActive[i]:pagesNormal[i]);
             ShowWindow(g_seal_pages[i],g_pentapi.phase==swe::diaery::pentapi::Phase::Terminal?1:0);
         }
+    }
+    if(g_seal_feedback){
+        if(g_pentapi.phase==swe::diaery::pentapi::Phase::Root){
+            if(g_pentapi.has_completed && g_pentapi.last_action<swe::diaery::access::COUNT)
+                SetWindowTextA(g_seal_feedback,
+                    swe::diaery::access::actions[g_pentapi.last_action].label);
+            else SetWindowTextA(g_seal_feedback,"PENTAPI ROOT READY | select X or Y");
+        }else if(g_pentapi.phase==swe::diaery::pentapi::Phase::Branch)
+            SetWindowTextA(g_seal_feedback,"PENTAPI BRANCH | select Y1 or Y2");
+        else SetWindowTextA(g_seal_feedback,
+            "PENTAPI TERMINAL | select Z page, then one action");
     }
 }
 static void install_accessibility_deck(W32H parent,W32H instance){
@@ -577,7 +592,10 @@ static void install_accessibility_deck(W32H parent,W32H instance){
         button,left,787,690,64,parent,
         reinterpret_cast<W32H>(static_cast<W32W>(SEAL_AUDIT_ID)),
         instance,nullptr);
-    if(!g_seal_audit||!g_seal_airgap_label)
+    g_seal_feedback=CreateWindowExA(0u,"STATIC",
+        "PENTAPI ROOT READY | select X or Y",WS_CHILD|WS_VISIBLE,
+        left,712,690,42,parent,nullptr,instance,nullptr);
+    if(!g_seal_audit||!g_seal_airgap_label||!g_seal_feedback)
         g_action_deck_complete=false;
     refresh_accessibility_deck();
 }
