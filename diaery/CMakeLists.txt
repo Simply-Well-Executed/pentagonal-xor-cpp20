@@ -153,3 +153,11 @@ set_target_properties(swe_diaery_projections PROPERTIES
 target_compile_options(swe_diaery_projections PRIVATE /O2 /W4 /permissive-)
 add_test(NAME diaery_dyntr0x_projections_evidence_and_band
  COMMAND swe_diaery_projections)
+
+# THAILONGA: anatomy, PROJECTIONS, source-null status and exact fs in one frame.
+add_executable(swe_diaery_thailonga thailonga_test.cpp)
+set_target_properties(swe_diaery_thailonga PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_thailonga PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_shared_source_and_projections
+ COMMAND swe_diaery_thailonga)
