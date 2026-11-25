@@ -393,9 +393,10 @@ int main(int argc,char** argv){
     const bool check=argc>=3&&dia::strict::same(argv[1],"--check");
     const bool reject=argc>=3&&dia::strict::same(argv[1],"--reject");
     const bool qualify=argc>=3&&dia::strict::same(argv[1],"--qualify");
+    const bool dynamo=argc>=2&&dia::strict::same(argv[1],"--dynamo");
     const bool fusion=argc==4&&dia::strict::same(argv[1],"--fusion");
 #if defined(_WIN32)
-    const char* path=(check||reject||qualify||fusion)?argv[2]:(argc>1?argv[1]:"diaery\\index.xhtml");
+    const char* path=(check||reject||qualify||fusion)?argv[2]:(dynamo?(argc>=3?argv[2]:"diaery\\index.xhtml"):(argc>1?argv[1]:"diaery\\index.xhtml"));
 #else
     const char* path=(check||reject||qualify||fusion)?argv[2]:(argc>1?argv[1]:"diaery/index.xhtml");
 #endif
@@ -425,6 +426,7 @@ int main(int argc,char** argv){
 #endif
     }
 #if defined(_WIN32)
+    if(dynamo)g_dynamo=true;
     return show_native();
 #else
     print("DIAERY|PARITY_PASS|Native window is Windows-only; use --check on POSIX\n");return 0;
