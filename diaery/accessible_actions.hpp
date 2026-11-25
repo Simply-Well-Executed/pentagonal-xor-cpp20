@@ -4,7 +4,7 @@
 #ifndef SWE_DIAERY_ACCESSIBLE_ACTIONS_HPP
 #define SWE_DIAERY_ACCESSIBLE_ACTIONS_HPP
 namespace swe::diaery::access {
-enum class Kind : unsigned { Key, PresetTrace, CancelTrace, ConfirmTrace, BackspaceTrace, TypeTrace };
+enum class Kind : unsigned { Key, PresetTrace, CancelTrace, ConfirmTrace, BackspaceTrace, TypeTrace, Rotate };
 struct Action { const char* label; unsigned virtual_key; Kind kind; };
 constexpr Action actions[]{
  {"D VIEW", 'D', Kind::Key},
@@ -41,7 +41,9 @@ constexpr Action actions[]{
  {"W WATER",'W',Kind::Key}, {"Y YANG",'Y',Kind::Key},
  {"C CUTAWAY",'C',Kind::Key}, {"B BUBBLE",'B',Kind::Key},
  {"+ ZOOM",187u,Kind::Key}, {"- ZOOM",189u,Kind::Key},
- {"NEXT STAGE",39u,Kind::Key}, {"PREV STAGE",37u,Kind::Key}
+ {"NEXT STAGE",39u,Kind::Key}, {"PREV STAGE",37u,Kind::Key},
+ {"YAW LEFT",0u,Kind::Rotate}, {"YAW RIGHT",1u,Kind::Rotate},
+ {"PITCH UP",2u,Kind::Rotate}, {"PITCH DOWN",3u,Kind::Rotate}
 };
 constexpr unsigned COUNT=sizeof(actions)/sizeof(actions[0]);
 constexpr unsigned BUTTON_WIDTH=109u;
