@@ -258,7 +258,7 @@ jobs:
           $cl=(Get-Command cl.exe -ErrorAction Stop).Source
           $out=Join-Path $env:RUNNER_TEMP ('dynamo-ladderdi-'+$env:RUNG)
           [IO.Directory]::CreateDirectory($out)|Out-Null
-          foreach($test in @('application_of_ymxb_test','error_ledger_test','dynamo_subject_test','trace_timeline_test')){
+          foreach($test in @('application_of_ymxb_test','error_ledger_test','dynamo_subject_test','trace_timeline_test','pentadi_test')){
             $src=Join-Path $root ('diaery/'+$test+'.cpp')
             if(-not [IO.File]::Exists($src)){throw ('DYNAMO|HOLD|SOURCE_MISSING|'+$test)}
             $exe=Join-Path $out ($test+'.exe')
@@ -290,5 +290,18 @@ jobs:
           VERIFY: ${{ steps.excited_verify.outcome }}
           DYNAMO: ${{ steps.dynamo.outcome }}
         run: |
+          # PentaDi: RUNG, EXCITE, EXCITED, ATTEST share one NULL sentinel.
+          # EXCITED includes both native generated output and independent verify;
+          # ATTEST is qualified only if the DYNAMO C++20 gate also succeeded.
+          $rungPass=($env:NATIVE -ceq 'success')
+          $excitePass=($env:EXCITE -ceq 'success')
+          $excitedPass=($env:BUILD -ceq 'success' -and $env:VERIFY -ceq 'success')
+          $attestPass=($env:DYNAMO -ceq 'success')
+          $penta=@($rungPass,$excitePass,$excitedPass,$attestPass)
+          $passed=@($penta | Where-Object { $_ -eq $true }).Count
+          Write-Host ('PENTADI|COMMON=NULL|RUNG='+$rungPass+'|EXCITE='+$excitePass+
+                      '|EXCITED='+$excitedPass+'|ATTEST_EVIDENCE='+$attestPass+
+                      '|PASS_COUNT='+$passed+'/4|RELEASE=HOLD')
+          if($passed -ne 4){throw 'PENTADI|HOLD|COMMON_NULL_NOT_QUALIFIED'}
           Write-Host ('LADDERDI|ATTEST|RUNG='+$env:RUNG+'|NATIVE='+$env:NATIVE+'|EXCITE='+$env:EXCITE+'|EXCITED_BUILD='+$env:BUILD+'|EXCITED_VERIFY='+$env:VERIFY+'|DYNAMO='+$env:DYNAMO+'|RELEASE=HOLD')
           if($env:NATIVE -cne 'success' -or $env:EXCITE -cne 'success' -or $env:BUILD -cne 'success' -or $env:VERIFY -cne 'success' -or $env:DYNAMO -cne 'success'){throw 'LADDERDI|HOLD|stage_not_qualified'}
