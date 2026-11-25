@@ -528,6 +528,13 @@ static void apply_accessible_action(W32H hwnd,unsigned index){
     }else if(action.kind==ac::Kind::TypeTrace){
         if(g_trace_editing)SendMessageA(hwnd,WM_CHAR,
                                       static_cast<W32W>(action.virtual_key),0);
+    }else if(action.kind==ac::Kind::Rotate){
+        if(action.virtual_key==0u)g_yaw-=5;
+        if(action.virtual_key==1u)g_yaw+=5;
+        if(action.virtual_key==2u&&g_pitch<80)g_pitch+=5;
+        if(action.virtual_key==3u&&g_pitch> -80)g_pitch-=5;
+        if(g_pitch>80)g_pitch=80;
+        if(g_pitch< -80)g_pitch= -80;
     }
     g_audit_clipboard_success=false;g_audit_clipboard_hold=false;
     InvalidateRect(hwnd,nullptr,0);
