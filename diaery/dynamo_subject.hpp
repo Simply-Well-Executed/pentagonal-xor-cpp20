@@ -4,6 +4,7 @@
 #define SWE_DIAERY_DYNAMO_SUBJECT_HPP
 #include "application_of_ymxb.hpp"
 #include "error_ledger.hpp"
+#include "research_filter.hpp"
 namespace swe::diaery::subject {
 namespace g=swe::diaery::graph;
 namespace e=swe::diaery::error;
@@ -25,8 +26,11 @@ struct Display {
 [[nodiscard]] constexpr Display build(const Observation& s) noexcept {
     const g::Fit no_fit{g::Shape::Invalid,{0.,0.},0.,0.,0.,0.};
     const g::Point xy{s.penile_length_inches,s.penile_girth_inches};
-    if(!g::finite_domain(xy.x)||!g::finite_domain(xy.y)||
-       xy.x<=0.||xy.y<=0.||!g::finite_domain(s.vaginal_depth_inches))
+    // Filter before any constructed geometry. Zero, absent or negative
+    // measurements are ineligible for THIS anatomical dataset; provenance stays.
+    if(!research::included(research::assess({nullptr,research::Measurement::PenileLength,xy.x,true}))||
+       !research::included(research::assess({nullptr,research::Measurement::PenileCircumference,xy.y,true}))||
+       !research::included(research::assess({nullptr,research::Measurement::VaginalDepth,s.vaginal_depth_inches,true})))
         return {xy,s.vaginal_depth_inches,Qualification::Hold,no_fit};
     if(!e::admissible_depth(s.vaginal_depth_inches,
                           s.verified_non_mri_depth,s.verified_non_mri_depth))
