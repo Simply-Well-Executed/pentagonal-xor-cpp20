@@ -4,7 +4,7 @@
 #ifndef SWE_DIAERY_ACCESSIBLE_ACTIONS_HPP
 #define SWE_DIAERY_ACCESSIBLE_ACTIONS_HPP
 namespace swe::diaery::access {
-enum class Kind : unsigned { Key, PresetTrace, CancelTrace, ConfirmTrace, BackspaceTrace, TypeTrace, Rotate };
+enum class Kind : unsigned { Key, PresetTrace, CancelTrace, ConfirmTrace, BackspaceTrace, TypeTrace, Rotate, KeyOtherView };
 struct Action { const char* label; unsigned virtual_key; Kind kind; };
 constexpr Action actions[]{
  {"D VIEW", 'D', Kind::Key},
@@ -38,10 +38,10 @@ constexpr Action actions[]{
  {"TYPE 4",'4',Kind::TypeTrace}, {"TYPE 5",'5',Kind::TypeTrace},
  {"TYPE 6",'6',Kind::TypeTrace}, {"TYPE 7",'7',Kind::TypeTrace},
  {"TYPE 8",'8',Kind::TypeTrace}, {"TYPE 9",'9',Kind::TypeTrace},
- {"W WATER",'W',Kind::Key}, {"Y YANG",'Y',Kind::Key},
- {"C CUTAWAY",'C',Kind::Key}, {"B BUBBLE",'B',Kind::Key},
- {"+ ZOOM",187u,Kind::Key}, {"- ZOOM",189u,Kind::Key},
- {"NEXT STAGE",39u,Kind::Key}, {"PREV STAGE",37u,Kind::Key},
+ {"W WATER",'W',Kind::KeyOtherView}, {"Y YANG",'Y',Kind::KeyOtherView},
+ {"C CUTAWAY",'C',Kind::KeyOtherView}, {"B BUBBLE",'B',Kind::KeyOtherView},
+ {"+ ZOOM",187u,Kind::KeyOtherView}, {"- ZOOM",189u,Kind::KeyOtherView},
+ {"NEXT STAGE",39u,Kind::KeyOtherView}, {"PREV STAGE",37u,Kind::KeyOtherView},
  {"YAW LEFT",0u,Kind::Rotate}, {"YAW RIGHT",1u,Kind::Rotate},
  {"PITCH UP",2u,Kind::Rotate}, {"PITCH DOWN",3u,Kind::Rotate}
 };
