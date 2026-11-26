@@ -3,6 +3,7 @@
 // COREAO single-scalar inspection: production parity remains unchanged.
 
 #include "../shared/coreao.hpp"
+#include "../shared/alonz_acorn_tree.hpp"
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -69,7 +70,17 @@ int main() {
         inspect(run(-9.0)).passed(std::numeric_limits<double>::quiet_NaN()))
         return 11;
 
-    const auto example = inspect(run(-9.0));
+    // ALONZ TRIPI: distinct byte, Jig evidence and approval gates.
+    // Undefined Jig never becomes an implicit PASS.
+    using swe::alonz::Verdict;
+    if (inspect(swe::alonz::acorn, swe::alonz::matching_shell, 4ULL,
+                swe::alonz::undefined_witness) != Verdict::Hold) return 12;
+    if (inspect(swe::alonz::acorn, swe::alonz::altered_shell, 4ULL,
+                swe::alonz::verified_witness) != Verdict::Reject) return 13;
+    if (inspect(swe::alonz::acorn, swe::alonz::matching_shell, 4ULL,
+                swe::alonz::verified_witness) != Verdict::Accept) return 14;
+
+    const auto example = swe::coreao::inspect(run(-9.0));
     std::cout << "COREAO PASS: scalar=" << example.scalar
               << " (lower is better); forward -> reverse -> Z-fold\n";
     return 0;
