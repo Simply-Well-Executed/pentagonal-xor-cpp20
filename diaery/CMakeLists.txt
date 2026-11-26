@@ -90,3 +90,122 @@ add_test(NAME diaery_triangle_triflavors_cpp_xhtml
  COMMAND swe_diaery_triflavors ${CMAKE_CURRENT_SOURCE_DIR}/tri_flavors.xhtml)
 # Oracle Java 27.0.1.1 is a SEPARATE externally provisioned
 # toolchain, never an implicit replacement or automatic download.
+
+# APPLICATION OF Y=MX+B: compile-time source preservation and geometry gate.
+add_executable(swe_diaery_application_of_ymxb application_of_ymxb_test.cpp)
+set_target_properties(swe_diaery_application_of_ymxb PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_application_of_ymxb PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_application_of_ymxb_circle_line_minting
+ COMMAND swe_diaery_application_of_ymxb)
+
+# SIGMA uncertainty gate: fail closed on NULL, incomparable, or invalid model.
+add_executable(swe_diaery_error_ledger error_ledger_test.cpp)
+set_target_properties(swe_diaery_error_ledger PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_error_ledger PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_sigma_null_error_gate
+ COMMAND swe_diaery_error_ledger)
+
+# DYNAMO repaired XY/Z subject/provenance boundary.
+add_executable(swe_diaery_dynamo_subject dynamo_subject_test.cpp)
+set_target_properties(swe_diaery_dynamo_subject PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_dynamo_subject PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_dynamo_xy_z_source_gate COMMAND swe_diaery_dynamo_subject)
+
+# Exact femtosecond timebase / rational major-subunit grid / bounded trace gate.
+add_executable(swe_diaery_trace_timeline trace_timeline_test.cpp)
+set_target_properties(swe_diaery_trace_timeline PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_trace_timeline PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_dynamo_fs_grid_trace_gate COMMAND swe_diaery_trace_timeline)
+
+# PentaDi: four explicit stages and a shared NULL sentinel.
+add_executable(swe_diaery_pentadi pentadi_test.cpp)
+set_target_properties(swe_diaery_pentadi PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_pentadi PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_pentadi_shared_null COMMAND swe_diaery_pentadi)
+
+# Research cohort eligibility: zero/null/nonpositive anatomy is excluded,
+# source provenance remains available to the audit.
+add_executable(swe_diaery_research_filter research_filter_test.cpp)
+set_target_properties(swe_diaery_research_filter PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_research_filter PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_research_exclude_zero_source_preserved
+ COMMAND swe_diaery_research_filter)
+
+# FILTROX: research sample-range warnings for penile/vaginal measures;
+# unlike FILTREX, sample extremum is not universal biological cutoff.
+add_executable(swe_diaery_filtrox filtrox_test.cpp)
+set_target_properties(swe_diaery_filtrox PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_filtrox PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_filtrox_study_range_both_anatomies
+ COMMAND swe_diaery_filtrox)
+
+# DYNTR0X: bounded 10-layer PROJECTIONS, no synthetic scientific estimates.
+add_executable(swe_diaery_projections projections_test.cpp)
+set_target_properties(swe_diaery_projections PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_projections PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_dyntr0x_projections_evidence_and_band
+ COMMAND swe_diaery_projections)
+
+# THAILONGA: anatomy, PROJECTIONS, source-null status and exact fs in one frame.
+add_executable(swe_diaery_thailonga thailonga_test.cpp)
+set_target_properties(swe_diaery_thailonga PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_thailonga PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_shared_source_and_projections
+ COMMAND swe_diaery_thailonga)
+
+# THAILONGA FREQ: independent frequency counts and optional Gaussian fit.
+add_executable(swe_diaery_freq freq_test.cpp)
+set_target_properties(swe_diaery_freq PROPERTIES
+ CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_freq PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_freq_count_bell_null_gates
+ COMMAND swe_diaery_freq)
+
+add_executable(swe_diaery_circle_band circle_band_test.cpp)
+set_target_properties(swe_diaery_circle_band PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_circle_band PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_circle_band_evidence_gate COMMAND swe_diaery_circle_band)
+
+add_executable(swe_diaery_quintiles quintiles_test.cpp)
+set_target_properties(swe_diaery_quintiles PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_quintiles PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_quintiles_evidence_gate COMMAND swe_diaery_quintiles)
+
+add_executable(swe_diaery_audit audit_test.cpp)
+set_target_properties(swe_diaery_audit PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_audit PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_audit_evidence_gate COMMAND swe_diaery_audit)
+
+add_executable(swe_diaery_rejection_ledger rejection_ledger_test.cpp)
+set_target_properties(swe_diaery_rejection_ledger PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_rejection_ledger PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_rejection_ledger_preserve_source COMMAND swe_diaery_rejection_ledger)
+
+add_executable(swe_diaery_accessible_actions accessible_actions_test.cpp)
+set_target_properties(swe_diaery_accessible_actions PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_accessible_actions PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_accessible_actions_proof COMMAND swe_diaery_accessible_actions)
+
+add_executable(swe_diaery_monkey_tail monkey_tail_test.cpp)
+set_target_properties(swe_diaery_monkey_tail PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_monkey_tail PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_thailonga_monkey_tail_proof COMMAND swe_diaery_monkey_tail)
+
+add_executable(swe_diaery_accessible_seals accessible_seals_test.cpp)
+set_target_properties(swe_diaery_accessible_seals PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_accessible_seals PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_seal_cubed_accessible_exclusive_panel COMMAND swe_diaery_accessible_seals)
+
+add_executable(swe_diaery_pentapi pentapi_test.cpp)
+set_target_properties(swe_diaery_pentapi PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+target_compile_options(swe_diaery_pentapi PRIVATE /O2 /W4 /permissive-)
+add_test(NAME diaery_pentapi_null_reset_root_accessibility COMMAND swe_diaery_pentapi)

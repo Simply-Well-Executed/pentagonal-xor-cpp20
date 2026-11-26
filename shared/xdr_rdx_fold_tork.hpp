@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: 0BSD
-// XDR-RDX-FOLD-TORK-PR34-010 | experimental, additive, read-only
+// XDR-RDX-FOLD-TORK-PR34-010 | experimental, additive, source-preserving
 // Two verified 90-degree folded-edge witnesses wrapped with reversible
 // XDR6/7/8/9 and RDX9/8/7/6 envelopes, interleaved, then PINGed.
 // Each named Di/Pi/Sigma lane is a distinct, auditable local adapter;

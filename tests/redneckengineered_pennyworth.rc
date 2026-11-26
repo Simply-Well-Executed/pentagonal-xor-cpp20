@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: 0BSD
+// Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+// PENNYWORTH identification: embedded in the Windows PE resource table
+// rather than rendered in the application's user interface
+// Resource identifier 5824 is derived from the author's C5824 laundry tag
+5824 RCDATA
+BEGIN
+  "C5824"
+END
