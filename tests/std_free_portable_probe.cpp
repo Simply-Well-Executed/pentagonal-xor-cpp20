@@ -2,6 +2,22 @@
 #include "../shared/deca_sigma.hpp"
 #include "../shared/tri_pi.hpp"
 #include "../shared/euler_pi_inverse_square.hpp"
+#include "../shared/sigma_form_geometry.hpp"
+#include "../shared/sigma_form_area_q62.hpp"
+#include "../shared/right_triangle_f123_original.hpp"
+#include "../shared/f123_eighth_fold_experiment.hpp"
+#include "../shared/sigma_e_redaxualchoice.hpp"
+#include "../shared/sigma_f_redaxualchoice.hpp"
+#include "../shared/four_pyramid_reduxualchoice.hpp"
+#include "../shared/u_circle_fit.hpp"
+#include "../shared/xdr_rdx_fold_tork.hpp"
+#include "../shared/minza_direct_ping_bidi.hpp"
+#include "../shared/minza_direct_ping_tridi.hpp"
+#include "../shared/three_geometric_folds.hpp"
+#include "../shared/rectangloid_primitive_cxx20.hpp"
+#include "../shared/toolong_q62_core.hpp"
+#include "../shared/slidingtoolong.hpp"
+#include "../shared/eulers_jig_canonical.hpp"
 #include "../shared/coreao.hpp"
 #include "../shared/coreao_gain.hpp"
 #include "../shared/coreo_stereo.hpp"
@@ -11,6 +27,168 @@
 static_assert(swe::deca_sigma::witnesses_return(swe::deca_sigma::run(2.0)));
 static_assert(swe::tri_pi::inspect(swe::deca_sigma::run(2.0)).passed());
 // The same exact inverse-square static asserts also compile in the STD-free path.
+// Each new area lane compiles independently in the include-free core.
+namespace ai = swe::sigma_form_area;
+static_assert(ai::airgap_a(ai::unit,ai::unit).value==ai::unit/2ULL);
+static_assert(ai::sigma_b({0ULL,0ULL},
+    {ai::unit/2ULL,ai::unit},{ai::unit,0ULL}).valid);
+static_assert(ai::sigma_c(ai::unit/4ULL,ai::unit).value==ai::unit/4ULL);
+constexpr ai::WidthSample std_free_d[]={
+    {0ULL,ai::unit/2ULL},{ai::unit,ai::unit/2ULL}
+};
+static_assert(ai::sigma_d(std_free_d).value==ai::unit/2ULL);
+// The follow-on ordered folds keep distinct source lanes and fail closed.
+constexpr ai::Q62Area std_a=ai::airgap_a(ai::unit,ai::unit);
+constexpr ai::Q62Area std_b=ai::sigma_b(
+    {0ULL,0ULL},{ai::unit/2ULL,ai::unit},{ai::unit,0ULL});
+constexpr ai::Q62Area std_c=ai::sigma_c(ai::unit/4ULL,ai::unit);
+constexpr ai::Q62Area std_d=ai::sigma_d(std_free_d);
+constexpr auto std_path=ai::path_bcd(std_b,std_c,std_d,std_a);
+static_assert(std_path.valid);
+static_assert(ai::fold_b_into_c(ai::start_fold(std_path)).valid);
+static_assert(ai::right_square_pyramid(
+    3ULL*ai::unit/4ULL,ai::unit/2ULL,
+    5ULL*ai::unit/8ULL).right_square_geometry_verified);
+
+// Independently verified four-face right triangular pyramid (tetrahedron).
+constexpr auto right_tri_core = ai::right_triangle_pyramid(
+    ai::unit/2ULL,ai::unit/2ULL,ai::unit,3ULL*ai::unit/4ULL);
+static_assert(right_tri_core.right_triangle_geometry_verified);
+static_assert(right_tri_core.total.value==ai::unit);
+static_assert(!ai::right_triangle_pyramid(
+    ai::unit/2ULL,ai::unit/2ULL,ai::unit,
+    ai::unit/2ULL).right_triangle_geometry_verified);
+
+// Read-only C++20 folded oblique-face witness using an exact
+// 90-degree rotated cross product (no transcendentals).
+constexpr auto probe_f3=ai::right_triangle_f3_rotated_90(
+    ai::unit/2ULL,ai::unit/2ULL,ai::unit,3ULL*ai::unit/4ULL);
+static_assert(probe_f3.valid && probe_f3.area_preserved);
+static_assert(probe_f3.oblique_face.value==3ULL*ai::unit/8ULL);
+static_assert(swe::right_triangle_f123_original::F3_Q62 ==
+              probe_f3.oblique_face.value);
+static_assert(swe::right_triangle_f123_original::TOTAL_Q62 ==
+              right_tri_core.total.value);
+// F123 experimental 8-denominator path compiles without STL or
+// any additional source dependencies beyond the original two headers.
+constexpr auto eighth_probe=swe::f123_eighth_fold_experiment::calculate(probe_f3);
+static_assert(eighth_probe.valid);
+static_assert(eighth_probe.f2_over_2_q62==
+              eighth_probe.four_times_f2_over_8_q62);
+static_assert(eighth_probe.final_egress_q62==
+              3ULL*ai::unit/128ULL);
+static_assert(!eighth_probe.geometric_tip_verified);
+
+// Read-only bounded finite SigmaE from frozen F123 -> Eighth Fold.
+constexpr auto sigma_e_probe =
+    swe::sigma_e_redaxualchoice::calculate(eighth_probe);
+static_assert(sigma_e_probe.valid &&
+              sigma_e_probe.all_terms_equivalent);
+static_assert(sigma_e_probe.sigma_q62 ==
+              21ULL*ai::unit/256ULL);
+static_assert(!sigma_e_probe.geometric_tip_verified);
+
+// Separate SigmaF carbon-copy, alongside (not over) SigmaE.
+namespace sigma_f_core=swe::sigma_f_redaxualchoice;
+static_assert(sigma_f_core::BASE ==
+              swe::right_triangle_f123_original::BASE_Q62);
+static_assert(sigma_f_core::SIGMA_F123 ==
+              swe::right_triangle_f123_original::LATERAL_Q62);
+static_assert(sigma_f_core::SIGMA_REDAXUALCHOICE ==
+              14123288431433875456ULL);
+static_assert(sigma_f_core::SIGMA_REDAXUALCHOICE !=
+              sigma_e_probe.sigma_q62);
+static_assert(sigma_f_core::TOTAL == ai::unit);
+
+// FOUR-PYRAMID-REDUXUALCHOICE-PR34-008: no STL in new source.
+namespace four_core=swe::four_pyramid_reduxualchoice;
+static_assert(four_core::CORE.right_square_geometry_verified);
+static_assert(four_core::NINE.exact_partition_verified);
+static_assert(four_core::NINE.sum.value==four_core::BASE);
+static_assert(four_core::TOP3.rational_geometry_verified);
+static_assert(four_core::STEP_UP.exact_sample_ratio);
+static_assert(four_core::SIGMA_REDUXUALCHOICE ==
+              15132094747964866560ULL);
+static_assert(four_core::SIGMA_REDUXUALCHOICE !=
+              sigma_f_core::SIGMA_REDAXUALCHOICE);
+static_assert(!four_core::missing_tip_or_fold_verified);
+
+// U circle-fit ISO C++20 include-free lane (source arithmetic shared).
+namespace uc_portable=swe::u_circle_fit;
+static_assert(uc_portable::VALIDATE(uc_portable::FACE,
+              uc_portable::HEIGHT_CIRCLE)==uc_portable::U::NotNice);
+static_assert(uc_portable::TRIANGLE_RESULT==uc_portable::U::Nice);
+static_assert(uc_portable::TESSELLATION_RESULT==uc_portable::U::Nice);
+static_assert(uc_portable::ASTRIX_RESULT==uc_portable::U::Nice);
+static_assert(uc_portable::SUM_NINE_DOUBLE_AREA()==7200ULL);
+static_assert(uc_portable::A==600ULL && uc_portable::T==3600ULL);
+static_assert(uc_portable::TOTAL==four_core::TOTAL);
+static_assert(uc_portable::SIGMA==four_core::SIGMA_REDUXUALCHOICE);
+static_assert(!uc_portable::PHYSICAL_FOLD_VERIFIED);
+
+// Portable ISO C++20 tork envelope and three-tier PING.
+namespace tork_portable=swe::xdr_rdx_fold_tork;
+static_assert(tork_portable::AD_FOLDED==67600ULL);
+static_assert(tork_portable::CD_FOLDED==152100ULL);
+static_assert(tork_portable::SIGMA_SIGMA());
+static_assert(tork_portable::SIGMA_SIGMA_SIGMA(64u));
+static_assert(tork_portable::CORRUPTION_REJECTED());
+static_assert(!tork_portable::PHYSICAL_FOLD_INFERRED);
+
+// Independent direct MINZA -> PING -> BiDi compile-time checks.
+namespace direct_portable=swe::minza_direct_ping_bidi;
+static_assert(direct_portable::FOLD.valid);
+static_assert(direct_portable::FOLD.ad_folded==67600ULL);
+static_assert(direct_portable::FOLD.cd_folded==152100ULL);
+static_assert(direct_portable::PING(direct_portable::FOLD));
+static_assert(direct_portable::REPORT.bijective);
+static_assert(direct_portable::REPORT.ping_after_restore);
+static_assert(!direct_portable::NINZA_REQUIRED);
+
+// Direct MINZA->PING TriDi three distinct GEOMETRIC side witnesses.
+namespace tridi_portable=swe::minza_direct_ping_tridi;
+static_assert(tridi_portable::AC2==1300ULL);
+static_assert(tridi_portable::AC_FOLDED==219700ULL);
+static_assert(tridi_portable::REPORT.valid);
+static_assert(tridi_portable::PING_CANONICAL(
+              tridi_portable::ROTATION_3));
+static_assert(tridi_portable::BIDI_PRESERVED());
+static_assert(tridi_portable::REJECT_CORRUPTION());
+static_assert(!tridi_portable::NINZA_REQUIRED);
+
+// THREE distinct 90-degree geometric fold motions; 8 rigid facets.
+namespace fold3_portable=swe::three_geometric_folds;
+static_assert(fold3_portable::WITNESS.valid);
+static_assert(fold3_portable::FOLD_STEP(1u));
+static_assert(fold3_portable::FOLD_STEP(2u));
+static_assert(fold3_portable::FOLD_STEP(3u));
+static_assert(fold3_portable::SUM_DOUBLE_AREA()==7200ULL);
+static_assert(fold3_portable::FREE_SEAM_COINCIDENT());
+static_assert(!fold3_portable::CLOSED_CUBE_VERIFIED);
+
+
+// Rectangloid ISO C++20 primitive: closed geometric boundary + faces.
+namespace prism_portable=swe::rectangloid_primitive;
+static_assert(prism_portable::WITNESS.valid);
+static_assert(prism_portable::ALL_EDGES_PAIRED(prism_portable::CLOSED));
+static_assert(prism_portable::VOLUME==13500);
+static_assert(prism_portable::SURFACE_AREA==4050);
+static_assert(prism_portable::VISIBLE_TRIANGLES(
+              prism_portable::CAMERA)==6u);
+static_assert(!prism_portable::RELEASE_AUTHORIZED);
+
+static_assert(swe::slidingtoolong::QUALIFIED());
+static_assert(swe::eulers_jig::ONE_TRIANGLE_X1E17==swe::slidingtoolong::EULER_JIG_ONE_X1E17);
+static_assert(swe::slidingtoolong::EULER_JIG_ONE_X1E17==
+              2864498081537971875ULL);
+static_assert(swe::slidingtoolong::MATH_PI.fraction==
+              2611923443488327891ULL);
+static_assert(swe::slidingtoolong::REJECT_CORRUPTION());
+
+static_assert(swe::sigma_form::square_pyramid_z(
+    0.0,0.0,0.0,0.0,1.0,2.0).value == 2.0);
+static_assert(swe::sigma_form::inverse_square_intensity(
+    1.0,0.15,1.0,swe::sigma_form::geometry_pi).valid);
 static_assert(swe::inverse_square::e1.numerator == 271828182845904523ULL);
 static_assert(swe::inverse_square::p1.numerator == 314159265358979323ULL);
 static_assert(swe::coreao::inspect(swe::deca_sigma::run(2.0)).passed());

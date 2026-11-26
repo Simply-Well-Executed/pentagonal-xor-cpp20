@@ -1,0 +1,191 @@
+# SPDX-License-Identifier: 0BSD
+# QuadDi/1: Continuous Improvement is distinct from Continuous Integration.
+# Four observable stages; nothing writes repository content or changes approvals.
+name: QUADDI CI | Four-stage Continuous Improvement
+on:
+  push:
+    branches:
+      - feat/jstar-msvc-process-provenance-20261121
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: quaddi-ci-pr34
+  cancel-in-progress: false
+jobs:
+  quad-di-continuous-improvement:
+    name: Observe -> Measure -> Propose -> Verify (release held)
+    runs-on: windows-2025
+    timeout-minutes: 35
+    permissions:
+      contents: read
+    steps:
+      - name: 'QuadDi 1/4 OBSERVE: freeze event commit and inventory raw files'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $repo='Simply-Well-Executed/pentagonal-xor-cpp20'
+          if($env:GITHUB_ACTIONS -cne 'true' -or $env:RUNNER_OS -cne 'Windows' -or
+             $env:GITHUB_REPOSITORY -cne $repo -or
+             $env:GITHUB_REF -cne 'refs/heads/feat/jstar-msvc-process-provenance-20261121' -or
+             $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$') {
+            throw 'QUADDI_CI|HOLD|untrusted_event_identity'
+          }
+          $zip=Join-Path $env:RUNNER_TEMP 'quaddi-ci-exact-source.zip'
+          $stage=Join-Path $env:RUNNER_TEMP 'quaddi-ci-exact-source'
+          $evidence=Join-Path $env:RUNNER_TEMP 'quaddi-ci-evidence'
+          $headers=@{
+            Authorization='Bearer '+$env:GH_TOKEN
+            Accept='application/vnd.github+json'
+            'X-GitHub-Api-Version'='2022-11-28'
+            'User-Agent'='swe-quaddi-continuous-improvement'
+          }
+          # Online source bootstrap is explicit; subsequent four-stage checks are local.
+          Invoke-WebRequest -Uri ('https://api.github.com/repos/'+$repo+'/zipball/'+$env:GITHUB_SHA) -Headers $headers -OutFile $zip -MaximumRedirection 5
+          Expand-Archive -LiteralPath $zip -DestinationPath $stage
+          $roots=@(Get-ChildItem -LiteralPath $stage -Directory)
+          if($roots.Count -ne 1) { throw 'QUADDI_CI|HOLD|ambiguous_source_root' }
+          $root=$roots[0].FullName
+          if(-not [IO.File]::Exists((Join-Path $root 'CMakeLists.txt')) -or
+             -not [IO.File]::Exists((Join-Path $root '.github/workflows/PR-PARITY.yml'))) {
+            throw 'QUADDI_CI|HOLD|incomplete_source'
+          }
+          [void][IO.Directory]::CreateDirectory($evidence)
+          [IO.File]::WriteAllText((Join-Path $evidence 'root.txt'),$root)
+          [IO.File]::WriteAllText((Join-Path $evidence 'source-sha.txt'),$env:GITHUB_SHA)
+          $rows=[Collections.Generic.List[string]]::new()
+          $rows.Add("path`tbytes`tsha256")
+          $files=@(Get-ChildItem -LiteralPath $root -Recurse -Force -File | Sort-Object FullName)
+          foreach($f in $files) {
+            $rel=[IO.Path]::GetRelativePath($root,$f.FullName).Replace('\','/')
+            if($rel.StartsWith('../',[StringComparison]::Ordinal) -or
+               $rel -match '[\r\n\t|]' -or $rel.Contains('..\')) {
+              throw 'QUADDI_CI|HOLD|unsafe_manifest_path'
+            }
+            $digest=(Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            $rows.Add($rel+"`t"+$f.Length+"`t"+$digest)
+          }
+          if($files.Count -lt 1) { throw 'QUADDI_CI|HOLD|empty_source' }
+          [IO.File]::WriteAllLines((Join-Path $evidence 'manifest.tsv'),$rows,[Text.UTF8Encoding]::new($false))
+          Write-Host ('QUADDI_CI|OBSERVE|PASS|HEAD='+$env:GITHUB_SHA+'|FILES='+$files.Count+'|RELEASE=HOLD')
+      - name: 'QuadDi 2/4 MEASURE: all PowerShell parsers and known source gates'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $evidence=Join-Path $env:RUNNER_TEMP 'quaddi-ci-evidence'
+          $root=[IO.File]::ReadAllText((Join-Path $evidence 'root.txt'))
+          $rows=[Collections.Generic.List[string]]::new()
+          $rows.Add("gate`tstatus`tevidence")
+          foreach($rel in @(
+            'ci/Invoke-TriforcePipeline.ps1',
+            'ci/Invoke-PRParity.ps1',
+            'shared/slidingtoolong.hpp',
+            'diaery/Invoke-ParityGate.ps1',
+            'quaddi-ni/QuadDiNI.cpp',
+            'quaddi-ni/Invoke-NativeQualification.ps1'
+          )) {
+            $status=if([IO.File]::Exists((Join-Path $root $rel))){'PASS'}else{'HOLD'}
+            $rows.Add("SOURCE_PATH`t"+$status+"`t"+$rel)
+          }
+          $scripts=@(Get-ChildItem -LiteralPath $root -Recurse -Force -File -Filter '*.ps1')
+          if($scripts.Count -eq 0) { throw 'QUADDI_CI|HOLD|no_powershell_sources' }
+          foreach($script in $scripts) {
+            $tokens=$null; $parseErrors=$null
+            [void][Management.Automation.Language.Parser]::ParseFile($script.FullName,[ref]$tokens,[ref]$parseErrors)
+            $rel=[IO.Path]::GetRelativePath($root,$script.FullName).Replace('\','/')
+            $status=if(@($parseErrors).Count -eq 0){'PASS'}else{'HOLD'}
+            $rows.Add("PS_PARSE`t"+$status+"`t"+$rel)
+          }
+          $cmake=[IO.File]::ReadAllText((Join-Path $root 'CMakeLists.txt'))
+          $cmakeValid=($cmake -cmatch '(?m)^set\(CMAKE_CXX_STANDARD 20\)' -and
+                       $cmake -cmatch '(?m)^set\(CMAKE_CXX_EXTENSIONS OFF\)' -and
+                       $cmake -match '/O2|-O2')
+          $rows.Add('CXX20_O2_POLICY'+"`t"+$(if($cmakeValid){'PASS'}else{'HOLD'})+"`t"+'CMakeLists.txt')
+          [IO.File]::WriteAllLines((Join-Path $evidence 'measure.tsv'),$rows,[Text.UTF8Encoding]::new($false))
+          $held=@($rows | Where-Object { $_ -match "`tHOLD`t" }).Count
+          Write-Host ('QUADDI_CI|MEASURE|CHECKS='+($rows.Count-1)+'|HOLD='+$held+'|RELEASE=HOLD')
+      - name: 'QuadDi 3/4 PROPOSE: human-review improvements, never auto-repair'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $evidence=Join-Path $env:RUNNER_TEMP 'quaddi-ci-evidence'
+          $observations=@([IO.File]::ReadAllLines((Join-Path $evidence 'measure.tsv')))
+          $suggestions=[Collections.Generic.List[string]]::new()
+          $suggestions.Add('# QuadDi Continuous Improvement | Review-only proposals')
+          $suggestions.Add('')
+          $suggestions.Add('Source commit: '+[IO.File]::ReadAllText((Join-Path $evidence 'source-sha.txt')))
+          $suggestions.Add('')
+          $suggestions.Add('These are derived review notes. Git and job logs remain the evidence; no approval is inferred.')
+          foreach($line in $observations) {
+            $parts=$line.Split([char]9)
+            if($parts.Count -ne 3 -or $parts[1] -cne 'HOLD') { continue }
+            $advice=switch($parts[0]) {
+              'SOURCE_PATH' {'Review the dependency against the owning branch and its history; restore or retire only by explicit decision.'}
+              'PS_PARSE' {'Inspect the parser diagnostics and fix on a separately reviewed revision without deleting the historical original.'}
+              'CXX20_O2_POLICY' {'Reconcile native C++20 extension policy and /O2/-O2 against the compiler configuration.'}
+              default {'Investigate evidence; do not suppress the required gate.'}
+            }
+            $suggestions.Add('- HOLD '+$parts[0]+' '+$parts[2]+': '+$advice)
+          }
+          $heldCount=@($observations | Where-Object { $_ -match "`tHOLD`t" }).Count
+          if($heldCount -eq 0) { $suggestions.Add('- No measurement holds were detected. This is not release authorization.') }
+          [IO.File]::WriteAllLines((Join-Path $evidence 'proposals.md'),$suggestions,[Text.UTF8Encoding]::new($false))
+          Write-Host ('QUADDI_CI|PROPOSE|REVIEW_NOTES='+$heldCount+'|SOURCE_MUTATIONS=0|RELEASE=HOLD')
+      - name: 'QuadDi 4/4 VERIFY: independent source hash replay, honest red gates'
+        shell: pwsh
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $evidence=Join-Path $env:RUNNER_TEMP 'quaddi-ci-evidence'
+          $root=[IO.File]::ReadAllText((Join-Path $evidence 'root.txt'))
+          $sha=[IO.File]::ReadAllText((Join-Path $evidence 'source-sha.txt'))
+          if($sha -cne $env:GITHUB_SHA) { throw 'QUADDI_CI|HOLD|source_identity_mismatch' }
+          $manifest=@([IO.File]::ReadAllLines((Join-Path $evidence 'manifest.tsv')))
+          if($manifest.Count -lt 2 -or $manifest[0] -cne "path`tbytes`tsha256") {
+            throw 'QUADDI_CI|HOLD|manifest_invalid'
+          }
+          $current=@(Get-ChildItem -LiteralPath $root -Recurse -Force -File)
+          if($current.Count -ne ($manifest.Count-1)) { throw 'QUADDI_CI|HOLD|file_inventory_changed' }
+          for($i=1;$i -lt $manifest.Count;$i++) {
+            $parts=$manifest[$i].Split([char]9)
+            if($parts.Count -ne 3 -or $parts[0] -match '(^/|\.\.|[\r\n])') {
+              throw 'QUADDI_CI|HOLD|bad_manifest_entry'
+            }
+            $file=Join-Path $root $parts[0]
+            if(-not [IO.File]::Exists($file)) { throw ('QUADDI_CI|HOLD|missing='+$parts[0]) }
+            $info=[IO.FileInfo]::new($file)
+            $digest=(Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
+            if($info.Length.ToString() -cne $parts[1] -or $digest -cne $parts[2]) {
+              throw ('QUADDI_CI|HOLD|source_mutated='+$parts[0])
+            }
+          }
+          if(-not [IO.File]::Exists((Join-Path $evidence 'proposals.md'))) {
+            throw 'QUADDI_CI|HOLD|proposals_missing'
+          }
+          $rows=@([IO.File]::ReadAllLines((Join-Path $evidence 'measure.tsv')))
+          if($rows.Count -lt 2) { throw 'QUADDI_CI|HOLD|measurement_missing' }
+          $held=@($rows | Where-Object { $_ -match "`tHOLD`t" }).Count
+          $pass=@($rows | Where-Object { $_ -match "`tPASS`t" }).Count
+          $summary=@(
+            '## QuadDi/1 Continuous Improvement',
+            '',
+            '- Source HEAD: '+$sha,
+            '- OBSERVE: '+($manifest.Count-1)+' files, exact commit',
+            '- MEASURE: '+$pass+' passed checks; '+$held+' held checks',
+            '- PROPOSE: review-only recommendations in job evidence (not committed)',
+            '- VERIFY: all source files independently rehashed without mutation',
+            '- RELEASE=HOLD; no automatic merges or approvals',
+            ''
+          )
+          $proposalText=[IO.File]::ReadAllText((Join-Path $evidence 'proposals.md'))
+          [IO.File]::AppendAllText($env:GITHUB_STEP_SUMMARY,($summary -join [Environment]::NewLine)+[Environment]::NewLine+$proposalText)
+          foreach($line in [IO.File]::ReadAllLines((Join-Path $evidence 'proposals.md'))) {
+            Write-Host $line
+          }
+          Write-Host ('QUADDI_CI|VERIFY|FILES='+($manifest.Count-1)+'|PASS='+$pass+'|HOLD='+$held+'|RELEASE=HOLD')
+          if($held -gt 0) { throw ('QUADDI_CI|HOLD|OPEN_REVIEW_FINDINGS='+$held) }
