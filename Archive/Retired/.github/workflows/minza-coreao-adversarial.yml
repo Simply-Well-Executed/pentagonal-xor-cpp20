@@ -1,0 +1,43 @@
+name: MINZA COREAO adversarial media gates
+on:
+  pull_request:
+    paths:
+      - 'tools/coreao_scalar_zlib_rfc1950_original.cpp'
+      - 'tools/devils_advocate_quicksort_original.cpp'
+      - 'tests/minza_original_contributions_test.cpp'
+      - 'tests/minza_media_control_gates_test.cpp'
+      - 'tests/minza_phase_routes_test.cpp'
+      - 'tools/minza_zlib_carve.cpp'
+      - '.github/workflows/minza-coreao-adversarial.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpp20-o2:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install GCC 14 and zlib development headers
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y g++-14 zlib1g-dev
+      - name: Build preserved original contributions at O2
+        run: |
+          g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -fstack-protector-strong -D_FORTIFY_SOURCE=2 tools/coreao_scalar_zlib_rfc1950_original.cpp -o /tmp/minza_scalar_original
+          g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -fstack-protector-strong -D_FORTIFY_SOURCE=2 tools/devils_advocate_quicksort_original.cpp -o /tmp/minza_devils_original
+      - name: Build read-only adversarial and provenance tests at O2
+        run: |
+          g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -fstack-protector-strong -D_FORTIFY_SOURCE=2 tests/minza_original_contributions_test.cpp -lz -o /tmp/minza_originals_test
+          g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2 tests/minza_media_control_gates_test.cpp -lz -o /tmp/minza_media_gates_test
+          g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2 tests/minza_phase_routes_test.cpp -o /tmp/minza_phase_routes_test
+          g++-14 -std=c++20 -O2 -Wall -Wextra -Wpedantic -Werror -fstack-protector-strong -D_FORTIFY_SOURCE=2 tools/minza_zlib_carve.cpp -lz -o /tmp/minza_zlib_carve
+      - name: Validate unchanged original demonstrations
+        run: |
+          timeout 90s /tmp/minza_scalar_original
+          timeout 90s /tmp/minza_devils_original
+      - name: Validate negative controls, invariants and original code
+        run: |
+          /tmp/minza_originals_test
+          /tmp/minza_media_gates_test
+          /tmp/minza_phase_routes_test
+          /tmp/minza_zlib_carve
