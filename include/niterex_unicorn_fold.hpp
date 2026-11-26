@@ -159,7 +159,7 @@ inline bool render_xhtml_strict(Sink s) noexcept {
     for(int v=2;v>=-2;--v) {
         if(!emit(s,"<tr><th scope=\"row\">") || !emit_signed(s,v) || !emit(s,"</th>")) return false;
         for(int w=-2;w<=2;++w) {
-            if(!emit(s,"<td><span class=\"a\">A ")) ||
+            if(!emit(s,"<td><span class=\"a\">A ") ||
                !emit_number(s,surface_a(w,v)) ||
                !emit(s,"%</span> <span class=\"b\">B ") ||
                !emit_number(s,surface_b(w,v)) ||
