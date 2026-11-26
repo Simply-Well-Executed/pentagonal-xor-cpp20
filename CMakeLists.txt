@@ -90,6 +90,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/sigma_f_redaxualchoice.hpp
     shared/four_pyramid_reduxualchoice.hpp
     shared/u_circle_fit.hpp
+    shared/minza_topology_incidence.hpp
     shared/xdr_rdx_fold_tork.hpp
     shared/minza_direct_ping_bidi.hpp
     shared/minza_direct_ping_tridi.hpp
@@ -388,6 +389,7 @@ install(FILES
     shared/sigma_f_redaxualchoice.hpp
     shared/four_pyramid_reduxualchoice.hpp
     shared/u_circle_fit.hpp
+    shared/minza_topology_incidence.hpp
     shared/xdr_rdx_fold_tork.hpp
     shared/minza_direct_ping_bidi.hpp
     shared/minza_direct_ping_tridi.hpp
@@ -678,6 +680,22 @@ if(BUILD_TESTING)
     CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
   add_test(NAME minza_ninza_ping_54byte_inverse_and_mismatch
            COMMAND minza_ninza_ping_unfold_test)
+  # Exact nine-face incidence and the scoped AC-hinge witness.
+  add_executable(minza_topology_design_test tests/minza_topology_design_test.cpp)
+  target_compile_features(minza_topology_design_test PRIVATE cxx_std_20)
+  set_target_properties(minza_topology_design_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  target_compile_options(minza_topology_design_test PRIVATE
+    /O2 /W4 /permissive- /constexpr:steps2000000)
+  add_test(NAME minza_topology_design COMMAND minza_topology_design_test)
+
+  # The original nine-lane byte route has a separate STL-backed API.
+  add_executable(minza_byte_pipeline_test tests/minza_byte_pipeline_test.cpp)
+  target_compile_features(minza_byte_pipeline_test PRIVATE cxx_std_20)
+  set_target_properties(minza_byte_pipeline_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  target_compile_options(minza_byte_pipeline_test PRIVATE /O2 /W4 /permissive-)
+  add_test(NAME minza_byte_pipeline_wildcard COMMAND minza_byte_pipeline_test)
 endif()
 
 # Distribute source-independent Dolphin subject-catalog instructions, not private media.
