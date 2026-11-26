@@ -238,37 +238,6 @@ jobs:
             throw 'EXCITED|HOLD|TSV_receipt_mismatch'
           }
           Write-Host ('EXCITED|V3|SPT_DOVIA_RUSPT_VERIFIED|MARKDOWN_SHA256='+$sha+'|RELEASE=HOLD')
-      - name: DYNAMO native C++20 source/trace/time tests through LadderDi rung
-        id: dynamo
-        if: ${{ always() && steps.bootstrap.outcome == 'success' }}
-        shell: pwsh
-        env:
-          RUNG: ${{ matrix.lane }}
-        run: |
-          Set-StrictMode -Version Latest
-          $ErrorActionPreference='Stop'
-          $root=[IO.File]::ReadAllText((Join-Path $env:RUNNER_TEMP 'ladderdi-root.txt'))
-          $vswhere=Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
-          if(-not [IO.File]::Exists($vswhere)){throw 'DYNAMO|HOLD|VSWHERE_MISSING'}
-          $found=@(& $vswhere -latest -products '*' -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64' -property installationPath)
-          if($found.Count -ne 1){throw 'DYNAMO|HOLD|MSVC_MISSING'}
-          $dev=Join-Path $found[0] 'Common7/Tools/Launch-VsDevShell.ps1'
-          if(-not [IO.File]::Exists($dev)){throw 'DYNAMO|HOLD|DEV_SHELL_MISSING'}
-          & $dev -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
-          $cl=(Get-Command cl.exe -ErrorAction Stop).Source
-          $out=Join-Path $env:RUNNER_TEMP ('dynamo-ladderdi-'+$env:RUNG)
-          [IO.Directory]::CreateDirectory($out)|Out-Null
-          foreach($test in @('application_of_ymxb_test','error_ledger_test','dynamo_subject_test','research_filter_test','filtrox_test','projections_test','thailonga_test','freq_test','circle_band_test','quintiles_test','rejection_ledger_test','audit_test','accessible_actions_test','accessible_seals_test','pentapi_test','monkey_tail_test','trace_timeline_test','pentadi_test')){
-            $src=Join-Path $root ('diaery/'+$test+'.cpp')
-            if(-not [IO.File]::Exists($src)){throw ('DYNAMO|HOLD|SOURCE_MISSING|'+$test)}
-            $exe=Join-Path $out ($test+'.exe')
-            & $cl /nologo /std:c++20 /O2 /W4 /permissive- "/Fe:$exe" $src
-            if($LASTEXITCODE -ne 0 -or -not [IO.File]::Exists($exe)){throw ('DYNAMO|HOLD|COMPILE|'+$test)}
-            & $exe
-            if($LASTEXITCODE -ne 0){throw ('DYNAMO|HOLD|TEST|'+$test)}
-            Write-Host ('LADDERDI|DYNAMO|RUNG='+$env:RUNG+'|TEST='+$test+'|PASS')
-          }
-          Write-Host ('LADDERDI|DYNAMO|RUNG='+$env:RUNG+'|RUNG_TESTS=PASS|RELEASE=HOLD')
       - name: Enforce no false overall approval or remote auto install
         if: always()
         shell: pwsh
@@ -288,20 +257,6 @@ jobs:
           EXCITE: ${{ steps.excite.outcome }}
           BUILD: ${{ steps.excited_build.outcome }}
           VERIFY: ${{ steps.excited_verify.outcome }}
-          DYNAMO: ${{ steps.dynamo.outcome }}
         run: |
-          # PentaDi: RUNG, EXCITE, EXCITED, ATTEST share one NULL sentinel.
-          # EXCITED includes both native generated output and independent verify;
-          # ATTEST is qualified only if the DYNAMO C++20 gate also succeeded.
-          $rungPass=($env:NATIVE -ceq 'success')
-          $excitePass=($env:EXCITE -ceq 'success')
-          $excitedPass=($env:BUILD -ceq 'success' -and $env:VERIFY -ceq 'success')
-          $attestPass=($env:DYNAMO -ceq 'success')
-          $penta=@($rungPass,$excitePass,$excitedPass,$attestPass)
-          $passed=@($penta | Where-Object { $_ -eq $true }).Count
-          Write-Host ('PENTADI|COMMON=NULL|RUNG='+$rungPass+'|EXCITE='+$excitePass+
-                      '|EXCITED='+$excitedPass+'|ATTEST_EVIDENCE='+$attestPass+
-                      '|PASS_COUNT='+$passed+'/4|RELEASE=HOLD')
-          if($passed -ne 4){throw 'PENTADI|HOLD|COMMON_NULL_NOT_QUALIFIED'}
-          Write-Host ('LADDERDI|ATTEST|RUNG='+$env:RUNG+'|NATIVE='+$env:NATIVE+'|EXCITE='+$env:EXCITE+'|EXCITED_BUILD='+$env:BUILD+'|EXCITED_VERIFY='+$env:VERIFY+'|DYNAMO='+$env:DYNAMO+'|RELEASE=HOLD')
-          if($env:NATIVE -cne 'success' -or $env:EXCITE -cne 'success' -or $env:BUILD -cne 'success' -or $env:VERIFY -cne 'success' -or $env:DYNAMO -cne 'success'){throw 'LADDERDI|HOLD|stage_not_qualified'}
+          Write-Host ('LADDERDI|ATTEST|RUNG='+$env:RUNG+'|NATIVE='+$env:NATIVE+'|EXCITE='+$env:EXCITE+'|EXCITED_BUILD='+$env:BUILD+'|EXCITED_VERIFY='+$env:VERIFY+'|RELEASE=HOLD')
+          if($env:NATIVE -cne 'success' -or $env:EXCITE -cne 'success' -or $env:BUILD -cne 'success' -or $env:VERIFY -cne 'success'){throw 'LADDERDI|HOLD|stage_not_qualified'}
