@@ -246,7 +246,6 @@ $oct=Join-Path $root 'octadi/Invoke-OctaDiGTable.ps1'
 $octResult=Run 'octadi-subgate' (Get-Command pwsh).Source @('-NoLogo','-NoProfile','-NonInteractive','-File',$oct,
  '-RepositoryRoot',$root,'-EvidenceDirectory',(Join-Path $out 'octadi-evidence'))
 Record 'OctaDi' $(if($octResult.Exit -eq 0){'PASS'}else{'HOLD'}) 'PY2_2.7.18_PLUS_PY3' (Hash $oct) 'NOT_BUNDLED' ('exit='+$octResult.Exit)
-
  }catch{
   Write-Host 'LADDERDI|OctaDi|HOLD|lane_exception'
   if($items.Count -eq $beforeCount){Record 'OctaDi' 'HOLD' 'LANE_EXCEPTION' 'NONE' 'NONE' 'see_native_diagnostics'}else{throw}
