@@ -73,11 +73,11 @@ int main() {
     // ALONZ TRIPI: distinct byte, Jig evidence and approval gates.
     // Undefined Jig never becomes an implicit PASS.
     using swe::alonz::Verdict;
-    if (inspect(swe::alonz::acorn, swe::alonz::matching_shell, 4ULL,
+    if (swe::alonz::inspect(swe::alonz::acorn, swe::alonz::matching_shell, 4ULL,
                 swe::alonz::undefined_witness) != Verdict::Hold) return 12;
-    if (inspect(swe::alonz::acorn, swe::alonz::altered_shell, 4ULL,
+    if (swe::alonz::inspect(swe::alonz::acorn, swe::alonz::altered_shell, 4ULL,
                 swe::alonz::verified_witness) != Verdict::Reject) return 13;
-    if (inspect(swe::alonz::acorn, swe::alonz::matching_shell, 4ULL,
+    if (swe::alonz::inspect(swe::alonz::acorn, swe::alonz::matching_shell, 4ULL,
                 swe::alonz::verified_witness) != Verdict::Accept) return 14;
 
     const auto example = swe::coreao::inspect(run(-9.0));
