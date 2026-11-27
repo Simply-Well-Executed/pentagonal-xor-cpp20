@@ -198,6 +198,15 @@ if(WIN32)
 endif()
 include(CTest)
 if(BUILD_TESTING)
+    # Namespace-free composition: co-include independent libraries and compile
+    # each standalone permutation as its own translation unit.
+    add_executable(namespace_free_test tests/namespace_free_test.cpp
+      docs/experiments/fuckitin_standalone.cpp
+      docs/experiments/zipitup_standalone.cpp
+      docs/experiments/zipitdown_standalone.cpp
+      docs/experiments/zipitout_standalone.cpp)
+    target_link_libraries(namespace_free_test PRIVATE LCD ARIARI)
+    add_test(NAME namespace_free_composition_65025 COMMAND namespace_free_test)
     add_executable(lcd_test tests/LCD_TEST.cpp)
     target_link_libraries(lcd_test PRIVATE LCD)
     target_compile_options(lcd_test PRIVATE /WX)

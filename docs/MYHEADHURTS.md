@@ -387,3 +387,43 @@ all 256 x 256 unsigned 8-bit operand pairs, plus compile-time 64-bit boundary
 fixtures. This is authored qualification, not a native execution receipt.
 Native MSVC result remains pending; existing TRIFORCE and release HOLD
 are not bypassed. No external dependency is introduced.
+
+## 26. Namespace-free structural revision (2026-11-27)
+
+Owner-directed migration of the draft's new C++20 implementation. The parent
+revision is retained in Git history; earlier source receipts and experiments
+are not rewritten. The recursive inventory at the start of review contained
+798 entries, 216 active C/C++ sources and headers (excluding Archive), with
+no truncation. This is a complete path inventory and targeted source review,
+not a claim that every source was exhaustively compiled or audited.
+
+Current draft interfaces:
+- `LCD(a,c)` remains an independent global function.
+- `REDUX::reduction`, `REDUX::fraction`, etc. are static members of a global
+  type, not a namespace. No source-level arithmetic or fixtures removed.
+- `ARIARI::arirang`, `ARIARI::airgap`, etc. are static members of a global
+  type; the optional `ARIARI_TOOLONG::compose` adapter retains qualified
+  references to the established COREAO, TOOLONG and GammaGamma libraries.
+  Their existing namespaced interfaces are not redefined or flattened.
+- REDUX.C and ARIRANG.cpp reproduce the revised canonical bounded cores and
+  test bodies; no includes are added to either standalone file.
+- GENSHIN bias/BiDi/TriPi/ZIPIT draft headers use type scopes. Original
+  fixture values and assertions are preserved and evaluated after class
+  completion. Independent standalone ZIPIT files use unique layout types
+  and translation-unit-local functions.
+- LF9WN9Z implementation helpers use a type scope. The three exported C ABI
+  signatures, original tick arithmetic, fixed-point test, parameter checks
+  and 7875-case physics oracle remain unchanged.
+- Explicit test qualification replaces broad namespace imports. The new
+  native CTest namespace_free_composition_65025 co-includes the independent
+  headers and compares LCD with KNIGHTREX for 65,025 positive byte pairs.
+
+The draft-only swe::redux and swe::ariari source interfaces are superseded
+by global type scopes, which avoid polluting the global scope with generic
+names such as Ratio, Status and Core. This is a deliberate source API change
+within the unmerged draft, not a binary compatibility promise. Existing
+shared COREAO and sigma geometry namespaces, other established tree APIs,
+standard-library qualifications, C language linkage, safety bounds and
+TRIFORCE/JSTAR remain intact. Namespace removal is a source organization
+change; it does not by itself remove runtime instructions or prove speedup.
+No native MSVC execution is claimed until actual CI receipts are available.
