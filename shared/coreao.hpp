@@ -35,6 +35,10 @@ constexpr double largest(double a, double b) noexcept {
 // Scale before subtraction to avoid overflow with large finite doubles.
 // For finite a,b: 0 <= normalized_residual(a,b) <= 2.
 constexpr double normalized_residual(double a, double b) noexcept {
+    // REDUX/1: equal finite nonzero operands have an exact zero residual.
+    // Keep the original zero-pair path (including signed-zero semantics)
+    // and all nonfinite handling. No comparison or route is removed.
+    if (a == b && a != 0.0 && deca_sigma::finite(a)) return 0.0;
     const double scale = largest(1.0, largest(magnitude(a), magnitude(b)));
     return magnitude(a / scale - b / scale);
 }
