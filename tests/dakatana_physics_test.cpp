@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: 0BSD
 // DAKATANA-01: independent literal tick oracle for the public DLL ABI.
 #include "../docs/experiments/LF9WN9Z/LF9WN9Z.hpp"
+#include "../shared/redux.hpp"
+static_assert(swe::redux::dakatana(10000,30)==swe::redux::Dakatana::qualified);
+static_assert(swe::redux::dakatana(10000,0)==swe::redux::Dakatana::eliminated);
 namespace {
 using I=long long;
 struct S { I x,y,z,vy,vz; };
