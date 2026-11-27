@@ -62,6 +62,14 @@ endif()
 # experiments remain available with the explicit OFF setting. Core-only builds
 # compile one ISO C++20 object and create a native static archive, without any
 # STL source includes, C++ runtime link step, network fetch or executable tests.
+# REDUX/1: project-local STD-free C++20 header library.
+add_library(REDUX INTERFACE)
+target_include_directories(REDUX INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+  $<INSTALL_INTERFACE:include/swe>)
+target_compile_features(REDUX INTERFACE cxx_std_20)
+install(FILES shared/redux.hpp DESTINATION include/swe)
+
 option(SWE_STD_FREE_CORE_ONLY
   "Build native STD-free Suite plus canonical DecaSigma/TriPi/COREAO/stability headers" OFF)
 if(SWE_STD_FREE_CORE_ONLY)
@@ -179,6 +187,15 @@ if(WIN32)
 endif()
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(redux_test tests/redux_test.cpp)
+    target_link_libraries(redux_test PRIVATE REDUX)
+    add_test(NAME redux_exact_reduction COMMAND redux_test)
+    set_source_files_properties(docs/experiments/REDUX.C PROPERTIES LANGUAGE CXX)
+    add_executable(redux_standalone docs/experiments/REDUX.C)
+    target_compile_options(redux_standalone PRIVATE /TP)
+    target_compile_features(redux_standalone PRIVATE cxx_std_20)
+    add_test(NAME redux_standalone_exact_reduction COMMAND redux_standalone)
+
     add_executable(niterex_web9x_ninebit_test tests/niterex_web9x_ninebit_test.cpp)
     target_include_directories(niterex_web9x_ninebit_test PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/include)
