@@ -198,6 +198,8 @@ if(BUILD_TESTING)
     add_executable(dakatana_physics_test tests/dakatana_physics_test.cpp)
     target_link_libraries(dakatana_physics_test PRIVATE LF9WN9Z)
     add_test(NAME dakatana_physics_exact_batch COMMAND dakatana_physics_test)
+    set_tests_properties(dakatana_physics_exact_batch PROPERTIES
+      ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_FILE_DIR:LF9WN9Z>")
     set_source_files_properties(docs/experiments/REDUX.C PROPERTIES LANGUAGE CXX)
     add_executable(redux_standalone docs/experiments/REDUX.C)
     target_compile_options(redux_standalone PRIVATE /TP)
