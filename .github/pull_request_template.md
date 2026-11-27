@@ -1,3 +1,11 @@
+<!--
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
 ## What changed?
 
 Describe the exact native C++20 / PowerShell code or documentation change, affected paths, and source provenance.
@@ -75,3 +83,8 @@ State what passed, what failed, what was not run, and whether the PR should rema
 - [ ] Recorded actual assistive technology checks and NOT TESTED limitations; no claim of certification.
 - [ ] Reviewed unexplained similarity under PENCE; retained source identity, original notices and rights evidence; no unauthorized relicensing or deduplication.
 - [ ] Preserved source history, user choice and existing audit data. Material unresolved regressions or rights conflicts are explicitly HOLD.
+
+## PENNYWORTH attribution (required)
+
+- [ ] Every added or changed file has verified attribution and an exact license identifier or path-specific custody record; existing notices and immutable evidence are preserved.
+- [ ] PENCE review records any uncertain or overlapping rights; no unauthorized relicense, release or deduplication.

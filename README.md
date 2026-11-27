@@ -1,3 +1,11 @@
+<!--
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
 <div align="center">
 
 # ⬟ PENTAGONAL XOR
@@ -15,6 +23,10 @@
 </div>
 
 > **CURRENT roadmap for the draft PR #95 branch.** These additions are not automatically merged to the default branch. Every test result belongs to its exact commit. A failure remains evidence even after a corrected new run. **RELEASE=HOLD. Chosen, never assumed.**
+
+## Attribution and documentation
+
+[File attribution inventory](LICENSES/ATTRIBUTION.tsv) | [Contribution requirements](CONTRIBUTING.md) | [License registry](LICENSES/README.md)
 
 ## Accessibility and documentation
 
