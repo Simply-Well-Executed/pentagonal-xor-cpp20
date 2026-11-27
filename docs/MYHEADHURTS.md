@@ -471,3 +471,25 @@ compiler/linker internals. Existing repository-wide workflows are unchanged.
 Native validation and measured timing comparison remain pending. Expected
 benefit is one build orchestration and deterministic diagnostics, not an
 asserted speedup.
+
+## 29. WIKI/1: native documentation graph
+
+Root wiki.cpp is a namespace-free C++20 tool with a Win32 read/output
+boundary. It enumerates the actual flat .wiki directory, rejects reparse
+points, oversized/invalid filenames and unresolved inline local links,
+and checks index/home coverage, symmetric directed edges and a closed
+previous/next cycle across every page. Its restricted profile recognizes
+plain inline Markdown page links and HTTP(S) references; external URLs
+are not fetched, and fenced code is ignored. It is not a full Markdown
+renderer or arbitrary Markdown parser. Limits: 128 pages, 95 filename
+characters including extension, 256 KiB per file. No new third-party
+library, dynamic allocation in authored code, source mutation or network
+operation. Native Windows SDK/CRT are required for I/O.
+
+Run wiki.exe from the repository root to audit; run wiki.exe --plan to
+emit proposed index/navigation/reciprocal-link Markdown to stdout,
+preserving a valid author ring or using sorted filename order otherwise.
+The plan is not an automatic rewrite. The compile-time fixture checks
+missing return links, UNION closure and a corrupted cycle. Root CTest
+wiki_circular_references is registered; SILVERHAND/1's frozen 12-test
+inventory remains unchanged. Native MSVC execution is pending.

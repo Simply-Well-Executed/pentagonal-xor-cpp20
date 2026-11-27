@@ -42,3 +42,6 @@ Versioned documentation, rendered directly by GitHub. Begin with the [Index](Ind
 
 Previous: [Footer](_Footer.md) · [Index](Index.md) · [Home](Home.md) · Next: [Index](Index.md)
 
+## Native navigation audit
+
+From the repository root, run the native `wiki.exe` to check the actual page graph. `wiki.exe --plan` prints an index and reciprocal navigation proposal without changing files. Source: `wiki.cpp` at the repository root. Native CTest: `wiki_circular_references`. This is a restricted inline-Markdown graph check, not a browser renderer.

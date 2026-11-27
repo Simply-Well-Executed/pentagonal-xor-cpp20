@@ -198,6 +198,13 @@ if(WIN32)
 endif()
 include(CTest)
 if(BUILD_TESTING)
+    # WIKI/1: read-only native documentation graph verification.
+    add_executable(wiki wiki.cpp)
+    target_compile_features(wiki PRIVATE cxx_std_20)
+    target_compile_options(wiki PRIVATE /WX /utf-8 /constexpr:steps1000000)
+    add_test(NAME wiki_circular_references COMMAND wiki)
+    set_tests_properties(wiki_circular_references PROPERTIES
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
     # Namespace-free composition: co-include independent libraries and compile
     # each standalone permutation as its own translation unit.
     add_executable(namespace_free_test tests/namespace_free_test.cpp
