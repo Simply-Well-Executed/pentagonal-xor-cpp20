@@ -68,7 +68,10 @@ target_include_directories(REDUX INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
   $<INSTALL_INTERFACE:include/swe>)
 target_compile_features(REDUX INTERFACE cxx_std_20)
-install(FILES shared/redux.hpp DESTINATION include/swe)
+install(FILES shared/redux.hpp shared/ariari.hpp DESTINATION include/swe)
+add_library(ARIARI INTERFACE)
+target_link_libraries(ARIARI INTERFACE REDUX)
+target_compile_features(ARIARI INTERFACE cxx_std_20)
 
 option(SWE_STD_FREE_CORE_ONLY
   "Build native STD-free Suite plus canonical DecaSigma/TriPi/COREAO/stability headers" OFF)
@@ -187,6 +190,15 @@ if(WIN32)
 endif()
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(ariari_test tests/ariari_test.cpp)
+    target_link_libraries(ariari_test PRIVATE ARIARI)
+    add_test(NAME ariari_fusion_exact_roundtrip COMMAND ariari_test)
+    add_executable(ariari_standalone docs/experiments/ARIRANG.cpp)
+    target_compile_features(ariari_standalone PRIVATE cxx_std_20)
+    add_test(NAME ariari_standalone_exact_roundtrip COMMAND ariari_standalone)
+    add_executable(ariari_toolong_test tests/ariari_toolong_test.cpp)
+    target_link_libraries(ariari_toolong_test PRIVATE ARIARI)
+    add_test(NAME ariari_toolong_gammagamma_composition COMMAND ariari_toolong_test)
     add_executable(redux_test tests/redux_test.cpp)
     target_link_libraries(redux_test PRIVATE REDUX)
     add_test(NAME redux_exact_reduction COMMAND redux_test)
@@ -428,6 +440,7 @@ install(FILES
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/gammagamma.hpp
+    shared/ariari_toolong.hpp
     shared/pi_precision.hpp
     shared/toolong.hpp
     shared/toolong_ratio.hpp

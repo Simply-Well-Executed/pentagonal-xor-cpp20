@@ -330,3 +330,37 @@ Milestone scope: open-PR search returned only #337 and no open matches for eithe
 User requested dependency decomposition after a JSTAR HOLD. The observed failure is missing runtime provenance for rc.exe, not proof of excessive dependency count. Separate native CMake configurations: CORE contains the original complete triforce_native_gate test; PRECISION contains the two existing TOOLONG/GammaGamma test sources, with the same named CTest tests, native MSVC C++20 /O2 /W4 /permissive- and no root project configuration. The original full-root build remains mandatory in its existing repository circuit; this does not replace it. The root configuration was not necessary merely to build these two independent executables. Exact source ledger, nine stage pairs, numerical constants, ATOMIX, evidence-boundary test, release HOLD and JSTAR process-integrity rules remain. A verified native gate is still a prerequisite for downstream authoritative stages.
 
 Preflight fix: do not execute a newly generated native gate executable merely because it exists when the JSTAR build audit has thrown. A fresh script-local provenance flag is set only after the JSTAR script returns normally; before that the permitted bootstrap HEAD/TAIL use the original source oracle. An unsuccessful JSTAR audit still propagates HOLD. Once verified, subsequent HEAD/TAIL checks require the native executable. No rc.exe allowlist bypass or invented receipt. New script revision, not a reclassification of previous runs. No native MSVC/PowerShell/CTest execution verified for this revision. No tenfold runtime claim. Existing workflows use the same entry point and are not replaced.
+
+## 24. ARIARI/1: THAILONGA rollup, ALONZ/INFINITI
+
+EXPLORATORY implementation; native results pending. The new namespace
+`swe::ariari` does not redefine the existing ALONZ acorn-tree, ancestry
+ARIRANG, or DIAERY THAILONGA contracts. No archived experiment is changed.
+
+- `shared/ariari.hpp`: STD-free bounded exact work ratios and reversible AR-prefix
+  encoding with caller-defined distinct byte alphabet and arbitrary supported
+  finite template length. One GCD through REDUX's fraction for the production
+  pair; derive signed reduction and KNIGHTREX from the same CORE. Zero baseline
+  undefined, zero remaining elimination. DECADAKATANA is a compatibility alias
+  for the existing tenfold gate. ARIRANG/ARIRONG forward/reverse and ARIARI closure;
+  independent binary GCD at logical AIRGAP, not a network air gap or approval.
+- `shared/ariari_toolong.hpp`: optional actual arbitrary-precision TOOLONG lane,
+  with explicit independent COREAO trace and explicit GammaGamma decimal token.
+  The wrapper preserves the actual factorial result/status; no implicit decimal
+  split or conversion of a double into an exact integer. Existing TOOLONG and
+  GammaGamma use STL and allocation. Arithmetic consistency is not scientific
+  evidence, authentication or release authorization.
+- `docs/experiments/ARIRANG.cpp`: self-contained copy of the bounded REDUX and
+  ARIARI implementation plus fixtures; `tests/ariari_test.cpp` uses the canonical
+  header. Source fixture OIOIO -> AROIOIO -> original five tokens. 32 binary and
+  243 ternary patterns, 1000-token sequence, 65280 work pairs, corruption and
+  maximum-width cases. Counts are authored cases, not executed results.
+- Exact payload counts exclude metadata; 15 -> 7 bytes (8/15 REDUX, 15/7
+  KNIGHTREX). Checked finite powers preserve symbolic operands on overflow;
+  INFINITI does not allocate all branches. No hardware speedup is asserted.
+- Native root CTest registers the three new executables. Existing TRIFORCE/JSTAR
+  qualification, Q62 source records, release HOLD and older standalone REDUX
+  remain unchanged. No new hosted job or runtime network dependency.
+
+The library is a composition, not a replacement for existing COREAO or TOOLONG.
+No fixed-width arithmetic truncation is introduced.
