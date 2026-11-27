@@ -451,3 +451,23 @@ lines 51 and 87 failed, and legacy source policy identified octadi/G.py and
 18 POSIX scripts plus GNU probe. These independent failures remain HOLD;
 do not bypass them or infer that TALON passed. No historical source
 or receipt is rewritten.
+
+## 28. SILVERHAND/1: UNION of native diagnostics
+
+One CMake build target SILVERHAND in the existing PRECISION configuration
+unites the 12 executable targets (original TOOLONG/GammaGamma and all ten
+new PR test targets). Each executable remains distinct; UNION is task
+composition, not C++ union storage or interchangeable tests. JSTAR already
+uses --parallel 1, /m:1 and /nr:false. SILVERHAND validates the exact CTest
+inventory, calls each test separately in fixed order with --parallel 1,
+records individual exits and elapsed time, and publishes a fresh
+SHA-256-addressed receipt outside the source tree and in CI logs.
+A failed test does not suppress independent tests; any failure blocks the
+aggregate. JSTAR HOLD blocks execution. No bypass, new runner, workflow,
+network fetch, external compiler, automatic merge or release.
+Nine TRIFORCE stages remain; ctest-toolong is renamed SILVERHAND.
+Single scheduled build/test lane does not promise one OS thread inside
+compiler/linker internals. Existing repository-wide workflows are unchanged.
+Native validation and measured timing comparison remain pending. Expected
+benefit is one build orchestration and deterministic diagnostics, not an
+asserted speedup.
