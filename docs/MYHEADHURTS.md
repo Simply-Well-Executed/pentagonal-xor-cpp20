@@ -217,3 +217,66 @@ Chosen dimensions: sphere radius 10 mm, box interior side 180 mm (nine diameters
 Controls: reset floor or ceiling; action IDs 0=ZIPITUP, 1=ZIPITDOWN, 2=ZIPITOUT, 3=FUCKITIN. JUMP sets upward velocity 14700 micrometers/tick (1.47 m/s) when grounded; apex after 15 ticks is 120250 micrometers center height, 110250 above floor center. FALL adds no impulse and leaves gravity to act; it cannot fall through floor. Forward/backward commands set ground horizontal velocity ±5000 micrometers/tick (±0.5 m/s). Horizontal velocity persists during flight; only translational rolling approximation, with ideal ground no-slip angular displacement around X given by -delta_y/r (not integrated as a state variable). No true rolling dynamics. Speeds, radius, heading, 10 ms tick and perfectly inelastic boundary were chosen for this prototype, not supplied by the user.
 
 Caller owns five long long elements, API returns 1 on success and 0 on rejection; bounded input and batch <=10000 ticks. Compile-time fixture describes jump/apex/landing, both horizontal wall contacts, ceiling drop, invalid airborne jump, gravity and box ratio. No native MSVC build, DLL load, runtime test, compiler-generated dependency audit or CI run performed. Native MSVC Release build example from repository root: cmake -S docs/experiments/LF9WN9Z -B build-lf9wn9z -G "Visual Studio 17 2022" ; cmake --build build-lf9wn9z --config Release. Use a trusted installed CMake 3.30.0 and MSVC toolchain consistent with project policy; CMake minimum is 3.30 and does not enforce the exact version. Do not claim native DLL exists until built. Local helper calls not claimed compliant with zero-call gate. No network or package fetch from library code or its CMake project. No approval or physical validation inferred from a chat visualization.
+
+## 19. MAPREG-4 — dependency reduction and freedom-preserving execution
+
+Provenance: MAPREG-4 registration and ownership-research conversation, 2026-11-27; user requested an investigation of the apparent efficiency and a contribution to MYHEADHURTS. This is a transferable engineering method and a proposed experimental protocol, not a new law of physics, a new mathematical definition of TriPi/COREAO, or a modification of project policy. No internal model reasoning, model performance telemetry, or measured runtime is available. Efficiency claims below are structural, not benchmark results.
+
+### 19a. Reduce coordination, not freedom
+
+The MAPREG-4 proof of concept separated a canonical record, platform-specific entry points, provider adapters, and independent reconciliation. The implementation proposal consolidated four direct business-listing provider interfaces into one commercial intermediary, reducing the number of direct integrations by (4-1)/4 = 3/4 = 75%. This is an exact interface-count reduction, not evidence of a 75% runtime, cost, or total complexity reduction. Downstream publisher dependencies still exist. A centralized commercial intermediary can introduce lock-in, correlated failure, and restricted access; it is not itself free software or a guarantee of freedom. No Yext API, credentials, HTTP client, external adapter, or network dependency is added to this repository.
+
+The reusable method is to define the source once, derive explicitly, and verify separately. Freedom means a user can inspect, copy, modify, redistribute, choose or reject a route, preserve original records and leave with their own data. A route is not ownership, and a selected interface is not authority over the underlying record. The branch's existing 0BSD license is unchanged.
+
+### 19b. Order of operations
+
+1. CORE: freeze canonical occurrence IDs, values, coordinate frame, protocol version and constraints.
+   a. Store each source occurrence once, with its own identity.
+   b. Keep the raw source independent of any projection, ledger or display.
+2. PREFLIGHT: validate required inputs and the dependency graph.
+   a. Distinguish missing, invalid and unsupported inputs.
+   b. Reject cycles or undeclared dependencies before execution.
+   c. Never convert unknown evidence into a successful result.
+3. ROUTE: derive a bounded execution schedule from declared dependencies.
+   a. Independent operations may be logically parallel.
+   b. Dependent operations wait for verified prerequisites.
+   c. Multiple implementations of one operation remain separate witnesses, not additional votes.
+4. RECONCILE: inspect each output against its source and declared contract.
+   a. Preserve route IDs, occurrence IDs and failure reasons.
+   b. Check forward mapping, reverse reconstruction when defined, and an additional declared invariant.
+   c. Check XOR before an OR envelope when using the existing COREAO STANDARDIZER/1.
+5. ATTEST: require all mandatory checks under the same frozen protocol.
+   a. Separate successful execution from a verified result.
+   b. Do not turn missing, skipped, ambiguous or failed evidence into PASS.
+   c. Retain historical records; changes to a frozen experiment require a new experiment ID.
+
+This is a conceptual dependency schedule, not an instruction to add threads, agents, remote calls or a new runtime. Deterministic serial execution in topological order can preserve the same logical dependencies. Parallel eligibility does not establish actual concurrent execution or speedup. Authorization and source identity are not fields to be exchanged by ZIPIT role permutations.
+
+### 19c. Complexity and falsifiable claims
+
+For n independent tasks with nonnegative costs t_i, a serial schedule has ideal work/time sum(t_i); under unlimited independent resources and negligible scheduling overhead, ideal parallel elapsed time is max(t_i). For a directed acyclic graph with V tasks and E dependency edges, adjacency-list topological ordering can use O(V+E) time and space. The critical-path sum of task costs lower-bounds elapsed time; actual resource limits, contention, setup, communication, failures and scheduling overhead can increase it. No claim of these complexity bounds for an unimplemented repository scheduler.
+
+Synthetic example: Google-like route A costs 3 units, dependent B costs 2, independent C costs 4 and independent D costs 1. Serial work = 10 units; ideal unlimited-resource critical path = max(3+2,4,1) = 5 units. This illustrates a possible 2x ideal elapsed-time improvement for this fixture, not an observed API or C++20 benchmark. Four interfaces to one and 10 units to 5 are different metrics; do not combine their percentages.
+
+For the labeled permutation/orientation enumeration in Section 5, the candidate bound remains n! * 2^n under its assumptions. Preflight can prune a branch only if a documented predicate proves that no allowed completion can satisfy the frozen acceptance rule. Record rejected branch identity and reason; distinguish total theoretical candidates, actually visited candidates, and provably excluded candidates. Do not claim asymptotic improvement without an algorithm and proof. Equal visual witnesses do not authorize deduplication of distinct occurrences.
+
+### 19d. Proposed qualification fixtures (not executed)
+
+| ID | Input / perturbation | Expected outcome |
+| --- | --- | --- |
+| MR4-01 | A -> B, independent C and D | B follows A; C and D need not wait for A |
+| MR4-02 | A -> B -> A | Preflight rejects cycle |
+| MR4-03 | Required source occurrence missing | UNKNOWN/BLOCKED; no authoritative PASS |
+| MR4-04 | Repeated glyph with two occurrence IDs | Both IDs retained |
+| MR4-05 | Wrong order but complete occurrence coverage | Forward witness rejects; coverage alone insufficient |
+| MR4-06 | Compensating deltas sum to zero but are individually wrong | Per-occurrence audit rejects |
+| MR4-07 | XOR mismatch hidden by OR envelope | Pre-envelope audit rejects |
+| MR4-08 | One failed mandatory route and two passing routes | ATTEST blocked |
+| MR4-09 | Permute display roles with ZIPIT | Original evidence and source unchanged |
+| MR4-10 | Change frozen experiment definition | New experiment ID; prior evidence preserved |
+| MR4-11 | Same schedule with different independent ready-task ordering | Canonical outcome identical if route contracts are independent; otherwise dependency declaration is incomplete |
+| MR4-12 | External provider unavailable | Preserve local CORE and failure; no forced remote execution or invented receipt |
+
+The ownership screen discussed in MAPREG-4 applies the same evidence discipline in a different domain: a threshold match is not an allegation, shared holdings are not proof of cross-ownership, and unknown is not zero. It is not a geometric operator or a new acceptance rule for GENSHIN.
+
+Status: proposed documentation and synthetic test design only. No source algorithms, compiler settings, licenses, CI, numerical constants or external integrations changed. No MSVC build, scheduler benchmark, API request, or formal qualification performed for this contribution. Existing source algorithms retain authority; this section is a reviewable method proposal, not a policy change.
