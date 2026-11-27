@@ -364,3 +364,26 @@ ARIRANG, or DIAERY THAILONGA contracts. No archived experiment is changed.
 
 The library is a composition, not a replacement for existing COREAO or TOOLONG.
 No fixed-width arithmetic truncation is introduced.
+
+## 25. LCD/1: namespace-free exact quotient
+
+The owner-selected current standalone LCD is `l=a/c`, represented by
+`L { U a, c; }` and `constexpr L LCD(U a,U c) noexcept`.
+The earlier proposed namespaced LCD is superseded; it was not present as
+a file in the parent tree. No established ARIARI or REDUX interface is
+removed or renamed. This project-specific LCD is not the conventional
+least common denominator (LCM of denominators).
+
+The shared/LCD.hpp header has no includes, namespaces, dependency links,
+allocation or external calls. Euclidean common-factor cancellation preserves
+the exact quotient; c=0 preserves the original numerator and marks an
+undefined quotient. Original operand scale is not reconstructable from the
+reduced fraction alone. Global names U, L, LCD can collide with other headers;
+callers must account for that intentional standalone interface.
+
+CMake target LCD is independent of ARIARI and REDUX. The native CTest
+lcd_256_cycles_exact_quotient uses a separate descending-divisor oracle over
+all 256 x 256 unsigned 8-bit operand pairs, plus compile-time 64-bit boundary
+fixtures. This is authored qualification, not a native execution receipt.
+Native MSVC result remains pending; existing TRIFORCE and release HOLD
+are not bypassed. No external dependency is introduced.

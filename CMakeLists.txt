@@ -69,6 +69,14 @@ target_include_directories(REDUX INTERFACE
   $<INSTALL_INTERFACE:include/swe>)
 target_compile_features(REDUX INTERFACE cxx_std_20)
 install(FILES shared/redux.hpp shared/ariari.hpp DESTINATION include/swe)
+# LCD/1: independent namespace-free exact quotient libram.
+add_library(LCD INTERFACE)
+target_include_directories(LCD INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+  $<INSTALL_INTERFACE:include/swe>)
+target_compile_features(LCD INTERFACE cxx_std_20)
+install(FILES shared/LCD.hpp DESTINATION include/swe)
+
 add_library(ARIARI INTERFACE)
 target_link_libraries(ARIARI INTERFACE REDUX)
 target_compile_features(ARIARI INTERFACE cxx_std_20)
@@ -190,6 +198,10 @@ if(WIN32)
 endif()
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(lcd_test tests/LCD_TEST.cpp)
+    target_link_libraries(lcd_test PRIVATE LCD)
+    target_compile_options(lcd_test PRIVATE /WX)
+    add_test(NAME lcd_256_cycles_exact_quotient COMMAND lcd_test)
     add_executable(ariari_test tests/ariari_test.cpp)
     target_link_libraries(ariari_test PRIVATE ARIARI)
     add_test(NAME ariari_fusion_exact_roundtrip COMMAND ariari_test)
