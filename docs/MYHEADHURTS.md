@@ -505,3 +505,7 @@ HIKE before and after UNION, with a missing reverse edge and corrupt ring.
 The runtime audit records `HIKE=PASS` only after the predicate succeeds.
 The existing full 0BSD PENNYWORTH notice remains intact. Native MSVC
 qualification is pending.
+
+## 31. Accessibility / PENCE / NULL0 restoration
+
+The root `ACCESSIBILITY.md` defines contribution requirements and known limitations. WIKI uses a 25-page reciprocal graph, separately labeled list navigation, persistent policy access and a closed HIKE. Decorative U+00B7 separators were removed from the Wiki and root README; historical source and experiment bytes remain intact. PENTAPI automatic NULL/RESET/ROOT after deliberate terminal activation is restored; the later explicit route remains historical, not a normal action requirement. Existing Win32 focus handling is retained. PENCE flags unexplained overlap for provenance and rights review; no 1BSD grant is inferred and the root 0BSD license is unchanged. Source and compile-time test changes are not native qualification or legal certification.

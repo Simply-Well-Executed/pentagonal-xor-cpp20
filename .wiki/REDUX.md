@@ -31,15 +31,19 @@ Reject invalid dependencies, cycles and overflow. No task execution, thread spaw
 - [SILVERHAND](SILVERHAND.md)
 
 ---
-**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · PR #337 draft; not merged or released.
+**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | PR #337 draft; not merged or released.
 
 ---
 
 ## Navigation
 
-Previous: [LCD](LCD.md) · [Index](Index.md) · [Home](Home.md) · Next: [ARIARI](ARIARI.md)
+- [Previous: LCD](LCD.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: ARIARI](ARIARI.md)
+- [Accessibility guide](Accessibility.md)
 
-**Referenced by:** [API Reference](API-Reference.md) · [ARIARI](ARIARI.md) · [COREAO](COREAO.md) · [LCD](LCD.md) · [LF9WN9Z](LF9WN9Z.md)
+**Referenced by:** [API Reference](API-Reference.md) | [ARIARI](ARIARI.md) | [COREAO](COREAO.md) | [LCD](LCD.md) | [LF9WN9Z](LF9WN9Z.md)
 
 - Return to [Documentation entry](README.md)
 

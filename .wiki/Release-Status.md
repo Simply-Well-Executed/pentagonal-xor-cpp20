@@ -28,15 +28,19 @@ Check the [current pull request](https://github.com/Simply-Well-Executed/pentago
 - [Troubleshooting](Troubleshooting.md)
 
 ---
-**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · PR #337 draft; not merged or released.
+**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | PR #337 draft; not merged or released.
 
 ---
 
 ## Navigation
 
-Previous: [Policy and Custody](Policy-and-Custody.md) · [Index](Index.md) · [Home](Home.md) · Next: [Glossary](Glossary.md)
+- [Previous: Accessibility guide](Accessibility.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: Glossary](Glossary.md)
+- [Accessibility guide](Accessibility.md)
 
-**Referenced by:** [API Reference](API-Reference.md) · [Home](Home.md) · [Policy and Custody](Policy-and-Custody.md) · [SILVERHAND](SILVERHAND.md) · [TRIFORCE and JSTAR](TRIFORCE-and-JSTAR.md) · [Troubleshooting](Troubleshooting.md)
+**Referenced by:** [API Reference](API-Reference.md) | [Home](Home.md) | [Policy and Custody](Policy-and-Custody.md) | [SILVERHAND](SILVERHAND.md) | [TRIFORCE and JSTAR](TRIFORCE-and-JSTAR.md) | [Troubleshooting](Troubleshooting.md)
 
 - Return to [Documentation entry](README.md)
 

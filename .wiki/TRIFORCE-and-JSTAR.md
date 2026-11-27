@@ -21,15 +21,19 @@ Build success cannot substitute for JSTAR, nor can a source-only check substitut
 - [Release Status](Release-Status.md)
 
 ---
-**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · PR #337 draft; not merged or released.
+**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | PR #337 draft; not merged or released.
 
 ---
 
 ## Navigation
 
-Previous: [SILVERHAND](SILVERHAND.md) · [Index](Index.md) · [Home](Home.md) · Next: [Troubleshooting](Troubleshooting.md)
+- [Previous: SILVERHAND](SILVERHAND.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: Troubleshooting](Troubleshooting.md)
+- [Accessibility guide](Accessibility.md)
 
-**Referenced by:** [Architecture](Architecture.md) · [COREAO](COREAO.md) · [Home](Home.md) · [Policy and Custody](Policy-and-Custody.md) · [Release Status](Release-Status.md) · [SILVERHAND](SILVERHAND.md) · [TOOLONG and GammaGamma](TOOLONG-and-GammaGamma.md) · [Troubleshooting](Troubleshooting.md)
+**Referenced by:** [Architecture](Architecture.md) | [COREAO](COREAO.md) | [Home](Home.md) | [Policy and Custody](Policy-and-Custody.md) | [Release Status](Release-Status.md) | [SILVERHAND](SILVERHAND.md) | [TOOLONG and GammaGamma](TOOLONG-and-GammaGamma.md) | [Troubleshooting](Troubleshooting.md)
 
 - Return to [Documentation entry](README.md)
 

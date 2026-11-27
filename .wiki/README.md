@@ -38,9 +38,17 @@ Versioned documentation, rendered directly by GitHub. Begin with the [Index](Ind
 
 ---
 
+## Accessibility
+
+- [Accessibility guide](Accessibility.md)
+
 ## Navigation
 
-Previous: [Footer](_Footer.md) · [Index](Index.md) · [Home](Home.md) · Next: [Index](Index.md)
+- [Previous: Footer](_Footer.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: Documentation index](Index.md)
+- [Accessibility guide](Accessibility.md)
 
 ## Native navigation audit
 

@@ -68,3 +68,10 @@ State what passed, what failed, what was not run, and whether the PR should rema
 - [ ] `ci/Assemble-Gamp4-Release.sh` produced STAGED_NOT_PUBLISHED after all gates. Actual GitHub release assets, immutable tag and digest are verified separately if later published.
 - [ ] Confirmed GAMP4-style supplier verification is **not** independent QA approval, PQ or GMP certification; no status promoted without explicit evidence.
 
+## Accessibility and provenance (required review)
+
+- [ ] Reviewed [ACCESSIBILITY.md](../ACCESSIBILITY.md); described applicable accessibility impact or justified N/A.
+- [ ] Verified meaningful labels, logical reading order, keyboard access, text equivalents, index/home and voluntary return as applicable.
+- [ ] Recorded actual assistive technology checks and NOT TESTED limitations; no claim of certification.
+- [ ] Reviewed unexplained similarity under PENCE; retained source identity, original notices and rights evidence; no unauthorized relicensing or deduplication.
+- [ ] Preserved source history, user choice and existing audit data. Material unresolved regressions or rights conflicts are explicitly HOLD.

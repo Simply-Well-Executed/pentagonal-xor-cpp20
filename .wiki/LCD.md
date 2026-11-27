@@ -40,15 +40,19 @@ static_assert(LCD(1,0).c == 0);
 - [SILVERHAND](SILVERHAND.md)
 
 ---
-**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · PR #337 draft; not merged or released.
+**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | PR #337 draft; not merged or released.
 
 ---
 
 ## Navigation
 
-Previous: [API Reference](API-Reference.md) · [Index](Index.md) · [Home](Home.md) · Next: [REDUX](REDUX.md)
+- [Previous: API Reference](API-Reference.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: REDUX](REDUX.md)
+- [Accessibility guide](Accessibility.md)
 
-**Referenced by:** [ALONZ and METALOGRI](ALONZ-and-METALOGRI.md) · [API Reference](API-Reference.md) · [Getting Started](Getting-Started.md) · [Home](Home.md) · [REDUX](REDUX.md) · [TALON](TALON.md)
+**Referenced by:** [ALONZ and METALOGRI](ALONZ-and-METALOGRI.md) | [API Reference](API-Reference.md) | [Getting Started](Getting-Started.md) | [Home](Home.md) | [REDUX](REDUX.md) | [TALON](TALON.md)
 
 - Return to [Documentation entry](README.md)
 

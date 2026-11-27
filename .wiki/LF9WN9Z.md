@@ -21,15 +21,19 @@ The optimized batch stops at a stationary floor fixed point. The original 10000-
 - [SILVERHAND](SILVERHAND.md)
 
 ---
-**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · PR #337 draft; not merged or released.
+**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | PR #337 draft; not merged or released.
 
 ---
 
 ## Navigation
 
-Previous: [GENSHIN](GENSHIN.md) · [Index](Index.md) · [Home](Home.md) · Next: [TALON](TALON.md)
+- [Previous: GENSHIN](GENSHIN.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: TALON](TALON.md)
+- [Accessibility guide](Accessibility.md)
 
-**Referenced by:** [API Reference](API-Reference.md) · [TALON](TALON.md)
+**Referenced by:** [API Reference](API-Reference.md) | [TALON](TALON.md)
 
 - Return to [Documentation entry](README.md)
 

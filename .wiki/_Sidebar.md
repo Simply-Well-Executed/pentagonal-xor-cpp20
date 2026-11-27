@@ -37,7 +37,11 @@
 
 ## Navigation
 
-Previous: [Glossary](Glossary.md) · [Index](Index.md) · [Home](Home.md) · Next: [Footer](_Footer.md)
+- [Previous: Glossary](Glossary.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: Footer](_Footer.md)
+- [Accessibility guide](Accessibility.md)
 
 
 - Return to [Documentation entry](README.md)

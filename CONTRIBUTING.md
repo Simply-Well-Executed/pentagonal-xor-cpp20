@@ -2,6 +2,11 @@
 
 Thank you for improving the Pentagonal Recursive XOR Engine.
 
+
+## Accessibility and contribution requirements
+
+Read [ACCESSIBILITY.md](ACCESSIBILITY.md) before submitting any contribution. Provide accessible equivalents, explicit navigation and meaningful labels; preserve evidence and record tests and limitations. Do not infer authorization from silence or a navigation action. Apply PENCE review to unexplained similarities; do not automatically deduplicate or relicense material. An unresolved material accessibility regression or rights conflict blocks maintainer approval. State PASS, FAIL, NOT TESTED or N/A with a reason. This review requirement does not itself configure branch protection.
+
 ## Native-only execution rule (IRON)
 
 - Keep all targets in required ISO C++20 with extensions OFF. Current compiler policy (PR #32): Clang/AppleClang prohibited. MSVC uses `/O2`; any non-Windows toolchain requires separate approval, with `-O2` on native toolchains. No O0 or O3. macOS/OpenBSD remain HOLD until a non-Clang native build is reviewed. Do not insert O0. Follow the [C++ Core Guidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#main).

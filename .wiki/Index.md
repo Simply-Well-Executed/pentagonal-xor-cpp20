@@ -38,7 +38,15 @@ All pages are linked in a circular reading order. Each page links back to this i
 
 ---
 
+## Accessibility
+
+- [Accessibility guide](Accessibility.md)
+
 ## Navigation
 
-Previous: [Documentation entry](README.md) · [Index](Index.md) · [Home](Home.md) · Next: [Home](Home.md)
+- [Previous: Documentation entry](README.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: Documentation home](Home.md)
+- [Accessibility guide](Accessibility.md)
 

@@ -183,44 +183,58 @@ static bool read_page(int i,DWORD& size) noexcept {
     bytes[size]=0;return true;
 }
 // Restricted inline-Markdown profile; ignore fenced code and HTTP(S).
+// Navigation uses one descriptive link per list item, not punctuation.
 static bool parse(int i,DWORD size) noexcept {
     const char* end=bytes+size;
-    char fence=0;bool nav=false;
+    char fence=0;
+    bool nav=false, index_link=false, home_link=false, access_link=false, root_link=false;
     for(const char* line=bytes;line!=end;){
         const char* e=find(line,end,"\n");
         const char* p=line;while(p!=e&&(*p==' '||*p=='\t'))++p;
         if(starts(p,e,"\x60\x60\x60")||starts(p,e,"~~~")){
             if(!fence)fence=*p;else if(fence==*p)fence=0;
         }else if(!fence){
-            const bool navigation=starts(line,e,"Previous: [");
-            if(navigation&&nav)return false;
-            if(navigation)nav=true;
-            const char* next_label=navigation?find(line,e,"Next: ["):e;
+            if(starts(line,e,"## Navigation"))nav=true;
+            else if(starts(line,e,"## "))nav=false;
+            const bool before=nav&&starts(line,e,"- [Previous: ");
+            const bool after=nav&&starts(line,e,"- [Next: ");
+            const bool idx=nav&&starts(line,e,"- [Documentation index]");
+            const bool hm=nav&&starts(line,e,"- [Documentation home]");
+            const bool ac=nav&&starts(line,e,"- [Accessibility guide]");
+            if(nav&&find(line,e,"\xC2\xB7")!=e)return false;
             int local=0;
             for(const char* m=find(line,e,"](");m!=e;){
                 const char* a=m+2;const char* b=find(a,e,")");
                 if(b==e)return false;
                 if(!starts(a,b,"https://")&&!starts(a,b,"http://")){
                     if(starts(a,b,"./"))a+=2;
-                    const int dest=lookup(a,b);
-                    if(dest<0)return false;
-                    wiki.edge[i][dest]=true;
-                    if(navigation){
-                        if(!local)wiki.prev[i]=dest;
-                        if(next_label!=e&&m>next_label){
-                            if(wiki.next[i]!=-1)return false;
-                            wiki.next[i]=dest;
-                        }
+                    const char* root="../ACCESSIBILITY.md";
+                    if(starts(a,b,root)&&b-a==19){
+                        if(before||after||idx||hm||ac||root_link||!equal(wiki.name[i],"Accessibility.md"))return false;
+                        root_link=true;
+                        const DWORD attr=GetFileAttributesW(L"ACCESSIBILITY.md");
+                        if(attr==INVALID_FILE_ATTRIBUTES||
+                           (attr&(FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_REPARSE_POINT)))return false;
+                    }else{
+                        const int dest=lookup(a,b);
+                        if(dest<0)return false;
+                        wiki.edge[i][dest]=true;
+                        if(before){if(wiki.prev[i]!=-1)return false;wiki.prev[i]=dest;}
+                        if(after){if(wiki.next[i]!=-1)return false;wiki.next[i]=dest;}
+                        if(idx){if(index_link||dest!=wiki.index)return false;index_link=true;}
+                        if(hm){if(home_link||dest!=wiki.home)return false;home_link=true;}
+                        if(ac){if(access_link||!equal(wiki.name[dest],"Accessibility.md"))return false;access_link=true;}
                     }
                     ++local;
                 }
                 m=find(b+1,e,"](");
             }
-            if(navigation&&(wiki.prev[i]<0||wiki.next[i]<0))return false;
+            if((before||after||idx||hm||ac)&&local!=1)return false;
         }
         line=e==end?end:e+1;
     }
-    return fence==0;
+    return fence==0&&wiki.prev[i]>=0&&wiki.next[i]>=0&&
+           index_link&&home_link&&(equal(wiki.name[i],"Accessibility.md")?root_link:access_link);
 }
 static void link(int i) noexcept {
     out("[");out(wiki.name[i]);out("](");out(wiki.name[i]);out(")");
@@ -232,9 +246,13 @@ static void plan() noexcept {
     for(int k=0;k<wiki.n;++k){out("- ");link(i);out("\n");i=wiki.next[i];}
     i=wiki.index;
     for(int k=0;k<wiki.n;++k){
-        out("\n## ");out(wiki.name[i]);out("\n\nPrevious: ");link(wiki.prev[i]);
-        out(" | ");link(wiki.index);out(" | ");link(wiki.home);
-        out(" | Next: ");link(wiki.next[i]);out("\n\n");
+        out("\n## ");out(wiki.name[i]);out("\n\n## Navigation\n\n- [Previous: ");
+        out(wiki.name[wiki.prev[i]]);out("](");out(wiki.name[wiki.prev[i]]);out(")\n");
+        out("- [Documentation index](Index.md)\n");
+        out("- [Documentation home](Home.md)\n");
+        out("- [Next: ");out(wiki.name[wiki.next[i]]);out("](");out(wiki.name[wiki.next[i]]);out(")\n");
+        if(!equal(wiki.name[i],"Accessibility.md"))out("- [Accessibility guide](Accessibility.md)\n");
+        out("\n");
         for(int j=0;j<wiki.n;++j)if(i!=j&&wiki.edge[i][j]){
             out("- ");link(j);out("\n");
         }

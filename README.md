@@ -2,19 +2,23 @@
 
 # ⬟ PENTAGONAL XOR
 
-### Native C++20 parity · exact integers · compiler interoperability · continuous improvement
+### Native C++20 parity | exact integers | compiler interoperability | continuous improvement
 
-**Simply Well Executed** · **0BSD covered first-party code** · **Source-preserving research**
+**Simply Well Executed** | **0BSD covered first-party code** | **Source-preserving research**
 
 [![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?logo=cplusplus)](CMakeLists.txt) [![0BSD](https://img.shields.io/badge/license-0BSD-9cf)](LICENSE) [![PR 95 draft](https://img.shields.io/badge/PR%2095-draft-orange)](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/95) [![HOLD](https://img.shields.io/badge/RELEASE-HOLD-red)](docs/RELEASE_PREFLIGHT.md)
 
 **Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824**
 
-[Live PR checks](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/95/checks) · [Core source](pentagonal_xor_cpp20.cpp) · [License](LICENSE) · [Security](SECURITY.md) · [Releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
+[Live PR checks](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/95/checks) | [Core source](pentagonal_xor_cpp20.cpp) | [License](LICENSE) | [Security](SECURITY.md) | [Releases](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/releases)
 
 </div>
 
 > **CURRENT roadmap for the draft PR #95 branch.** These additions are not automatically merged to the default branch. Every test result belongs to its exact commit. A failure remains evidence even after a corrected new run. **RELEASE=HOLD. Chosen, never assumed.**
+
+## Accessibility and documentation
+
+[Accessibility statement](ACCESSIBILITY.md) | [Documentation index](.wiki/Index.md) | [Contribution guide](CONTRIBUTING.md)
 
 ## 🧭 Project map
 
@@ -35,7 +39,7 @@
 
 [![Hulao Gate fantasy racing pentagon, five engineering gates, and a distant fictional final sanctuary](docs/pentapi_hulao_gate.svg)](docs/PENTAPI_HULAO_GATE_255.md)
 
-**[Explore all 255 simulated chaos laps](docs/PENTAPI_HULAO_GATE_255.md)** · **[Open the scriptless 256-lap XHTML source](docs/PentaPi_Hulao_256.xhtml)** · **[View the SVG poster](docs/pentapi_hulao_gate.svg)**
+**[Explore all 255 simulated chaos laps](docs/PENTAPI_HULAO_GATE_255.md)** | **[Open the scriptless 256-lap XHTML source](docs/PentaPi_Hulao_256.xhtml)** | **[View the SVG poster](docs/pentapi_hulao_gate.svg)**
 
 <details>
 <summary>🔥 What happens during the 255 modeled Hulao laps?</summary>
@@ -54,11 +58,11 @@ The order is enforced by the [QuadDi workflow](.github/workflows/quaddi-ni-oracl
 
 | Lane | Required positive witness | Explicit boundary |
 |---|---|---|
-| **1 · C++20** | MSVC optimized native mathematical and guard checks | No unmeasured performance or repository-wide STL-free claim |
-| **2 · Oracle Java** | Pinned vendor, JDK archive digest and independent parity | Oracle vendor licensing is not covered by the project's 0BSD grant |
-| **3 · XHTML 1.0 Strict** | Strict DOCTYPE, XML namespace and bounded XML/profile checks | **Full external W3C DTD validation is not proven** |
-| **4 · C11** | Same MSVC toolchain, different language mode; positive/negative tests | C11 and C++20 are not identical programming languages |
-| **5 · PentaDi** | C11 compiler-generated raw assembly listing, guarded branch records and MASM reference | **Proprietary Delphi 7 compiler has not been independently executed** |
+| **1 | C++20** | MSVC optimized native mathematical and guard checks | No unmeasured performance or repository-wide STL-free claim |
+| **2 | Oracle Java** | Pinned vendor, JDK archive digest and independent parity | Oracle vendor licensing is not covered by the project's 0BSD grant |
+| **3 | XHTML 1.0 Strict** | Strict DOCTYPE, XML namespace and bounded XML/profile checks | **Full external W3C DTD validation is not proven** |
+| **4 | C11** | Same MSVC toolchain, different language mode; positive/negative tests | C11 and C++20 are not identical programming languages |
+| **5 | PentaDi** | C11 compiler-generated raw assembly listing, guarded branch records and MASM reference | **Proprietary Delphi 7 compiler has not been independently executed** |
 
 The fifth lane includes the [C11 source records](pentadi/PentaDiC11BranchRecords.c), [one canonical nine-record ledger](pentadi/PentaDiC11BranchRecords.reference.tsv), [Pascal branch-pin module](pentadi/BranchPinToTsht.pas), [pipe runner](pentadi/Delphi007PinPipe.dpr), and [verified source-custody script](pentadi/Invoke-PentaDiQualification.ps1). MSVC produces the assembly listing, **not** Delphi 7. The [hand-authored reference ASM](pentadi/PentaDiRel8_reference.asm) is independently identified.
 
@@ -100,6 +104,6 @@ The [pre-refactor 624-line README snapshot](docs/README_SNAPSHOT_PRE_CURRENT_MAP
 
 **Original source → route → witness → ledger → review.**
 
-**Draft PR #95 · RELEASE=HOLD · Chosen, never assumed.** 🏁
+**Draft PR #95 | RELEASE=HOLD | Chosen, never assumed.** 🏁
 
 </div>

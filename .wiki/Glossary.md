@@ -29,13 +29,17 @@ Names are project vocabulary. Mathematical facts must be established independent
 - [Architecture](Architecture.md)
 
 ---
-**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · PR #337 draft; not merged or released.
+**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | PR #337 draft; not merged or released.
 
 ---
 
 ## Navigation
 
-Previous: [Release Status](Release-Status.md) · [Index](Index.md) · [Home](Home.md) · Next: [Sidebar](_Sidebar.md)
+- [Previous: Release Status](Release-Status.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: Sidebar](_Sidebar.md)
+- [Accessibility guide](Accessibility.md)
 
 **Referenced by:** [Home](Home.md)
 

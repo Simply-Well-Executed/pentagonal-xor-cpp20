@@ -9,3 +9,5 @@ Please avoid posting exploit details in a public issue. Contact the repository m
 ## Scope
 
 The program accepts five numeric command-line inputs and validates that they are finite values within [0, 1]. Results are mathematical parity values, not claims about faces, identities, age, or relationships.
+
+For non-security accessibility barriers, see [ACCESSIBILITY.md](ACCESSIBILITY.md). Do not disclose private information in public reports.

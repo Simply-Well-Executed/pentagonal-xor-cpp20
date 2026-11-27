@@ -23,15 +23,19 @@ Original payload: `3N` bytes. Encoded payload: `N+2` bytes. Metadata is excluded
 - [SILVERHAND](SILVERHAND.md)
 
 ---
-**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · PR #337 draft; not merged or released.
+**Version:** [source revision `e6dbd19d`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/e6dbd19d1cd3c23fdb202d5bfb9458d4db830557) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | PR #337 draft; not merged or released.
 
 ---
 
 ## Navigation
 
-Previous: [COREAO](COREAO.md) · [Index](Index.md) · [Home](Home.md) · Next: [GENSHIN](GENSHIN.md)
+- [Previous: COREAO](COREAO.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: GENSHIN](GENSHIN.md)
+- [Accessibility guide](Accessibility.md)
 
-**Referenced by:** [API Reference](API-Reference.md) · [ARIARI](ARIARI.md)
+**Referenced by:** [API Reference](API-Reference.md) | [ARIARI](ARIARI.md)
 
 - Return to [Documentation entry](README.md)
 

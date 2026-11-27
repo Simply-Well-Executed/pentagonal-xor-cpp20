@@ -46,3 +46,7 @@ Some GNU- or BSD-related identifiers are flagged as FORBIDDEN through a **conser
 ## Denied-source watchlist
 
 [BADBOY.tsv](BADBOY.tsv) is a **fail-closed policy watchlist** for explicitly forbidden GNU/GPL/LGPL/AGPL/GFDL, EPL/EUPL and non-0BSD BSD identifiers in the pinned SPDX catalog. It also records authored POSIX execution as a separately forbidden **interface dependency**, not a fictional POSIX license. Identifier-name matching is conservative and may overflag non-GNU software or exceptions; it never creates authorization, proves infringement, or replaces source-specific license investigation. The source-bound original legal texts must be retained wherever already vendored. Historical annotations remain in Git history.
+
+## PENCE similarity review
+
+See [Accessibility statement](../ACCESSIBILITY.md#pence-similarity-and-rights-review). An unexplained match is a review trigger, not proof of infringement or common ownership. BSD-1-Clause is a candidate only for a specifically authorized common object after rights and policy review; the existing 0BSD license and current admission registry remain unchanged. Do not alter pinned license text or grant a license on behalf of an unverified rightsholder.

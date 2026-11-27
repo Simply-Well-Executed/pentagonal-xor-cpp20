@@ -37,15 +37,19 @@ Serial scheduled workers do not imply one OS thread inside the compiler or linke
 - [Release Status](Release-Status.md)
 
 ---
-**Version:** [source revision `54bc9036`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/54bc903619417b35b97612b574cd32efdfa90a3a) · [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) · Source included in documentation edition; native results not verified.
+**Version:** [source revision `54bc9036`](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/commit/54bc903619417b35b97612b574cd32efdfa90a3a) | [PR #337](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/337) | Source included in documentation edition; native results not verified.
 
 ---
 
 ## Navigation
 
-Previous: [TALON](TALON.md) · [Index](Index.md) · [Home](Home.md) · Next: [TRIFORCE and JSTAR](TRIFORCE-and-JSTAR.md)
+- [Previous: TALON](TALON.md)
+- [Documentation index](Index.md)
+- [Documentation home](Home.md)
+- [Next: TRIFORCE and JSTAR](TRIFORCE-and-JSTAR.md)
+- [Accessibility guide](Accessibility.md)
 
-**Referenced by:** [ALONZ and METALOGRI](ALONZ-and-METALOGRI.md) · [GENSHIN](GENSHIN.md) · [Getting Started](Getting-Started.md) · [Home](Home.md) · [LCD](LCD.md) · [LF9WN9Z](LF9WN9Z.md) · [REDUX](REDUX.md) · [Release Status](Release-Status.md) · [TALON](TALON.md) · [TRIFORCE and JSTAR](TRIFORCE-and-JSTAR.md)
+**Referenced by:** [ALONZ and METALOGRI](ALONZ-and-METALOGRI.md) | [GENSHIN](GENSHIN.md) | [Getting Started](Getting-Started.md) | [Home](Home.md) | [LCD](LCD.md) | [LF9WN9Z](LF9WN9Z.md) | [REDUX](REDUX.md) | [Release Status](Release-Status.md) | [TALON](TALON.md) | [TRIFORCE and JSTAR](TRIFORCE-and-JSTAR.md)
 
 - Return to [Documentation entry](README.md)
 
