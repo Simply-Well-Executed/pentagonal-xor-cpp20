@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: 0BSD
 // C++20 BiDi provenance: UAX #9 L2 on upstream resolved line levels.
 // No includes. Not a complete Unicode Bidirectional Algorithm or renderer.
-namespace genshin_bidi {
+#ifndef GENSHIN_BIDI_HPP
+#define GENSHIN_BIDI_HPP
+struct genshin_bidi {
 using U = unsigned;
 using I = int;
-constexpr U capacity = 256;
-constexpr U absent = ~0u;
-constexpr U x9 = 255; // upstream removal marker, not a resolved level
+static constexpr U capacity = 256;
+static constexpr U absent = ~0u;
+static constexpr U x9 = 255; // upstream removal marker, not a resolved level
 struct Unit { U cp, level; };
 struct Ledger {
     bool valid;
@@ -16,12 +18,12 @@ struct Ledger {
     U retained_rank[capacity];
     I displacement[capacity];
 };
-constexpr bool scalar(U c) {
+static constexpr bool scalar(U c) {
     return c<=0x10FFFFu && !(c>=0xD800u && c<=0xDFFFu);
 }
 // Separate strict project check on raw logical stream, NOT soft-wrapped lines.
 // No FSI direction resolution. Unmatched controls rejected by project policy.
-constexpr bool balanced(const U* s, U n) {
+static constexpr bool balanced(const U* s, U n) {
     if (!s && n) return false;
     U depth=0;
     for (U i=0;i<n;++i) {
@@ -43,7 +45,7 @@ constexpr bool balanced(const U* s, U n) {
 }
 // Input: one line AFTER level resolution and L1, with X9 omissions marked.
 // Output: L2 positions, NOT shaped glyphs, grapheme clusters or screen pixels.
-constexpr Ledger project(const Unit* s, U n) {
+static constexpr Ledger project(const Unit* s, U n) {
     Ledger a{};
     if (n>capacity || (!s && n)) return a;
     U highest=0, lowest_odd=127;
@@ -88,7 +90,7 @@ constexpr Ledger project(const Unit* s, U n) {
     a.valid=true;
     return a;
 }
-constexpr bool audit(const Ledger& a, U n) {
+static constexpr bool audit(const Ledger& a, U n) {
     if (!a.valid || n>capacity || a.count>n) return false;
     U kept=0;
     for (U i=0;i<n;++i) {
@@ -108,26 +110,32 @@ constexpr bool audit(const Ledger& a, U n) {
     }
     return true;
 }
-constexpr Unit mixed[]={{0x41,0},{0x05D0,1},{0x05D1,1},
-                        {0x05D2,1},{0x42,0}};
-constexpr auto m=project(mixed,5);
-static_assert(audit(m,5) && m.visual_to_logical[1]==3 &&
-              m.logical_to_visual[1]==3 && m.displacement[1]==2);
-static_assert(m.displacement[3]==-2);
-constexpr Unit nested[]={{0x41,0},{0x05D0,1},{0x31,2},
-                         {0x32,2},{0x05D1,1},{0x42,0}};
-constexpr auto k=project(nested,6);
-static_assert(audit(k,6) && k.visual_to_logical[1]==4 &&
-              k.visual_to_logical[2]==2 && k.visual_to_logical[3]==3 &&
-              k.visual_to_logical[4]==1);
-constexpr Unit omitted[]={{0x41,0},{0x202A,x9},{0x42,0}};
-constexpr auto o=project(omitted,3);
-static_assert(audit(o,3) && o.count==2 && o.logical_to_visual[1]==absent &&
-              o.visual_to_logical[1]==2 && o.displacement[2]==0);
-constexpr U good[]={0x2066,0x2067,0x05D0,0x2069,0x200C,0x2069};
-constexpr U bad[]={0x2066,0x2069,0x2069,0x200C,0x200C,0x200C};
-constexpr U cross[]={0x2068,0x0A,0x2069};
-static_assert(balanced(good,6) && !balanced(bad,6) && !balanced(cross,3));
-constexpr Unit invalid[]={{0xD800,0}};
-static_assert(!project(invalid,1).valid);
-} // namespace genshin_bidi
+};
+
+// Same frozen synthetic fixture values; evaluated after type completion.
+static_assert([]() constexpr {
+    constexpr genshin_bidi::Unit mixed[]={{0x41,0},{0x05D0,1},{0x05D1,1},
+                            {0x05D2,1},{0x42,0}};
+    constexpr auto m=genshin_bidi::project(mixed,5);
+    static_assert(genshin_bidi::audit(m,5) && m.visual_to_logical[1]==3 &&
+                  m.logical_to_visual[1]==3 && m.displacement[1]==2);
+    static_assert(m.displacement[3]==-2);
+    constexpr genshin_bidi::Unit nested[]={{0x41,0},{0x05D0,1},{0x31,2},
+                             {0x32,2},{0x05D1,1},{0x42,0}};
+    constexpr auto k=genshin_bidi::project(nested,6);
+    static_assert(genshin_bidi::audit(k,6) && k.visual_to_logical[1]==4 &&
+                  k.visual_to_logical[2]==2 && k.visual_to_logical[3]==3 &&
+                  k.visual_to_logical[4]==1);
+    constexpr genshin_bidi::Unit omitted[]={{0x41,0},{0x202A,genshin_bidi::x9},{0x42,0}};
+    constexpr auto o=genshin_bidi::project(omitted,3);
+    static_assert(genshin_bidi::audit(o,3) && o.count==2 && o.logical_to_visual[1]==genshin_bidi::absent &&
+                  o.visual_to_logical[1]==2 && o.displacement[2]==0);
+    constexpr genshin_bidi::U good[]={0x2066,0x2067,0x05D0,0x2069,0x200C,0x2069};
+    constexpr genshin_bidi::U bad[]={0x2066,0x2069,0x2069,0x200C,0x200C,0x200C};
+    constexpr genshin_bidi::U cross[]={0x2068,0x0A,0x2069};
+    static_assert(genshin_bidi::balanced(good,6) && !genshin_bidi::balanced(bad,6) && !genshin_bidi::balanced(cross,3));
+    constexpr genshin_bidi::Unit invalid[]={{0xD800,0}};
+    static_assert(!genshin_bidi::project(invalid,1).valid);
+    return true;
+}());
+#endif

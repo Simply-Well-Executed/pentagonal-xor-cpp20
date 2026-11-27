@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: 0BSD
 // GENSHIN/TriPi-v0: exact three-route audit of a BiDi occurrence ledger.
 // Not a replacement for swe::tri_pi or HANDI/TriPi; no standard headers.
-namespace genshin_tripi {
+#ifndef GENSHIN_TRIPI_HPP
+#define GENSHIN_TRIPI_HPP
+struct genshin_tripi {
 using U = unsigned;
 using I = int;
-constexpr U absent = ~0u;
-constexpr U capacity = 256;
+static constexpr U absent = ~0u;
+static constexpr U capacity = 256;
 struct Source { U cp, expected_visual; };
 struct Visual { U cp, logical; I delta; };
 struct Report {
@@ -14,12 +16,12 @@ struct Report {
         return forward && reverse && zfold;
     }
 };
-constexpr bool scalar(U c) {
+static constexpr bool scalar(U c) {
     return c<=0x10FFFFu && !(c>=0xD800u && c<=0xDFFFu);
 }
 // expected_visual comes from a separately declared reference mapping;
 // absent denotes caller-declared X9 omission, not deletion.
-constexpr Report inspect(const Source* s, U n,
+static constexpr Report inspect(const Source* s, U n,
                          const Visual* v, U m) {
     if (n>capacity || m>n || (!s && n) || (!v && m))
         return {};
@@ -68,33 +70,39 @@ constexpr Report inspect(const Source* s, U n,
     if (sum!=0) a.zfold=false;
     return a;
 }
-// Synthetic resolved-level mixed-direction reference; not a font test.
-constexpr Source src[]={
-    {0x41,0},{0x05D0,3},{0x05D1,2},{0x05D2,1},{0x42,4}
 };
-constexpr Visual good[]={
-    {0x41,0,0},{0x05D2,3,-2},{0x05D1,2,0},{0x05D0,1,2},{0x42,4,0}
-};
-static_assert(inspect(src,5,good,5).passed());
-constexpr Visual wrong_order[]={
-    {0x41,0,0},{0x05D0,1,0},{0x05D1,2,0},{0x05D2,3,0},{0x42,4,0}
-};
-static_assert(!inspect(src,5,wrong_order,5).forward);
-static_assert(inspect(src,5,wrong_order,5).reverse);
-static_assert(!inspect(src,5,wrong_order,5).zfold);
-constexpr Visual forged_delta[]={
-    {0x41,0,0},{0x05D2,3,-1},{0x05D1,2,0},{0x05D0,1,1},{0x42,4,0}
-};
-static_assert(inspect(src,5,forged_delta,5).forward);
-static_assert(inspect(src,5,forged_delta,5).reverse);
-static_assert(!inspect(src,5,forged_delta,5).zfold);
-constexpr Visual duplicate[]={
-    {0x41,0,0},{0x05D2,3,-2},{0x05D1,2,0},{0x05D2,3,0},{0x42,4,0}
-};
-static_assert(!inspect(src,5,duplicate,5).reverse);
-constexpr Source omitted[]={{0x41,0},{0x202A,absent},{0x42,1}};
-constexpr Visual retained[]={{0x41,0,0},{0x42,2,0}};
-static_assert(inspect(omitted,3,retained,2).passed());
-constexpr Source bad_ref[]={{0x41,0},{0x42,0}};
-static_assert(!inspect(bad_ref,2,retained,2).passed());
-} // namespace genshin_tripi
+
+// Same frozen synthetic fixture values; evaluated after type completion.
+static_assert([]() constexpr {
+    // Synthetic resolved-level mixed-direction reference; not a font test.
+    constexpr genshin_tripi::Source src[]={
+        {0x41,0},{0x05D0,3},{0x05D1,2},{0x05D2,1},{0x42,4}
+    };
+    constexpr genshin_tripi::Visual good[]={
+        {0x41,0,0},{0x05D2,3,-2},{0x05D1,2,0},{0x05D0,1,2},{0x42,4,0}
+    };
+    static_assert(genshin_tripi::inspect(src,5,good,5).passed());
+    constexpr genshin_tripi::Visual wrong_order[]={
+        {0x41,0,0},{0x05D0,1,0},{0x05D1,2,0},{0x05D2,3,0},{0x42,4,0}
+    };
+    static_assert(!genshin_tripi::inspect(src,5,wrong_order,5).forward);
+    static_assert(genshin_tripi::inspect(src,5,wrong_order,5).reverse);
+    static_assert(!genshin_tripi::inspect(src,5,wrong_order,5).zfold);
+    constexpr genshin_tripi::Visual forged_delta[]={
+        {0x41,0,0},{0x05D2,3,-1},{0x05D1,2,0},{0x05D0,1,1},{0x42,4,0}
+    };
+    static_assert(genshin_tripi::inspect(src,5,forged_delta,5).forward);
+    static_assert(genshin_tripi::inspect(src,5,forged_delta,5).reverse);
+    static_assert(!genshin_tripi::inspect(src,5,forged_delta,5).zfold);
+    constexpr genshin_tripi::Visual duplicate[]={
+        {0x41,0,0},{0x05D2,3,-2},{0x05D1,2,0},{0x05D2,3,0},{0x42,4,0}
+    };
+    static_assert(!genshin_tripi::inspect(src,5,duplicate,5).reverse);
+    constexpr genshin_tripi::Source omitted[]={{0x41,0},{0x202A,genshin_tripi::absent},{0x42,1}};
+    constexpr genshin_tripi::Visual retained[]={{0x41,0,0},{0x42,2,0}};
+    static_assert(genshin_tripi::inspect(omitted,3,retained,2).passed());
+    constexpr genshin_tripi::Source bad_ref[]={{0x41,0},{0x42,0}};
+    static_assert(!genshin_tripi::inspect(bad_ref,2,retained,2).passed());
+    return true;
+}());
+#endif
