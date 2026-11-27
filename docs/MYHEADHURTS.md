@@ -167,3 +167,22 @@ Implementation: [genshin_tripi_provenance.hpp](experiments/genshin_tripi_provena
 YIN/forward: compare every retained canonical occurrence and scalar to its expected observed visual position; reject malformed reference mappings. YANG/reverse: traverse the observations back to source, reject unknown IDs, omitted IDs, duplicate occurrences, missing occurrences and scalar changes. AIRGAP/Z-fold: visit alternating visual ends inward, compare exact expected inverse indices and each signed displacement from retained source rank; also require zero signed displacement sum. The alternating-ends schedule is a newly chosen GENSHIN-specific Z traversal, not the canonical 11-state DecaSigma Z-fold. All three must pass for internal ledger consistency; they share data, are not independent experiments, and cannot certify Unicode conformance, fairness, or approval. The AIRGAP route is a cross-check, not an independently blinded experiment.
 
 Synthetic fixture: logical A, U+05D0, U+05D1, U+05D2, B; expected visual occurrence IDs 0,3,2,1,4; displacements 0,-2,0,+2,0 in visual order. Negative fixtures demonstrate wrong order with complete occurrence coverage, forged compensating displacement with zero sum, duplicate ID, malformed reference; positive fixture includes an X9 omission. Compile-time assertions express these expectations; no native MSVC build or real font/Unicode conformance experiment performed. Local constexpr helper calls are not claimed to satisfy project zero-call gate. Production TriPi, BiDi and pipelines unchanged. No new canonical definition of Pi, physical theory, or HANDI approval established.
+
+## 15. ZIPITUP — named TriPi swap operations
+
+Source: explicit user naming and swap instruction in the Zenshin conversation, 2026-11-27.
+
+The preceding GENSHIN/TriPi algorithm (Section 14) is named ZIPITUP in this context. The user defines the following variants relative to ZIPITUP:
+
+| Operation | Transposition |
+| --- | --- |
+| ZIPITUP | Original algorithm |
+| ZIPITDOWN | Swap PASS and AIRGAP |
+| ZIPITOUT | Swap PASS and YANG |
+| FUCKITIN | Swap PASS and YIN |
+
+Each named swap exchanges exactly the two specified roles. If represented as a permutation of four distinct positions, each swap is self-inverse, and every other position remains fixed. This is a structural interpretation, not yet an executable decision rule. The user has not specified whether a swap acts on labels, payloads, traversal positions, or evaluated verdicts, nor whether variants compose sequentially or always start from ZIPITUP. Preserve the baseline and the exact named transpositions without assuming those missing semantics.
+
+In the existing GENSHIN/TriPi implementation, PASS is a derived conjunction of YIN, YANG and AIRGAP route checks, not an independent evidence lane. A swap must not silently promote a rejected or untested route into an authoritative PASS. Keep the original route results, source identities, reference mapping, and audit verdict unchanged until a separate executable semantics and validation protocol are explicitly established. The canonical mathematical TriPi and HANDI/TriPi namespaces remain distinct.
+
+Status: terminology and structural swap definitions recorded; no code, tests, or pipeline changes for this section.
