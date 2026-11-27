@@ -36,6 +36,34 @@ constexpr State step(State s) noexcept {
     if (s.z>=high) {s.z=high;if(s.vz>0)s.vz=0;}
     return s;
 }
+// DAKATANA-01: step(S)==S at the stationary floor fixed point.
+constexpr bool stationary(State s) noexcept {
+    return s.z==low && s.vz==0 && s.vy==0;
+}
+struct Batch { State state; unsigned evaluated; };
+constexpr Batch advance(State s,unsigned ticks) noexcept {
+    unsigned i=0;
+    for(;i<ticks;++i) {
+        if(stationary(s)) break;
+        s=step(s);
+    }
+    return {s,i};
+}
+constexpr bool same(State a,State b) noexcept {
+    return a.x==b.x && a.y==b.y && a.z==b.z &&
+           a.vy==b.vy && a.vz==b.vz;
+}
+constexpr bool redux_fixture() noexcept {
+    const State rest=reset();
+    if(!same(step(rest),rest) || advance(rest,10000).evaluated!=0)
+        return false;
+    State jump=rest;
+    if(!action(jump,ZIPITUP)) return false;
+    const Batch batch=advance(jump,10000);
+    // The frozen jump reaches its exact fixed point after 30 ticks.
+    return batch.evaluated==30 && same(batch.state,rest);
+}
+static_assert(redux_fixture());
 constexpr bool fixture() noexcept {
     State s=reset();
     if (!action(s,ZIPITUP)) return false;
@@ -77,6 +105,6 @@ extern "C" int lf9wn9z_step(long long* p,unsigned n,unsigned ticks) noexcept {
     if(!p || n!=5 || ticks>10000)return 0;
     auto s=lf9wn9z::load(p);
     if(!lf9wn9z::valid(s))return 0;
-    for(unsigned i=0;i<ticks;++i)s=lf9wn9z::step(s);
+    s=lf9wn9z::advance(s,ticks).state;
     lf9wn9z::store(p,s);return 1;
 }
