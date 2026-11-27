@@ -190,3 +190,18 @@ Status: terminology and structural swap definitions recorded; no code, tests, or
 ## 16. ZIPIT — four unique C++20 implementations
 
 Implementation: [genshin_zipit.hpp](experiments/genshin_zipit.hpp), 0BSD, include-free C++20. The four names are separate constexpr functions returning a new layout by value. CORE is ordered PASS, YIN, YANG, AIRGAP. ZIPITUP is identity; ZIPITDOWN exchanges the first and fourth slots; ZIPITOUT exchanges first and third; FUCKITIN exchanges first and second. Each defaults to CORE but also accepts an explicit existing layout, permitting composition and exact reversal. This is a chosen positional interpretation of the Section 15 definitions, not an authorization to swap evaluated truth or evidence. Immutable source layout and role identity are preserved. Evidence and its conjunction remain separate from the transformed layout. Static assertions encode the four exact permutations, involution of each swap, identity, noncommuting composition, and fail-closed evidence conjunction. Native MSVC compilation has not been performed. No production or pipeline changes.
+
+## 17. ZIPIT — independent C++20 translation units
+
+User request: provide each of the four operations as a unique standalone C++20 implementation in addition to the shared method. Preserve [genshin_zipit.hpp](experiments/genshin_zipit.hpp) unchanged (source blob 820895a72ee140a4091071e73a9b977033bd6075).
+
+| Standalone source | Implementation mechanism | Canonical output occurrence IDs |
+| --- | --- | --- |
+| [zipitup_standalone.cpp](experiments/zipitup_standalone.cpp) | Explicit aggregate copy | 0,1,2,3 |
+| [zipitdown_standalone.cpp](experiments/zipitdown_standalone.cpp) | Three-step unsigned XOR swap of distinct local fields | 3,1,2,0 |
+| [zipitout_standalone.cpp](experiments/zipitout_standalone.cpp) | Indexed gather using a fixed permutation | 2,1,0,3 |
+| [fuckitin_standalone.cpp](experiments/fuckitin_standalone.cpp) | Temporary-register exchange | 1,0,2,3 |
+
+Each file independently declares its own namespace, Layout, CORE, named constexpr function, and five static_assert fixtures. All accept a layout by value, preserve original input, and support the same positional contract as Section 16. Payloads are unsigned occurrence IDs: 0=PASS, 1=YIN, 2=YANG, 3=AIRGAP for canonical CORE. The functions also accept arbitrary unsigned payloads and do not certify that such payloads constitute a valid unique role permutation. The XOR swap operates on two distinct unsigned fields of a local value, not on aliases, and the temporary bit mixtures are not published as witnesses. These mechanisms differ at source level; an optimizing compiler may emit equivalent instructions. A shared mathematical transposition does not become a different mathematical operator merely because its implementation differs.
+
+No includes, dynamic allocation, I/O, or cross-file dependencies. Each is intended for separate object compilation with native MSVC C++20 (/std:c++20 /O2 /c). No main is required for object compilation. Compile-time fixtures express canonical mapping, roundtrip, noncanonical payload mapping, roundtrip of noncanonical payloads and unchanged sample. These assertions have not been executed by MSVC in this session. No claim of project-wide zero-call compliance or binary-level independence. These are layout implementations, not four duplicated full TriPi evidence engines; the independent implementations neither alter nor recompute the authoritative audit verdict. No production code, prior experiment, pipeline or shared method changed.
