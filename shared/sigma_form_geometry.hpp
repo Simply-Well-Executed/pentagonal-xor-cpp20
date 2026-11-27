@@ -27,6 +27,12 @@ struct Point2 { Vec2 value; bool valid; };
 struct Arm2 { Vec2 elbow; Vec2 hand; bool valid; };
 struct Pinhole { double fx; double fy; double cx; double cy; };
 
+// Exact binary64 constants (2*n)*(2*n+1), n=1..14.
+inline constexpr double sine_denominators[14] = {
+    6.0,20.0,42.0,72.0,110.0,156.0,210.0,
+    272.0,342.0,420.0,506.0,600.0,702.0,812.0
+};
+
 // Bounded sine Taylor series, with radians within [-64,64].
 [[nodiscard]] constexpr Scalar sine(double radians) noexcept {
     if (!finite(radians) || absolute(radians) > 64.0)
@@ -34,11 +40,13 @@ struct Pinhole { double fx; double fy; double cx; double cy; };
     double x = radians;
     while (x > geometry_pi) x -= 2.0 * geometry_pi;
     while (x < -geometry_pi) x += 2.0 * geometry_pi;
+    // REDUX/1: loop-invariant square and exact denominators.
+    // Retain the original division, term multiply and addition order.
+    const double negative_square = -(x*x);
     double term = x;
     double sum = x;
-    for (unsigned n = 1; n <= 14; ++n) {
-        const double d = 2.0 * static_cast<double>(n);
-        term *= -(x*x) / (d * (d+1.0));
+    for (unsigned n = 0; n < 14; ++n) {
+        term *= negative_square / sine_denominators[n];
         sum += term;
     }
     return {sum, finite(sum)};
