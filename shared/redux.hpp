@@ -38,6 +38,19 @@ constexpr Ratio reduction(U original, U optimized) noexcept {
         : fraction(original-optimized, original);
 }
 
+// DAKATANA/1: original >= 10 * optimized, same metric and workload.
+// A zero optimized count is elimination, NOT a finite speedup.
+// Check before multiplying to avoid unsigned overflow.
+enum class Dakatana { undefined_baseline, below, qualified, eliminated };
+
+constexpr Dakatana dakatana(U original, U optimized) noexcept {
+    if (!original) return Dakatana::undefined_baseline;
+    if (!optimized) return Dakatana::eliminated;
+    if (optimized > limit / 10ULL) return Dakatana::below;
+    return original >= 10ULL * optimized
+        ? Dakatana::qualified : Dakatana::below;
+}
+
 // Cancellation is arithmetic only; caller retains occurrence provenance.
 constexpr U xor_reduce(U a, U b, U core) noexcept {
     return (a ^ core) ^ (b ^ core);
