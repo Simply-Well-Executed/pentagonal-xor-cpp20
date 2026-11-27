@@ -8,11 +8,11 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 */
 #ifndef SWE_REDUX_HPP
 #define SWE_REDUX_HPP
-namespace swe::redux {
+struct REDUX {
 using U = unsigned long long;
 static_assert(~U{0} == 18446744073709551615ULL);
-inline constexpr U limit = ~U{0};
-inline constexpr unsigned capacity = 32;
+inline static constexpr U limit = ~U{0};
+inline static constexpr unsigned capacity = 32;
 
 enum class Status { ok, zero_baseline, invalid_input,
                     invalid_dependency, cycle, overflow };
@@ -24,14 +24,14 @@ struct Ratio {
 };
 
 // Exact signed magnitude; no floating point or discarded remainder.
-constexpr Ratio fraction(U n, U d, bool negative = false) noexcept {
+static constexpr Ratio fraction(U n, U d, bool negative = false) noexcept {
     if (!d) return {Status::zero_baseline, false, 0, 0};
     U a = n, b = d;
     while (b) { U r = a % b; a = b; b = r; }
     return {Status::ok, negative && n != 0, n/a, d/a};
 }
 
-constexpr Ratio reduction(U original, U optimized) noexcept {
+static constexpr Ratio reduction(U original, U optimized) noexcept {
     if (!original) return {Status::zero_baseline, false, 0, 0};
     return optimized > original
         ? fraction(optimized-original, original, true)
@@ -43,7 +43,7 @@ constexpr Ratio reduction(U original, U optimized) noexcept {
 // Check before multiplying to avoid unsigned overflow.
 enum class Dakatana { undefined_baseline, below, qualified, eliminated };
 
-constexpr Dakatana dakatana(U original, U optimized) noexcept {
+static constexpr Dakatana dakatana(U original, U optimized) noexcept {
     if (!original) return Dakatana::undefined_baseline;
     if (!optimized) return Dakatana::eliminated;
     if (optimized > limit / 10ULL) return Dakatana::below;
@@ -52,14 +52,14 @@ constexpr Dakatana dakatana(U original, U optimized) noexcept {
 }
 
 // Cancellation is arithmetic only; caller retains occurrence provenance.
-constexpr U xor_reduce(U a, U b, U core) noexcept {
+static constexpr U xor_reduce(U a, U b, U core) noexcept {
     return (a ^ core) ^ (b ^ core);
 }
 
 struct Work { Status status; U original, optimized; };
 
 // Reuse common work once, only when the caller establishes equivalence.
-constexpr Work factorize(U lanes, U common, U unique_total) noexcept {
+static constexpr Work factorize(U lanes, U common, U unique_total) noexcept {
     if (!lanes) return {Status::invalid_input, 0, 0};
     if (common && lanes > (limit-unique_total)/common)
         return {Status::overflow, 0, 0};
@@ -77,7 +77,7 @@ struct Schedule {
 
 // Fixed-capacity deterministic topological analysis; O(n*n) time.
 // No task execution, threads, input mutation, allocation or I/O.
-constexpr Schedule analyze(const Task* tasks, unsigned n) noexcept {
+static constexpr Schedule analyze(const Task* tasks, unsigned n) noexcept {
     if (!tasks || !n || n > capacity) return {Status::invalid_input};
     Schedule out{};
     const U mask = (U{1} << n)-1;
@@ -110,18 +110,18 @@ constexpr Schedule analyze(const Task* tasks, unsigned n) noexcept {
     return out;
 }
 
-constexpr Ratio time_reduction(const Schedule& s) noexcept {
+static constexpr Ratio time_reduction(const Schedule& s) noexcept {
     if (s.status != Status::ok) return {s.status, false, 0, 0};
     if (s.critical_path > s.work)
         return {Status::invalid_input, false, 0, 0};
     return reduction(s.work, s.critical_path);
 }
 
-constexpr Ratio ideal_speedup(const Schedule& s) noexcept {
+static constexpr Ratio ideal_speedup(const Schedule& s) noexcept {
     if (s.status != Status::ok) return {s.status, false, 0, 0};
     if (s.critical_path > s.work)
         return {Status::invalid_input, false, 0, 0};
     return fraction(s.work, s.critical_path);
 }
-} // namespace swe::redux
+}; // REDUX
 #endif

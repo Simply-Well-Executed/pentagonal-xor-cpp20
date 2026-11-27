@@ -2,25 +2,23 @@
 // DAKATANA-01: independent literal tick oracle for the public DLL ABI.
 #include "../docs/experiments/LF9WN9Z/LF9WN9Z.hpp"
 #include "../shared/redux.hpp"
-static_assert(swe::redux::dakatana(10000,30)==swe::redux::Dakatana::qualified);
-static_assert(swe::redux::dakatana(10000,0)==swe::redux::Dakatana::eliminated);
-namespace {
+static_assert(REDUX::dakatana(10000,30)==REDUX::Dakatana::qualified);
+static_assert(REDUX::dakatana(10000,0)==REDUX::Dakatana::eliminated);
 using I=long long;
 struct S { I x,y,z,vy,vz; };
 constexpr I lo=10000,hi=170000;
-void tick(S& s) noexcept {
+static void tick(S& s) noexcept {
     s.y+=s.vy; s.z+=s.vz-490; s.vz-=980;
     if(s.y<=lo){s.y=lo;if(s.vy<0)s.vy=0;}
     if(s.y>=hi){s.y=hi;if(s.vy>0)s.vy=0;}
     if(s.z<=lo){s.z=lo;if(s.vz<0)s.vz=0;}
     if(s.z>=hi){s.z=hi;if(s.vz>0)s.vz=0;}
 }
-bool compare(S s,unsigned n) noexcept {
+static bool compare(S s,unsigned n) noexcept {
     I p[5]={s.x,s.y,s.z,s.vy,s.vz};
     for(unsigned i=0;i<n;++i)tick(s);
     return lf9wn9z_step(p,5,n)==1 && p[0]==s.x && p[1]==s.y &&
            p[2]==s.z && p[3]==s.vy && p[4]==s.vz;
-}
 }
 int main(){
     constexpr I pos[]={lo,lo+1,90000,hi-1,hi};

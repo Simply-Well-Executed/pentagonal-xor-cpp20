@@ -12,7 +12,9 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 #include "toolong.hpp"
 #include "coreao.hpp"
 #include "gammagamma.hpp"
-namespace swe::ariari {
+struct ARIARI_TOOLONG {
+using Status = ARIARI::Status;
+using toolong = swe::toolong;
 // Optional real TOOLONG lane. Existing TOOLONG uses STL and allocation.
 // Explicit source operands: no floating-point trace -> integer conversion.
 struct WideCore {
@@ -23,7 +25,7 @@ struct WideFusion {
     toolong redux_numerator; // signed
     // REDUX denominator = core.a; KNIGHTREX = core.a / core.b (if exact).
 };
-inline WideFusion thailonga(const toolong& original,const toolong& optimized) {
+static inline WideFusion thailonga(const toolong& original,const toolong& optimized) {
     if (original.negative() || optimized.negative())
         return {{Status::invalid,original,optimized,toolong{0},toolong{0},toolong{0}},toolong{0}};
     if (original.is_zero())
@@ -32,7 +34,7 @@ inline WideFusion thailonga(const toolong& original,const toolong& optimized) {
     const auto a=original/g, b=optimized/g; // exact divisions by GCD
     return {{optimized.is_zero()?Status::eliminated:Status::exact,original,optimized,g,a,b},a-b};
 }
-inline bool ariari(const WideFusion& f,const toolong& original,const toolong& optimized) {
+static inline bool ariari(const WideFusion& f,const toolong& original,const toolong& optimized) {
     const auto& c=f.core;
     if (original.is_zero() || original.negative() || optimized.negative() ||
         c.common<=toolong{0} || c.a<=toolong{0} || c.b.negative()) return false;
@@ -44,14 +46,14 @@ inline bool ariari(const WideFusion& f,const toolong& original,const toolong& op
 // Outer GammaGamma result wraps separate typed witnesses. No invented split,
 // no claim that a factorial result validates a work ratio or COREAO trace.
 struct GammaEnvelope {
-    coreao::Result coreao_witness;
+    swe::coreao::Result coreao_witness;
     WideFusion arithmetic;
-    gammagamma::Result gamma;
+    swe::gammagamma::Result gamma;
 };
-inline GammaEnvelope compose(const deca_sigma::Trace& trace,const toolong& original,
+static inline GammaEnvelope compose(const swe::deca_sigma::Trace& trace,const toolong& original,
                              const toolong& optimized,std::string_view decimal_token) {
-    return {coreao::inspect(trace),thailonga(original,optimized),
-            gammagamma::evaluate(decimal_token)};
+    return {swe::coreao::inspect(trace),thailonga(original,optimized),
+            swe::gammagamma::evaluate(decimal_token)};
 }
-} // namespace swe::ariari
+}; // ARIARI_TOOLONG
 #endif
