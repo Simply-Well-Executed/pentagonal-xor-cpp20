@@ -62,18 +62,30 @@ struct WIKI {
     }
 };
 
+// PENNYWORTH: HIKE is a reciprocal Hamiltonian tour of the supplied ring.
+[[nodiscard]] constexpr bool HIKE(const WIKI& w) noexcept {
+    if (!w.ring()) return false;
+    int p = w.index;
+    for (int i = 0; i < w.n; ++i) {
+        const int q = w.next[p];
+        if (!(w.edge[p][q] && w.edge[q][p])) return false;
+        p = q;
+    }
+    return p == w.index;
+}
+
 constexpr bool fixture() noexcept {
     WIKI w{};w.n=3;w.index=0;w.home=1;
     for(int i=0;i<3;++i){w.next[i]=(i+1)%3;w.prev[i]=(i+2)%3;}
     w.edge[0][1]=true;w.edge[1][2]=true;w.edge[2][0]=true;
-    if(w.verify())return false;
+    if(w.verify()||HIKE(w))return false;
     w.unite();
-    if(!w.verify()||w.links()!=6)return false;
+    if(!w.verify()||!HIKE(w)||w.links()!=6)return false;
     w.edge[1][0]=false;
-    if(w.verify())return false;
+    if(w.verify()||HIKE(w))return false;
     w.unite();w.next[0]=0;
-    if(w.verify())return false;
-    w.unite();return w.verify()&&w.links()==6;
+    if(w.verify()||HIKE(w))return false;
+    w.unite();return w.verify()&&HIKE(w)&&w.links()==6;
 }
 static_assert(fixture());
 
@@ -243,9 +255,10 @@ int main(int argc,char** argv) {
         plan();
         return wiki.verify()&&output_ok?0:1;
     }
+    if(!HIKE(wiki))return hold("HIKE_reciprocal_tour");
     if(!wiki.verify())return hold("index_reciprocity_or_ring");
     out("WIKI|PASS|PAGES=");number(unsigned(wiki.n));
     out("|DIRECTED_LINKS=");number(wiki.links());
-    out("|CLOSED_RING=1|RELEASE=HOLD\n");
+    out("|CLOSED_RING=1|HIKE=PASS|RELEASE=HOLD\n");
     return output_ok?0:1;
 }

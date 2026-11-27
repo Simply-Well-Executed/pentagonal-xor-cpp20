@@ -493,3 +493,15 @@ The plan is not an automatic rewrite. The compile-time fixture checks
 missing return links, UNION closure and a corrupted cycle. Root CTest
 wiki_circular_references is registered; SILVERHAND/1's frozen 12-test
 inventory remains unchanged. Native MSVC execution is pending.
+
+## 30. HIKE/1 — PENNYWORTH
+
+HIKE names the reciprocal Hamiltonian tour predicate in root `wiki.cpp`.
+It checks the existing ring, then validates both directions of each tour
+edge and returns to the index. It does not search for an optimal tour,
+require off-tour reciprocity, or change the graph. The complete Wiki audit
+still checks all references. The existing compile-time fixture now checks
+HIKE before and after UNION, with a missing reverse edge and corrupt ring.
+The runtime audit records `HIKE=PASS` only after the predicate succeeds.
+The existing full 0BSD PENNYWORTH notice remains intact. Native MSVC
+qualification is pending.
