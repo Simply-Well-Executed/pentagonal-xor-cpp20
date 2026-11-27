@@ -85,3 +85,7 @@ User invokes integrals, energy conservation and forensic recoverability. These a
 - User-provided Zhuyin reference: https://simple.wikipedia.org/wiki/Zhuyin
 
 Status: conceptual notes only; not a release, proven model, or implementation authorization.
+
+## 8. Dimensional terminology — user correction
+
+In the proposed Zenshin vocabulary, a CONFIGURATION is a five-dimensional (5D) shape; a TENSE or TENZ is a two-dimensional (2D) shape. This supersedes the earlier informal use of CONFIGURATION for a flat device arrangement. The HONGKONGZA-01 practice display is a 2D representation, not a validated 5D CONFIGURATION. A table is a record, not itself the geometric object. Five devices do not by themselves establish five dimensions. The five axes, coordinate domain, topology, metric and projection map remain to be defined; do not assign them without provenance. This is project-local terminology, not standard mathematical nomenclature. Source: user's explicit correction in the Zenshin conversation, 2026-11-27. Earlier text retained as historical context; this correction governs subsequent terminology.
