@@ -79,11 +79,11 @@ Invoke-Stage 'configure-precision' {
 Invoke-Stage 'build-toolong' {
     & $processAuditScript -RepositoryRoot $root -BuildDirectory $rootBuild `
       -EvidenceDirectory $processEvidence -Operation 'build_toolong' `
-      -Targets @('toolong_arithmetic_test','gammagamma_pi_precision_test')
+      -Targets @('toolong_arithmetic_test','gammagamma_pi_precision_test','lcd_test','talon_test','namespace_free_test')
 }
 Invoke-Stage 'ctest-toolong' {
     & ctest --test-dir $rootBuild -C Release `
-      -R '^(toolong_exact_arithmetic|gammagamma_pi_precision_boundaries)$' `
+      -R '^(toolong_exact_arithmetic|gammagamma_pi_precision_boundaries|lcd_256_cycles_exact_quotient|talon_256_cycles_terminal_velocity|namespace_free_composition_65025)$' `
       --output-on-failure --no-tests=error
 }
 Invoke-Stage 'release-hold' {

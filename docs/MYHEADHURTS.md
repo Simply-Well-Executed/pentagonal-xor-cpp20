@@ -427,3 +427,27 @@ standard-library qualifications, C language linkage, safety bounds and
 TRIFORCE/JSTAR remain intact. Namespace removal is a source organization
 change; it does not by itself remove runtime instructions or prove speedup.
 No native MSVC execution is claimed until actual CI receipts are available.
+
+## 27. TALON/1 native CI qualification
+
+New exploratory fixed-atmosphere model, not a physical drop. Figure-eight to
+circle is a deformation; no energy is created by geometry. Orb mass 0.009 kg,
+radius 0.01 m, gravity 9.80665, air density 1.225, drag coefficient 0.47.
+Freeze 256 advances of 4 m, zero initial speed, constant parameters, RK4
+integration of normalized squared velocity and drag work, independent
+analytical exponential route. LCD is exact normalized drop distance, while
+physics is binary64 with 2e-7 normalized-speed-squared and 1e-10 J energy
+closure tolerances. Independent arithmetic evaluation predicts 31.23954 m/s
+terminal speed and 4.39159 J kinetic-energy limit. Native execution pending.
+No infinite physical height or atmospheric generality is claimed.
+
+Root CTest and the existing isolated TRIFORCE PRECISION lane register LCD,
+TALON and namespace-composition diagnostics; all retain the existing
+HEAD/TAIL and JSTAR gate. No new workflow, runner image, network dependency,
+external library or relaxation. Prior head ad1f5ed1985f0fd410a0f4ecb69f333d46b0c101
+had successful DIAERY and QUADDI NI and failing Checks, EXCITE and PR-PARITY.
+JSTAR reported unverifiable descendant paths, portable-core MSVC asserts at
+lines 51 and 87 failed, and legacy source policy identified octadi/G.py and
+18 POSIX scripts plus GNU probe. These independent failures remain HOLD;
+do not bypass them or infer that TALON passed. No historical source
+or receipt is rewritten.

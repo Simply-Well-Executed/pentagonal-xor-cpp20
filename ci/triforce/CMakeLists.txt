@@ -23,6 +23,22 @@ if(SWE_TRIFORCE_LANE STREQUAL "PRECISION")
   endforeach()
   add_test(NAME toolong_exact_arithmetic COMMAND toolong_arithmetic_test)
   add_test(NAME gammagamma_pi_precision_boundaries COMMAND gammagamma_pi_precision_test)
+  # Independent arithmetic diagnostics: same native toolchain, no root build.
+  add_executable(lcd_test ../../tests/LCD_TEST.cpp)
+  add_executable(talon_test ../../tests/TALON_TEST.cpp)
+  add_executable(namespace_free_test ../../tests/namespace_free_test.cpp
+    ../../docs/experiments/fuckitin_standalone.cpp
+    ../../docs/experiments/zipitup_standalone.cpp
+    ../../docs/experiments/zipitdown_standalone.cpp
+    ../../docs/experiments/zipitout_standalone.cpp)
+  foreach(test_target IN ITEMS lcd_test talon_test namespace_free_test)
+    set_target_properties(${test_target} PROPERTIES
+      CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+    target_compile_options(${test_target} PRIVATE /O2 /W4 /permissive- /fp:precise /constexpr:steps1000000)
+  endforeach()
+  add_test(NAME lcd_256_cycles_exact_quotient COMMAND lcd_test)
+  add_test(NAME talon_256_cycles_terminal_velocity COMMAND talon_test)
+  add_test(NAME namespace_free_composition_65025 COMMAND namespace_free_test)
   return()
 endif()
 add_executable(triforce_native_gate ../../tests/triforce_native_gate_test.cpp)
