@@ -30,6 +30,22 @@ static_assert(analyze(tasks,33).status==Status::invalid_input);
 static_assert(time_reduction(analyze(zero,1)).status==Status::zero_baseline);
 static_assert(factorize(2,limit,0).status==Status::overflow);
 static_assert(factorize(0,1,0).status==Status::invalid_input);
+static_assert(dakatana(10,1)==Dakatana::qualified);
+static_assert(dakatana(9,1)==Dakatana::below);
+static_assert(dakatana(10000,30)==Dakatana::qualified);
+static_assert(dakatana(141,24)==Dakatana::below);
+static_assert(dakatana(98,43)==Dakatana::below);
+static_assert(dakatana(0,0)==Dakatana::undefined_baseline);
+static_assert(dakatana(0,1)==Dakatana::undefined_baseline);
+static_assert(dakatana(1,0)==Dakatana::eliminated);
+static_assert(dakatana(1,2)==Dakatana::below);
+static_assert(dakatana(limit,limit/10ULL)==Dakatana::qualified);
+static_assert(dakatana(limit,limit/10ULL+1)==Dakatana::below);
+static_assert(dakatana(limit,limit)==Dakatana::below);
+static_assert(reduction(10000,30).numerator==997);
+static_assert(reduction(10000,30).denominator==1000);
+static_assert(fraction(10000,30).numerator==1000);
+static_assert(fraction(10000,30).denominator==3);
 }
 int main() {
     return redux_test::s.status==swe::redux::Status::ok &&
