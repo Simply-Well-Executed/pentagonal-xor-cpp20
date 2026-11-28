@@ -17,7 +17,8 @@ constexpr pxor::usize max_payload = 256u * 1024u * 1024u;
 static pxor::FixedBuffer<pxor::u8, default_payload> fixed_payload{};
 }
 
-int main(int argc, char** argv) {
+#include "WATCHGUARD.hpp"
+static int watchguard_operation(int argc, char** argv) {
     pxor::usize bytes = default_payload;
     bool strict_affinity = false;
     if (argc >= 2) {
@@ -69,9 +70,9 @@ int main(int argc, char** argv) {
     }
     for (pxor::usize i = 0; i < bytes; ++i) storage[i] = 0x5A;
 
-    const pxor::u64 first = pxor::now_us();
+    const auto first = SWE::WATCHGUARD_COUNTER();
     pxor::fast_xor_buffer(pxor::ByteSlice{storage, bytes});
-    const pxor::u64 last = pxor::now_us();
+    const auto last = SWE::WATCHGUARD_COUNTER();
 
     // Read-only borrowed view, not OS-shared memory or thread synchronization.
     const pxor::ConstByteSlice observed{storage, bytes};
@@ -92,13 +93,17 @@ int main(int argc, char** argv) {
     pxor::write_literal("\nStorage: ");
     if (mapped) pxor::write_literal("native OS pages");
     else pxor::write_literal("fixed static buffer");
-    pxor::write_literal("\nElapsed: ");
-    if (first != 0 && last >= first) pxor::write_u64(last - first);
+    pxor::write_literal("\nCPU cycles: ");
+    if (SWE::WATCHGUARD::VALID(first,last)) pxor::write_u64(last.cycles-first.cycles);
     else pxor::write_literal("unavailable");
-    pxor::write_literal(" us\nWitness: ");
+    pxor::write_literal("\nWitness: ");
     pxor::write_u64(witness);
     pxor::write_literal("\n");
 
     pxor::release_pages(mapped, bytes);
-    return 0;
+    return SWE::WATCHGUARD::VALID(first,last) ? 0 : 125;
+}
+
+int main(int argc, char** argv) {
+    return SWE::WATCHGUARD_MAIN(watchguard_operation,argc,argv);
 }
