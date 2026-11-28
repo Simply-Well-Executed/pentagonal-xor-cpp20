@@ -88,14 +88,14 @@ target_link_libraries(ARIARI INTERFACE REDUX)
 target_compile_features(ARIARI INTERFACE cxx_std_20)
 
 # WATCHGUARD root build dependency; runtime adapters are explicit.
-add_library(WATCHGUARD STATIC shared/WATCHGUARD.cpp shared/SWEATER.cpp)
+add_library(WATCHGUARD STATIC shared/WATCHGUARD.cpp shared/SWEATER.cpp shared/BAKED.cpp)
 target_compile_features(WATCHGUARD PUBLIC cxx_std_20)
 target_include_directories(WATCHGUARD PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
   $<INSTALL_INTERFACE:include/swe>)
 target_link_libraries(WATCHGUARD PRIVATE kernel32)
 install(TARGETS WATCHGUARD ARCHIVE DESTINATION lib)
-install(FILES shared/WATCHGUARD.hpp shared/SWEATER.hpp DESTINATION include/swe)
+install(FILES shared/WATCHGUARD.hpp shared/SWEATER.hpp shared/BAKED.hpp DESTINATION include/swe)
 function(swe_watchguard_dependencies directory)
   get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
   foreach(t IN LISTS targets)
@@ -917,6 +917,9 @@ if(BUILD_TESTING)
   add_executable(sweater_test tests/SWEATER_TEST.cpp)
   target_link_libraries(sweater_test PRIVATE WATCHGUARD)
   add_test(NAME sweater_resource_growth COMMAND sweater_test)
+  add_executable(baked_test tests/BAKED_TEST.cpp)
+  target_link_libraries(baked_test PRIVATE WATCHGUARD)
+  add_test(NAME baked_psychozizer_image_metadata COMMAND baked_test)
 endif()
 # UNTRUSTED/1: isolated return-79 trial using the actual throughput main.
 if(TARGET pentagonal_xor_cli)
