@@ -50,6 +50,7 @@ struct Pinhole { double fx; double fy; double cx; double cy; };
 [[nodiscard]] constexpr Scalar attenuation(double x) noexcept {
     if (!finite(x) || x < 0.0 || x > 16.0)
         return {0.0, false};
+    if (x == 0.0) return {1.0, true};
     double term = 1.0, sum = 1.0;
     for (unsigned n = 1; n <= 64; ++n) {
         term *= x / static_cast<double>(n);
@@ -166,19 +167,32 @@ struct Pinhole { double fx; double fy; double cx; double cy; };
     return {image,finite(image.x) && finite(image.y)};
 }
 // Real sample: P*exp(-alpha*omega)/(4*pi*omega^2).
-// P in W and omega in metres give W/m^2 if alpha has inverse-length units.
-// It is separate from the exact Q62 fixed-point Intensity record.
-[[nodiscard]] constexpr Scalar inverse_square_intensity(
-    double power, double alpha, double omega, double pi_value) noexcept {
-    if (!finite(power) || !finite(alpha) || !finite(omega) ||
-        !finite(pi_value) || power < 0.0 || alpha < 0.0 ||
-        omega <= 0.0 || pi_value <= 0.0) return {0.0,false};
+// Preserve the original arithmetic order and validity domain.
+// A prepared distance can be reused across independent power samples.
+struct InverseSquareProfile {
+    double decay, denominator;
+    bool valid;
+    [[nodiscard]] constexpr Scalar evaluate(double power) const noexcept {
+        if (!valid || !finite(power) || power < 0.0) return {0.0,false};
+        const double value = power*decay/denominator;
+        return {value,finite(value)};
+    }
+};
+[[nodiscard]] constexpr InverseSquareProfile prepare_inverse_square(
+    double alpha, double omega, double pi_value) noexcept {
+    if (!finite(alpha) || !finite(omega) || !finite(pi_value) ||
+        alpha < 0.0 || omega <= 0.0 || pi_value <= 0.0)
+        return {0.0,0.0,false};
     const Scalar decay = attenuation(alpha*omega);
     const double denom = 4.0*pi_value*omega*omega;
     if (!decay.valid || !finite(denom) || denom <= 0.0)
-        return {0.0,false};
-    const double value = power*decay.value/denom;
-    return {value,finite(value)};
+        return {0.0,0.0,false};
+    return {decay.value,denom,true};
+}
+[[nodiscard]] constexpr Scalar inverse_square_intensity(
+    double power, double alpha, double omega, double pi_value) noexcept {
+    if (!finite(power) || power < 0.0) return {0.0,false};
+    return prepare_inverse_square(alpha,omega,pi_value).evaluate(power);
 }
 } // namespace swe::sigma_form
 #endif // SWE_SIGMA_FORM_GEOMETRY_HPP
