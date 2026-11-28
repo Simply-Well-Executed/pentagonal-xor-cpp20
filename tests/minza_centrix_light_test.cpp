@@ -4,7 +4,23 @@
 #include <cmath>
 #include <iostream>
 using namespace swe::minza::centrix;
+constexpr bool attenuation_parity() {
+ for(unsigned selected=0;selected<tile_count;++selected)
+  for(unsigned target=0;target<tile_count;++target) {
+   double weight=1.0;
+   for(unsigned d=0;d<distance(selected,target);++d)weight*=neighborhood_decay;
+   if(weight!=decay_weights[distance(selected,target)])return false;
+   constexpr double exposures[]={0.0,0.25,1.0,2.5,3.0};
+   for(double exposure:exposures) {
+    const double reference=clamp(clamp(exposure,minimum_exposure,maximum_exposure)*(0.40+0.60*weight),0.07,2.70);
+    if(radiance(selected,target,exposure)!=reference)return false;
+   }
+  }
+ return true;
+}
+static_assert(attenuation_parity());
 int main(){
+ if(!attenuation_parity())return 7;
  for(unsigned selected=0;selected<tile_count;++selected){
   if(mirror(mirror(selected))!=selected)return 1;
   for(unsigned target=0;target<tile_count;++target){
