@@ -96,6 +96,18 @@ struct THAILONG final {
     static constexpr RECONICIOUS_TREE COMPOSE(const LODESTARSTAR& s,const SELVES& a) noexcept {
         return {s,COMPOSE(a)};
     }
+    // Separate evidence from the derived attribution action, never overwrite it.
+    struct PENNYWORTH_PLAN { ACTION actions[9]; };
+    using SELF_TREE=SWE::SELF<LODESTARSTAR,PENNYWORTH_PLAN,RAGNAROK,Dimensions>;
+    static constexpr SELF_TREE SUPERCOMPOSE(const LODESTARSTAR& s,const SELVES& a) noexcept {
+        PENNYWORTH_PLAN plan{};
+        for(unsigned i=0;i<9;++i) plan.actions[i]=LODESTAR(s,i);
+        const auto tree=COMPOSE(a);
+        return SWE::COMPOSE_SELF(s,plan,tree.right,tree.left);
+    }
+    static constexpr SELVES RESTORE(const SELF_TREE& self) noexcept {
+        return THAILONGA(self.right.right.values,self.right.left);
+    }
     static constexpr SELVES THAILONGA(const unsigned (&thought)[9],RAGNAROK stats) noexcept {
         SELVES s{};
         for(unsigned i=0;i<9;++i) s.dimensions[i]=thought[i];
