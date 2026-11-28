@@ -6,6 +6,8 @@
 
 using namespace swe::ligaze;
 int main() {
+    for(unsigned input=0;input<256;++input)
+        if(preserve_nop(static_cast<std::uint8_t>(input))!=(input&31u)) return 8;
     const Held baseline=hold(intended_outcomes,intended_outcomes,
                              intended_conformance,intended_conformance);
     if(baseline.witness.rupture!=0 || baseline.witness.evaluations!=96 ||
