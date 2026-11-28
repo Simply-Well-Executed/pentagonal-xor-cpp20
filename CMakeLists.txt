@@ -96,10 +96,23 @@ target_include_directories(WATCHGUARD PUBLIC
 target_link_libraries(WATCHGUARD PRIVATE kernel32)
 install(TARGETS WATCHGUARD ARCHIVE DESTINATION lib)
 install(FILES shared/WATCHGUARD.hpp shared/SWEATER.hpp shared/BAKED.hpp DESTINATION include/swe)
+# BAKED source attestation is optional until an independently approved manifest exists.
+set(SWE_BAKED_MANIFEST "" CACHE FILEPATH "Externally approved SHA-256 manifest of all tracked source-tree files")
+if(SWE_BAKED_MANIFEST)
+  find_program(SWE_BAKED_LOCAL_GIT NAMES git REQUIRED)
+  add_custom_target(baked_source_integrity
+    COMMAND "${CMAKE_COMMAND}" "-DROOT=${CMAKE_CURRENT_SOURCE_DIR}"
+      "-DMANIFEST=${SWE_BAKED_MANIFEST}" "-DGIT=${SWE_BAKED_LOCAL_GIT}"
+      -P "${CMAKE_CURRENT_SOURCE_DIR}/ci/BAKED_SOURCE.cmake"
+    VERBATIM)
+  add_dependencies(WATCHGUARD baked_source_integrity)
+else()
+  message(STATUS "BAKED source attestation: UNQUALIFIED (no approved manifest)")
+endif()
 function(swe_watchguard_dependencies directory)
   get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
   foreach(t IN LISTS targets)
-    if(NOT t STREQUAL "WATCHGUARD")
+    if(NOT t STREQUAL "WATCHGUARD" AND NOT t STREQUAL "baked_source_integrity")
       add_dependencies(${t} WATCHGUARD)
     endif()
   endforeach()
