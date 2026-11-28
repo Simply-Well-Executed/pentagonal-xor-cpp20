@@ -25,3 +25,7 @@ PINGZA is reverse PING at 99 degrees. Proposed calibration convention: integer-d
 ## THAILONGA compositional primitive
 
 The typed binary value tree in `shared/THAILONGA.hpp` preserves ordered branches and supports recursive composition without flattening. SELVES and RECONICIOUS adapters preserve the existing API and values; no semantic identity or rights are inferred from structural equality. THAILONGA_TRIAL retains the baseline and candidate, selecting the candidate only with independent verification and authorization. These flags are caller assertions, not independently performed checks. Retry requires a meaningful new candidate and remains within authorized scope. Native qualification remains pending. The existing MINZA and spiral definitions remain unresolved.
+
+## SUPERUNION / SELF (accepted design)
+
+Operator acceptance establishes the compositional design, not an executed GAMP4 qualification. UNION and SUPERUNION are aliases of the same ordered THAILONGA product; AND retains both inputs. SELF composes PENCE AND PENNYWORTH and 6D AND 9D. SUPERCOMPOSE retains original evidence and a separately derived PENNYWORTH action plan; HOLD remains HOLD and plans are not completed repairs. RESTORE recovers all SELVES values. Existing COMPOSE adapters remain unchanged. SELF is a software value, not a person or consciousness. Native MSVC qualification and release authorization remain pending; no legal conclusion is inferred from design acceptance.
