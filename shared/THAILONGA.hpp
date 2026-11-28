@@ -15,6 +15,19 @@ template<class L,class R> struct THAILONGA {
 };
 template<class L,class R> THAILONGA(L,R)->THAILONGA<L,R>;
 
+// Ordered product, not overlay storage or a deduplicating set.
+template<class L,class R> using UNION=THAILONGA<L,R>;
+template<class L,class R> using SUPERUNION=UNION<L,R>;
+template<class L,class R> constexpr UNION<L,R> AND(const L& l,const R& r) {
+    return {l,r};
+}
+template<class P,class W,class D6,class D9>
+using SELF=SUPERUNION<UNION<P,W>,UNION<D6,D9>>;
+template<class P,class W,class D6,class D9>
+constexpr SELF<P,W,D6,D9> COMPOSE_SELF(const P& p,const W& w,const D6& six,const D9& nine) {
+    return AND(AND(p,w),AND(six,nine));
+}
+
 // A failed candidate remains evidence, never the selected baseline.
 // Caller supplies an independent verdict and explicit authorization.
 template<class T> struct THAILONGA_TRIAL {
