@@ -87,6 +87,28 @@ add_library(ARIARI INTERFACE)
 target_link_libraries(ARIARI INTERFACE REDUX)
 target_compile_features(ARIARI INTERFACE cxx_std_20)
 
+# WATCHGUARD root build dependency; runtime adapters are explicit.
+add_library(WATCHGUARD STATIC shared/WATCHGUARD.cpp)
+target_compile_features(WATCHGUARD PUBLIC cxx_std_20)
+target_include_directories(WATCHGUARD PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+  $<INSTALL_INTERFACE:include/swe>)
+target_link_libraries(WATCHGUARD PRIVATE kernel32)
+install(TARGETS WATCHGUARD ARCHIVE DESTINATION lib)
+install(FILES shared/WATCHGUARD.hpp DESTINATION include/swe)
+function(swe_watchguard_dependencies directory)
+  get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
+  foreach(t IN LISTS targets)
+    if(NOT t STREQUAL "WATCHGUARD")
+      add_dependencies(${t} WATCHGUARD)
+    endif()
+  endforeach()
+  get_property(children DIRECTORY "${directory}" PROPERTY SUBDIRECTORIES)
+  foreach(child IN LISTS children)
+    swe_watchguard_dependencies("${child}")
+  endforeach()
+endfunction()
+
 option(SWE_STD_FREE_CORE_ONLY
   "Build native STD-free Suite plus canonical DecaSigma/TriPi/COREAO/stability headers" OFF)
 if(SWE_STD_FREE_CORE_ONLY)
@@ -131,6 +153,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/quantum_operand_lexicon.hpp
     DESTINATION include/swe)
   message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
+  swe_watchguard_dependencies("${CMAKE_CURRENT_SOURCE_DIR}")
   return()
 endif()
 
@@ -880,3 +903,16 @@ if(MSVC AND BUILD_TESTING)
   add_test(NAME lodestarstar_thailong_reconicious COMMAND lodestarstar_test)
 endif()
 install(FILES shared/LODESTARSTAR.hpp shared/THAILONGA.hpp DESTINATION include/swe)
+
+# Explicit runtime entry adapters, preserving original program arguments and outcomes.
+foreach(t IN ITEMS pentagonal_xor pentagonal_xor_cli pentagonal_xor_std_free pentagonal_suite_cli)
+  if(TARGET ${t})
+    target_link_libraries(${t} PRIVATE WATCHGUARD)
+  endif()
+endforeach()
+if(BUILD_TESTING)
+  add_executable(watchguard_test tests/WATCHGUARD_TEST.cpp)
+  target_link_libraries(watchguard_test PRIVATE WATCHGUARD)
+  add_test(NAME watchguard_risil_hardware_counter COMMAND watchguard_test)
+endif()
+swe_watchguard_dependencies("${CMAKE_CURRENT_SOURCE_DIR}")
