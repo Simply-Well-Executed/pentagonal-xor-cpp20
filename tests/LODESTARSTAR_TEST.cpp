@@ -1,0 +1,32 @@
+/*
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
+// SPDX-License-Identifier: 0BSD
+#include "../shared/LODESTARSTAR.hpp"
+using T=SWE::THAILONG;
+constexpr bool test() {
+    T::RECONICIOUS r{};
+    for(unsigned i=0;i<9;++i) r[i]={i,true,true,true,true,true,true};
+    r[0].exact_0bsd=false; r[1].notice=false; r[2].ledger=false;
+    const auto s=T::THAILONGA(r);
+    if(T::LODESTAR(s,0)!=T::ACTION::HOLD || T::LODESTAR(s,1)!=T::ACTION::RESTORE_NOTICE ||
+       T::LODESTAR(s,2)!=T::ACTION::LEDGER_ONLY || T::LODESTAR(s,3)!=T::ACTION::NONE) return false;
+    for(unsigned m=0;m<=T::FULL;++m) {
+        T::LODESTARSTARHATCH h(s,m);
+        if(h.YANG(false)||!h.YANG(true)||h.attachment()!=0||h.YANG(true)) return false;
+        auto idea=T::UNPING(T::PING(m,341));
+        if(h.YIN(false,idea)||h.YIN(true,{m^1u,true})||!h.YIN(true,idea)||
+           h.attachment()!=m||h.detached()||!(h.RECONICIOUS_RECORD()==s)) return false;
+    }
+    r[8].id=r[0].id;
+    if(T::THAILONGA(r).valid || T::UNPING(T::PING(512,0)).valid) return false;
+    constexpr T::Assessment a{{9,9,9,9,7,8,8,2,4},{0,0,0,0,0,0}};
+    constexpr auto p=T::PROJECT(a);
+    return p.valid && p.numerator==65 && p.denominator==9;
+}
+static_assert(test());
+int main(){return test()?0:1;}
