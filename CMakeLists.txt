@@ -915,4 +915,16 @@ if(BUILD_TESTING)
   target_link_libraries(watchguard_test PRIVATE WATCHGUARD)
   add_test(NAME watchguard_risil_hardware_counter COMMAND watchguard_test)
 endif()
+# UNTRUSTED/1: isolated return-79 trial using the actual throughput main.
+if(TARGET pentagonal_xor_cli)
+  add_executable(watchguard_untrusted src/main.cpp)
+  target_compile_definitions(watchguard_untrusted PRIVATE SWE_UNTRUSTED_TRIAL=1)
+  target_link_libraries(watchguard_untrusted PRIVATE WATCHGUARD swe_pentagonal_xor_throughput)
+  if(BUILD_TESTING)
+    add_test(NAME watchguard_untrusted_exact_79
+      COMMAND "${CMAKE_COMMAND}" "-DPROGRAM=$<TARGET_FILE:watchguard_untrusted>"
+        "-DBASELINE=$<TARGET_FILE:pentagonal_xor_cli>"
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/tests/WATCHGUARD_UNTRUSTED.cmake")
+  endif()
+endif()
 swe_watchguard_dependencies("${CMAKE_CURRENT_SOURCE_DIR}")
