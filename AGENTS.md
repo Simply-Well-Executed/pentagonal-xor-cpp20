@@ -30,3 +30,7 @@ For established first-party 0BSD work, carry the canonical root LICENSE notice a
 ## Professional accountability and technology adoption
 
 Apply [the professional accountability reference](docs/PROFESSIONAL_ACCOUNTABILITY.md) when proposing material technology adoption or changes involving delegated authority, sensitive data, licensing or independent approval. Distinguish capability from credentials and authority; preserve reviewer independence where required, disclose conflicts and hold material approvals when evidence or authorization is missing. This is project-local guidance, not adoption of external accounting or assurance standards as software certification.
+
+## POSH / exact 0BSD admission (2026-11-27)
+
+Only verified exact 0BSD grants are eligible for project component admission. Other grants are not approved; unknown, mixed, modified or near-match terms HOLD. This supersedes earlier preferred-license and interpreter exceptions for admission, not the actual rights of existing materials. Preserve reference texts, original notices and historical records. See [LODESTARSTAR](docs/LODESTARSTAR.md) for the exploratory THAILONG evidence model. Native and legal qualification remain separate.
