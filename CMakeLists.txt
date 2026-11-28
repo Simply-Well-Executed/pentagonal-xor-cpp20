@@ -88,14 +88,14 @@ target_link_libraries(ARIARI INTERFACE REDUX)
 target_compile_features(ARIARI INTERFACE cxx_std_20)
 
 # WATCHGUARD root build dependency; runtime adapters are explicit.
-add_library(WATCHGUARD STATIC shared/WATCHGUARD.cpp)
+add_library(WATCHGUARD STATIC shared/WATCHGUARD.cpp shared/SWEATER.cpp)
 target_compile_features(WATCHGUARD PUBLIC cxx_std_20)
 target_include_directories(WATCHGUARD PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
   $<INSTALL_INTERFACE:include/swe>)
 target_link_libraries(WATCHGUARD PRIVATE kernel32)
 install(TARGETS WATCHGUARD ARCHIVE DESTINATION lib)
-install(FILES shared/WATCHGUARD.hpp DESTINATION include/swe)
+install(FILES shared/WATCHGUARD.hpp shared/SWEATER.hpp DESTINATION include/swe)
 function(swe_watchguard_dependencies directory)
   get_property(targets DIRECTORY "${directory}" PROPERTY BUILDSYSTEM_TARGETS)
   foreach(t IN LISTS targets)
@@ -914,6 +914,9 @@ if(BUILD_TESTING)
   add_executable(watchguard_test tests/WATCHGUARD_TEST.cpp)
   target_link_libraries(watchguard_test PRIVATE WATCHGUARD)
   add_test(NAME watchguard_risil_hardware_counter COMMAND watchguard_test)
+  add_executable(sweater_test tests/SWEATER_TEST.cpp)
+  target_link_libraries(sweater_test PRIVATE WATCHGUARD)
+  add_test(NAME sweater_resource_growth COMMAND sweater_test)
 endif()
 # UNTRUSTED/1: isolated return-79 trial using the actual throughput main.
 if(TARGET pentagonal_xor_cli)
