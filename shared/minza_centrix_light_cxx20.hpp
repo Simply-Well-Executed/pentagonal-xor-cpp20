@@ -10,6 +10,15 @@ inline constexpr double default_exposure = 1.0;
 inline constexpr double minimum_exposure = 0.25;
 inline constexpr double maximum_exposure = 2.50;
 inline constexpr double neighborhood_decay = 0.58;
+// Sequential products preserve the original multiplication order.
+inline constexpr double decay_0 = 1.0;
+inline constexpr double decay_1 = decay_0 * neighborhood_decay;
+inline constexpr double decay_2 = decay_1 * neighborhood_decay;
+inline constexpr double decay_3 = decay_2 * neighborhood_decay;
+inline constexpr double decay_4 = decay_3 * neighborhood_decay;
+inline constexpr double decay_weights[5] = {
+    decay_0, decay_1, decay_2, decay_3, decay_4
+};
 inline constexpr char protocol[] = "MINZA-CENTRIX-CSS3D-v12";
 struct Axis { double x{},y{},z{}; };
 inline constexpr Axis center{0,0,0};
@@ -27,8 +36,7 @@ inline constexpr Axis center{0,0,0};
 }
 [[nodiscard]] constexpr double radiance(unsigned selected,unsigned target,double exposure) noexcept {
     if(!valid_tile(selected)||!valid_tile(target))return 0.0;
-    double weight=1.0;
-    for(unsigned d=0;d<distance(selected,target);++d)weight*=neighborhood_decay;
+    const double weight=decay_weights[distance(selected,target)];
     return clamp(clamp(exposure,minimum_exposure,maximum_exposure)*(0.40+0.60*weight),0.07,2.70);
 }
 static_assert(mirror(0)==2 && mirror(1)==1 && mirror(2)==0);

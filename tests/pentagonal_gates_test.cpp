@@ -8,6 +8,19 @@
 
 using namespace swe::pentagonal;
 int main() {
+    // RECOVERY: all byte inputs retain the original five-bit mask semantics.
+    for (unsigned mask=0; mask<256; ++mask) {
+        unsigned ones=0;
+        for (unsigned bit=0; bit<5; ++bit) ones+=(mask>>bit)&1u;
+        const auto g=boolean_gates(static_cast<std::uint8_t>(mask));
+        if(g.xor_value!=((ones&1u)!=0u) || g.or_value!=(ones!=0u) ||
+           g.and_value!=(ones==5u)) return 19;
+    }
+    Machine idle{};
+    idle.next=Stage::nop; idle.held_value=true;
+    if(!idle.tick(0,0).output) return 20;
+    idle.next=Stage::flop;
+    if(!idle.tick(0,0).output || idle.loops!=1) return 21;
     // Five Boolean ligands: exhaustive independent parity/OR/AND oracles.
     for (unsigned mask=0; mask<32; ++mask) {
         unsigned ones=0;

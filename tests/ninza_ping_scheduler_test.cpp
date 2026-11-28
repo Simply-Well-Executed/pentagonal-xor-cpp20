@@ -51,6 +51,26 @@ int main() {
        s::execute(n,{},1,deny).verdict!=s::Verdict::hold ||
        s::execute(n,order,0,deny).verdict!=s::Verdict::hold ||
        s::execute(n,order,65,deny).verdict!=s::Verdict::hold || effects!=0) return 4;
+    const auto empty=s::execute(0,{},1,deny);
+    if(empty.verdict!=s::Verdict::complete || empty.workers!=0 ||
+       !empty.jobs.empty() || effects!=0) return 7;
+    if(s::execute(0,{},0,deny).verdict!=s::Verdict::hold ||
+       s::execute(0,order,1,deny).verdict!=s::Verdict::hold ||
+       effects!=0) return 8;
+    const std::array<std::size_t,1> single{0};
+    const auto one=s::execute(1,single,4,deny);
+    if(one.verdict!=s::Verdict::complete || one.workers!=1 ||
+       one.jobs[0]!=s::State::pass || effects!=1) return 9;
+    unsigned serial_visits=0;
+    const auto serial_failure=s::execute(n,order,1,[&](std::size_t id) {
+        ++serial_visits;
+        if(id==2) throw std::runtime_error("serial fixture");
+        return id!=5;
+    });
+    if(serial_failure.verdict!=s::Verdict::hold ||
+       serial_failure.jobs[2]!=s::State::hold ||
+       serial_failure.jobs[5]!=s::State::hold ||
+       serial_failure.jobs[0]!=s::State::pass || serial_visits!=n) return 10;
     const auto failed=s::execute(n,order,3,[](std::size_t id) {
         if(id==2) throw std::runtime_error("fixture");
         return id!=5;

@@ -86,6 +86,11 @@ int main() {
         if (value != 0) return 6;
     }
 
+    pxor::write_raw(nullptr, 0);
+    pxor::write_raw(nullptr, 0, true);
+    pxor::u8 unpacked[8]{};
+    pxor::unpack_u64_le(unpacked, 0xFEDCBA9876543210ull);
+    if(pxor::pack_u64_le(unpacked)!=0xFEDCBA9876543210ull) return 20;
     auto cursor = pxor::pentagonal_numbers().begin();
     if (*cursor++ != 1 || *cursor++ != 5 || *cursor++ != 12) return 7;
 

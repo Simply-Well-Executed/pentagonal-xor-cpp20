@@ -29,13 +29,9 @@ inline constexpr std::uint8_t intended_conformance=0b11111u;
 // Six blocks are repeated VIEWS of the same 5 paths, not independent
 // measurements or evidence. Mismatch flags 0..5 remain meaningful.
 constexpr std::uint8_t preserve_nop(std::uint8_t input) noexcept {
-    std::uint8_t output=0;
-    for(unsigned i=0;i<5;++i) {
-        const bool original=((input>>i)&1u)!=0;
-        if(swe::pentagonal::pentagonal_nop(original))
-            output=static_cast<std::uint8_t>(output|(1u<<i));
-    }
-    return output;
+    static_assert(swe::pentagonal::pentagonal_nop(true));
+    static_assert(!swe::pentagonal::pentagonal_nop(false));
+    return static_cast<std::uint8_t>(input & five_mask);
 }
 constexpr std::uint32_t blocks(std::uint8_t outcomes,
                                 std::uint8_t expected,

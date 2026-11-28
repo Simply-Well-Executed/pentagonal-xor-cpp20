@@ -3,6 +3,7 @@
 // FIFONFU must supply a ready-job order; no implicit scheduling policy.
 #ifndef SWE_NINZA_PING_SCHEDULER_HPP
 #define SWE_NINZA_PING_SCHEDULER_HPP
+#include "recovery.hpp"
 #include <algorithm>
 #include <atomic>
 #include <cstddef>
@@ -30,14 +31,29 @@ template<class Work>
     Report r{};
     if (count > max_jobs || requested == 0 || requested > max_workers ||
         fifonfu_order.size() != count) return r;
+    if (!RECOVERY::OPTIMIZER::REQUIRED(static_cast<unsigned>(count))) {
+        r.verdict = Verdict::complete;
+        return r;
+    }
     std::vector<unsigned char> seen(count, 0);
     for (auto id : fifonfu_order) {
         if (id >= count || seen[id]) return r;
         seen[id] = 1;
     }
     r.jobs.assign(count, State::pending);
-    if (count == 0) { r.verdict = Verdict::complete; return r; }
     const auto workers = std::min(count, requested);
+    // RECOVERY: serial work needs neither atomic claiming nor a terminal claim.
+    if (workers == 1) {
+        r.workers = 1;
+        bool passed = true;
+        for (const auto id : fifonfu_order) {
+            try { r.jobs[id] = work(id) ? State::pass : State::hold; }
+            catch (...) { r.jobs[id] = State::hold; }
+            passed &= r.jobs[id] == State::pass;
+        }
+        if (passed) r.verdict = Verdict::complete;
+        return r;
+    }
     std::atomic<std::size_t> next{0};
     const auto run = [&]() noexcept {
         for (;;) {
@@ -48,10 +64,7 @@ template<class Work>
             catch (...) { r.jobs[id] = State::hold; }
         }
     };
-    if (workers == 1) {
-        r.workers = 1;
-        run();
-    } else {
+    {
         std::atomic<int> gate{0};
         std::vector<std::jthread> pool;
         try {

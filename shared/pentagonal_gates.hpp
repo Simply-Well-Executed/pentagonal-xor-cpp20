@@ -18,9 +18,11 @@ struct Gates {
 // The Boolean specialization of the unchanged five-input parity kernel.
 constexpr Gates boolean_gates(std::uint8_t mask) noexcept {
     mask = static_cast<std::uint8_t>(mask & 31u);
-    bool odd = false;
-    for (unsigned bit=0; bit<5; ++bit)
-        odd = odd != ((mask & (1u << bit)) != 0u);
+    unsigned folded = mask;
+    folded ^= folded >> 4u;
+    folded ^= folded >> 2u;
+    folded ^= folded >> 1u;
+    const bool odd = (folded & 1u) != 0u;
     return {odd, mask != 0u, mask == 31u};
 }
 
@@ -146,11 +148,14 @@ struct Machine {
               bool clock_nondecreasing=true) noexcept {
         Step s{};
         s.stage = next;
-        const Gates g = boolean_gates(static_cast<std::uint8_t>(observed & 31u));
         switch (next) {
-        case Stage::xor_gate: held_value=g.xor_value; next=Stage::or_gate; break;
-        case Stage::or_gate: held_value=g.or_value; next=Stage::and_gate; break;
-        case Stage::and_gate: held_value=g.and_value; next=Stage::nop; break;
+        case Stage::xor_gate:
+            held_value=boolean_gates(static_cast<std::uint8_t>(observed & 31u)).xor_value;
+            next=Stage::or_gate; break;
+        case Stage::or_gate:
+            held_value=(observed & 31u)!=0u; next=Stage::and_gate; break;
+        case Stage::and_gate:
+            held_value=(observed & 31u)==31u; next=Stage::nop; break;
         case Stage::nop: held_value=pentagonal_nop(held_value); next=Stage::cor; break;
         case Stage::cor:
             s.vista=pentagonal_cor(observed,expected,entry,witness_present,
