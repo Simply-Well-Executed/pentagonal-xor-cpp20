@@ -14,6 +14,15 @@ constexpr bool initial() {
     return x.DRAG() > 0;
 }
 static_assert(initial());
+constexpr bool drag_witness() {
+    SWIMMING x{};
+    x.CURRENT = 2;
+    const double above = x.DAMP(12, 1);
+    const double below = x.DAMP(-8, 1);
+    return above > 2 && above < 12 && below < 2 && below > -8 &&
+           x.DAMP(2, 1) == 2 && x.DAMP(12, 0) == 12;
+}
+static_assert(drag_witness());
 int main() {
     SWIMMING a{}, b{};
     for (unsigned i = 0; i < SWIMMING::STEPS; ++i) {
@@ -25,5 +34,14 @@ int main() {
     const auto old = a;
     if (a.SWIM(-1) || a.TICK != old.TICK || a.BOYANCY != old.BOYANCY ||
         a.SPACE != old.SPACE) return 4;
+    SWIMMING strong{};
+    strong.DENSITY = 1000;
+    strong.Cd = 100;
+    strong.VELOCITY = 10;
+    if (!strong.SWIM() || !(strong.VELOCITY > 0 && strong.VELOCITY < 10)) return 5;
+    SWIMMING neutral{};
+    for (unsigned i = 0; i < SWIMMING::STEPS; ++i)
+        if (!neutral.SWIM()) return 6;
+    if (neutral.SPACE != 0 || neutral.VELOCITY != 0 || neutral.TIME() != 900) return 7;
     return 0;
 }
