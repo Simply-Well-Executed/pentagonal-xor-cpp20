@@ -26,3 +26,7 @@ See [acknowledgment and limits](docs/INCEPTION_GATE.md).
 ## LODESTAR/1 (ALONZ): canonical PENNYWORTH on every change
 
 For established first-party 0BSD work, carry the canonical root LICENSE notice and complete permission/disclaimer into new or modified files using syntax-safe comments or a sidecar. Reconcile LICENSES/ATTRIBUTION.tsv against actual current Git blob identities before reporting completion. Keep existing notices and original rights intact; do not apply first-party notices to third-party or uncertain material. PENCE remains a separate evidence-based similarity/rights review, never an automatic license conversion. Preserve historical records in Git; do not claim native test or legal qualification from attribution alone.
+
+## Professional accountability and technology adoption
+
+Apply [the professional accountability reference](docs/PROFESSIONAL_ACCOUNTABILITY.md) when proposing material technology adoption or changes involving delegated authority, sensitive data, licensing or independent approval. Distinguish capability from credentials and authority; preserve reviewer independence where required, disclose conflicts and hold material approvals when evidence or authorization is missing. This is project-local guidance, not adoption of external accounting or assurance standards as software certification.
