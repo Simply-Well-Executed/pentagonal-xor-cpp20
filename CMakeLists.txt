@@ -106,6 +106,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/quantum_operand_lexicon.hpp
     shared/recovery.hpp
     shared/physicals_swimming.hpp
+    shared/spherroid.hpp
     DESTINATION include/swe)
   message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
   return()
@@ -774,4 +775,12 @@ if(BUILD_TESTING)
   add_executable(physicals_swimming_test tests/physicals_swimming_test.cpp)
   target_compile_features(physicals_swimming_test PRIVATE cxx_std_20)
   add_test(NAME physicals_swimming_900_seconds COMMAND physicals_swimming_test)
+endif()
+
+# SPHERROID: independent source-preserving radial projection.
+install(FILES shared/spherroid.hpp DESTINATION include/swe)
+if(BUILD_TESTING)
+  add_executable(spherroid_test tests/spherroid_test.cpp)
+  target_compile_features(spherroid_test PRIVATE cxx_std_20)
+  add_test(NAME spherroid_radial_convergence COMMAND spherroid_test)
 endif()
