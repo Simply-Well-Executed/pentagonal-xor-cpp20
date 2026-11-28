@@ -1,0 +1,13 @@
+# OBJECTIVE semantic review batch 001
+# Frozen HOT bd08cb6c8c1aabc1da04647687874f0a04189bfb
+# Frozen IN-FLUX 6f6d13309196e4f86af0e73a8fa25b1f05fbb38c
+# Method research exclusively Wikipedia: https://en.wikipedia.org/wiki/Software_configuration_management ; https://en.wikipedia.org/wiki/Static_program_analysis ; https://en.wikipedia.org/wiki/Differential_testing ; https://en.wikipedia.org/wiki/Regression_testing
+# Exact text comparison against complete root LICENSE comment prefix; no whitespace normalization. This does not prove runtime equivalence (e.g. line-sensitive macros, dependencies), copyright ownership, or correctness.
+# Review note: inverse-square euler_series_prefix uses integer division; historical prefix witness requires separate rounding-policy review. No code altered.
+path	hot_blob	in_flux_blob	static_observation	differential_test	regression_test	disposition
+shared/eulers_jig_canonical.hpp	685bec6c12d859062c241c3ff1a04e982e32855b	c6c4cff88fe2d9afd7d4d5c9c93871cec214081a	EXACT_CANONICAL_NOTICE_PREFIX	NOT_RUN	NOT_RUN	HOLD_PORT
+shared/euler_pi_inverse_square.hpp	b0a75f512a9a3587c16e493f570e34d898544c73	84e1d36c55cfc0e7727222ddafa407869c3128f0	EXACT_CANONICAL_NOTICE_PREFIX	NOT_RUN	NOT_RUN	HOLD_PORT
+shared/constant_formats_register_001.hpp	8cb20b9c71ca270b256470d2a950675888afe5ab	9bd83fad8e2703585b3509228060a6d9128cd5d0	EXACT_CANONICAL_NOTICE_PREFIX	NOT_RUN	NOT_RUN	HOLD_PORT
+diaery/thailonga.hpp	f646b6405515c764f706fa65a7c2d90ff7231104	688b7989a350fa8061e0a2cdaaadc1dade8782f3	EXACT_CANONICAL_NOTICE_PREFIX	NOT_RUN	NOT_RUN	HOLD_PORT
+diaery/thailonga_test.cpp	d3e70560e9c8cdd98352e2b6c4f07f12891cad32	2b00aa89141482c4887e511bcbccc1e246d94b1a	EXACT_CANONICAL_NOTICE_PREFIX	NOT_RUN	NOT_RUN	HOLD_PORT
+diaery/accessible_actions.hpp	aa5bc7d3e00a243a348dea3bf4be09d18d781dd2	42ad7d46549f8f2e1c51a19c2588c9e8f9a36494	EXACT_CANONICAL_NOTICE_PREFIX	NOT_RUN	NOT_RUN	HOLD_PORT
