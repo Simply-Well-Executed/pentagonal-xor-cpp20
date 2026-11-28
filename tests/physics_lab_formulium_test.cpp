@@ -98,3 +98,37 @@ static_assert(P::MCLEAVE::CLEAVE(2,3).LEFT==-12);
 static_assert(P::MCLEAVE::CLEAVE(-2,3).RIGHT==12);
 static_assert(P::MCLEAVE::CLEAVE(2,-3).RIGHT==-12);
 static_assert(!P::MCLEAVE::CLEAVE(1e101,1).VERIFY());
+
+constexpr bool crest_cycle() {
+    const P::CUNT::CONTAIN input[9]={{1,2},{2,3},{3,4},{4,5},{5,6},{6,7},{7,8},{8,9},{9,10}};
+    const auto relation=P::RELATION::SELF_CONTAIN(input);
+    const auto punched=P::RELTERING::PUNCH(relation);
+    for(unsigned i=0;i<9;++i) {
+        const auto& c=punched.CRESTS[i];
+        if(c.TURN!=i || c.ANGLE!=40*i || c.CONTAINED.SOURCE.S!=input[i].S ||
+           c.CONTAINED.SOURCE.Y!=input[i].Y || c.CONTAINED.SOURCE.I!=input[i].S*input[i].S ||
+           c.CONTAINED.BIAS!=input[i].S*input[i].S*input[i].Y || !c.CONTAINED.OUTPUT.VERIFY())
+            return false;
+    }
+    auto n=P::NEEDLE::SELF_CONTAIN(input);
+    for(unsigned i=0;i<9;++i) {
+        if(!n.ROTATE() || n.TURN()!=i+1 || n.POSITION()!=(i+1)%9 || n.ANGLE()!=40*(i+1)) return false;
+    }
+    if(!n.COMPLETE() || n.ROTATE() || n.SOURCE.CRESTS[8].CONTAINED.BIAS!=810) return false;
+    P::TIME_TO_KILL::POSTURE p(punched);
+    for(unsigned i=0;i<5;++i) {
+        if(!p.NEXT() || p.NEGATED()!=(i==4)) return false;
+        const auto v=p.OUTPUT({2,3});
+        if(v.X!=(i==4?-2:2) || v.Y!=(i==4?-3:3)) return false;
+    }
+    if(!p.COMPLETE() || p.NEXT() || p.SOURCE().ANGLE()!=160 || p.SOURCE().POSITION()!=4) return false;
+    const auto w=P::CHAOTIC_LAWFUL_GOOD::CONTAIN(p,{2,3},511,{2047});
+    return w.COMPLETE && w.GEOMETRY.X==-2 && w.GEOMETRY.Y==-3 &&
+           w.WITNESS.CASTED==1536 && w.WITNESS.RECASTED==511 && w.WITNESS.VERIFIED;
+}
+static_assert(crest_cycle());
+static_assert(P::CUNT::S_SYMBOL==0x1D54F && P::CUNT::I_SYMBOL==0x2716);
+static_assert(!P::CUNT::SELF_CONTAIN({1e101,1}).OUTPUT.VERIFY());
+static_assert(P::RELATED::NEXT(9)==9);
+static_assert(P::CHAOTIC_LAWFUL_GOOD::CONTAIN(~0ULL,{~0ULL}).RECASTED==~0ULL);
+static_assert(P::CHAOTIC_LAWFUL_GOOD::CONTAIN(42,{0}).CASTED==42);
