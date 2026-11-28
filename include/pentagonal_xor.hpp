@@ -163,9 +163,14 @@ constexpr void apply_pentagonal_xor(ByteSlice buffer, u64 seed = 1) noexcept {
 }
 
 constexpr void unpack_u64_le(u8* bytes, u64 value) noexcept {
-    for (unsigned n = 0; n < 8; ++n) {
-        bytes[n] = static_cast<u8>((value >> (n * 8u)) & 255u);
-    }
+    bytes[0] = static_cast<u8>((value >> 0u) & 255u);
+    bytes[1] = static_cast<u8>((value >> 8u) & 255u);
+    bytes[2] = static_cast<u8>((value >> 16u) & 255u);
+    bytes[3] = static_cast<u8>((value >> 24u) & 255u);
+    bytes[4] = static_cast<u8>((value >> 32u) & 255u);
+    bytes[5] = static_cast<u8>((value >> 40u) & 255u);
+    bytes[6] = static_cast<u8>((value >> 48u) & 255u);
+    bytes[7] = static_cast<u8>((value >> 56u) & 255u);
 }
 
 constexpr void fast_xor_buffer(ByteSlice buffer) noexcept {
