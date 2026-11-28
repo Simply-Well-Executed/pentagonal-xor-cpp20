@@ -5,7 +5,8 @@ constexpr pxor::usize payload_size = 16u * 1024u * 1024u;
 static pxor::FixedBuffer<pxor::u8, payload_size> payload{};
 }
 
-int main() {
+#include "WATCHGUARD.hpp"
+static int watchguard_operation(int, char**) {
     const bool elevated = pxor::request_moderate_priority();
     const pxor::CorePinResult core = pxor::pin_to_active_core();
 
@@ -75,4 +76,8 @@ int main() {
     pxor::write_u64(witness);
     pxor::write_literal("\n");
     return 0;
+}
+
+int main(int argc, char** argv) {
+    return SWE::WATCHGUARD_MAIN(watchguard_operation,argc,argv);
 }
