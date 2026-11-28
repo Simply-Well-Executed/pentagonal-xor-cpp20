@@ -757,3 +757,9 @@ endif()
 # DIAERY native XHTML Strict-profile inspector (experimental).
 # The root native-MSVC and release HOLD policies remain authoritative.
 add_subdirectory(diaery)
+
+if(BUILD_TESTING)
+  add_executable(inverse_square_profile_test tests/inverse_square_profile_test.cpp)
+  target_compile_features(inverse_square_profile_test PRIVATE cxx_std_20)
+  add_test(NAME inverse_square_profile_parity COMMAND inverse_square_profile_test)
+endif()
