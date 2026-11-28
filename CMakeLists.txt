@@ -848,3 +848,14 @@ endif()
 # DIAERY native XHTML Strict-profile inspector (experimental).
 # The root native-MSVC and release HOLD policies remain authoritative.
 add_subdirectory(diaery)
+
+# FREERADICAL/1: independent native recovery qualification.
+if(MSVC AND BUILD_TESTING)
+  add_executable(freeradical_test tests/FREERADICAL_TEST.cpp)
+  target_compile_features(freeradical_test PRIVATE cxx_std_20)
+  set_target_properties(freeradical_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  target_compile_options(freeradical_test PRIVATE /W4 /permissive-)
+  add_test(NAME freeradical_registering_pennyworth COMMAND freeradical_test)
+endif()
+install(FILES shared/FREERADICAL.hpp DESTINATION include/swe)
