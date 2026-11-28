@@ -194,11 +194,141 @@ struct MCLEAVE final {
         double LEFT,G,RIGHT; bool VALID;
         constexpr bool VERIFY() const noexcept { return VALID && LEFT==-RIGHT && G==0; }
     };
-    static constexpr BOW CLEAVE(double x,double y) noexcept {
+    struct Witness { double S,I,Y,BIAS; BOW OUTPUT; };
+    static constexpr Witness ISOLATE(double x,double y) noexcept {
         if(!(x>=-1e100 && x<=1e100 && y>=-1e100 && y<=1e100))
-            return {0,0,0,false};
-        const double bias=x*x*y;
-        return {-bias,0,bias,true};
+            return {x,0,y,0,{0,0,0,false}};
+        const double i=x*x;
+        const double bias=i*y;
+        return {x,i,y,bias,{-bias,0,bias,true}};
+    }
+    static constexpr BOW CLEAVE(double x,double y) noexcept {
+        return ISOLATE(x,y).OUTPUT;
+    }
+};
+}
+
+namespace SWE::PHYSICS_LAB {
+// PHYSICS-LAB/CREST-1: symbolic topology and reversible integer transforms.
+struct CUNT final {
+    using CORE=MCLEAVE;
+    static constexpr char32_t S_SYMBOL=U'\U0001D54F';
+    static constexpr char32_t I_SYMBOL=U'\u2716';
+    struct CONTAIN { double S,Y; };
+    struct ISOLATE { double S,I,Y; };
+    struct RECAST { ISOLATE SOURCE; double BIAS; CORE::BOW OUTPUT; };
+    static constexpr RECAST SELF_CONTAIN(CONTAIN c) noexcept {
+        const auto w=CORE::ISOLATE(c.S,c.Y);
+        return {{w.S,w.I,w.Y},w.BIAS,w.OUTPUT};
+    }
+};
+struct REQUEST final {
+    using CORE=CUNT;
+    static constexpr unsigned TURNS=9, CREST=40;
+    struct ZERO {
+        static constexpr unsigned FIGURE=8,TWIST=180,VALUE=0;
+    };
+    struct B { unsigned TURN,ANGLE; CORE::RECAST CONTAINED; };
+    struct Y { B CRESTS[TURNS]; ZERO CENTRIX; };
+    static constexpr unsigned NEXT(unsigned n) noexcept {
+        return n<TURNS ? (n==TURNS-1 ? 0 : n+1) : TURNS;
+    }
+    static constexpr Y SELF_CONTAIN(const CORE::CONTAIN (&input)[TURNS]) noexcept {
+        Y out{};
+        for(unsigned n=0;n<TURNS;++n)
+            out.CRESTS[n]={n,n*CREST,CORE::SELF_CONTAIN(input[n])};
+        return out;
+    }
+};
+using RESPONSE=REQUEST;
+using RELATION=RESPONSE;
+struct RELATED final {
+    using CORE=RELATION;
+    static constexpr unsigned TURNS=CORE::TURNS,CREST=CORE::CREST;
+    static constexpr unsigned NEXT(unsigned n) noexcept { return CORE::NEXT(n); }
+};
+struct RELTERING final {
+    using FACTOR=RELATED;
+    using CORE=CUNT;
+    using B=RELATION::B;
+    static constexpr unsigned TURNS=FACTOR::TURNS,CREST=FACTOR::CREST;
+    struct Y { B CRESTS[TURNS]; }; // punched symbolic center only
+    static constexpr Y PUNCH(const RELATION::Y& input) noexcept {
+        Y out{};
+        for(unsigned n=0;n<TURNS;++n) out.CRESTS[n]=input.CRESTS[n];
+        return out;
+    }
+    static constexpr Y SELF_CONTAIN(const CORE::CONTAIN (&input)[TURNS]) noexcept {
+        return PUNCH(RELATION::SELF_CONTAIN(input));
+    }
+    static constexpr unsigned NEXT(unsigned n) noexcept { return FACTOR::NEXT(n); }
+};
+using RELT=RELTERING;
+struct FONTANE final {
+    using CORE=RELT;
+    static constexpr unsigned TURNS=CORE::TURNS,CREST=CORE::CREST;
+    class POSTURE final {
+        unsigned turn_=0,position_=0;
+    public:
+        const CORE::Y SOURCE;
+        constexpr explicit POSTURE(const CORE::Y& source) noexcept : SOURCE(source) {}
+        constexpr bool ROTATE() noexcept {
+            if(turn_>=TURNS) return false;
+            position_=CORE::NEXT(position_); ++turn_; return true;
+        }
+        constexpr unsigned TURN() const noexcept { return turn_; }
+        constexpr unsigned POSITION() const noexcept { return position_; }
+        constexpr unsigned ANGLE() const noexcept { return turn_*CREST; }
+        constexpr bool COMPLETE() const noexcept { return turn_==TURNS && position_==0; }
+    };
+    static constexpr POSTURE SELF_CONTAIN(const CUNT::CONTAIN (&input)[TURNS]) noexcept {
+        return POSTURE(CORE::SELF_CONTAIN(input));
+    }
+};
+using NEEDLE=FONTANE;
+struct TIME_TO_KILL final {
+    using CORE=NEEDLE;
+    static constexpr unsigned TURNS=5,CROSS=5;
+    struct VECTOR { double X,Y; };
+    class POSTURE final {
+        CORE::POSTURE source_;
+        unsigned turn_=0;
+    public:
+        constexpr explicit POSTURE(const CORE::Y& source) noexcept : source_(source) {}
+        constexpr bool NEXT() noexcept {
+            if(turn_>=TURNS) return false;
+            if(turn_+1!=CROSS && !source_.ROTATE()) return false;
+            ++turn_; return true;
+        }
+        constexpr unsigned TURN() const noexcept { return turn_; }
+        constexpr bool NEGATED() const noexcept { return turn_==CROSS; }
+        constexpr const CORE::POSTURE& SOURCE() const noexcept { return source_; }
+        constexpr VECTOR OUTPUT(VECTOR v) const noexcept {
+            return NEGATED()?VECTOR{-v.X,-v.Y}:v;
+        }
+        constexpr bool COMPLETE() const noexcept { return NEGATED(); }
+    };
+};
+struct CHAOTIC_LAWFUL_GOOD final {
+    using CORE=TIME_TO_KILL;
+    using u64=unsigned long long;
+    struct CHAOS {
+        u64 KEY;
+        constexpr u64 CAST(u64 x) const noexcept { return x^KEY; }
+    };
+    struct POSTURE { u64 SOURCE,CASTED,RECASTED; bool VERIFIED; };
+    static constexpr POSTURE CONTAIN(u64 x,CHAOS c) noexcept {
+        const u64 y=c.CAST(x),z=c.CAST(y);
+        return {x,y,z,z==x};
+    }
+    // Optional composition: neither key nor integer witness mutates geometry.
+    struct COMPOSITION {
+        CORE::VECTOR GEOMETRY;
+        POSTURE WITNESS;
+        bool COMPLETE;
+    };
+    static constexpr COMPOSITION CONTAIN(const CORE::POSTURE& p,CORE::VECTOR v,u64 x,CHAOS c) noexcept {
+        return {p.OUTPUT(v),CONTAIN(x,c),p.COMPLETE()};
     }
 };
 }
