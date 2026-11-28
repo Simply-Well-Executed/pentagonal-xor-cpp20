@@ -517,3 +517,67 @@ qualification is pending.
 ## 31. Accessibility / PENCE / NULL0 restoration
 
 The root `ACCESSIBILITY.md` defines contribution requirements and known limitations. WIKI uses a 25-page reciprocal graph, separately labeled list navigation, persistent policy access and a closed HIKE. Decorative U+00B7 separators were removed from the Wiki and root README; historical source and experiment bytes remain intact. PENTAPI automatic NULL/RESET/ROOT after deliberate terminal activation is restored; the later explicit route remains historical, not a normal action requirement. Existing Win32 focus handling is retained. PENCE flags unexplained overlap for provenance and rights review; no 1BSD grant is inferred and the root 0BSD license is unchanged. Source and compile-time test changes are not native qualification or legal certification.
+
+## 32. ATTENUATION/1: BRIDGE and cross-through
+
+EXPLORATORY, RELEASE=HOLD. Requested symbolic stream:
+`64 + 100 ≡ 103 ≠ 61`. This is a tagged project display record,
+not an ordinary mathematical expression. U+2261 (IDENTICAL TO, UTF-8
+E2 89 A1) denotes the project bridge label; U+2260 (NOT EQUAL TO,
+E2 89 A0) labels the comparison of observed and requested gains, not
+inequality between the arithmetic result and 61. The cross-through
+predicate is G != R (not a measurement of physical loss).
+
+Language-independent integer contract: B=baseline, R=requested gain,
+O=observed final count. G=O-B; L=R-G; BRIDGE=R-B; A=G+BRIDGE.
+Independent witness A=O+R-2B. All inputs are unsigned 32-bit and
+intermediate/output arithmetic is signed at least 64-bit; range of A
+is -8589934590..8589934590. No floating point, truncation, external
+library or locale-dependent numeric parsing. The exact transfer ratio
+is G/R, with numerator and denominator retained, only comparable
+when cohort labels agree and R is nonzero. Cohort labels are supplied
+metadata, not proof of an identical measurement protocol.
+
+The original example B=103, R=100, O=167 yields G=64, L=36,
+BRIDGE=-3, A=61, but 103 is total classified and 167 is PENNYWORTH:
+mixed cohorts, not a valid throughput comparison. Comparable total
+classified counts 103->200 give G=97, L=3, BRIDGE=-3, A=94,
+transfer 97/100. A separate like-for-like PENNYWORTH count is 70->167.
+Do not conflate the project scalar A with ordinary shortfall L.
+
+### Cross-language research
+
+Independent language editions sampled (not all world languages):
+[English audio equalization](https://en.wikipedia.org/wiki/Audio_equalization),
+[German Entzerrung](https://de.wikipedia.org/wiki/Entzerrung_(Tontechnik)),
+[French égaliseur](https://fr.wikipedia.org/wiki/Égaliseur),
+[Russian эквалайзер](https://ru.wikipedia.org/wiki/Эквалайзер).
+They agree on selective gain/cut across frequency bands. German
+Entzerrung, French égalisation and Russian эквализация describe the
+same general engineering subject, not a proof of the proposed scalar.
+[Triple bar](https://en.wikipedia.org/wiki/Triple_bar) and
+[equals sign](https://en.wikipedia.org/wiki/Equals_sign) explain the
+conventional symbol meanings. [Decibel](https://en.wikipedia.org/wiki/Decibel)
+distinguishes 10 log10(power ratio) from 20 log10(root-power ratio).
+[Quantum probability amplitude](https://en.wikipedia.org/wiki/Probability_amplitude)
+uses squared moduli and normalization, not the integer bridge above.
+No claim of a quantum derivation or experimental audio qualification.
+
+The implementation is independent of spoken language and library:
+fixed numeric fields, Unicode code points and UTF-8 byte assertions;
+ASCII names BRIDGE and NOT_EQUAL are text alternatives. No new
+programming-language runtime or interpreter. Cross-language executable
+parity has not been run. New shared/ATTENUATION.hpp and
+tests/ATTENUATION_TEST.cpp have the full first-party 0BSD statement.
+Root CTest attenuation_bridge_exact registers 32768 small-domain
+cases, compile-time boundaries, zero, mismatched cohorts and corrupted
+witness tests. SILVERHAND's frozen test inventory remains unchanged.
+Native MSVC execution is pending.
+
+### EULERS_JIG radical-free extension
+
+Separate project-local geometric compensation: given independently supplied square sides x and y with x*x=G and y*y=R, compute D=G-R and C=(R-G)/(x+y), requiring a nonzero divisor and zero remainder. Verify C=y-x and C*(x+y)=-D. Return D+C. For 64 and 100 with sides 8 and 10, D=-36, C=2 and result=-34. The target -34 occurs only in a test, never as an input to the calculation. Three witness labels ===, ====, ==== denote arithmetic identity, exact quotient and reverse factorization; not C++ operators. Side lengths are explicit assumptions for this constructed square model, not established repository measurements. This extends the quotient idea in shared/eulers_jig_canonical.hpp without modifying that canonical record. It does not establish dBi, antenna gain, or a physical attenuation law. Adds 4096 square-pair test cases, signed reversal, invalid side and zero-divisor controls; native qualification pending.
+
+### Signed de-radicalization (operator clarification)
+
+For a positive real square there are two distinct signed roots; for zero there is one, and negative radicands have no real roots. The unsigned input domain rejects negative radicands by construction. Given validated side magnitudes 8 and 10, preserve the four independently signed assignments. The same-orientation pair gives corrections +2 and -2 and compensated outputs -34 and -38; mixed orientations give -18 and +18 corrections, outputs -54 and -18. Each uses C=(R-G)/(x+y)=y-x with zero remainder. If x+y=0 the quotient is singular and the branch is marked invalid, not silently cancelled. Zero-root orientations may coincide. No branch is privileged or selected by desired output. The positive-magnitude EULERS_JIG helper remains explicit. Adds 16384 orientation cases to the authored tests. This is a mathematical witness, not an antenna gain measurement.

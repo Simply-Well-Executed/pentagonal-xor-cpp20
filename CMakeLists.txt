@@ -205,6 +205,11 @@ endif()
 include(CTest)
 if(BUILD_TESTING)
     # WIKI/1: read-only native documentation graph verification.
+    # ATTENUATION/1: independent exact numeric and Unicode witnesses.
+    add_executable(attenuation_test tests/ATTENUATION_TEST.cpp)
+    target_compile_features(attenuation_test PRIVATE cxx_std_20)
+    target_compile_options(attenuation_test PRIVATE /WX /utf-8)
+    add_test(NAME attenuation_bridge_exact COMMAND attenuation_test)
     add_executable(wiki wiki.cpp)
     target_compile_features(wiki PRIVATE cxx_std_20)
     target_compile_options(wiki PRIVATE /WX /utf-8 /constexpr:steps1000000)
