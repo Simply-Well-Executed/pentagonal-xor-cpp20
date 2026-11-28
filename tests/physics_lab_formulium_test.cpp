@@ -1,0 +1,70 @@
+// SPDX-License-Identifier: 0BSD
+#include "../shared/physics_lab_geometry.hpp"
+#include "../shared/physics_lab_formulium.hpp"
+namespace P=SWE::PHYSICS_LAB;
+namespace F=P::FORMULIUM;
+static_assert(P::INVERSESQUARELAW::LONG(100,2).value==25);
+static_assert(P::INVERSESQUARELAW::SHORT(100,2).value==25);
+static_assert(!P::INVERSESQUARELAW::LONG(1,0).valid);
+static_assert(P::HexaDi::DAMPENING(2,1,1)==2.0/3.0);
+static_assert(P::ACCORDIAN::FOLD(0)==1);
+static_assert(P::ZEROLOSS::OUTPUT(42u).verified);
+constexpr auto s=P::GEOMTRY::SPHERE::PROJECT({1,1,1});
+static_assert(s.valid && P::GEOMTRY::SPHERROID::NORM2(s.projected)>0.999999999999 && P::GEOMTRY::SPHERROID::NORM2(s.projected)<1.000000000001);
+constexpr auto p=P::GEOMTRY::MATRIX::TWIST(P::GEOMTRY::MATRIX::TWIST({1,2,3}));
+static_assert(p.x==1 && p.y==2 && p.z==3);
+constexpr auto f=F::LADDERDI::CROSS({1,9},{1,4});
+static_assert(f.valid && f.left==4 && f.right==9 && f.denominator==36 && !f.equal);
+static_assert(!F::LADDERDI::CROSS({1,0},{1,4}).valid);
+static_assert(F::TRIAL::ANSWER({1,9,36},{35,0})==1);
+static_assert(F::TRIAL::ANSWER({1,9,36},{36,0})==2);
+static_assert(F::TRIAL::ANSWER({1,9,36},{36,1})==1);
+constexpr auto a=F::AREA_DEFENSE_CONSULTATION::ASSEMBLE({{1,9,36},{36,0}},{100,0,0},0);
+constexpr auto b=F::AREA_DEFENSE_CONSULTATION::ASSEMBLE({{1,9,36},{36,0}},{0,100,0},~0ULL);
+static_assert(a.position==b.position && a.witness.shell==b.witness.shell && b.witness.standard==~0ULL);
+static_assert(F::NOBODY::CONSULT().unresolved==511);
+static_assert(F::GREG::CONSULT(F::LAW{},true,true).unresolved==2047);
+static_assert(F::RUN_THE_CLOCK::REMAINING(10,11)==0);
+struct ExampleEBC9 { static constexpr unsigned TRANSFORM(unsigned i) noexcept { return i; } };
+static_assert(F::MONGOLIAN_THE<ExampleEBC9>::DISCOVER(4).valid);
+static_assert(!F::MONGOLIAN_THE<ExampleEBC9>::DISCOVER(13).valid);
+constexpr bool masks() {
+    for(unsigned u=0;u<2048;++u) {
+        const auto r=F::ADVANTAGE_BIAS<11>::VERIFY(u);
+        if(!r.valid || (r.resolved&r.unresolved)!=0 || (r.resolved|r.unresolved)!=2047 || r.review!=(u!=0)) return false;
+    }
+    return !F::ADVANTAGE_BIAS<11>::VERIFY(2048).valid;
+}
+constexpr bool permutations() {
+    unsigned seen=0;
+    for(unsigned i=0;i<13;++i) {
+        const unsigned j=F::JURY_SAMPLING::SAMPLE(i);
+        if(j>=13 || (seen&(1u<<j))) return false;
+        seen|=1u<<j;
+        if(F::JURY_NULLIFICATION::RESTORE(F::JURY_NULLIFICATION::ROTATE(i))!=i) return false;
+    }
+    if(seen!=8191 || F::JURY_SAMPLING::SAMPLE(13)!=0) return false;
+    for(unsigned c=0;c<6;++c) {
+        unsigned bits=0;
+        for(unsigned i=0;i<3;++i) {
+            const auto x=F::INTERROGATION::AT(c,i);
+            if(!x.valid || x.value.d!=1 || (bits&(1u<<x.id))) return false;
+            bits|=1u<<x.id;
+        }
+        if(bits!=7) return false;
+    }
+    return true;
+}
+constexpr bool legal() {
+    for(unsigned i=0;i<4096;++i) {
+        const auto bit=[i](unsigned n) constexpr { return (i&(1u<<n))!=0; };
+        const F::LEGAL_SYSTEM::Evidence e{bit(0),bit(1),bit(2),bit(3),bit(4),bit(5),bit(6),bit(7),bit(8),bit(9),bit(10),bit(11)};
+        const bool flat=!e.silence&&!e.coercion&&e.voluntary&&(!e.fear||e.proof)&&e.lawful&&e.informed&&!e.bias&&!e.misconduct&&(!e.concern||(e.evaluated&&e.confirmed));
+        if(F::LEGAL_SYSTEM::ASSEMBLE(e).stands!=flat) return false;
+    }
+    return true;
+}
+static_assert(masks());
+static_assert(permutations());
+// Full 4096-case check at runtime to avoid compiler constexpr step budgets.
+int main() { return masks()&&permutations()&&legal()?0:1; }
