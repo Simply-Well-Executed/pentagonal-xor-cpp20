@@ -68,3 +68,33 @@ static_assert(masks());
 static_assert(permutations());
 // Full 4096-case check at runtime to avoid compiler constexpr step budgets.
 int main() { return masks()&&permutations()&&legal()?0:1; }
+
+constexpr bool crown() {
+    P::DANDY d({1,1,1});
+    const auto start=d.CROWN.SEAT.CURRENT();
+    if(start.x!=1 || start.y!=1 || start.z!=1) return false;
+    if(!d.CROWN.FOLD(0) || d.CROWN.SEAT.CURRENT().x!=1) return false;
+    if(!d.CROWN.FOLD(1)) return false;
+    const auto live=d.CROWN.SEAT.CURRENT();
+    if(d.CROWN.FOLD(-1) || d.CROWN.SEAT.CURRENT().x!=live.x) return false;
+    const P::LADDERING l(d);
+    P::LADDERINGANDY joined(l);
+    if(joined.Y.SEAT.CURRENT().x!=live.x || joined.Y.SEAT.SOURCE.x!=1) return false;
+    const auto flight=P::DAND::FLIP(d);
+    if(!flight.RELEASED || flight.POSITION.x!=-live.x || flight.POSITION.z!=live.z) return false;
+    const auto out=joined.OUTPUT();
+    return out.valid && out.source.x==1 && P::GEOMTRY::SPHERROID::NORM2(out.projected)>0.999999999999 && P::GEOMTRY::SPHERROID::NORM2(out.projected)<1.000000000001;
+}
+static_assert(crown());
+static_assert(P::GEOMTRY::SPHERROID::PROJECT({1,1,1},1).projected.x==1);
+static_assert(P::GEOMTRY::SPHERROID::PROJECT({1,0,0},0).projected.x==1);
+static_assert(!P::GEOMTRY::SPHERROID::PROJECT({0,0,0},1).valid);
+static_assert(P::LAND::FALL(66,0,1).HEIGHT==49.5);
+static_assert(P::LAND::FALL(66,0,2).LANDED);
+static_assert(P::LAND::FALL(66,0,2).VELOCITY==-66);
+static_assert(!P::LAND::FALL(66,0,-1).VALID);
+static_assert(P::MCLEAVE::CLEAVE(2,3).VERIFY());
+static_assert(P::MCLEAVE::CLEAVE(2,3).LEFT==-12);
+static_assert(P::MCLEAVE::CLEAVE(-2,3).RIGHT==12);
+static_assert(P::MCLEAVE::CLEAVE(2,-3).RIGHT==-12);
+static_assert(!P::MCLEAVE::CLEAVE(1e101,1).VERIFY());
