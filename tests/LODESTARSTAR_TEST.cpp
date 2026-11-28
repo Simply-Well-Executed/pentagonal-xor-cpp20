@@ -45,4 +45,24 @@ constexpr bool selves_test() {
            T::PINGZA({0,true}).phase==261;
 }
 static_assert(selves_test());
-int main(){return test() && selves_test()?0:1;}
+constexpr bool composition_test() {
+    constexpr auto nested=SWE::THAILONGA{SWE::THAILONGA{1u,2u},SWE::THAILONGA{3u,4u}};
+    if(nested.left.right!=2 || nested.right.left!=3) return false;
+    constexpr T::SELVES s{{0,1,2,3,4,5,6,7,8},{11,12,13,14,15,16}};
+    T::RECONICIOUS p{};
+    for(unsigned i=0;i<9;++i) p[i]={i,true,true,true,true,true,true};
+    const auto star=T::THAILONGA(p);
+    const auto tree=T::COMPOSE(star,s);
+    const auto restored=T::RESTORE(tree.right);
+    for(unsigned i=0;i<9;++i) if(restored.dimensions[i]!=s.dimensions[i]) return false;
+    if(!(tree.left==star) || restored.supplementary.STR!=11 || restored.supplementary.AGI!=12 ||
+       restored.supplementary.VIT!=13 || restored.supplementary.INT!=14 ||
+       restored.supplementary.DEX!=15 || restored.supplementary.LUK!=16) return false;
+    constexpr SWE::THAILONGA_TRIAL<unsigned> failed{7,9,false,true};
+    constexpr SWE::THAILONGA_TRIAL<unsigned> denied{7,9,true,false};
+    constexpr SWE::THAILONGA_TRIAL<unsigned> retry{7,8,true,true};
+    return failed.selected()==7 && failed.candidate==9 && denied.selected()==7 &&
+           retry.selected()==8 && retry.baseline==7;
+}
+static_assert(composition_test());
+int main(){return test() && selves_test() && composition_test()?0:1;}
