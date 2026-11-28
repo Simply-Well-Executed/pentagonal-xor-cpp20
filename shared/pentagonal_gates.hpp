@@ -18,9 +18,11 @@ struct Gates {
 // The Boolean specialization of the unchanged five-input parity kernel.
 constexpr Gates boolean_gates(std::uint8_t mask) noexcept {
     mask = static_cast<std::uint8_t>(mask & 31u);
-    bool odd = false;
-    for (unsigned bit=0; bit<5; ++bit)
-        odd = odd != ((mask & (1u << bit)) != 0u);
+    unsigned folded = mask;
+    folded ^= folded >> 4u;
+    folded ^= folded >> 2u;
+    folded ^= folded >> 1u;
+    const bool odd = (folded & 1u) != 0u;
     return {odd, mask != 0u, mask == 31u};
 }
 
