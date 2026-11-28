@@ -105,6 +105,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/stability10d.hpp
     shared/quantum_operand_lexicon.hpp
     shared/recovery.hpp
+    shared/physicals_swimming.hpp
     DESTINATION include/swe)
   message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
   return()
@@ -765,4 +766,12 @@ if(BUILD_TESTING)
   add_executable(recovery_test tests/recovery_test.cpp)
   target_compile_features(recovery_test PRIVATE cxx_std_20)
   add_test(NAME recovery_zero_work_and_identity COMMAND recovery_test)
+endif()
+
+# PHYSICALS: independent seeded swimming laboratory.
+install(FILES shared/physicals_swimming.hpp DESTINATION include/swe)
+if(BUILD_TESTING)
+  add_executable(physicals_swimming_test tests/physicals_swimming_test.cpp)
+  target_compile_features(physicals_swimming_test PRIVATE cxx_std_20)
+  add_test(NAME physicals_swimming_900_seconds COMMAND physicals_swimming_test)
 endif()
