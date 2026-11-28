@@ -17,10 +17,10 @@ static_assert(initial());
 constexpr bool drag_witness() {
     SWIMMING x{};
     x.CURRENT = 2;
-    const double above = x.DAMP(12, 1);
-    const double below = x.DAMP(-8, 1);
+    const double above = x.DAMPENING(12, 1);
+    const double below = x.DAMPENING(-8, 1);
     return above > 2 && above < 12 && below < 2 && below > -8 &&
-           x.DAMP(2, 1) == 2 && x.DAMP(12, 0) == 12;
+           x.DAMPENING(2, 1) == 2 && x.DAMPENING(12, 0) == 12;
 }
 static_assert(drag_witness());
 int main() {
