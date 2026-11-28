@@ -25,10 +25,14 @@ struct SWIMMING final {
     }
     // Exact quadratic-drag substep for constant current, split from thrust.
     // Nonnegative denominator preserves relative-velocity sign.
-    constexpr double DAMP(double v, double dt) const noexcept {
+    constexpr double DAMPENING(double v, double dt) const noexcept {
         const double u = v - CURRENT;
         const double k = 0.5 * DENSITY * Cd * AREA / MASS;
         return CURRENT + u / (1.0 + k * (u < 0 ? -u : u) * dt);
+    }
+    // Historical API retained as a forwarding alias, not a second algorithm.
+    constexpr double DAMP(double v, double dt) const noexcept {
+        return DAMPENING(v, dt);
     }
     static constexpr bool FINITE(double x) noexcept {
         return x >= -0x1.fffffffffffffp1023 && x <= 0x1.fffffffffffffp1023;
@@ -48,7 +52,7 @@ struct SWIMMING final {
         // Symmetric kick-drag-kick splitting; force is frozen per tick.
         const double force = BUOYANT() - WEIGHT() + BIAS() + noise + burst;
         const double kick = (force / MASS) * (DELTA * 0.5);
-        const double v = DAMP(VELOCITY + kick, DELTA) + kick;
+        const double v = DAMPENING(VELOCITY + kick, DELTA) + kick;
         const double x = SPACE + (VELOCITY + v) * (DELTA * 0.5);
         // Explicit numerical envelope; reject before state mutation.
         if (!(v >= -100 && v <= 100 && x >= -1e9 && x <= 1e9)) return false;
