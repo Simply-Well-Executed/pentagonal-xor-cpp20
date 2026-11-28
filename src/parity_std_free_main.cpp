@@ -91,7 +91,8 @@ void print_percent_eight(double probability) noexcept {
 }
 }
 
-int main(int argc, char** argv) {
+#include "WATCHGUARD.hpp"
+static int watchguard_operation(int argc, char** argv) {
     if (argc != 6) {
         pxor::write_literal("Usage: pentagonal_xor_std_free h1 h2 h3 h4 h5\n",
                             true);
@@ -107,4 +108,8 @@ int main(int argc, char** argv) {
     }
     print_percent_eight(swe_pxor_xor_parity_arr(features));
     return 0;
+}
+
+int main(int argc, char** argv) {
+    return SWE::WATCHGUARD_MAIN(watchguard_operation,argc,argv);
 }
