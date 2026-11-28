@@ -8,6 +8,10 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 
 # Local-first licensing reference and evidence registry
 
+**CURRENT admission decision (2026-11-27): POSH / exact 0BSD only.** Verified exact 0BSD is the sole eligible grant; other grants are not approved and unknown, mixed or near-match terms HOLD. This supersedes all earlier preferred classifications and interpreter exceptions below for component admission. Earlier paragraphs and pinned tables are retained historical/reference evidence until separately reconciled; they confer no current approval. No automatic relicensing or alteration of legal reference bytes. Toolchain, operating-system and dependency qualification remain independently required. The root 0BSD grant remains unchanged.
+
+## Historical decisions retained for provenance
+
 **SCOPED INTERPRETER EXCEPTION, 2026-11-24 (CURRENT):** The operator now permits original project-authored **0BSD script source** targeting separately provisioned language runtimes, including a **source-only HenDecaDi/R\***. R itself is NOT bundled or downloaded by the repo's R script. The R runtime's own externally obtained copy retains the actual publisher's license and notices (R Foundation package declaration: GPL-2 | GPL-3), and laboratories must verify distribution/usage obligations separately. This supersedes the prior blanket GNU-runtime prohibition **only for separately provisioned R used to run this source-only script**, not for vendored libraries, redistributed binaries or any other GNU package. No existing failure is waived, and other new interpreter lanes require per-component provenance. See [Interpreter headstones](../docs/INTERPRETER_AIRGAP_HEADSTONES.md).
 
 
