@@ -17,6 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 #endif
 #include <windows.h>
 #include "WATCHGUARD.hpp"
+#include "SWEATER.hpp"
 namespace SWE {
 WATCHGUARD::SAMPLE WATCHGUARD_COUNTER() noexcept {
     ULONG64 cycles=0;
@@ -25,13 +26,20 @@ WATCHGUARD::SAMPLE WATCHGUARD_COUNTER() noexcept {
 }
 int WATCHGUARD_MAIN(int (*operation)(int,char**),int argc,char** argv) {
     WATCHGUARD guard;
+    const auto before=SWEATER::MEASURE();
     const auto first=WATCHGUARD_COUNTER();
-    if(!first.valid || !operation) return 125;
+    if(!first.valid || !operation) {
+        const auto after=SWEATER::MEASURE();
+        (void)SWEATER::REPORT({before,after,125,false,false});
+        return 125;
+    }
     const int outcome=operation(argc,argv);
     const auto last=WATCHGUARD_COUNTER();
-    if(!guard.RECORD(first,last,outcome) || !guard.REFLECT() ||
-       !guard.INTEGRITY() || !guard.latest().valid) return outcome ? outcome : 125;
+    const auto after=SWEATER::MEASURE();
+    const bool valid=guard.RECORD(first,last,outcome) && guard.REFLECT() &&
+        guard.INTEGRITY() && guard.latest().valid;
+    const bool reported=SWEATER::REPORT({before,after,outcome,true,valid});
     // No automatic ADAPT: independent verification must be supplied by caller.
-    return outcome;
+    return valid && reported ? outcome : (outcome ? outcome : 125);
 }
 }
