@@ -1,6 +1,25 @@
+<!--
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
 # Contributing
 
 Thank you for improving the Pentagonal Recursive XOR Engine.
+
+
+## Accessibility and contribution requirements
+
+Read [ACCESSIBILITY.md](ACCESSIBILITY.md) before submitting any contribution. Provide accessible equivalents, explicit navigation and meaningful labels; preserve evidence and record tests and limitations. Do not infer authorization from silence or a navigation action. Apply PENCE review to unexplained similarities; do not automatically deduplicate or relicense material. An unresolved material accessibility regression or rights conflict blocks maintainer approval. State PASS, FAIL, NOT TESTED or N/A with a reason. This review requirement does not itself configure branch protection.
+
+## PENNYWORTH attribution and PENCE review (required)
+
+**Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824**
+
+For confirmed first-party material, include the complete, verbatim root `LICENSE` notice, permission grant and warranty disclaimer at the earliest format-safe position. An SPDX identifier may supplement, but may not substitute for, the full statement under this repository policy. Never remove original third-party notices or assume a license grant. For immutable reference text, generated/evidence files, strict formats, binary assets and no-comment source contracts, use a path-specific attribution record or a format-safe sidecar. Record unresolved provenance in PENCE as HOLD; do not apply 0BSD or BSD-1-Clause by guesswork. Every contribution must identify licensing and rights provenance for new or modified files; no unresolved material rights conflict may be approved. See [attribution inventory](LICENSES/ATTRIBUTION.tsv) and [registry](LICENSES/README.md).
 
 ## Native-only execution rule (IRON)
 

@@ -1,3 +1,10 @@
+/*
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
 // SPDX-License-Identifier: 0BSD
 // SIGMA-FORM-EXPLORATORY-PR34-001: include-free C++20 mathematical forms.
 // This is NOT an image reconstruction or a measurement of the photographs.
@@ -27,6 +34,12 @@ struct Point2 { Vec2 value; bool valid; };
 struct Arm2 { Vec2 elbow; Vec2 hand; bool valid; };
 struct Pinhole { double fx; double fy; double cx; double cy; };
 
+// Exact binary64 constants (2*n)*(2*n+1), n=1..14.
+inline constexpr double sine_denominators[14] = {
+    6.0,20.0,42.0,72.0,110.0,156.0,210.0,
+    272.0,342.0,420.0,506.0,600.0,702.0,812.0
+};
+
 // Bounded sine Taylor series, with radians within [-64,64].
 [[nodiscard]] constexpr Scalar sine(double radians) noexcept {
     if (!finite(radians) || absolute(radians) > 64.0)
@@ -34,11 +47,13 @@ struct Pinhole { double fx; double fy; double cx; double cy; };
     double x = radians;
     while (x > geometry_pi) x -= 2.0 * geometry_pi;
     while (x < -geometry_pi) x += 2.0 * geometry_pi;
+    // REDUX/1: loop-invariant square and exact denominators.
+    // Retain the original division, term multiply and addition order.
+    const double negative_square = -(x*x);
     double term = x;
     double sum = x;
-    for (unsigned n = 1; n <= 14; ++n) {
-        const double d = 2.0 * static_cast<double>(n);
-        term *= -(x*x) / (d * (d+1.0));
+    for (unsigned n = 0; n < 14; ++n) {
+        term *= negative_square / sine_denominators[n];
         sum += term;
     }
     return {sum, finite(sum)};

@@ -1,3 +1,10 @@
+/*
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+*/
 // SPDX-License-Identifier: 0BSD
 // Copyright (c) 2026 Paul Allen Cheek
 // COREAO: CORE -> TriPi I (forward) -> TriPi II (reverse) -> TriPi III (Z-fold).
@@ -35,6 +42,10 @@ constexpr double largest(double a, double b) noexcept {
 // Scale before subtraction to avoid overflow with large finite doubles.
 // For finite a,b: 0 <= normalized_residual(a,b) <= 2.
 constexpr double normalized_residual(double a, double b) noexcept {
+    // REDUX/1: equal finite nonzero operands have an exact zero residual.
+    // Keep the original zero-pair path (including signed-zero semantics)
+    // and all nonfinite handling. No comparison or route is removed.
+    if (a == b && a != 0.0 && deca_sigma::finite(a)) return 0.0;
     const double scale = largest(1.0, largest(magnitude(a), magnitude(b)));
     return magnitude(a / scale - b / scale);
 }

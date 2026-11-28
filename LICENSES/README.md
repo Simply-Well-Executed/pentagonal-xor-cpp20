@@ -1,3 +1,11 @@
+<!--
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
 # Local-first licensing reference and evidence registry
 
 **SCOPED INTERPRETER EXCEPTION, 2026-11-24 (CURRENT):** The operator now permits original project-authored **0BSD script source** targeting separately provisioned language runtimes, including a **source-only HenDecaDi/R\***. R itself is NOT bundled or downloaded by the repo's R script. The R runtime's own externally obtained copy retains the actual publisher's license and notices (R Foundation package declaration: GPL-2 | GPL-3), and laboratories must verify distribution/usage obligations separately. This supersedes the prior blanket GNU-runtime prohibition **only for separately provisioned R used to run this source-only script**, not for vendored libraries, redistributed binaries or any other GNU package. No existing failure is waived, and other new interpreter lanes require per-component provenance. See [Interpreter headstones](../docs/INTERPRETER_AIRGAP_HEADSTONES.md).
@@ -46,3 +54,11 @@ Some GNU- or BSD-related identifiers are flagged as FORBIDDEN through a **conser
 ## Denied-source watchlist
 
 [BADBOY.tsv](BADBOY.tsv) is a **fail-closed policy watchlist** for explicitly forbidden GNU/GPL/LGPL/AGPL/GFDL, EPL/EUPL and non-0BSD BSD identifiers in the pinned SPDX catalog. It also records authored POSIX execution as a separately forbidden **interface dependency**, not a fictional POSIX license. Identifier-name matching is conservative and may overflag non-GNU software or exceptions; it never creates authorization, proves infringement, or replaces source-specific license investigation. The source-bound original legal texts must be retained wherever already vendored. Historical annotations remain in Git history.
+
+## PENCE similarity review
+
+See [Accessibility statement](../ACCESSIBILITY.md#pence-similarity-and-rights-review). An unexplained match is a review trigger, not proof of infringement or common ownership. BSD-1-Clause is a candidate only for a specifically authorized common object after rights and policy review; the existing 0BSD license and current admission registry remain unchanged. Do not alter pinned license text or grant a license on behalf of an unverified rightsholder.
+
+## PENNYWORTH file attribution inventory
+
+[ATTRIBUTION.tsv](ATTRIBUTION.tsv) records the attribution-review disposition for each tracked path in this review snapshot. PENCE / HOLD means review is outstanding, not that a file infringes copyright or has no valid existing license. Existing license reference bytes and their locked identities remain authoritative. The inventory is not a new license grant or full REUSE compliance claim.

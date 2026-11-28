@@ -1,3 +1,11 @@
+<!--
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
 # PENTAPI | Five-stage low-effort selection
 
 Status: EXPLORATORY; native ISO C++20 /O2; 0BSD; RELEASE=HOLD.
@@ -27,3 +35,7 @@ The design retains predictable button locations and a permanent audit action. Au
 `pentapi.hpp` models phases and transitions as constexpr functions. `pentapi_test.cpp` validates root/branch/terminal reachability, the terminal visibility gate, unsuccessful action-status retention, automatic return without additional user action, explicit reset, and persistence of action count. `diaery.cpp` invokes the model from native Win32 BUTTON events, updates exposed controls, and moves keyboard focus after each navigation step. Tests registered in DIAERY CTest and LadderDi, pending execution.
 
 **Remaining qualification:** native successful build, actual switch scanning, Windows Eye Control, high-magnification, screen reader and responsive-layout tests. We do not claim those tests passed or that the application is ADA/WCAG certified. RELEASE=HOLD.
+
+## Restoration record (2026-11-27)
+
+The operator reaffirmed the original automatic-return feature. The intervening explicit continue/release route is superseded for normal terminal completion. The current `complete()` executes NULL, RESET and ROOT internally, retaining action count, identity and reported status. `diaery.cpp` already refreshes the deck and focuses the first root after `complete()`; no extra activation is required. The historical explicit-route API remains for source compatibility, but normal completion no longer enters that phase. Compile-time fixtures now cover repeated actions, stale hidden actions, failed-action status and automatic return. Native execution and assistive technology qualification remain pending. See [Accessibility statement](../ACCESSIBILITY.md).

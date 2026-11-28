@@ -1,3 +1,9 @@
+# Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+# 
+# Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+# SPDX-License-Identifier: 0BSD
 cmake_minimum_required(VERSION 3.23)
 # PR #32 current compiler policy: fail before project() for named Clang
 # drivers and native Apple/OpenBSD hosts without an approved alternative.
@@ -62,6 +68,25 @@ endif()
 # experiments remain available with the explicit OFF setting. Core-only builds
 # compile one ISO C++20 object and create a native static archive, without any
 # STL source includes, C++ runtime link step, network fetch or executable tests.
+# REDUX/1: project-local STD-free C++20 header library.
+add_library(REDUX INTERFACE)
+target_include_directories(REDUX INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+  $<INSTALL_INTERFACE:include/swe>)
+target_compile_features(REDUX INTERFACE cxx_std_20)
+install(FILES shared/redux.hpp shared/ariari.hpp DESTINATION include/swe)
+# LCD/1: independent namespace-free exact quotient libram.
+add_library(LCD INTERFACE)
+target_include_directories(LCD INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/shared>
+  $<INSTALL_INTERFACE:include/swe>)
+target_compile_features(LCD INTERFACE cxx_std_20)
+install(FILES shared/LCD.hpp shared/TALON.hpp DESTINATION include/swe)
+
+add_library(ARIARI INTERFACE)
+target_link_libraries(ARIARI INTERFACE REDUX)
+target_compile_features(ARIARI INTERFACE cxx_std_20)
+
 option(SWE_STD_FREE_CORE_ONLY
   "Build native STD-free Suite plus canonical DecaSigma/TriPi/COREAO/stability headers" OFF)
 if(SWE_STD_FREE_CORE_ONLY)
@@ -179,6 +204,71 @@ if(WIN32)
 endif()
 include(CTest)
 if(BUILD_TESTING)
+    # WIKI/1: read-only native documentation graph verification.
+    # ATTENUATION/1: independent exact numeric and Unicode witnesses.
+    add_executable(attenuation_test tests/ATTENUATION_TEST.cpp)
+    target_compile_features(attenuation_test PRIVATE cxx_std_20)
+    target_compile_options(attenuation_test PRIVATE /WX /utf-8)
+    add_test(NAME attenuation_bridge_exact COMMAND attenuation_test)
+    add_executable(airman_viewer diaery/airman_viewer.cpp)
+    target_compile_features(airman_viewer PRIVATE cxx_std_20)
+    target_compile_options(airman_viewer PRIVATE /O2 /W4 /utf-8)
+    target_link_libraries(airman_viewer PRIVATE user32 gdi32 kernel32)
+    add_executable(thailonga3d_test tests/THAILONGA3D_TEST.cpp)
+    target_compile_features(thailonga3d_test PRIVATE cxx_std_20)
+    target_compile_options(thailonga3d_test PRIVATE /O2 /W4 /WX /utf-8)
+    add_test(NAME thailonga3d_exact_topology COMMAND thailonga3d_test)
+    add_executable(wiki wiki.cpp)
+    target_compile_features(wiki PRIVATE cxx_std_20)
+    target_compile_options(wiki PRIVATE /WX /utf-8 /constexpr:steps1000000)
+    add_test(NAME wiki_circular_references COMMAND wiki)
+    set_tests_properties(wiki_circular_references PROPERTIES
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    # Namespace-free composition: co-include independent libraries and compile
+    # each standalone permutation as its own translation unit.
+    add_executable(namespace_free_test tests/namespace_free_test.cpp
+      docs/experiments/fuckitin_standalone.cpp
+      docs/experiments/zipitup_standalone.cpp
+      docs/experiments/zipitdown_standalone.cpp
+      docs/experiments/zipitout_standalone.cpp)
+    target_link_libraries(namespace_free_test PRIVATE LCD ARIARI)
+    add_test(NAME namespace_free_composition_65025 COMMAND namespace_free_test)
+    add_executable(talon_test tests/TALON_TEST.cpp)
+    target_link_libraries(talon_test PRIVATE LCD)
+    target_compile_options(talon_test PRIVATE /WX /constexpr:steps1000000 /fp:precise)
+    add_test(NAME talon_256_cycles_terminal_velocity COMMAND talon_test)
+    add_executable(lcd_test tests/LCD_TEST.cpp)
+    target_link_libraries(lcd_test PRIVATE LCD)
+    target_compile_options(lcd_test PRIVATE /WX)
+    add_test(NAME lcd_256_cycles_exact_quotient COMMAND lcd_test)
+    add_executable(ariari_test tests/ariari_test.cpp)
+    target_link_libraries(ariari_test PRIVATE ARIARI)
+    add_test(NAME ariari_fusion_exact_roundtrip COMMAND ariari_test)
+    add_executable(ariari_standalone docs/experiments/ARIRANG.cpp)
+    target_compile_features(ariari_standalone PRIVATE cxx_std_20)
+    add_test(NAME ariari_standalone_exact_roundtrip COMMAND ariari_standalone)
+    add_executable(ariari_toolong_test tests/ariari_toolong_test.cpp)
+    target_link_libraries(ariari_toolong_test PRIVATE ARIARI)
+    add_test(NAME ariari_toolong_gammagamma_composition COMMAND ariari_toolong_test)
+    add_executable(redux_test tests/redux_test.cpp)
+    target_link_libraries(redux_test PRIVATE REDUX)
+    add_test(NAME redux_exact_reduction COMMAND redux_test)
+    add_executable(redux_optimization_test tests/redux_optimization_test.cpp)
+    target_link_libraries(redux_optimization_test PRIVATE REDUX)
+    add_test(NAME redux_source_arithmetic_equivalence COMMAND redux_optimization_test)
+    # DAKATANA-01: use existing native CTest pipeline, no new remote jobs.
+    add_subdirectory(docs/experiments/LF9WN9Z)
+    add_executable(dakatana_physics_test tests/dakatana_physics_test.cpp)
+    target_link_libraries(dakatana_physics_test PRIVATE LF9WN9Z)
+    add_test(NAME dakatana_physics_exact_batch COMMAND dakatana_physics_test)
+    set_tests_properties(dakatana_physics_exact_batch PROPERTIES
+      ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_FILE_DIR:LF9WN9Z>")
+    set_source_files_properties(docs/experiments/REDUX.C PROPERTIES LANGUAGE CXX)
+    add_executable(redux_standalone docs/experiments/REDUX.C)
+    target_compile_options(redux_standalone PRIVATE /TP)
+    target_compile_features(redux_standalone PRIVATE cxx_std_20)
+    add_test(NAME redux_standalone_exact_reduction COMMAND redux_standalone)
+
     add_executable(niterex_web9x_ninebit_test tests/niterex_web9x_ninebit_test.cpp)
     target_include_directories(niterex_web9x_ninebit_test PRIVATE
       ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -401,6 +491,7 @@ install(FILES
     shared/coreao.hpp
     shared/coreao_gain.hpp
     shared/gammagamma.hpp
+    shared/ariari_toolong.hpp
     shared/pi_precision.hpp
     shared/toolong.hpp
     shared/toolong_ratio.hpp
@@ -757,3 +848,14 @@ endif()
 # DIAERY native XHTML Strict-profile inspector (experimental).
 # The root native-MSVC and release HOLD policies remain authoritative.
 add_subdirectory(diaery)
+
+# FREERADICAL/1: independent native recovery qualification.
+if(MSVC AND BUILD_TESTING)
+  add_executable(freeradical_test tests/FREERADICAL_TEST.cpp)
+  target_compile_features(freeradical_test PRIVATE cxx_std_20)
+  set_target_properties(freeradical_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  target_compile_options(freeradical_test PRIVATE /W4 /permissive-)
+  add_test(NAME freeradical_registering_pennyworth COMMAND freeradical_test)
+endif()
+install(FILES shared/FREERADICAL.hpp DESTINATION include/swe)
