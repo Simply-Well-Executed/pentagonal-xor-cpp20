@@ -9,7 +9,7 @@ struct HexaDi final {
     }
 };
 struct INVERSESQUARELAW final {
-    // Bounded domain avoids overflow/underflow in both evaluation orders.
+    // Bounded domain limits overflow; tiny results may still underflow.
     struct Result { double value; bool valid; };
     static constexpr bool DOMAIN(double k,double r) noexcept {
         return k>=-1e100 && k<=1e100 && r>=1e-100 && r<=1e100;
@@ -46,6 +46,8 @@ struct SPHERROID final {
         const double n=NORM2(p);
         if(!(n>=0.999999999999 && n<=3.000000000001 && d>=0 && d<=1))
             return {p,p,d,false};
+        // Exact identity cases: skip all eight Newton iterations.
+        if(d==1 || n==1) return {p,p,d,true};
         double r=2;
         for(unsigned i=0;i<8;++i) r=(r+n/r)*0.5;
         const double s=d+(1-d)/r;
@@ -110,4 +112,93 @@ using WANDERING=ZEROLOSS; using DISCOBLAME=ZEROLOSS; using TOOMUCH=ZEROLOSS;
 using INF=ZEROLOSS; using FOXTUNE=ZEROLOSS; using JAMAICANSWITCH=ZEROLOSS;
 using LOSERTALES=ZEROLOSS; using SUBMISSIVELOVE=ZEROLOSS; using jack=ZEROLOSS;
 using LOVE=ZEROLOSS; using LUST=ZEROLOSS; using AGONY=ZEROLOSS; using HATE=ZEROLOSS;
+}
+
+namespace SWE::PHYSICS_LAB {
+// PHYSICS-LAB/FHERE-1. Structural crown/release; no contact mechanics.
+using FHYR=GEOMTRY::Point;
+struct FHERE final {
+    using CORE=GEOMTRY::SPHERROID;
+    const FHYR SOURCE;
+private:
+    FHYR current_;
+public:
+    constexpr explicit FHERE(FHYR p) noexcept : SOURCE(p),current_(p) {}
+    constexpr FHYR CURRENT() const noexcept { return current_; }
+    constexpr bool FOLD(double k) noexcept {
+        if(!(k>=0 && k<=1e6)) return false;
+        const auto next=CORE::PROJECT(current_,ACCORDIAN::FOLD(k));
+        if(!next.valid) return false;
+        current_=next.projected; return true;
+    }
+    constexpr CORE::Result OUTPUT() const noexcept {
+        auto out=GEOMTRY::SPHERE::PROJECT(current_);
+        out.source=SOURCE; return out;
+    }
+};
+struct DANDY final {
+    struct Y final {
+        FHERE SEAT;
+        constexpr explicit Y(FHYR p) noexcept : SEAT(p) {}
+        constexpr bool FOLD(double k) noexcept { return SEAT.FOLD(k); }
+        constexpr auto OUTPUT() const noexcept { return SEAT.OUTPUT(); }
+    };
+    Y CROWN;
+    constexpr explicit DANDY(FHYR p) noexcept : CROWN(p) {}
+};
+using FHEYR=DANDY;
+struct DAND final {
+    struct FLIGHT { FHYR SOURCE,POSITION; bool RELEASED; };
+    static constexpr FLIGHT FLIP(const DANDY& input) noexcept {
+        const auto& s=input.CROWN.SEAT;
+        return {s.SOURCE,GEOMTRY::MATRIX::TWIST(s.CURRENT()),true};
+    }
+};
+struct LAND final {
+    static constexpr double GRAVITY=33.0; // ft/s^2, prescribed laboratory constant
+    struct FLIGHT { double HEIGHT,VELOCITY; bool LANDED,VALID; };
+    // VELOCITY is the unconstrained ballistic sample, not post-impact velocity.
+    static constexpr FLIGHT FALL(double h,double v,double t) noexcept {
+        if(!(h>=0 && h<=1e100 && v>=-1e100 && v<=1e100 && t>=0 && t<=1e100))
+            return {h,v,false,false};
+        const double y=h+v*t-16.5*t*t;
+        return {y>0?y:0,v-GRAVITY*t,y<=0,true};
+    }
+};
+struct LADDERING final {
+    using LAND=PHYSICS_LAB::LAND;
+    using DAND=PHYSICS_LAB::DAND;
+    using HEAD=LAND; using BASE=DAND; using CORE=DANDY::Y;
+    CORE Y;
+    constexpr explicit LADDERING(FHYR p) noexcept : Y(p) {}
+    static constexpr bool SWAPPED=true;
+    static constexpr double GRAVITY=HEAD::GRAVITY;
+    // Preserve the live crown and its current coordinates, not merely the source.
+    constexpr explicit LADDERING(const DANDY& d) noexcept : Y(d.CROWN) {}
+};
+using LANDY=LADDERING;
+struct LADDERINGANDY final {
+    using LEFT=LADDERING; using RIGHT=DANDY;
+    using HEAD=LEFT::HEAD; using BASE=LEFT::BASE; using CORE=RIGHT::Y;
+    CORE Y;
+    static constexpr char G='G';
+    static constexpr double GRAVITY=HEAD::GRAVITY;
+    constexpr explicit LADDERINGANDY(FHYR p) noexcept : Y(p) {}
+    constexpr explicit LADDERINGANDY(const LADDERING& l) noexcept : Y(l.Y) {}
+    constexpr bool FOLD(double k) noexcept { return Y.FOLD(k); }
+    constexpr auto OUTPUT() const noexcept { return Y.OUTPUT(); }
+};
+struct MCLEAVE final {
+    using CORE=LADDERINGANDY;
+    struct BOW {
+        double LEFT,G,RIGHT; bool VALID;
+        constexpr bool VERIFY() const noexcept { return VALID && LEFT==-RIGHT && G==0; }
+    };
+    static constexpr BOW CLEAVE(double x,double y) noexcept {
+        if(!(x>=-1e100 && x<=1e100 && y>=-1e100 && y<=1e100))
+            return {0,0,0,false};
+        const double bias=x*x*y;
+        return {-bias,0,bias,true};
+    }
+};
 }
