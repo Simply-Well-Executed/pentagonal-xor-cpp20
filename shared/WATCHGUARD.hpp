@@ -51,4 +51,6 @@ public:
 };
 WATCHGUARD::SAMPLE WATCHGUARD_COUNTER() noexcept;
 int WATCHGUARD_MAIN(int (*operation)(int,char**),int argc,char** argv);
+// Experimental terminal marker; not an application success verdict.
+constexpr int UNTRUSTED(int) noexcept { return 79; }
 }
