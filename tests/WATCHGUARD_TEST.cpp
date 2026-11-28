@@ -18,6 +18,9 @@ constexpr bool verify() {
     return w.INTEGRITY() && w.attempts()==2 && w.successes()==1 && w.failures()==1;
 }
 static_assert(verify());
+static_assert(SWE::UNTRUSTED(0)==79);
+static_assert(SWE::UNTRUSTED(2)==79);
+static_assert(SWE::UNTRUSTED(125)==79);
 int main() {
     const auto a=SWE::WATCHGUARD_COUNTER();
     const auto b=SWE::WATCHGUARD_COUNTER();
