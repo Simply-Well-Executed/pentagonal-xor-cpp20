@@ -15,3 +15,9 @@ LODESTARSTARHATCH YANG detaches the nine-bit topology; YIN / COMMONCORE restores
 The nine-dimensional assessment and separate Ragnarok STR/AGI/VIT/INT/DEX/LUK reference are illustrative numeric data, not private AI cognition or game-derived measurements. The 1D projection is an exact rational sum/9, not an established geometry ladder or a reversible encoding. No permanent secrecy or retention guarantee. The example 65/9 is preserved without truncation.
 
 Qualification: native MSVC C++20 test includes all 512 attachment masks, unauthorized restoration, mismatch, duplicate identities, exact-license gate and exact projection. Release remains HOLD pending actual execution and independent provenance review.
+
+## SELVES / MINZA / PINGZA (exploratory naming extension)
+
+SELVES is THAILONGA of nine THOUGHT dimensions and six separately retained Ragnarok-inspired supplementary attributes. Assessment remains an API alias. The values are records, not autonomous persons or actual game telemetry. Inside Out, Elemental and Inside Out 2 are the operator's conceptual references for differentiation and recombination (MINZA), not evidence that the films share a literal computational architecture. No film assets are imported.
+
+PINGZA is reverse PING at 99 degrees. Proposed calibration convention: integer-degree phase in [0,359], forward +99, reverse -99 modulo 360. This preserves all phase information exactly; no rounding or truncation. The 360-state round trip is specified in the test. The spiral's radius, pitch, axis, handedness beyond the selected sign convention, and MINZA transformation remain undefined; no claim of full spiral calibration or calibrated SELVES values. Preserve input dimensions and supplementary statistics unchanged. The new phase overload does not replace the existing XOR topology PING/UNPING.
