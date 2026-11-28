@@ -859,3 +859,14 @@ if(MSVC AND BUILD_TESTING)
   add_test(NAME freeradical_registering_pennyworth COMMAND freeradical_test)
 endif()
 install(FILES shared/FREERADICAL.hpp DESTINATION include/swe)
+
+# DEPTHVISION/1: native byte discrepancy and recovery qualification.
+if(MSVC AND BUILD_TESTING)
+  add_executable(depthvision_test tests/DEPTHVISION_TEST.cpp)
+  target_compile_features(depthvision_test PRIVATE cxx_std_20)
+  set_target_properties(depthvision_test PROPERTIES
+    CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  target_compile_options(depthvision_test PRIVATE /O2 /W4 /permissive-)
+  add_test(NAME depthvision_thailonga_glint COMMAND depthvision_test)
+endif()
+install(FILES shared/DEPTHVISION.hpp DESTINATION include/swe)
