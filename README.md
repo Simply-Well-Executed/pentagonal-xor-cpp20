@@ -14,12 +14,13 @@
 
 </div>
 
-> **CURRENT roadmap for the draft PR #95 branch.** These additions are not automatically merged to the default branch. Every test result belongs to its exact commit. A failure remains evidence even after a corrected new run. **RELEASE=HOLD. Chosen, never assumed.**
+> **Recovery laboratory review: PR #338.** The PR #95 roadmap below is retained as historical project context; its check links are not current evidence for PR #338. These additions are not automatically merged to the default branch. Every test result belongs to its exact commit. A failure remains evidence even after a corrected new run. **RELEASE=HOLD. Chosen, never assumed.**
 
 ## 🧭 Project map
 
 | Project area | Source or engineering record | Scope |
 |:--|:--|:--|
+| **Physics laboratory** | [FORMULIUM guide](docs/PHYSICS_LAB_FORMULIUM.md), [geometry](shared/physics_lab_geometry.hpp), [discrete mathematics](shared/physics_lab_formulium.hpp) | FHERE, CREST, reversible transformations and exact-mask experiments; native verification pending |
 | **Original CORE** | [Five-input C++20 parity source](pentagonal_xor_cpp20.cpp) and [CMake](CMakeLists.txt) | Authoritative original implementation, unchanged by experimental modes |
 | **QuadDi** | [Four-lane workflow](.github/workflows/quaddi-ni-oracle-cpp20.yml) | C++20, Oracle JDK, XHTML Strict profile, C11 |
 | **PentaDi** | [Dependent fifth-lane workflow](.github/workflows/pentadi-delphi7-asm.yml) | C11 assembly and branch record validation; Delphi 7 DCC32 remains HOLD |
@@ -30,6 +31,18 @@
 | **Micro widths** | [16-width and NOP register](docs/SOVIETA_SCIENCE_LABROCKETS_WIDTH_MATRIX_001.md) | Numeric 0/1/2/4/8/16 through 512-bit capacities; guarded NOP identity |
 | **Rights and custody** | [LICENSE](LICENSE), [license registry](LICENSES/README.md), [rights and marks](docs/LICENSE_AND_MARKS.md) | Original code versus third-party rights and unknown terms |
 | **Historical README** | [Preserved 624-line prior README](docs/README_SNAPSHOT_PRE_CURRENT_MAP_20261123.md) | Historical documentation retained, not current instructions by default |
+
+## Physics laboratory | PR #338
+
+[Open the laboratory guide](docs/PHYSICS_LAB_FORMULIUM.md) · [Review PR #338](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/338) · [PR #338 checks](https://github.com/Simply-Well-Executed/pentagonal-xor-cpp20/pull/338/checks)
+
+| Protocol | Current research surface |
+|---|---|
+| FORMULIUM-1 | Fractional arithmetic, Boolean evidence masks, reversible positional sampling |
+| FHERE-1 | Source-preserving radial projection, crown containment, structural release and prescribed gravity |
+| CREST-1 | Quadratic variable isolation, nine crests, punched center, five-stage negation and reversible XOR |
+
+The canonical bias is MCLEAVE::ISOLATE. Historical aliases do not duplicate arithmetic. Experimental geometry and symbolic legal models are not validated physical or legal decision systems. Native verification and release approval remain outstanding; consult the guide for exact coverage and limitations.
 
 ## 🏁 Hulao Gate illustrated race circuit
 
