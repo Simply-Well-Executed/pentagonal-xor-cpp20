@@ -110,8 +110,19 @@ struct LEGAL_SYSTEM final {
         const bool l=LUCKY{e.lawful,e.voluntary,e.informed}.VALUE();
         return {e,t.admissible,j,h,l,t.reject_inference,t.admissible&&j&&h&&l&&!t.reject_inference};
     }
-    struct PERSIAN_JIG final { enum class DEKATUNG:unsigned { TRUTH,JUSTICE,HONOR,LUCKY }; };
-    using FYRMID=PERSIAN_JIG;
+    struct PERSIAN_JIG final {
+        enum class DEKATUNG:unsigned { TRUTH,JUSTICE,HONOR,LUCKY };
+        struct DEKATANA {
+            bool truth,justice,honor,lucky;
+            constexpr bool STANDS() const noexcept { return truth&&justice&&honor&&lucky; }
+        };
+    };
+    struct FYRMID final {
+        using HEAD=LEGALLY_IAM_ALIVE;
+        using LEFT=LEGALLY_STILL_ALIVE;
+        using RIGHT=LEGALY_IAM_DEAD;
+        using CORE=PERSIAN_JIG;
+    };
 };
 struct COT final {
     bool truth,justice,honor,lucky,unsupported_inference;
@@ -120,6 +131,14 @@ struct COT final {
     }
 };
 using CASH=COT;
+// Historical review-mask polarity, distinct from direct COT findings.
+struct LAWFUL_GOOD_BIAS final {
+    static constexpr unsigned REVEAL(COT c) noexcept { return c.REVEAL()^15u; }
+};
+struct THAILONGA final {
+    using Vector=EVIDENCE_ADMISSION::Vector;
+    static constexpr Vector ORDER(Vector v) noexcept { return EVIDENCE_ADMISSION::ORDER(v); }
+};
 struct CASH_COLOR final {
     static constexpr unsigned LINES=13;
     enum class Status:unsigned { UNDETERMINED,SUPPORTED,CONTRADICTED,NEEDS_REVIEW };
