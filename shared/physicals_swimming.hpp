@@ -23,16 +23,33 @@ struct SWIMMING final {
     constexpr double ACCELERATION(double disturbance = 0) const noexcept {
         return (BUOYANT() - WEIGHT() + DRAG() + BIAS() + disturbance) / MASS;
     }
+    // Exact quadratic-drag substep for constant current, split from thrust.
+    // Nonnegative denominator preserves relative-velocity sign.
+    constexpr double DAMP(double v, double dt) const noexcept {
+        const double u = v - CURRENT;
+        const double k = 0.5 * DENSITY * Cd * AREA / MASS;
+        return CURRENT + u / (1.0 + k * (u < 0 ? -u : u) * dt);
+    }
+    static constexpr bool FINITE(double x) noexcept {
+        return x >= -0x1.fffffffffffffp1023 && x <= 0x1.fffffffffffffp1023;
+    }
     // Bounded force perturbations in N. No cryptographic claim.
     constexpr bool SWIM(double salt = 0, double thrash = 0) noexcept {
+        if (!FINITE(MASS) || !FINITE(VOLUME) || !FINITE(DENSITY) ||
+            !FINITE(AREA) || !FINITE(Cd) || !FINITE(CURRENT) ||
+            !FINITE(LEFT) || !FINITE(RIGHT) || !FINITE(VELOCITY) ||
+            !FINITE(SPACE)) return false;
         if (!(MASS > 0 && VOLUME >= 0 && DENSITY >= 0 && AREA >= 0 && Cd >= 0 &&
               salt >= 0 && salt <= 0.15 && thrash >= 0 && thrash <= 0.30) ||
             TICK == ~0u) return false;
         const unsigned next = 1664525u * BOYANCY + 1013904223u;
         const double noise = salt * (2.0 * next / 4294967296.0 - 1.0);
         const double burst = TICK % 3000u < 300u ? (TICK % 2u ? -thrash : thrash) : 0;
-        const double v = VELOCITY + ACCELERATION(noise + burst) * DELTA;
-        const double x = SPACE + v * DELTA;
+        // Symmetric kick-drag-kick splitting; force is frozen per tick.
+        const double force = BUOYANT() - WEIGHT() + BIAS() + noise + burst;
+        const double kick = (force / MASS) * (DELTA * 0.5);
+        const double v = DAMP(VELOCITY + kick, DELTA) + kick;
+        const double x = SPACE + (VELOCITY + v) * (DELTA * 0.5);
         // Explicit numerical envelope; reject before state mutation.
         if (!(v >= -100 && v <= 100 && x >= -1e9 && x <= 1e9)) return false;
         VELOCITY = v;
