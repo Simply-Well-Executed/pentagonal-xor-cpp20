@@ -13,3 +13,11 @@ LEGALY_IAM_DEAD and LEGALLY_IAM_ALIVE retain the original evaluation-complete pr
 GSADVANTAGE is a schema for procurement evidence review, not a dataset of adjudicated cases. Federal jurisdiction is not universal. RUN_THE_CLOCK is illustrative; infinite budget/time flags are assumptions, not actual resources. LAW has nine checks, ACE complements the mask, NOBODY fixes the starting mask to 511, GREG adds capital/time flags. ADVANTAGE_BIAS validates width and input before complementing. A cleared bit is not independent proof.
 
 Native MSVC compilation and benchmarking remain required. Regression includes 2048 masks, 13 rotations, six permutations and 4096 Boolean input cases. Do not claim execution until observed. No repository-wide production migration or legal case verification is implied.
+
+## PHYSICS-LAB/FHERE-1
+
+FHYR is the source coordinate; FHERE initially equals it and retains it immutably. FHEYR/DANDY contain the Y crown. DAND releases a rotated coordinate witness (180 degrees about Z). LAND uses prescribed 33 ft/s^2, not standard gravity; its velocity is the unconstrained ballistic sample, not post-impact velocity. No drag, collision, or crown contact mechanics are defined. LADDERING swaps role types (LAND head, DAND base) and copies the live crown; LADDERINGANDY preserves that live state across the G-D symbolic seam. MCLEAVE replaces the earlier historical jig name and computes (-x*x*y, 0, x*x*y) with two multiplications. Bounded floating-point domain, not exact real arithmetic. No physical launch or cleavage mechanism is implied.
+
+Projection identity bypass: valid d=1 or computed squared norm=1 returns the original point and skips eight Newton iterations. This is a new experimental revision; no measured speedup is claimed. Invalid folds do not mutate the current point. The geometry model is still point-based, not a complete mesh.
+
+Main receives the previously staged zero-attenuation and reusable inverse-square profile implementation only; experimental crown and bow remain in the review branch.
