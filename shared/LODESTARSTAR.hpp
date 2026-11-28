@@ -78,7 +78,25 @@ struct THAILONG final {
         }
     };
     struct RAGNAROK { unsigned STR,AGI,VIT,INT,DEX,LUK; };
-    struct Assessment { unsigned dimensions[9]; RAGNAROK supplementary; };
+    struct SELVES { unsigned dimensions[9]; RAGNAROK supplementary; };
+    using Assessment = SELVES; // historical API alias
+    static constexpr SELVES THAILONGA(const unsigned (&thought)[9],RAGNAROK stats) noexcept {
+        SELVES s{};
+        for(unsigned i=0;i<9;++i) s.dimensions[i]=thought[i];
+        s.supplementary=stats;
+        return s;
+    }
+    // Exact angular phase only: radial spiral law remains undefined.
+    struct Calibration { unsigned phase; bool valid; };
+    static constexpr unsigned PINGZA_DEGREES=99;
+    static constexpr Calibration PING(Calibration c) noexcept {
+        if(!c.valid || c.phase>=360) return {0,false};
+        return {(c.phase+PINGZA_DEGREES)%360,true};
+    }
+    static constexpr Calibration PINGZA(Calibration c) noexcept {
+        if(!c.valid || c.phase>=360) return {0,false};
+        return {(c.phase+360-PINGZA_DEGREES)%360,true};
+    }
     struct Projection { unsigned numerator, denominator; bool valid; };
     static constexpr Projection PROJECT(const Assessment& a) noexcept {
         unsigned sum=0;
