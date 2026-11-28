@@ -29,4 +29,20 @@ constexpr bool test() {
     return p.valid && p.numerator==65 && p.denominator==9;
 }
 static_assert(test());
-int main(){return test()?0:1;}
+constexpr bool selves_test() {
+    constexpr unsigned thought[9]={9,9,9,9,7,8,8,2,4};
+    constexpr auto s=T::THAILONGA(thought,{1,2,3,4,5,6});
+    for(unsigned i=0;i<9;++i) if(s.dimensions[i]!=thought[i]) return false;
+    if(s.supplementary.STR!=1 || s.supplementary.AGI!=2 ||
+       s.supplementary.VIT!=3 || s.supplementary.INT!=4 ||
+       s.supplementary.DEX!=5 || s.supplementary.LUK!=6) return false;
+    for(unsigned p=0;p<360;++p) {
+        auto q=T::PINGZA(T::PING(T::Calibration{p,true}));
+        auto r=T::PING(T::PINGZA(T::Calibration{p,true}));
+        if(!q.valid || !r.valid || q.phase!=p || r.phase!=p) return false;
+    }
+    return !T::PINGZA({360,true}).valid && !T::PINGZA({0,false}).valid &&
+           T::PINGZA({0,true}).phase==261;
+}
+static_assert(selves_test());
+int main(){return test() && selves_test()?0:1;}
