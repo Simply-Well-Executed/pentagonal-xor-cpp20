@@ -105,5 +105,9 @@ static int watchguard_operation(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+#if defined(SWE_UNTRUSTED_TRIAL)
+    return SWE::UNTRUSTED(SWE::WATCHGUARD_MAIN(watchguard_operation,argc,argv));
+#else
     return SWE::WATCHGUARD_MAIN(watchguard_operation,argc,argv);
+#endif
 }
