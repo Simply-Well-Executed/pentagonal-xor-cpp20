@@ -581,3 +581,7 @@ Separate project-local geometric compensation: given independently supplied squa
 ### Signed de-radicalization (operator clarification)
 
 For a positive real square there are two distinct signed roots; for zero there is one, and negative radicands have no real roots. The unsigned input domain rejects negative radicands by construction. Given validated side magnitudes 8 and 10, preserve the four independently signed assignments. The same-orientation pair gives corrections +2 and -2 and compensated outputs -34 and -38; mixed orientations give -18 and +18 corrections, outputs -54 and -18. Each uses C=(R-G)/(x+y)=y-x with zero remainder. If x+y=0 the quotient is singular and the branch is marked invalid, not silently cancelled. Zero-root orientations may coincide. No branch is privileged or selected by desired output. The positive-magnitude EULERS_JIG helper remains explicit. Adds 16384 orientation cases to the authored tests. This is a mathematical witness, not an antenna gain measurement.
+
+## 33. AIRMAN exploration rollup
+
+See [AIRMAN](AIRMAN.md) for the source-preserving 3D-THAILONGA, signed Euler jig, 5D–11D state projection, D20/D64/D97 satellite schematic, NULL0 HEX99 starchart, DELTA/BIAS and closed fictional chamber record. No release or physical qualification is implied.

@@ -119,3 +119,7 @@ The [pre-refactor 624-line README snapshot](docs/README_SNAPSHOT_PRE_CURRENT_MAP
 **Draft PR #95 | RELEASE=HOLD | Chosen, never assumed.** 🏁
 
 </div>
+
+## AIRMAN exploration laboratory
+
+[3D-THAILONGA / AERIS / NULL0 HEX99 / D64-D97-D20 TRIFORCE](docs/AIRMAN.md) includes source-preserving geometry, signed Euler jig, orbital schematics, configuration and constellation witnesses, and the separate native `airman_viewer` target. RELEASE=HOLD pending native and accessibility qualification.

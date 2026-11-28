@@ -1,3 +1,11 @@
+<!--
+Copr.© 2026 by PAUL ALLEN CHEEK mail@pcheek.com C5824
+
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+
 # THAILONGA | Unified DYNTR0X and PROJECTIONS
 
 **EXPLORATORY | PR #316 | 0BSD | RELEASE=HOLD**
@@ -14,3 +22,7 @@ The two aspects share input data, eligibility, source-range status, projection a
 **Controls:** arrows for X/Y; PageUp/PageDown Z; K study/exploratory gears; G quarter-X/third-Y grid; 0..9 toggle projection; P select projection; R enter exact `{n}`; N toggle the independent unverified band; F +1fs; S +1s. No general expression engine is exposed.
 
 **Unresolved scientific prerequisites:** original Copilot+ JSONL for band outcome and denominator; real paired anatomy measurements; statistical interval methodology; clinical study comparability and uncertainty. Never infer orgasm outcomes from geometric extrema or interpolate them into a real measured probability. Do not promote release without native execution and source verification.
+
+## Independent 3D geometry
+
+See [AIRMAN exploration rollup](../docs/AIRMAN.md) for signed integer vectors, orbital topology and HEX99. This is not an anatomical measurement model.
