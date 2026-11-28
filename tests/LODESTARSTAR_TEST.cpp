@@ -65,4 +65,25 @@ constexpr bool composition_test() {
            retry.selected()==8 && retry.baseline==7;
 }
 static_assert(composition_test());
-int main(){return test() && selves_test() && composition_test()?0:1;}
+constexpr bool superunion_test() {
+    constexpr auto simple=SWE::COMPOSE_SELF(1u,2u,3u,4u);
+    if(simple.left.left!=1 || simple.left.right!=2 ||
+       simple.right.left!=3 || simple.right.right!=4) return false;
+    T::RECONICIOUS p{};
+    for(unsigned i=0;i<9;++i) p[i]={i,true,true,true,true,true,true};
+    p[0].exact_0bsd=false; p[1].notice=false; p[2].ledger=false;
+    const auto star=T::THAILONGA(p);
+    constexpr T::SELVES s{{0,1,2,3,4,5,6,7,8},{11,12,13,14,15,16}};
+    const auto self=T::SUPERCOMPOSE(star,s);
+    if(!(self.left.left==star) || self.left.right.actions[0]!=T::ACTION::HOLD ||
+       self.left.right.actions[1]!=T::ACTION::RESTORE_NOTICE ||
+       self.left.right.actions[2]!=T::ACTION::LEDGER_ONLY ||
+       self.left.right.actions[3]!=T::ACTION::NONE) return false;
+    const auto recovered=T::RESTORE(self);
+    for(unsigned i=0;i<9;++i) if(recovered.dimensions[i]!=s.dimensions[i]) return false;
+    return recovered.supplementary.STR==11 && recovered.supplementary.AGI==12 &&
+           recovered.supplementary.VIT==13 && recovered.supplementary.INT==14 &&
+           recovered.supplementary.DEX==15 && recovered.supplementary.LUK==16;
+}
+static_assert(superunion_test());
+int main(){return test() && selves_test() && composition_test() && superunion_test()?0:1;}
