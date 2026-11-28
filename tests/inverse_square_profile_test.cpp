@@ -25,4 +25,9 @@ constexpr bool witness() {
            !prepare_inverse_square(1,17,geometry_pi).valid;
 }
 static_assert(witness());
+static_assert(attenuation(0.0).valid && attenuation(0.0).value == 1.0);
+static_assert(attenuation(-0.0).valid && attenuation(-0.0).value == 1.0);
+static_assert(damped_wave(1,0,2,0,0,0,0).valid);
+static_assert(damped_wave(1,0,2,0,0,0,0).value == 0.0);
+static_assert(!attenuation(-1).valid);
 int main() { return witness()?0:1; }
