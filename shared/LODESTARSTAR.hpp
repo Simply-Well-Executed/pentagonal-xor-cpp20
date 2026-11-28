@@ -7,6 +7,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 */
 // SPDX-License-Identifier: 0BSD
 #pragma once
+#include "THAILONGA.hpp"
 namespace SWE {
 struct THAILONG final {
     static constexpr unsigned FULL = 511u;
@@ -80,6 +81,21 @@ struct THAILONG final {
     struct RAGNAROK { unsigned STR,AGI,VIT,INT,DEX,LUK; };
     struct SELVES { unsigned dimensions[9]; RAGNAROK supplementary; };
     using Assessment = SELVES; // historical API alias
+    struct Dimensions { unsigned values[9]; };
+    using SELVES_TREE = SWE::THAILONGA<Dimensions,RAGNAROK>;
+    static constexpr SELVES_TREE COMPOSE(const SELVES& s) noexcept {
+        SELVES_TREE tree{};
+        for(unsigned i=0;i<9;++i) tree.left.values[i]=s.dimensions[i];
+        tree.right=s.supplementary;
+        return tree;
+    }
+    static constexpr SELVES RESTORE(const SELVES_TREE& tree) noexcept {
+        return THAILONGA(tree.left.values,tree.right);
+    }
+    using RECONICIOUS_TREE = SWE::THAILONGA<LODESTARSTAR,SELVES_TREE>;
+    static constexpr RECONICIOUS_TREE COMPOSE(const LODESTARSTAR& s,const SELVES& a) noexcept {
+        return {s,COMPOSE(a)};
+    }
     static constexpr SELVES THAILONGA(const unsigned (&thought)[9],RAGNAROK stats) noexcept {
         SELVES s{};
         for(unsigned i=0;i<9;++i) s.dimensions[i]=thought[i];
