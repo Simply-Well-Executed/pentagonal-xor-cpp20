@@ -23,6 +23,38 @@ constexpr bool drag_witness() {
            x.DAMPENING(2, 1) == 2 && x.DAMPENING(12, 0) == 12;
 }
 static_assert(drag_witness());
+constexpr double absval(double x) { return x < 0 ? -x : x; }
+constexpr bool analytic_witness() {
+    SWIMMING x{};
+    x.MASS = 1; x.DENSITY = 2; x.Cd = 1; x.AREA = 1;
+    x.CURRENT = 3;
+    const double a = x.DAMPENING(5, 1);
+    const double b = x.DAMPENING(1, 1);
+    const double split = x.DAMPENING(x.DAMPENING(5, 0.5), 0.5);
+    return absval(a - (3.0 + 2.0/3.0)) < 1e-12 &&
+           absval(b - (3.0 - 2.0/3.0)) < 1e-12 &&
+           absval(split-a) < 1e-12;
+}
+static_assert(analytic_witness());
+constexpr bool conservative_witness() {
+    SWIMMING x{};
+    x.Cd = 0;
+    return x.DAMPENING(7, 1) == 7;
+}
+static_assert(conservative_witness());
+double trajectory_error(unsigned n) {
+    SWIMMING x{};
+    x.MASS = 1; x.DENSITY = 2; x.Cd = 1; x.AREA = 1;
+    double v = 2, position = 0;
+    const double dt = 1.0/n;
+    for (unsigned i=0; i<n; ++i) {
+        const double next = x.DAMPENING(v, dt);
+        position += (v+next)*dt*0.5;
+        v = next;
+    }
+    // Exact displacement ln(3), independently specified reference.
+    return absval(position - 1.0986122886681096914);
+}
 int main() {
     SWIMMING a{}, b{};
     for (unsigned i = 0; i < SWIMMING::STEPS; ++i) {
@@ -43,5 +75,16 @@ int main() {
     for (unsigned i = 0; i < SWIMMING::STEPS; ++i)
         if (!neutral.SWIM()) return 6;
     if (neutral.SPACE != 0 || neutral.VELOCITY != 0 || neutral.TIME() != 900) return 7;
+    SWIMMING energy{};
+    energy.CURRENT = 3;
+    double v = -7;
+    for (unsigned i=0; i<1000; ++i) {
+        const double next = energy.DAMPENING(v, 0.01);
+        const double u = v-energy.CURRENT, w = next-energy.CURRENT;
+        if (w > 0 || w*w > u*u) return 8;
+        v = next;
+    }
+    const double e10=trajectory_error(10), e20=trajectory_error(20), e40=trajectory_error(40);
+    if (!(e10 > 3.8*e20 && e20 > 3.8*e40 && e40 < 0.001)) return 9;
     return 0;
 }
