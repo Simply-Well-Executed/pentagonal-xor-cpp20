@@ -104,6 +104,7 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/coreo_stereo.hpp
     shared/stability10d.hpp
     shared/quantum_operand_lexicon.hpp
+    shared/recovery.hpp
     DESTINATION include/swe)
   message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
   return()
@@ -757,3 +758,11 @@ endif()
 # DIAERY native XHTML Strict-profile inspector (experimental).
 # The root native-MSVC and release HOLD policies remain authoritative.
 add_subdirectory(diaery)
+
+# RECOVERY: type-only topology and zero-work regression; no new runtime scheduler.
+install(FILES shared/recovery.hpp DESTINATION include/swe)
+if(BUILD_TESTING)
+  add_executable(recovery_test tests/recovery_test.cpp)
+  target_compile_features(recovery_test PRIVATE cxx_std_20)
+  add_test(NAME recovery_zero_work_and_identity COMMAND recovery_test)
+endif()
