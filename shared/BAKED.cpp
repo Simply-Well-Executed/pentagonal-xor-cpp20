@@ -17,6 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 #endif
 #include <windows.h>
 #include <psapi.h>
+#include <new> // placement construction only; native adapter, not STD-free core
 #include "BAKED.hpp"
 namespace {
 using B=SWE::BAKED;
@@ -55,14 +56,13 @@ BAKED::DIAMONDTHREAD::DIAMONDTHREAD() noexcept {
     }
     if(!n || n>static_cast<C>(~SIZE_T{0})/sizeof(REGION)) return;
     const SIZE_T bytes=static_cast<SIZE_T>(n*sizeof(REGION));
-    auto* data=static_cast<REGION*>(VirtualAlloc(nullptr,bytes,
-        MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE));
-    if(!data) return;
+    void* storage=VirtualAlloc(nullptr,bytes,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
+    if(!storage) return;
+    auto* data=::new (storage) REGION[static_cast<SIZE_T>(n)]{};
     offset=0; C i=0;
     while(offset<extent_ && i<n) {
         REGION v{};
         if(!next(base_,extent_,offset,v)) break;
-        // C++20 implicit-lifetime aggregate storage.
         data[i++]=v;
     }
     DWORD old=0;
