@@ -23,6 +23,6 @@ The automatic scanner covers syntax, UTF-8, and JSON options in PowerShell
 source added or changed by a PR. The other rules are review requirements.
 See [acknowledgment and limits](docs/INCEPTION_GATE.md).
 
-## ALONZ: canonical PENNYWORTH on every change
+## LODESTAR/1 (ALONZ): canonical PENNYWORTH on every change
 
 For established first-party 0BSD work, carry the canonical root LICENSE notice and complete permission/disclaimer into new or modified files using syntax-safe comments or a sidecar. Reconcile LICENSES/ATTRIBUTION.tsv against actual current Git blob identities before reporting completion. Keep existing notices and original rights intact; do not apply first-party notices to third-party or uncertain material. PENCE remains a separate evidence-based similarity/rights review, never an automatic license conversion. Preserve historical records in Git; do not claim native test or legal qualification from attribution alone.
