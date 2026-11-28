@@ -870,3 +870,13 @@ if(MSVC AND BUILD_TESTING)
   add_test(NAME depthvision_thailonga_glint COMMAND depthvision_test)
 endif()
 install(FILES shared/DEPTHVISION.hpp DESTINATION include/swe)
+
+# LODESTARSTAR: independent nine-ligand attribution and topology model.
+if(MSVC AND BUILD_TESTING)
+  add_executable(lodestarstar_test tests/LODESTARSTAR_TEST.cpp)
+  target_compile_features(lodestarstar_test PRIVATE cxx_std_20)
+  set_target_properties(lodestarstar_test PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED YES CXX_EXTENSIONS NO)
+  target_compile_options(lodestarstar_test PRIVATE /W4 /permissive- /constexpr:steps2000000)
+  add_test(NAME lodestarstar_thailong_reconicious COMMAND lodestarstar_test)
+endif()
+install(FILES shared/LODESTARSTAR.hpp DESTINATION include/swe)
