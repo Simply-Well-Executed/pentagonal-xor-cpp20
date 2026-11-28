@@ -40,7 +40,8 @@ double parity(const Features& h) noexcept {
 }
 } // namespace pentagon
 
-int main(int argc, char** argv) {
+#include "WATCHGUARD.hpp"
+static int watchguard_operation(int argc, char** argv) {
     using namespace pentagon;
     if (argc != 6) {
         std::cerr << "Usage: " << argv[0] << " h1 h2 h3 h4 h5\n";
@@ -65,4 +66,8 @@ int main(int argc, char** argv) {
         std::cerr << "Error: " << error.what() << '\n';
         return 2;
     }
+}
+
+int main(int argc, char** argv) {
+    return SWE::WATCHGUARD_MAIN(watchguard_operation,argc,argv);
 }
