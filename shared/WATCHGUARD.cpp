@@ -18,6 +18,7 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 #include <windows.h>
 #include "WATCHGUARD.hpp"
 #include "SWEATER.hpp"
+#include "BAKED.hpp"
 namespace SWE {
 WATCHGUARD::SAMPLE WATCHGUARD_COUNTER() noexcept {
     ULONG64 cycles=0;
@@ -26,20 +27,32 @@ WATCHGUARD::SAMPLE WATCHGUARD_COUNTER() noexcept {
 }
 int WATCHGUARD_MAIN(int (*operation)(int,char**),int argc,char** argv) {
     WATCHGUARD guard;
+    const BAKED::DIAMONDTHREAD diamond;
+    const int initial=diamond.CHECK();
     const auto before=SWEATER::MEASURE();
     const auto first=WATCHGUARD_COUNTER();
-    if(!first.valid || !operation) {
+    if(initial!=0 || !first.valid || !operation) {
         const auto after=SWEATER::MEASURE();
-        (void)SWEATER::REPORT({before,after,125,false,false});
-        return 125;
+        const int rejected=initial!=0?initial:125;
+        (void)SWEATER::REPORT({before,after,rejected,false,false});
+        return rejected;
     }
     const int outcome=operation(argc,argv);
     const auto last=WATCHGUARD_COUNTER();
+    const int baked=diamond.CHECK();
     const auto after=SWEATER::MEASURE();
     const bool valid=guard.RECORD(first,last,outcome) && guard.REFLECT() &&
         guard.INTEGRITY() && guard.latest().valid;
     const bool reported=SWEATER::REPORT({before,after,outcome,true,valid});
     // No automatic ADAPT: independent verification must be supplied by caller.
+    // Separate marker: never relabel the original SWEATER outcome.
+    if(baked!=0) {
+        const char* message=baked==97?"BAKED/1 status=97 changed\n":"BAKED/1 status=125 unavailable\n";
+        DWORD written=0;
+        const DWORD length=baked==97?26u:31u;
+        (void)WriteFile(GetStdHandle(STD_ERROR_HANDLE),message,length,&written,nullptr);
+        return baked;
+    }
     return valid && reported ? outcome : (outcome ? outcome : 125);
 }
 }
