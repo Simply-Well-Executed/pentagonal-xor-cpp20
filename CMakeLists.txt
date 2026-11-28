@@ -107,6 +107,8 @@ if(SWE_STD_FREE_CORE_ONLY)
     shared/recovery.hpp
     shared/physicals_swimming.hpp
     shared/spherroid.hpp
+    shared/physics_lab_geometry.hpp
+    shared/physics_lab_formulium.hpp
     DESTINATION include/swe)
   message(STATUS "IRON native STD-free Suite and canonical scalar audits: archive-only, no legacy targets")
   return()
@@ -789,4 +791,13 @@ if(BUILD_TESTING)
   add_executable(inverse_square_profile_test tests/inverse_square_profile_test.cpp)
   target_compile_features(inverse_square_profile_test PRIVATE cxx_std_20)
   add_test(NAME inverse_square_profile_parity COMMAND inverse_square_profile_test)
+endif()
+
+# PHYSICS LAB: isolated numerical and discrete experimental formuliums.
+install(FILES shared/physics_lab_geometry.hpp shared/physics_lab_formulium.hpp DESTINATION include/swe)
+if(BUILD_TESTING)
+  add_executable(physics_lab_formulium_test tests/physics_lab_formulium_test.cpp)
+  target_compile_features(physics_lab_formulium_test PRIVATE cxx_std_20)
+  set_target_properties(physics_lab_formulium_test PROPERTIES CXX_EXTENSIONS OFF)
+  add_test(NAME physics_lab_formulium_integrity COMMAND physics_lab_formulium_test)
 endif()
