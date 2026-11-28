@@ -7,10 +7,14 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 */
 // SPDX-License-Identifier: 0BSD
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
+#define _WIN32_WINNT 0x0601
 #endif
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #include <windows.h>
 #include <psapi.h>
 #include <tlhelp32.h>
@@ -36,7 +40,7 @@ bool metric(S::METRIC m) noexcept {
 }
 bool change(S::CHANGE c) noexcept {
     if(!c.valid) return literal("NA");
-    if(!literal(c.grew?"+":"")) return false;
+    if(c.grew && !literal("+")) return false;
     if(!c.grew && c.magnitude && !literal("-")) return false;
     return number(c.magnitude);
 }
@@ -48,9 +52,9 @@ namespace SWE {
 SWEATER::SAMPLE SWEATER::MEASURE() noexcept {
     SAMPLE s{};
     PROCESS_MEMORY_COUNTERS_EX m{};
-    m.cb=sizeof(m);
+    m.cb=static_cast<DWORD>(sizeof(m));
     if(K32GetProcessMemoryInfo(GetCurrentProcess(),
-        reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&m),sizeof(m))) {
+        reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&m),static_cast<DWORD>(sizeof(m)))) {
         s.private_commit={m.PrivateUsage,true};
         s.working_set={m.WorkingSetSize,true};
         s.peak_working_set={m.PeakWorkingSetSize,true};
@@ -58,12 +62,12 @@ SWEATER::SAMPLE SWEATER::MEASURE() noexcept {
     // Close the enumeration handle before measuring handles.
     HANDLE snapshot=CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD,0);
     if(snapshot!=INVALID_HANDLE_VALUE) {
-        THREADENTRY32 entry{}; entry.dwSize=sizeof(entry);
+        THREADENTRY32 entry{}; entry.dwSize=static_cast<DWORD>(sizeof(entry));
         COUNT n=0;
         if(Thread32First(snapshot,&entry)) {
             do {
                 if(entry.th32OwnerProcessID==GetCurrentProcessId()) ++n;
-                entry.dwSize=sizeof(entry);
+                entry.dwSize=static_cast<DWORD>(sizeof(entry));
             } while(Thread32Next(snapshot,&entry));
             if(GetLastError()==ERROR_NO_MORE_FILES) s.threads={n,true};
         }
