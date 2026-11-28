@@ -250,6 +250,7 @@ public:
 // These OS interfaces can still link platform runtime libraries.
 inline void write_raw(const char* bytes, usize length,
                       bool error = false) noexcept {
+    if (length == 0u) return;
 #if defined(_WIN32)
     HANDLE handle = GetStdHandle(error ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE);
     if (!handle || handle == INVALID_HANDLE_VALUE) return;
