@@ -50,6 +50,7 @@ struct Pinhole { double fx; double fy; double cx; double cy; };
 [[nodiscard]] constexpr Scalar attenuation(double x) noexcept {
     if (!finite(x) || x < 0.0 || x > 16.0)
         return {0.0, false};
+    if (x == 0.0) return {1.0, true};
     double term = 1.0, sum = 1.0;
     for (unsigned n = 1; n <= 64; ++n) {
         term *= x / static_cast<double>(n);
